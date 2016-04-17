@@ -12,7 +12,7 @@ public class Texture
 	private static final String ALPHA_COLOUR_HEX1 = "0xFF00FF"; // Light purple
 	private static final String ALPHA_COLOUR_HEX2 = "0x7F007F"; // Dark purple
 	/** The RGB integer to replace with alpha. */
-	public static final int ALPHA_COLOUR1 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX1.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(6, 8), 16)).getRGB(); 
+	public static final int ALPHA_COLOUR1 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX1.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(6, 8), 16)).getRGB();
 	public static final int ALPHA_COLOUR2 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX2.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX2.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX2.substring(6, 8), 16)).getRGB();
 	
 	private int[] pixels;
@@ -221,6 +221,7 @@ public class Texture
 			int inX = 0;
 			int inY = 0;
 			int drawWidth = toDraw.width;
+			int drawHeight = toDraw.height;
 			
 			// Fix the parameters if an image is trying to be draw off an edge of the screen
 			
@@ -240,7 +241,7 @@ public class Texture
 				// Draws to y = 0, but starts drawing farther in from the source image, and gives a smaller height
 				// The end result is it appears off-screen to the top
 				inY = -y;
-				toDraw.height -= inY;
+				drawHeight -= inY;
 				y = 0;
 			}
 			
@@ -253,16 +254,16 @@ public class Texture
 			}
 			
 			// Corrects being off the bottom edge.
-			if (y + toDraw.height > this.height)
+			if (y + drawHeight > this.height)
 			{
 				// Makes height smaller to go out exactly to the bottom edge of the screen.
 				// End result appears to be going off-screen to the bottom.
-				toDraw.height = this.height - y;
+				drawHeight = this.height - y;
 			}
 			
 			// Draws all the lines of pixels with their x offsets,
 			// an incremental y offset being applied for each line down
-			for (int iy = 0; iy < toDraw.height; iy++)
+			for (int iy = 0; iy < drawHeight; iy++)
 			{
 				for (int ix = 0; ix < drawWidth; ix++)
 				{

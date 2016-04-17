@@ -5,6 +5,9 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -13,6 +16,7 @@ import javax.swing.JFrame;
 
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.gfx.Texture;
+import ca.pixel.game.world.Level;
 
 public class Game extends Canvas implements Runnable
 {
@@ -20,18 +24,21 @@ public class Game extends Canvas implements Runnable
 	
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
-	public static final int SCALE = 1;
+	public static final int SCALE = 5;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	
 	private JFrame frame;
 	
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-	private Texture pixels = new Texture(((DataBufferInt) image.getRaster().getDataBuffer()).getData(), WIDTH, HEIGHT);
+	private Texture screen = new Texture(((DataBufferInt) image.getRaster().getDataBuffer()).getData(), WIDTH, HEIGHT);
+	
+	private boolean fullscreen = false;
 	
 	public boolean running = false;
 	public int tickCount = 0;
 	
 	public InputHandler input = new InputHandler(this);
+	public Level blankLevel = new Level(64, 64);
 	
 	public Game()
 	{
@@ -46,7 +53,7 @@ public class Game extends Canvas implements Runnable
 		
 		frame.add(this, BorderLayout.CENTER);
 		frame.pack();
-		// frame.setResizable(false);
+		frame.setResizable(true);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 	}
@@ -173,9 +180,20 @@ public class Game extends Canvas implements Runnable
 		{
 			xPos++;
 		}
+		
+		if (input.full_screen.isPressedFiltered())
+		{
+			System.out.println("Pressed");
+			
+			// Toggles Fullscreen Mode
+			setFullScreen(!fullscreen);
+		}
+		
+		blankLevel.setCameraCenteredInWorld(xPos, yPos);
+		blankLevel.tick();
 	}
 	
-	private int xPos = (WIDTH / 2) - 4;
+	private int xPos = (WIDTH / 2) - 8;
 	private int yPos = 60;
 	
 	public void render()
@@ -187,11 +205,15 @@ public class Game extends Canvas implements Runnable
 		Texture drawPlayer = Assets.player.clone();
 		// drawPlayer.rotate180();
 		
-		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 20, "CANCER:");
-		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 35, "The Adventures of");
-		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 45, "Afro Man");
+		blankLevel.render(screen);
 		
-		pixels.draw(drawPlayer, xPos, yPos);
+		Assets.font_normal.renderCentered(screen, WIDTH / 2, 20, "CANCER:");
+		Assets.font_normal.renderCentered(screen, WIDTH / 2, 35, "The Adventures of");
+		Assets.font_normal.renderCentered(screen, WIDTH / 2, 45, "Afro Man");
+		
+		
+		
+		screen.draw(drawPlayer, xPos, yPos);
 		
 		// Renders everything that was just drawn
 		
@@ -207,6 +229,59 @@ public class Game extends Canvas implements Runnable
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
 		bs.show();
+	}
+	
+	public void setFullScreen(boolean isFullScreen)
+	{
+		fullscreen = isFullScreen;
+		
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		
+		System.out.println("Setting Fullscreen: " + isFullScreen);
+		
+		/* This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
+		 * http://stackoverflow.com/questions/13064607/fullscreen-swing-components-fail-to-receive-keyboard-input-on-java-7-on-mac-os-x
+		 */
+		if (isFullScreen)
+		{
+			frame.dispose();// Restarts the JFrame
+			frame.setResizable(false);// Disables resizing else causes bugs
+			frame.setUndecorated(true);
+			frame.setVisible(true);
+			frame.revalidate();
+			frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+			try
+			{
+				gd.setFullScreenWindow(frame);// Makes it full screen
+				
+				// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
+				// {
+				// this.setVisible(false);
+				// this.setVisible(true);
+				// }
+				
+				this.repaint();
+	            this.revalidate();
+			}
+			catch (Exception e)
+			{
+				setFullScreen(false);
+				System.err.println("Fullscreen Mode not supported.");
+				e.printStackTrace();
+			}
+		}
+		else
+		{
+			frame.dispose();// Restarts the JFrame
+			frame.setVisible(false);
+			frame.setResizable(true);
+			frame.setUndecorated(false);
+			frame.setVisible(true);// Shows restarted JFrame
+			frame.pack();
+			frame.setExtendedState(frame.getExtendedState() | JFrame.NORMAL);// Returns to maximized state
+		}
+		
+		this.requestFocus();
 	}
 	
 	public static void main(String[] args)

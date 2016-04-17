@@ -10,6 +10,8 @@ public class InputHandler implements KeyListener
 	public Key left = new Key();
 	public Key right = new Key();
 	
+	public Key full_screen = new Key();
+	
 	public InputHandler(Game game)
 	{
 		game.addKeyListener(this);
@@ -53,6 +55,9 @@ public class InputHandler implements KeyListener
 			case KeyEvent.VK_RIGHT:
 				right.setPressed(isPressed);
 				break;
+			case KeyEvent.VK_F11:
+				full_screen.setPressed(isPressed);
+				break;
 		}
 	}
 }
@@ -60,6 +65,17 @@ public class InputHandler implements KeyListener
 class Key
 {
 	private boolean pressed = false;
+	private boolean filteredPress = false;
+	
+	/**
+	 * Does the same as the <b>isPressed()</b> method, but reverts to false as soon as it's used once.
+	 */
+	public boolean isPressedFiltered()
+	{
+		boolean toReturn = filteredPress;
+		filteredPress= false;
+		return toReturn;
+	}
 	
 	public boolean isPressed()
 	{
@@ -68,6 +84,7 @@ class Key
 	
 	public void setPressed(boolean isPressed)
 	{
+		filteredPress = (!pressed && isPressed);
 		pressed = isPressed;
 	}
 }
