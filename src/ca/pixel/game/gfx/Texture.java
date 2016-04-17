@@ -9,9 +9,11 @@ import javax.imageio.ImageIO;
 public class Texture
 {
 	/** The Hexadecimal colour code to replace with alpha. */
-	private static final String ALPHA_COLOUR_HEX = "0xFF00FF";
+	private static final String ALPHA_COLOUR_HEX1 = "0xFF00FF"; // Light purple
+	private static final String ALPHA_COLOUR_HEX2 = "0x7F007F"; // Dark purple
 	/** The RGB integer to replace with alpha. */
-	public static final int ALPHA_COLOUR = new Color(Integer.valueOf(ALPHA_COLOUR_HEX.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX.substring(6, 8), 16)).getRGB(); // 0xFF00FF, -65281
+	public static final int ALPHA_COLOUR1 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX1.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(6, 8), 16)).getRGB(); 
+	public static final int ALPHA_COLOUR2 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX2.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX2.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX2.substring(6, 8), 16)).getRGB();
 	
 	private int[] pixels;
 	private int width;
@@ -268,7 +270,7 @@ public class Texture
 					int inPixel = toDraw.pixels[inX + ix + ((inY + iy) * toDraw.width)];
 					
 					// If the RGB int is the default for alpha, don't draw it, if it isn't, then draw it
-					if (inPixel != ALPHA_COLOUR) pixels[x + ix + ((y + iy) * width)] = inPixel;
+					if (inPixel != ALPHA_COLOUR1 && inPixel != ALPHA_COLOUR2) pixels[x + ix + ((y + iy) * width)] = inPixel;
 				}
 				
 				// Original method for drawing from one pixel array to another.

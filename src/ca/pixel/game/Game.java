@@ -18,9 +18,9 @@ public class Game extends Canvas implements Runnable
 {
 	private static final long serialVersionUID = 1L;
 	
-	public static final int WIDTH = 160;
+	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
-	public static final int SCALE = 5;
+	public static final int SCALE = 1;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	
 	private JFrame frame;
@@ -31,7 +31,6 @@ public class Game extends Canvas implements Runnable
 	public boolean running = false;
 	public int tickCount = 0;
 	
-	private Texture player = Assets.sheet1.getSubTexture(0, 0, 8, 16);
 	public InputHandler input = new InputHandler(this);
 	
 	public Game()
@@ -47,9 +46,44 @@ public class Game extends Canvas implements Runnable
 		
 		frame.add(this, BorderLayout.CENTER);
 		frame.pack();
-		frame.setResizable(false);
+		// frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+	}
+	
+	@Override
+	public void validate()
+	{
+		super.validate();
+		
+		resizeGame(this.getWidth(), this.getHeight());
+	}
+	
+	/**
+	 * Operation to perform to resize the game, keeping the aspect ratio.
+	 * 
+	 * @param windowWidth the new desired width.
+	 * @param windowHeight the new desired height.
+	 */
+	public void resizeGame(int windowWidth, int windowHeight)
+	{
+		int newWidth = 0;
+		int newHeight = 0;
+		
+		// If what the drawn height should be based on the width goes off screen
+		if (windowWidth / 16 * 9 > windowHeight)
+		{
+			newWidth = windowHeight / 9 * 16;
+			newHeight = windowHeight;
+		}
+		else // Else do the height based on the width
+		{
+			newWidth = windowWidth;
+			newHeight = windowWidth / 16 * 9;
+		}
+		
+		// Resizes the canvas to match the new window size, keeping it centred.
+		setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
 	}
 	
 	public synchronized void start()
@@ -81,7 +115,7 @@ public class Game extends Canvas implements Runnable
 			long now = System.nanoTime();
 			delta += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			boolean shouldRender = true; // true for unlimited frames, false for limited to tick rate
+			boolean shouldRender = false; // true for unlimited frames, false for limited to tick rate
 			
 			while (delta >= 1)
 			{
@@ -150,7 +184,7 @@ public class Game extends Canvas implements Runnable
 		image.getGraphics().setColor(Color.WHITE);
 		image.getGraphics().fillRect(0, 0, getWidth(), getHeight());
 		
-		Texture drawPlayer = player.clone();
+		Texture drawPlayer = Assets.player.clone();
 		// drawPlayer.rotate180();
 		
 		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 20, "CANCER:");

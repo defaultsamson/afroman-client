@@ -10,4 +10,5 @@ public class Assets
 	
 	public static final Font font_normal = new Font(fonts.getSubTexture(0, 0, 256, 32));
 	
+	public static final Texture player = sheet1.getSubTexture(0, 0, 16, 16);
 }
