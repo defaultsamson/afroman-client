@@ -4,15 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
+import ca.pixel.game.assets.Assets;
 import ca.pixel.game.gfx.Texture;
-import ca.pixel.game.gfx.TextureSheet;
 
 public class Game extends Canvas implements Runnable
 {
@@ -21,7 +21,7 @@ public class Game extends Canvas implements Runnable
 	public static final int WIDTH = 160;
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 5;
-	public static final String NAME = "Cancer";
+	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	
 	private JFrame frame;
 	
@@ -31,8 +31,7 @@ public class Game extends Canvas implements Runnable
 	public boolean running = false;
 	public int tickCount = 0;
 	
-	private TextureSheet blocks = new TextureSheet("/spritesheet.png");
-	private Texture player = blocks.getSubTexture(0, 0, 8, 16);
+	private Texture player = Assets.sheet1.getSubTexture(0, 0, 8, 16);
 	public InputHandler input = new InputHandler(this);
 	
 	public Game()
@@ -142,11 +141,26 @@ public class Game extends Canvas implements Runnable
 		}
 	}
 	
-	private int xPos = 0;
-	private int yPos = 0;
+	private int xPos = (WIDTH / 2) - 4;
+	private int yPos = 60;
 	
 	public void render()
 	{
+		// Clears the canvas
+		image.getGraphics().setColor(Color.WHITE);
+		image.getGraphics().fillRect(0, 0, getWidth(), getHeight());
+		
+		Texture drawPlayer = player.clone();
+		// drawPlayer.rotate180();
+		
+		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 20, "CANCER:");
+		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 35, "The Adventures of");
+		Assets.font_normal.renderCentered(pixels, WIDTH / 2, 45, "Afro Man");
+		
+		pixels.draw(drawPlayer, xPos, yPos);
+		
+		// Renders everything that was just drawn
+		
 		BufferStrategy bs = getBufferStrategy();
 		if (bs == null)
 		{
@@ -154,15 +168,9 @@ public class Game extends Canvas implements Runnable
 			return;
 		}
 		
-		Graphics g = bs.getDrawGraphics();
-		
-		image.getGraphics().setColor(Color.WHITE);
-		image.getGraphics().fillRect(0, 0, getWidth(), getHeight());
-		
-		pixels.draw(player, xPos, yPos);
-		
+		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
+		// g.rotate(Math.toRadians(1), WIDTH /2, HEIGHT/2);
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
-		
 		g.dispose();
 		bs.show();
 	}
@@ -171,5 +179,4 @@ public class Game extends Canvas implements Runnable
 	{
 		new Game().start();
 	}
-	
 }
