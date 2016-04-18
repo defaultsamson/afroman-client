@@ -60,10 +60,10 @@ public class Level
 				switch (getTile(x, y).getMaterial())
 				{
 					case GRASS:
-						renderTo.draw(Assets.grass, (x * 8) - xOffset, (y * 8) - yOffset);
+						renderTo.draw(Assets.grass.getTexture(0), (x * 16) - xOffset, (y * 16) - yOffset);
 						break;
 					case STONE:
-						renderTo.draw(Assets.stone, (x * 8) - xOffset, (y * 8) - yOffset);
+						renderTo.draw(Assets.stone, (x * 16) - xOffset, (y * 16) - yOffset);
 						break;
 					case VOID:
 						break;

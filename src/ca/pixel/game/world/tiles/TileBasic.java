@@ -16,5 +16,4 @@ public class TileBasic extends Tile
 	{
 		
 	}
-	
 }

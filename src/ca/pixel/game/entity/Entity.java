@@ -48,7 +48,7 @@ public class Entity
 	
 	public void render(Texture renderTo)
 	{
-		renderTo.draw(texture, x - level.getCameraXOffset(), y - level.getCameraYOffset());
+		renderTo.draw(this.getTexture(), x - level.getCameraXOffset(), y - level.getCameraYOffset());
 	}
 	
 	public void move(int xa, int ya)

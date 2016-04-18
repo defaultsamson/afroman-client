@@ -1,5 +1,7 @@
 package ca.pixel.game.gfx;
 
+import java.util.Random;
+
 public class TextureArray
 {
 	/** Holds the textures for each character. */
@@ -34,7 +36,6 @@ public class TextureArray
 	 */
 	public TextureArray(Texture sheet, int xColumns, int yRows, int width, int height)
 	{
-		
 		textures = new Texture[xColumns * yRows];
 		
 		for (int y = 0; y < yRows; y++)
@@ -49,5 +50,20 @@ public class TextureArray
 	public Texture getTexture(int index)
 	{
 		return textures[index];
+	}
+	
+	public int length()
+	{
+		return textures.length;
+	}
+	
+	public Texture getRandomTexture()
+	{
+		return getTexture(new Random().nextInt(length()));
+	}
+	
+	public Texture getRandomTexture(int xSeed, int ySeed)
+	{
+		return getTexture(new Random(xSeed << 16 + ySeed).nextInt(length()));
 	}
 }
