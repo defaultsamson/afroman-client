@@ -15,7 +15,9 @@ import java.awt.image.DataBufferInt;
 import javax.swing.JFrame;
 
 import ca.pixel.game.assets.Assets;
+import ca.pixel.game.entity.PlayerEntity;
 import ca.pixel.game.gfx.Texture;
+import ca.pixel.game.input.InputHandler;
 import ca.pixel.game.world.Level;
 
 public class Game extends Canvas implements Runnable
@@ -24,7 +26,7 @@ public class Game extends Canvas implements Runnable
 	
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
-	public static final int SCALE = 5;
+	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	
 	private JFrame frame;
@@ -39,6 +41,7 @@ public class Game extends Canvas implements Runnable
 	
 	public InputHandler input = new InputHandler(this);
 	public Level blankLevel = new Level(64, 64);
+	public PlayerEntity player = new PlayerEntity(blankLevel, 100, 200, 1, input);
 	
 	public Game()
 	{
@@ -56,6 +59,8 @@ public class Game extends Canvas implements Runnable
 		frame.setResizable(true);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+		
+		player.setCameraToFollow(true);
 	}
 	
 	@Override
@@ -164,23 +169,6 @@ public class Game extends Canvas implements Runnable
 	{
 		tickCount++;
 		
-		if (input.up.isPressed())
-		{
-			yPos--;
-		}
-		if (input.down.isPressed())
-		{
-			yPos++;
-		}
-		if (input.left.isPressed())
-		{
-			xPos--;
-		}
-		if (input.right.isPressed())
-		{
-			xPos++;
-		}
-		
 		if (input.full_screen.isPressedFiltered())
 		{
 			System.out.println("Pressed");
@@ -189,12 +177,8 @@ public class Game extends Canvas implements Runnable
 			setFullScreen(!fullscreen);
 		}
 		
-		blankLevel.setCameraCenteredInWorld(xPos, yPos);
 		blankLevel.tick();
 	}
-	
-	private int xPos = (WIDTH / 2) - 8;
-	private int yPos = 60;
 	
 	public void render()
 	{
@@ -202,18 +186,19 @@ public class Game extends Canvas implements Runnable
 		image.getGraphics().setColor(Color.WHITE);
 		image.getGraphics().fillRect(0, 0, getWidth(), getHeight());
 		
-		Texture drawPlayer = Assets.player.clone();
-		// drawPlayer.rotate180();
-		
 		blankLevel.render(screen);
 		
-		Assets.font_normal.renderCentered(screen, WIDTH / 2, 20, "CANCER:");
-		Assets.font_normal.renderCentered(screen, WIDTH / 2, 35, "The Adventures of");
-		Assets.font_normal.renderCentered(screen, WIDTH / 2, 45, "Afro Man");
+		// screen.draw(Assets.player, (WIDTH / 2) - 8, 60);
 		
-		
-		
-		screen.draw(drawPlayer, xPos, yPos);
+		if (this.tickCount < 240)
+		{
+			int xPos = (WIDTH / 2);
+			int yPos = 120;
+			
+			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
+			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
+			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
+		}
 		
 		// Renders everything that was just drawn
 		
@@ -239,7 +224,8 @@ public class Game extends Canvas implements Runnable
 		
 		System.out.println("Setting Fullscreen: " + isFullScreen);
 		
-		/* This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
+		/*
+		 * This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
 		 * http://stackoverflow.com/questions/13064607/fullscreen-swing-components-fail-to-receive-keyboard-input-on-java-7-on-mac-os-x
 		 */
 		if (isFullScreen)
@@ -249,7 +235,7 @@ public class Game extends Canvas implements Runnable
 			frame.setUndecorated(true);
 			frame.setVisible(true);
 			frame.revalidate();
-			frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+			this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 			try
 			{
 				gd.setFullScreenWindow(frame);// Makes it full screen
@@ -261,7 +247,7 @@ public class Game extends Canvas implements Runnable
 				// }
 				
 				this.repaint();
-	            this.revalidate();
+				this.revalidate();
 			}
 			catch (Exception e)
 			{

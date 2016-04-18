@@ -10,7 +10,7 @@ public class TileBasic extends Tile
 	{
 		super(material, isSolid, isEmitter);
 	}
-
+	
 	@Override
 	public void render(Texture renderTo, Level level, int x, int y)
 	{

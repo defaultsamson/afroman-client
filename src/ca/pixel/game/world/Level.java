@@ -1,13 +1,18 @@
 package ca.pixel.game.world;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ca.pixel.game.Game;
 import ca.pixel.game.assets.Assets;
+import ca.pixel.game.entity.Entity;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.tiles.Tile;
 
 public class Level
 {
 	private Tile[] tiles;
+	private List<Entity> entities;
 	public int width;
 	public int height;
 	public int xOffset = 0;
@@ -35,16 +40,19 @@ public class Level
 				}
 			}
 		}
+		
+		entities = new ArrayList<Entity>();
 	}
 	
-	public void setCameraCenteredInWorld(int x, int y)
+	public void setCameraCenterInWorld(int x, int y)
 	{
-		xOffset = (Game.WIDTH / 2) - x;
-		yOffset = (Game.HEIGHT / 2) - y;
+		xOffset = x - (Game.WIDTH / 2);
+		yOffset = y - (Game.HEIGHT / 2);
 	}
 	
 	public void render(Texture renderTo)
 	{
+		// Renders Tiles
 		for (int y = 0; y < height; y++)
 		{
 			for (int x = 0; x < height; x++)
@@ -62,11 +70,29 @@ public class Level
 				}
 			}
 		}
+		
+		for (Entity entity : entities)
+		{
+			entity.render(renderTo);
+		}
 	}
 	
 	public void tick()
 	{
-		
+		for (Entity entity : entities)
+		{
+			entity.tick();
+		}
+	}
+	
+	public int getCameraXOffset()
+	{
+		return xOffset;
+	}
+	
+	public int getCameraYOffset()
+	{
+		return yOffset;
 	}
 	
 	public Tile getTile(int x, int y)
@@ -79,5 +105,10 @@ public class Level
 		}
 		
 		return tiles[x + (y * width)];
+	}
+	
+	public void addEntity(Entity entity)
+	{
+		entities.add(entity);
 	}
 }

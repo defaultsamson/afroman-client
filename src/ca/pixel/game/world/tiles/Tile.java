@@ -13,7 +13,6 @@ public abstract class Tile
 	public static final Tile STONE = new TileBasic(Material.STONE, true, false);
 	public static final Tile GRASS = new TileBasic(Material.GRASS, false, false);
 	
-	
 	protected Material material;
 	protected boolean solid;
 	protected boolean emitter;
