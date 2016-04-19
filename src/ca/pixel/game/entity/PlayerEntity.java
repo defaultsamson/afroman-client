@@ -10,7 +10,7 @@ public class PlayerEntity extends Entity
 	
 	public PlayerEntity(Level level, int x, int y, int speed, InputHandler input)
 	{
-		super(level, Assets.player, x, y, 16, 16, speed);
+		super(level, Assets.playerUp, Assets.playerDown, Assets.playerLeft, Assets.playerRight, x, y, 16, 16, speed);
 		
 		this.input = input;
 	}

@@ -1,6 +1,7 @@
 package ca.pixel.game.assets;
 
 import ca.pixel.game.gfx.Font;
+import ca.pixel.game.gfx.SpriteAnimation;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.gfx.TextureArray;
 
@@ -13,6 +14,11 @@ public class Assets
 	
 	// public static final Texture player = sheet1.getSubTexture(0, 0, 16, 16);
 	public static final TextureArray player = new TextureArray(sheet1.getSubTexture(0, 0, 16 * 3, 16 * 4), 3, 4, 16, 16);
+	
+	public static final SpriteAnimation playerUp = new SpriteAnimation(true, 15, player.getTexture(9), player.getTexture(10), player.getTexture(11));
+	public static final SpriteAnimation playerLeft = new SpriteAnimation(true, 15, player.getTexture(3), player.getTexture(4), player.getTexture(5));
+	public static final SpriteAnimation playerRight = new SpriteAnimation(true, 15, player.getTexture(6), player.getTexture(7), player.getTexture(8));
+	public static final SpriteAnimation playerDown = new SpriteAnimation(true, 15, player.getTexture(0), player.getTexture(1), player.getTexture(2));
 	
 	// public static final Texture grass = sheet1.getSubTexture(48, 0, 16, 16);
 	public static final TextureArray grass = new TextureArray(sheet1.getSubTexture(48, 0, 16 * 6, 16 * 1), 6, 1, 16, 16);

@@ -52,6 +52,11 @@ public class TextureArray
 		return textures[index];
 	}
 	
+	public Texture[] getTexturs(int index)
+	{
+		return textures;
+	}
+	
 	public int length()
 	{
 		return textures.length;

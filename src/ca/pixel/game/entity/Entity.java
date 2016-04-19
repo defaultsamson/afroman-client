@@ -1,7 +1,7 @@
 package ca.pixel.game.entity;
 
+import ca.pixel.game.gfx.SpriteAnimation;
 import ca.pixel.game.gfx.Texture;
-import ca.pixel.game.gfx.TextureArray;
 import ca.pixel.game.world.Level;
 
 public class Entity
@@ -14,26 +14,33 @@ public class Entity
 	protected Direction direction = Direction.NONE;
 	protected Level level;
 	protected boolean cameraFollow = false;
-	protected TextureArray textures;
-	protected Texture currentTexture;
+	protected SpriteAnimation[] sprites;
 	protected int animationIndex;
 	
 	public Entity(Level level, Texture texture, int x, int y, int width, int height, int speed)
 	{
-		this(level, new TextureArray(texture, 1, 1), x, y, width, height, speed);
+		this(level, texture, texture, texture, texture, x, y, width, height, speed);
 	}
 	
-	public Entity(Level level, TextureArray texture, int x, int y, int width, int height, int speed)
+	public Entity(Level level, Texture texture1, Texture texture2, Texture texture3, Texture texture4, int x, int y, int width, int height, int speed)
+	{
+		this(level, new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), x, y, width, height, speed);
+	}
+	
+	public Entity(Level level, SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, int x, int y, int width, int height, int speed)
 	{
 		this.level = level;
-		this.textures = texture;
+		this.sprites = new SpriteAnimation[4];
+		this.sprites[0] = up;
+		this.sprites[1] = down;
+		this.sprites[2] = left;
+		this.sprites[3] = right;
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.speed = speed;
 		this.originalSpeed = speed;
-		this.currentTexture = texture.getRandomTexture();
 		level.addEntity(this);
 	}
 	
@@ -54,7 +61,10 @@ public class Entity
 			level.setCameraCenterInWorld(x + (width / 2), y + (height / 2));
 		}
 		
-		updateTexture();
+		for (SpriteAnimation sprite : sprites)
+		{
+			sprite.tick();
+		}
 	}
 	
 	public void render(Texture renderTo)
@@ -108,98 +118,21 @@ public class Entity
 		return false;
 	}
 	
-	public void updateTexture()
+	public Texture getTexture()
 	{
-		animationIndex++;
-		
-		if (animationIndex >= 60)
-		{
-			animationIndex = 0;
-		}
-		
 		switch (direction)
 		{
 			default:
 			case UP:
-				if (animationIndex <= 15)
-				{
-					currentTexture = textures.getTexture(9);
-				}
-				else if (animationIndex <= 30)
-				{
-					currentTexture = textures.getTexture(10);
-				}
-				else if (animationIndex <= 45)
-				{
-					currentTexture = textures.getTexture(11);
-				}
-				else if (animationIndex <= 60)
-				{
-					currentTexture = textures.getTexture(10);
-				}
-				break;
+				return sprites[0].getCurrentFrame();
 			case DOWN:
-				if (animationIndex <= 15)
-				{
-					currentTexture = textures.getTexture(0);
-				}
-				else if (animationIndex <= 30)
-				{
-					currentTexture = textures.getTexture(1);
-				}
-				else if (animationIndex <= 45)
-				{
-					currentTexture = textures.getTexture(2);
-				}
-				else if (animationIndex <= 60)
-				{
-					currentTexture = textures.getTexture(1);
-				}
-				break;
+				return sprites[1].getCurrentFrame();
 			case LEFT:
-				if (animationIndex <= 15)
-				{
-					currentTexture = textures.getTexture(3);
-				}
-				else if (animationIndex <= 30)
-				{
-					currentTexture = textures.getTexture(4);
-				}
-				else if (animationIndex <= 45)
-				{
-					currentTexture = textures.getTexture(5);
-				}
-				else if (animationIndex <= 60)
-				{
-					currentTexture = textures.getTexture(4);
-				}
-				break;
+				return sprites[2].getCurrentFrame();
 			case RIGHT:
-				if (animationIndex <= 15)
-				{
-					currentTexture = textures.getTexture(6);
-				}
-				else if (animationIndex <= 30)
-				{
-					currentTexture = textures.getTexture(7);
-				}
-				else if (animationIndex <= 45)
-				{
-					currentTexture = textures.getTexture(8);
-				}
-				else if (animationIndex <= 60)
-				{
-					currentTexture = textures.getTexture(7);
-				}
-				break;
+				return sprites[3].getCurrentFrame();
 			case NONE:
-				
-				break;
+				return sprites[0].getCurrentFrame();
 		}
-	}
-	
-	public Texture getTexture()
-	{
-		return currentTexture;
 	}
 }
