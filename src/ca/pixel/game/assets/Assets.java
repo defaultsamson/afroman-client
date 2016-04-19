@@ -20,6 +20,11 @@ public class Assets
 	public static final SpriteAnimation playerRight = new SpriteAnimation(true, 15, player.getTexture(6), player.getTexture(7), player.getTexture(8));
 	public static final SpriteAnimation playerDown = new SpriteAnimation(true, 15, player.getTexture(0), player.getTexture(1), player.getTexture(2));
 	
+	public static final SpriteAnimation playerIdleUp = new SpriteAnimation(true, 0, player.getTexture(10));
+	public static final SpriteAnimation playerIdleLeft = new SpriteAnimation(true, 0, player.getTexture(4));
+	public static final SpriteAnimation playerIdleRight = new SpriteAnimation(true, 0, player.getTexture(7));
+	public static final SpriteAnimation playerIdleDown = new SpriteAnimation(true, 0, player.getTexture(1));
+	
 	// public static final Texture grass = sheet1.getSubTexture(48, 0, 16, 16);
 	public static final TextureArray grass = new TextureArray(sheet1.getSubTexture(48, 0, 16 * 6, 16 * 1), 6, 1, 16, 16);
 	public static final Texture stone = sheet1.getSubTexture(48, 16, 16, 16);
