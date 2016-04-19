@@ -15,9 +15,9 @@ public class Texture
 	public static final int ALPHA_COLOUR1 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX1.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX1.substring(6, 8), 16)).getRGB();
 	public static final int ALPHA_COLOUR2 = new Color(Integer.valueOf(ALPHA_COLOUR_HEX2.substring(2, 4), 16), Integer.valueOf(ALPHA_COLOUR_HEX2.substring(4, 6), 16), Integer.valueOf(ALPHA_COLOUR_HEX2.substring(6, 8), 16)).getRGB();
 	
-	private int[] pixels;
-	private int width;
-	private int height;
+	protected int[] pixels;
+	protected int width;
+	protected int height;
 	
 	public Texture(int[] pixels, int width, int height)
 	{

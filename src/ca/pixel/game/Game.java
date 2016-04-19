@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.entity.PlayerEntity;
+import ca.pixel.game.gfx.LightMap;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.input.InputHandler;
 import ca.pixel.game.world.Level;
@@ -33,6 +34,7 @@ public class Game extends Canvas implements Runnable
 	
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private Texture screen = new Texture(((DataBufferInt) image.getRaster().getDataBuffer()).getData(), WIDTH, HEIGHT);
+	private LightMap lightmap = new LightMap(WIDTH, HEIGHT);
 	
 	private boolean fullscreen = false;
 	
@@ -127,7 +129,7 @@ public class Game extends Canvas implements Runnable
 			long now = System.nanoTime();
 			delta += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			boolean shouldRender = false; // true for unlimited frames, false for limited to tick rate
+			boolean shouldRender = true; // true for unlimited frames, false for limited to tick rate
 			
 			while (delta >= 1)
 			{
@@ -200,15 +202,23 @@ public class Game extends Canvas implements Runnable
 			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		}
 		
-		// Renders everything that was just drawn
+		lightmap.clear();
 		
+		lightmap.drawLight(WIDTH / 2, HEIGHT / 2, 200);
+		lightmap.drawLight(WIDTH / 2 + 20, HEIGHT / 2 + 20, 200);
+
+		lightmap.patch();
+		lightmap.render(screen, 0, 0);
+		
+		
+		
+		// Renders everything that was just drawn
 		BufferStrategy bs = getBufferStrategy();
 		if (bs == null)
 		{
 			createBufferStrategy(3);
 			return;
 		}
-		
 		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
 		// g.rotate(Math.toRadians(1), WIDTH /2, HEIGHT/2);
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
