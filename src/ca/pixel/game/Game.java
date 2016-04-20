@@ -38,6 +38,9 @@ public class Game extends Canvas implements Runnable
 	
 	public boolean running = false;
 	public int tickCount = 0;
+	public boolean debug = true; // Shows debug information on the hud
+	public int tps = 0;
+	public int fps = 0;
 	
 	public InputHandler input = new InputHandler(this);
 	public Level blankLevel = new Level(64, 64);
@@ -53,6 +56,8 @@ public class Game extends Canvas implements Runnable
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
+		
+		frame.getContentPane().setBackground(Color.black);
 		
 		frame.add(this, BorderLayout.CENTER);
 		frame.pack();
@@ -157,7 +162,8 @@ public class Game extends Canvas implements Runnable
 			// If current time - the last time we updated is >= 1 second
 			if (System.currentTimeMillis() - lastTimer >= 1000)
 			{
-				System.out.println("(TPS: " + ticks + ", FPS: " + frames + ")");
+				tps = ticks;
+				fps = frames;
 				lastTimer += 1000;
 				frames = 0;
 				ticks = 0;
@@ -171,10 +177,14 @@ public class Game extends Canvas implements Runnable
 		
 		if (input.full_screen.isPressedFiltered())
 		{
-			System.out.println("Pressed");
-			
 			// Toggles Fullscreen Mode
 			setFullScreen(!fullscreen);
+		}
+		if (input.debug.isPressedFiltered())
+		{
+			debug = !debug;
+			
+			System.out.println("Debug Mode: " + debug);
 		}
 		
 		blankLevel.tick();
@@ -200,11 +210,19 @@ public class Game extends Canvas implements Runnable
 			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		}
 		
+		if (debug)
+		{
+			Assets.font_normal.render(screen, 1, 0, "TPS: " + tps);
+			Assets.font_normal.render(screen, 1, 10, "FPS: " + fps);
+			Assets.font_normal.render(screen, 1, 20, "x: " + player.getX());
+			Assets.font_normal.render(screen, 1, 30, "y: " + player.getY());
+		}
+		
 		// Renders everything that was just drawn
 		BufferStrategy bs = getBufferStrategy();
 		if (bs == null)
 		{
-			createBufferStrategy(3);
+			createBufferStrategy(2);
 			return;
 		}
 		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());

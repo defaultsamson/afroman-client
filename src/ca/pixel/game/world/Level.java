@@ -47,7 +47,11 @@ public class Level
 			}
 		}
 		
-		lights.add(new PointLight(20, 20, 20));
+		lights.add(new PointLight(60, 150, 250));
+		lights.add(new PointLight(140, 170, 50));
+		lights.add(new PointLight(20, 240, 200));
+		lights.add(new PointLight(40, 250, 100));
+		lights.add(new PointLight(0, 700, 2000));
 	}
 	
 	public void setCameraCenterInWorld(int x, int y)

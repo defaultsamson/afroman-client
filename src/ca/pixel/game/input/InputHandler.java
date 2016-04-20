@@ -2,21 +2,37 @@ package ca.pixel.game.input;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.pixel.game.Game;
 
 public class InputHandler implements KeyListener
 {
-	public Key up = new Key();
-	public Key down = new Key();
-	public Key left = new Key();
-	public Key right = new Key();
+	private List<Key> keys = new ArrayList<Key>();
 	
-	public Key full_screen = new Key();
+	public Key up = new Key(KeyEvent.VK_UP, KeyEvent.VK_W);
+	public Key down = new Key(KeyEvent.VK_DOWN, KeyEvent.VK_S);
+	public Key left = new Key(KeyEvent.VK_LEFT, KeyEvent.VK_A);
+	public Key right = new Key(KeyEvent.VK_RIGHT, KeyEvent.VK_D);
+	
+	public Key full_screen = new Key(KeyEvent.VK_F11);
+	public Key debug = new Key(KeyEvent.VK_F12);
+	
+	public Key e = new Key(KeyEvent.VK_E);
+	public Key q = new Key(KeyEvent.VK_Q);
 	
 	public InputHandler(Game game)
 	{
 		game.addKeyListener(this);
+		keys.add(up);
+		keys.add(down);
+		keys.add(left);
+		keys.add(right);
+		keys.add(full_screen);
+		keys.add(debug);
+		keys.add(e);
+		keys.add(q);
 	}
 	
 	@Override
@@ -39,27 +55,9 @@ public class InputHandler implements KeyListener
 	
 	public void toggleKey(int keyCode, boolean isPressed)
 	{
-		switch (keyCode)
+		for (Key key : keys)
 		{
-			case KeyEvent.VK_W:
-			case KeyEvent.VK_UP:
-				up.setPressed(isPressed);
-				break;
-			case KeyEvent.VK_S:
-			case KeyEvent.VK_DOWN:
-				down.setPressed(isPressed);
-				break;
-			case KeyEvent.VK_A:
-			case KeyEvent.VK_LEFT:
-				left.setPressed(isPressed);
-				break;
-			case KeyEvent.VK_D:
-			case KeyEvent.VK_RIGHT:
-				right.setPressed(isPressed);
-				break;
-			case KeyEvent.VK_F11:
-				full_screen.setPressed(isPressed);
-				break;
+			key.update(keyCode, isPressed);
 		}
 	}
 }

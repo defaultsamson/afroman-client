@@ -5,7 +5,7 @@ import ca.pixel.game.world.Level;
 
 public abstract class Entity
 {
-	public int x, y, width, height;
+	protected int x, y, width, height;
 	protected int speed;
 	protected final int originalSpeed;
 	protected int numSteps = 0;
@@ -101,5 +101,15 @@ public abstract class Entity
 	public boolean hasCollided(int xa, int ya)
 	{
 		return false;
+	}
+	
+	public int getX()
+	{
+		return x;
+	}
+	
+	public int getY()
+	{
+		return y;
 	}
 }
