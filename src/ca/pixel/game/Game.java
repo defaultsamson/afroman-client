@@ -16,7 +16,6 @@ import javax.swing.JFrame;
 
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.entity.PlayerEntity;
-import ca.pixel.game.gfx.LightMap;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.input.InputHandler;
 import ca.pixel.game.world.Level;
@@ -34,7 +33,6 @@ public class Game extends Canvas implements Runnable
 	
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private Texture screen = new Texture(((DataBufferInt) image.getRaster().getDataBuffer()).getData(), WIDTH, HEIGHT);
-	private LightMap lightmap = new LightMap(WIDTH, HEIGHT);
 	
 	private boolean fullscreen = false;
 	
@@ -201,16 +199,6 @@ public class Game extends Canvas implements Runnable
 			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
 			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		}
-		
-		lightmap.clear();
-		
-		lightmap.drawLight(WIDTH / 2, HEIGHT / 2, 200);
-		lightmap.drawLight(WIDTH / 2 + 20, HEIGHT / 2 + 20, 200);
-
-		lightmap.patch();
-		lightmap.render(screen, 0, 0);
-		
-		
 		
 		// Renders everything that was just drawn
 		BufferStrategy bs = getBufferStrategy();

@@ -4,7 +4,7 @@ import ca.pixel.game.assets.Assets;
 import ca.pixel.game.input.InputHandler;
 import ca.pixel.game.world.Level;
 
-public class PlayerEntity extends Entity
+public class PlayerEntity extends SpriteEntity
 {
 	private InputHandler input;
 	

@@ -4,10 +4,10 @@ public class LightMap extends Texture
 {
 	public static final int AMBIENT_COLOUR = 0x646464;
 	private static final int BUFFER_WASTE = 0x0000FF;
-	private static final int WHITE = 0xFFFFFF;
-	private static final float WHITE_NORMAL_R = normaliseRGB((WHITE & 0xFF0000) >> 16);
-	private static final float WHITE_NORMAL_G = normaliseRGB((WHITE & 0xFF00) >> 8);
-	private static final float WHITE_NORMAL_B = normaliseRGB(WHITE & 0xFF);
+	protected static final int WHITE = 0xFFFFFF;
+	protected static final float WHITE_NORMAL_R = normaliseRGB((WHITE & 0xFF0000) >> 16);
+	protected static final float WHITE_NORMAL_G = normaliseRGB((WHITE & 0xFF00) >> 8);
+	protected static final float WHITE_NORMAL_B = normaliseRGB(WHITE & 0xFF);
 	
 	public LightMap(int width, int height)
 	{
@@ -16,6 +16,8 @@ public class LightMap extends Texture
 	
 	public void render(Texture toDrawTo, int x, int y)
 	{
+		patch();
+		
 		// Loop over pixels within light radius
 		for (int iy = 0; iy < height; iy++)
 		{
@@ -39,16 +41,6 @@ public class LightMap extends Texture
 				toDrawTo.pixels[ix + (iy * toDrawTo.width)] = (0xff << 24) | (r << 16) | (g << 8) | (b);
 			}
 		}
-	}
-	
-	public void drawLight(int x, int y, int radius)
-	{
-		drawLight(x, y, radius, 1.0F, 0xFFFFFF);
-	}
-	
-	public void drawLight(int x, int y, int radius, float intensity)
-	{
-		drawLight(x, y, radius, intensity, 0xFFFFFF);
 	}
 	
 	public void drawLight(int x, int y, int radius, float intensity, int colour)
@@ -99,13 +91,13 @@ public class LightMap extends Texture
 		}
 	}
 	
-	private static float normaliseRGB(float rgbValue)
+	public static float normaliseRGB(float rgbValue)
 	{
 		// Picks a value that's less than or equal to 1.0 and 0.0
 		return (float) Math.max(Math.min((rgbValue / 255), 1.0), 0.0);
 	}
 	
-	private static int normalToRGB(float rgbValue)
+	public static int normalToRGB(float rgbValue)
 	{
 		return Math.round(rgbValue * 255);
 	}
@@ -129,7 +121,7 @@ public class LightMap extends Texture
 		}
 	}
 	
-	private static int[] getBlankSlate(int width, int height)
+	public static int[] getBlankSlate(int width, int height)
 	{
 		int[] toReturn = new int[width * height];
 		

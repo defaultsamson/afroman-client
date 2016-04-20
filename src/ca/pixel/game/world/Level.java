@@ -6,6 +6,7 @@ import java.util.List;
 import ca.pixel.game.Game;
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.entity.Entity;
+import ca.pixel.game.gfx.LightMap;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.tiles.Tile;
 
@@ -17,6 +18,8 @@ public class Level
 	public int height;
 	public int xOffset = 0;
 	public int yOffset = 0;
+	private LightMap lightmap = new LightMap(Game.WIDTH, Game.HEIGHT);
+	private List<PointLight> lights;
 	
 	public Level(int width, int height)
 	{
@@ -24,6 +27,9 @@ public class Level
 		
 		this.width = height;
 		this.height = height;
+		
+		entities = new ArrayList<Entity>();
+		lights = new ArrayList<PointLight>();
 		
 		// Initializes the level.
 		for (int y = 0; y < height; y++)
@@ -41,7 +47,7 @@ public class Level
 			}
 		}
 		
-		entities = new ArrayList<Entity>();
+		lights.add(new PointLight(20, 20, 20));
 	}
 	
 	public void setCameraCenterInWorld(int x, int y)
@@ -75,6 +81,16 @@ public class Level
 		{
 			entity.render(renderTo);
 		}
+		
+		// Draws all the lighting over everything else
+		lightmap.clear();
+		
+		for (PointLight light : lights)
+		{
+			lightmap.drawLight(light.getX() - xOffset, light.getY() - yOffset, light.getRadius(), light.getIntensity(), light.getColour());
+		}
+		
+		lightmap.render(renderTo, 0, 0);
 	}
 	
 	public void tick()
