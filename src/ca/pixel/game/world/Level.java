@@ -47,11 +47,12 @@ public class Level
 			}
 		}
 		
-		lights.add(new PointLight(60, 150, 250));
-		lights.add(new PointLight(140, 170, 50));
-		lights.add(new PointLight(20, 240, 200));
-		lights.add(new PointLight(40, 250, 100));
-		lights.add(new PointLight(0, 700, 2000));
+		lights.add(new PointLight(60, 150, 10, 1));
+		lights.add(new PointLight(140, 170, 20, 1));
+		lights.add(new PointLight(20, 240, 20, 1));
+		lights.add(new PointLight(40, 260, 20, 1, 1.0F, 0xBAECB6));
+		lights.add(new PointLight(0, 700, 120, 1, 1.0F));
+		
 	}
 	
 	public void setCameraCenterInWorld(int x, int y)
@@ -91,10 +92,19 @@ public class Level
 		
 		for (PointLight light : lights)
 		{
-			lightmap.drawLight(light.getX() - xOffset, light.getY() - yOffset, light.getRadius(), light.getIntensity(), light.getColour());
+			int xDraw = light.getX() - xOffset;
+			int yDraw = light.getY() - yOffset;
+			
+			// TODO move this into the PointLight class
+			lightmap.drawLight(xDraw, yDraw, light.getRadius());
+			// lightmap.drawLight(xDraw, yDraw, light.getRadius(), light.getIntensity(), light.getColour());
 		}
 		
-		lightmap.render(renderTo, 0, 0);
+		lightmap.patch();
+		
+		renderTo.draw(lightmap, 0, 0);
+		
+		// lightmap.render(renderTo, 0, 0);
 	}
 	
 	public void tick()

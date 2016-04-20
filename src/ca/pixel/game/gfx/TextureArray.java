@@ -19,7 +19,7 @@ public class TextureArray
 	 */
 	public TextureArray(Texture sheet, int xColumns, int yRows)
 	{
-		this(sheet, xColumns, xColumns, sheet.getWidth() / xColumns, sheet.getHeight() / yRows);
+		this(sheet, xColumns, yRows, sheet.getWidth() / xColumns, sheet.getHeight() / yRows);
 	}
 	
 	/**
@@ -52,7 +52,7 @@ public class TextureArray
 		return textures[index];
 	}
 	
-	public Texture[] getTexturs(int index)
+	public Texture[] getTextures(int index)
 	{
 		return textures;
 	}

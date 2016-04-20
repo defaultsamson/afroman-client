@@ -1,112 +1,83 @@
 package ca.pixel.game.gfx;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.RadialGradientPaint;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+
 public class LightMap extends Texture
 {
-	public static final int AMBIENT_COLOUR = 0x646464;
-	private static final int BUFFER_WASTE = 0x0000FF;
-	protected static final int WHITE = 0xFFFFFF;
-	protected static final float WHITE_NORMAL_R = normaliseRGB((WHITE & 0xFF0000) >> 16);
-	protected static final float WHITE_NORMAL_G = normaliseRGB((WHITE & 0xFF00) >> 8);
-	protected static final float WHITE_NORMAL_B = normaliseRGB(WHITE & 0xFF);
-	
 	public LightMap(int width, int height)
 	{
-		super(getBlankSlate(width, height), width, height);
+		super(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB));
 	}
 	
-	public void render(Texture toDrawTo, int x, int y)
+	/** The fractions for the shadow gradient, going from 1.0 (transparent) to 0.0 (black). */
+	protected final static float[] GRADIENT_FRACTIONS = new float[] { 0.0F, 1.0F };
+	
+	/** The colors for the shadow, going from transparent to black. */
+	protected final static Color[] GRADIENT_COLORS = new Color[] { ColourUtil.TRANSPARENT, ColourUtil.AMBIENT_COLOUR };
+	
+	public void drawLight(int x, int y, int radius)
 	{
-		patch();
+		int width = radius * 2;
+		int height = width;
 		
-		// Loop over pixels within light radius
-		for (int iy = 0; iy < height; iy++)
+		if (x + width > 0 && y + height > 0 && x < getWidth() && y < getHeight())
 		{
-			for (int ix = 0; ix < width; ix++)
+			BufferedImage lightTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			
+			// Polygon shape = new RegularPolygon(x, y, width, 10);
+			Rectangle2D shape = new Rectangle2D.Float(0, 0, width, height);
+			// Rectangle2D is more efficient than Ellipse2D
+			
+			final Paint GRADIENT_PAINT = new RadialGradientPaint(new Point2D.Float(radius, radius), radius, GRADIENT_FRACTIONS, GRADIENT_COLORS);
+			
+			// getGraphics().draw(shape);
+			
+			// Fills the circle with the gradient
+			Graphics2D graphics = lightTexture.createGraphics();
+			graphics.setPaint(GRADIENT_PAINT);
+			graphics.fill(shape);
+			
+			// Loop over pixels within light radius
+			for (int iy = 0; iy < height; iy++)
 			{
-				int screenPixel = toDrawTo.pixels[ix + (iy * toDrawTo.width)];
-				int lightmapPixel = pixels[ix + (iy * width)];
-				
-				float oldR = normaliseRGB((screenPixel & 0xff0000) >> 16);
-				float oldG = normaliseRGB((screenPixel & 0xff00) >> 8);
-				float oldB = normaliseRGB((screenPixel & 0xff));
-				
-				float newR = normaliseRGB((lightmapPixel & 0xff0000) >> 16);
-				float newG = normaliseRGB((lightmapPixel & 0xff00) >> 8);
-				float newB = normaliseRGB((lightmapPixel & 0xff));
-				
-				int r = normalToRGB(oldR * newR);
-				int g = normalToRGB(oldG * newG);
-				int b = normalToRGB(oldB * newB);
-				
-				toDrawTo.pixels[ix + (iy * toDrawTo.width)] = (0xff << 24) | (r << 16) | (g << 8) | (b);
-			}
-		}
-	}
-	
-	public void drawLight(int x, int y, int radius, float intensity, int colour)
-	{
-		// Loop over pixels within light radius
-		for (int iy = y - radius * 2; iy < y + radius * 2; iy++)
-		{
-			for (int ix = x - radius * 2; ix < x + radius * 2; ix++)
-			{
-				// If out of bounds, continue
-				if (ix < 0 || iy < 0 || ix >= this.width || iy >= this.height) continue;
-				
-				// Finds the distance
-				float dist = (float) Math.sqrt(((ix - x) * (ix - x)) + ((iy - y) * (iy - y)));
-				
-				int current = pixels[ix + (iy * width)];
-				
-				/*
-				 * The old colour to overlay this on (Essentially the brightest colour)
-				 * int old = WHITE;
-				 * float oldR = normaliseRGB((old & 0xFF0000) >> 16);
-				 * float oldG = normaliseRGB((old & 0xFF00) >> 8);
-				 * float oldB = normaliseRGB(old & 0xFF);
-				 */
-				
-				// The function that dictates the intensity of the rays as the light gets farther and farther away
-				float amplitude = radius / (dist * dist);
-				
-				// A 0.0 to 1.0 value for each rgb colour for multiplying
-				float lightR = normaliseRGB(((colour & 0xFF0000) >> 16) * amplitude);
-				float lightG = normaliseRGB(((colour & 0xFF00) >> 8) * amplitude);
-				float lightB = normaliseRGB((colour & 0xFF) * amplitude);
-				
-				// A 0 to 255 value for the rgb colours
-				int newR = normalToRGB((WHITE_NORMAL_R * lightR) * intensity);
-				int newG = normalToRGB((WHITE_NORMAL_G * lightG) * intensity);
-				int newB = normalToRGB((WHITE_NORMAL_B * lightB) * intensity);
-				
-				// Gets the new colour as one RBG integer
-				int newColour = (newR << 16) | (newG << 8) | newB;
-				
-				// Only set the pixel to it if the new colour doesn't go below the ambient colour.
-				if (newColour > AMBIENT_COLOUR && newColour > current) 
+				for (int ix = 0; ix < width; ix++)
 				{
-					pixels[ix + (iy * this.width)] = newColour;
+					int lightMapX = x + ix;
+					int lightMapY = y + iy;
+					
+					// If it's off-screen, don't try to render it.
+					if (lightMapX < 0 || lightMapY < 0 || lightMapX >= image.getWidth() || lightMapY >= image.getHeight()) continue;
+					
+					int lightPixel = lightTexture.getRGB(ix, iy);
+					int lightmapPixel = image.getRGB(lightMapX, lightMapY);
+					
+					// Only set the pixel to it if the new colour doesn't go below the ambient colour.
+					
+					if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+					{
+						image.setRGB(lightMapX, lightMapY, lightPixel);
+					}
 				}
 			}
+			
+			lightTexture.flush();
 		}
-	}
-	
-	public static float normaliseRGB(float rgbValue)
-	{
-		// Picks a value that's less than or equal to 1.0 and 0.0
-		return (float) Math.max(Math.min((rgbValue / 255), 1.0), 0.0);
-	}
-	
-	public static int normalToRGB(float rgbValue)
-	{
-		return Math.round(rgbValue * 255);
 	}
 	
 	public void clear()
 	{
-		for (int i = 0; i < pixels.length; i++)
+		for (int y = 0; y < image.getHeight(); ++y)
 		{
-			pixels[i] = BUFFER_WASTE;
+			for (int x = 0; x < image.getWidth(); ++x)
+			{
+				image.setRGB(x, y, ColourUtil.BUFFER_WASTE);
+			}
 		}
 	}
 	
@@ -115,21 +86,12 @@ public class LightMap extends Texture
 	 */
 	public void patch()
 	{
-		for (int i = 0; i < pixels.length; i++)
+		for (int y = 0; y < image.getHeight(); ++y)
 		{
-			if (pixels[i] == BUFFER_WASTE) pixels[i] = AMBIENT_COLOUR;
+			for (int x = 0; x < image.getWidth(); ++x)
+			{
+				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE) image.setRGB(x, y, ColourUtil.AMBIENT_COLOUR.getRGB());
+			}
 		}
-	}
-	
-	public static int[] getBlankSlate(int width, int height)
-	{
-		int[] toReturn = new int[width * height];
-		
-		for (int i = 0; i < toReturn.length; i++)
-		{
-			toReturn[i] = 0xFFFFFFFF;
-		}
-		
-		return toReturn;
 	}
 }

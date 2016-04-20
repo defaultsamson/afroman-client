@@ -79,7 +79,7 @@ public class SpriteEntity extends Entity
 				}
 		}
 	}
-
+	
 	@Override
 	public void render(Texture renderTo)
 	{

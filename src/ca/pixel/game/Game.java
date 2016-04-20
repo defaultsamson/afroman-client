@@ -10,7 +10,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
@@ -31,8 +30,7 @@ public class Game extends Canvas implements Runnable
 	
 	private JFrame frame;
 	
-	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-	private Texture screen = new Texture(((DataBufferInt) image.getRaster().getDataBuffer()).getData(), WIDTH, HEIGHT);
+	private Texture screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 	
 	private boolean fullscreen = false;
 	
@@ -193,12 +191,10 @@ public class Game extends Canvas implements Runnable
 	public void render()
 	{
 		// Clears the canvas
-		image.getGraphics().setColor(Color.WHITE);
-		image.getGraphics().fillRect(0, 0, getWidth(), getHeight());
+		screen.getGraphics().setColor(Color.WHITE);
+		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
 		
 		blankLevel.render(screen);
-		
-		// screen.draw(Assets.player, (WIDTH / 2) - 8, 60);
 		
 		if (this.tickCount < 240)
 		{
@@ -227,7 +223,7 @@ public class Game extends Canvas implements Runnable
 		}
 		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
 		// g.rotate(Math.toRadians(1), WIDTH /2, HEIGHT/2);
-		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
+		g.drawImage(screen.getImage(), 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
 		bs.show();
 	}
