@@ -6,6 +6,7 @@ import java.util.List;
 import ca.pixel.game.Game;
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.entity.Entity;
+import ca.pixel.game.gfx.ColourUtil;
 import ca.pixel.game.gfx.LightMap;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.tiles.Tile;
@@ -19,6 +20,7 @@ public class Level
 	public int xOffset = 0;
 	public int yOffset = 0;
 	private LightMap lightmap = new LightMap(Game.WIDTH, Game.HEIGHT);
+	private PointLight playerLight = new PointLight(60, 150, 50, 1);
 	private List<PointLight> lights;
 	
 	public Level(int width, int height)
@@ -47,10 +49,12 @@ public class Level
 			}
 		}
 		
+		lights.add(playerLight);
+		
 		lights.add(new PointLight(60, 150, 10, 1));
 		lights.add(new PointLight(140, 170, 20, 1));
 		lights.add(new PointLight(20, 240, 20, 1));
-		lights.add(new PointLight(40, 260, 20, 1, 1.0F, 0xBAECB6));
+		lights.add(new PointLight(40, 260, 20, 1, 1.0F, ColourUtil.fromHex("0x00BAECB6")));
 		lights.add(new PointLight(0, 700, 120, 1, 1.0F));
 		
 	}
@@ -92,11 +96,10 @@ public class Level
 		
 		for (PointLight light : lights)
 		{
-			int xDraw = light.getX() - xOffset;
-			int yDraw = light.getY() - yOffset;
+			light.renderCentered(lightmap, xOffset, yOffset);
 			
 			// TODO move this into the PointLight class
-			lightmap.drawLight(xDraw, yDraw, light.getRadius());
+			// lightmap.drawLight(xDraw, yDraw, light.getRadius());
 			// lightmap.drawLight(xDraw, yDraw, light.getRadius(), light.getIntensity(), light.getColour());
 		}
 		
@@ -113,6 +116,9 @@ public class Level
 		{
 			entity.tick();
 		}
+		
+		playerLight.setX(Game.instance().player.getX() + 8);
+		playerLight.setY(Game.instance().player.getY() + 8);
 	}
 	
 	public int getCameraXOffset()

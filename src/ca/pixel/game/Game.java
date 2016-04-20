@@ -21,6 +21,12 @@ import ca.pixel.game.world.Level;
 
 public class Game extends Canvas implements Runnable
 {
+	private static Game game;
+	public static Game instance()
+	{
+		return game;
+	}
+	
 	private static final long serialVersionUID = 1L;
 	
 	public static final int WIDTH = 240;
@@ -284,6 +290,7 @@ public class Game extends Canvas implements Runnable
 	
 	public static void main(String[] args)
 	{
-		new Game().start();
+		game = new Game();
+		game.start();
 	}
 }
