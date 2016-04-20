@@ -15,9 +15,6 @@ public class LightMap extends Texture
 		super(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB));
 	}
 	
-	/** The fractions for the shadow gradient, going from 1.0 (transparent) to 0.0 (black). */
-	protected final static float[] GRADIENT_FRACTIONS = new float[] { 0.0F, 1.0F };
-	
 	public void drawLight(int x, int y, int radius, Color rgbColour)
 	{
 		int width = radius * 2;
@@ -32,7 +29,8 @@ public class LightMap extends Texture
 			// Rectangle2D is more efficient than Ellipse2D
 			
 			Color[] gradientColours = new Color[] { rgbColour, ColourUtil.AMBIENT_COLOUR };
-			Paint paint = new RadialGradientPaint(new Point2D.Float(radius, radius), radius, GRADIENT_FRACTIONS, gradientColours);
+			float[] gradientFractions = new float[] { 0.0F, 1.0F };
+			Paint paint = new RadialGradientPaint(new Point2D.Float(radius, radius), radius, gradientFractions, gradientColours);
 			
 			// getGraphics().draw(shape);
 			

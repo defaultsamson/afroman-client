@@ -1,37 +1,37 @@
-package ca.pixel.game.world;
+package ca.pixel.game.gfx;
 
 import java.awt.Color;
 
-import ca.pixel.game.gfx.ColourUtil;
-import ca.pixel.game.gfx.LightMap;
-
 public class PointLight
 {
-	private int x;
-	private int y;
-	private int radius;
-	private int resolution;
-	private float intensity;
-	private Color colour;
+	protected int x;
+	protected int y;
+	protected int radius;
+	protected float intensity;
+	protected Color colour;
 	
-	public PointLight(int x, int y, int radius, int resolution)
+	public PointLight(int x, int y, int radius)
 	{
-		this(x, y, radius, resolution, 1.0F);
+		this(x, y, radius, 1.0F);
 	}
 	
-	public PointLight(int x, int y, int radius, int resolution, float intensity)
+	public PointLight(int x, int y, int radius, float intensity)
 	{
-		this(x, y, radius, resolution, intensity, ColourUtil.TRANSPARENT);
+		this(x, y, radius, intensity, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(int x, int y, int radius, int resolution, float intensity, Color colour)
+	public PointLight(int x, int y, int radius, float intensity, Color colour)
 	{
 		this.x = x;
 		this.y = y;
 		this.radius = radius;
 		this.intensity = intensity;
-		this.resolution = resolution;
 		this.colour = colour;
+	}
+	
+	public void tick()
+	{
+		
 	}
 	
 	public void renderCentered(LightMap renderTo, int xOffset, int yOffset)
@@ -72,11 +72,6 @@ public class PointLight
 	public int getRadius()
 	{
 		return radius;
-	}
-	
-	public int getResolution()
-	{
-		return resolution;
 	}
 	
 	public float getIntensity()

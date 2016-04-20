@@ -6,8 +6,9 @@ import java.util.List;
 import ca.pixel.game.Game;
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.entity.Entity;
-import ca.pixel.game.gfx.ColourUtil;
+import ca.pixel.game.gfx.FlickeringLight;
 import ca.pixel.game.gfx.LightMap;
+import ca.pixel.game.gfx.PointLight;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.tiles.Tile;
 
@@ -20,7 +21,7 @@ public class Level
 	public int xOffset = 0;
 	public int yOffset = 0;
 	private LightMap lightmap = new LightMap(Game.WIDTH, Game.HEIGHT);
-	private PointLight playerLight = new PointLight(60, 150, 50, 1);
+	private PointLight playerLight = new FlickeringLight(60, 150, 50, 47, 4);
 	private List<PointLight> lights;
 	
 	public Level(int width, int height)
@@ -51,11 +52,16 @@ public class Level
 		
 		lights.add(playerLight);
 		
-		lights.add(new PointLight(60, 150, 10, 1));
-		lights.add(new PointLight(140, 170, 20, 1));
-		lights.add(new PointLight(20, 240, 20, 1));
-		lights.add(new PointLight(40, 260, 20, 1, 1.0F, ColourUtil.fromHex("0x00BAECB6")));
-		lights.add(new PointLight(0, 700, 120, 1, 1.0F));
+		lights.add(new PointLight(60, 150, 10));
+		
+		for (int x = 0; x < 30; x++)
+			for (int y = 0; y < 30; y++)
+				lights.add(new PointLight((x * 15) + 500, (y * 15) + 500, 20));
+				
+		lights.add(new PointLight(140, 170, 20));
+		lights.add(new PointLight(20, 240, 20));
+		lights.add(new PointLight(40, 260, 20));
+		lights.add(new PointLight(0, 700, 120));
 		
 	}
 	
@@ -97,17 +103,11 @@ public class Level
 		for (PointLight light : lights)
 		{
 			light.renderCentered(lightmap, xOffset, yOffset);
-			
-			// TODO move this into the PointLight class
-			// lightmap.drawLight(xDraw, yDraw, light.getRadius());
-			// lightmap.drawLight(xDraw, yDraw, light.getRadius(), light.getIntensity(), light.getColour());
 		}
 		
 		lightmap.patch();
 		
 		renderTo.draw(lightmap, 0, 0);
-		
-		// lightmap.render(renderTo, 0, 0);
 	}
 	
 	public void tick()
@@ -115,6 +115,11 @@ public class Level
 		for (Entity entity : entities)
 		{
 			entity.tick();
+		}
+		
+		for (PointLight light : lights)
+		{
+			light.tick();
 		}
 		
 		playerLight.setX(Game.instance().player.getX() + 8);
