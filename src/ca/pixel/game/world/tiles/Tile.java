@@ -10,8 +10,9 @@ public abstract class Tile
 {
 	public static final HashMap<Material, Tile> tiles = new HashMap<Material, Tile>();
 	public static final Tile VOID = new TileBasic(Material.VOID, false, false);
-	public static final Tile STONE = new TileBasic(Material.STONE, true, false);
+	public static final Tile STONE = new TileBasic(Material.STONE, false, false);
 	public static final Tile GRASS = new TileBasic(Material.GRASS, false, false);
+	public static final Tile WALL = new TileBasic(Material.WALL, true, false);
 	
 	protected Material material;
 	protected boolean solid;

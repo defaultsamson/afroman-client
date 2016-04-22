@@ -15,7 +15,7 @@ import ca.pixel.game.world.tiles.Tile;
 public class Level
 {
 	private Tile[] tiles;
-	private List<Entity> entities;
+	private List<LevelObject> entities;
 	public int width;
 	public int height;
 	public int xOffset = 0;
@@ -31,7 +31,7 @@ public class Level
 		this.width = height;
 		this.height = height;
 		
-		entities = new ArrayList<Entity>();
+		entities = new ArrayList<LevelObject>();
 		lights = new ArrayList<PointLight>();
 		
 		// Initializes the level.
@@ -42,6 +42,10 @@ public class Level
 				if (x * y % 10 < 5)// TODO Test generation. Feel free to replace
 				{
 					tiles[x + (y * width)] = Tile.GRASS;
+				}
+				else if (x * 13 / y % 13 < 4)// TODO Test generation. Feel free to replace
+				{
+					tiles[x + (y * width)] = Tile.WALL;
 				}
 				else
 				{
@@ -84,7 +88,10 @@ public class Level
 						renderTo.draw(Assets.grass.getTexture(0), (x * 16) - xOffset, (y * 16) - yOffset);
 						break;
 					case STONE:
-						renderTo.draw(Assets.stone, (x * 16) - xOffset, (y * 16) - yOffset);
+						renderTo.draw(Assets.dirt, (x * 16) - xOffset, (y * 16) - yOffset);
+						break;
+					case WALL:
+						renderTo.draw(Assets.wall, (x * 16) - xOffset, (y * 16) - yOffset);
 						break;
 					case VOID:
 						break;
@@ -92,7 +99,7 @@ public class Level
 			}
 		}
 		
-		for (Entity entity : entities)
+		for (LevelObject entity : entities)
 		{
 			entity.render(renderTo);
 		}
@@ -112,7 +119,7 @@ public class Level
 	
 	public void tick()
 	{
-		for (Entity entity : entities)
+		for (LevelObject entity : entities)
 		{
 			entity.tick();
 		}
@@ -148,8 +155,13 @@ public class Level
 		return tiles[x + (y * width)];
 	}
 	
-	public void addEntity(Entity entity)
+	public void addObject(Entity entity)
 	{
 		entities.add(entity);
+	}
+	
+	public List<LevelObject> getObjects()
+	{
+		return entities;
 	}
 }

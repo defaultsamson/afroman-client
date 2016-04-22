@@ -1,5 +1,7 @@
 package ca.pixel.game.entity;
 
+import java.awt.Rectangle;
+
 import ca.pixel.game.gfx.SpriteAnimation;
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.Level;
@@ -9,19 +11,19 @@ public class SpriteEntity extends Entity
 	protected SpriteAnimation[] sprites;
 	protected SpriteAnimation[] idleSprites;
 	
-	public SpriteEntity(Level level, Texture texture, int x, int y, int width, int height, int speed)
+	public SpriteEntity(Level level, Texture texture, int x, int y, int width, int height, int speed, Rectangle... hitboxes)
 	{
-		this(level, texture, texture, texture, texture, x, y, width, height, speed);
+		this(level, texture, texture, texture, texture, x, y, speed, hitboxes);
 	}
 	
-	public SpriteEntity(Level level, Texture texture1, Texture texture2, Texture texture3, Texture texture4, int x, int y, int width, int height, int speed)
+	public SpriteEntity(Level level, Texture texture1, Texture texture2, Texture texture3, Texture texture4, int x, int y, int speed, Rectangle... hitboxes)
 	{
-		this(level, new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), x, y, width, height, speed);
+		this(level, new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), x, y, speed, hitboxes);
 	}
 	
-	public SpriteEntity(Level level, SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, SpriteAnimation upIdle, SpriteAnimation downIdle, SpriteAnimation leftIdle, SpriteAnimation rightIdle, int x, int y, int width, int height, int speed)
+	public SpriteEntity(Level level, SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, SpriteAnimation upIdle, SpriteAnimation downIdle, SpriteAnimation leftIdle, SpriteAnimation rightIdle, int x, int y, int speed, Rectangle... hitboxes)
 	{
-		super(level, x, y, width, height, speed);
+		super(level, x, y, speed, hitboxes);
 		
 		this.sprites = new SpriteAnimation[4];
 		this.sprites[0] = up;
@@ -55,9 +57,9 @@ public class SpriteEntity extends Entity
 	{
 		switch (direction)
 		{
-			default:
 			case UP:
 				return sprites[0].getCurrentFrame();
+			default:
 			case DOWN:
 				return sprites[1].getCurrentFrame();
 			case LEFT:
@@ -67,9 +69,9 @@ public class SpriteEntity extends Entity
 			case NONE:
 				switch (lastDirection)
 				{
-					default:
 					case UP:
 						return idleSprites[0].getCurrentFrame();
+					default:
 					case DOWN:
 						return idleSprites[1].getCurrentFrame();
 					case LEFT:

@@ -1,30 +1,27 @@
 package ca.pixel.game.entity;
 
+import java.awt.Rectangle;
+
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.Level;
+import ca.pixel.game.world.LevelObject;
 
-public abstract class Entity
+public abstract class Entity extends LevelObject
 {
-	protected int x, y, width, height;
 	protected int speed;
 	protected final int originalSpeed;
 	protected int numSteps = 0;
 	protected boolean isMoving;
 	protected Direction direction = Direction.NONE;
 	protected Direction lastDirection = direction;
-	protected Level level;
 	protected boolean cameraFollow = false;
 	
-	public Entity(Level level, int x, int y, int width, int height, int speed)
+	public Entity(Level level, int x, int y, int speed, Rectangle... hitboxes)
 	{
-		this.level = level;
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
+		super(level, x, y, hitboxes);
 		this.speed = speed;
 		this.originalSpeed = speed;
-		level.addEntity(this);
+		level.addObject(this);
 	}
 	
 	/**
@@ -37,6 +34,7 @@ public abstract class Entity
 		cameraFollow = follow;
 	}
 	
+	@Override
 	public void tick()
 	{
 		if (cameraFollow)
@@ -45,11 +43,18 @@ public abstract class Entity
 		}
 	}
 	
+	public Level getLevel()
+	{
+		return level;
+	}
+	
+	@Override
 	public abstract void render(Texture renderTo);
 	
 	public void move(int xa, int ya)
 	{
 		/*
+		 * s
 		 * Does each component separately
 		 * if (xa != 0 && ya != 0)
 		 * {
@@ -58,9 +63,33 @@ public abstract class Entity
 		 * }
 		 */
 		
+		if (xa == 0 && ya == 0)
+		{
+			direction = Direction.NONE;
+			return;
+		}
+		
 		numSteps++;
 		
-		if (!hasCollided(xa, ya))
+		// Moves the obejct
+		int deltaX = xa * speed;
+		int deltaY = ya * speed;
+		x += deltaX;
+		y += deltaY;
+		
+		// Tests if it's allowed to move or not
+		boolean canMove = true;
+		for (LevelObject object : level.getObjects())
+		{
+			// Don't let it collide with itself
+			if (object != this && object.isColliding(this))
+			{
+				canMove = false;
+				break;
+			}
+		}
+		
+		if (canMove)
 		{
 			if (direction != Direction.NONE)
 			{
@@ -71,18 +100,19 @@ public abstract class Entity
 			if (ya > 0) direction = Direction.DOWN;
 			if (xa < 0) direction = Direction.LEFT;
 			if (xa > 0) direction = Direction.RIGHT;
-			x += xa * speed;
-			y += ya * speed;
-			
-			if (xa == 0 && ya == 0)
-			{
-				direction = Direction.NONE;
-			}
+			// Don't do this because we already did it earlier
+			// x += deltaX;
+			// y += deltaY;
 			
 			isMoving = true;
 		}
 		else
 		{
+			// Reverts the coordinates back to before it was colliding
+			x -= deltaX;
+			y -= deltaY;
+			
+			// Stops it from moving
 			direction = Direction.NONE;
 			isMoving = false;
 		}
@@ -96,20 +126,5 @@ public abstract class Entity
 	public void resetSpeed()
 	{
 		speed = originalSpeed;
-	}
-	
-	public boolean hasCollided(int xa, int ya)
-	{
-		return false;
-	}
-	
-	public int getX()
-	{
-		return x;
-	}
-	
-	public int getY()
-	{
-		return y;
 	}
 }
