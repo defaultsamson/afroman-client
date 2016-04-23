@@ -2,7 +2,7 @@ package ca.pixel.game.world.tiles;
 
 import java.awt.Rectangle;
 
-import ca.pixel.game.gfx.Texture;
+import ca.pixel.game.assets.Texture;
 import ca.pixel.game.world.Level;
 import ca.pixel.game.world.LevelObject;
 
@@ -14,16 +14,21 @@ public class Tile extends LevelObject
 	// public static final Tile GRASS = new TileBasic(Material.GRASS, false, false);
 	// public static final Tile WALL = new TileBasic(Material.WALL, true, false);
 	
+	protected Texture texture;
 	protected Material material;
-	protected boolean solid;
-	protected boolean emitter;
+	protected boolean isEmitter;
 	
-	public Tile(Level level, int x, int y, Material material, boolean isSolid, boolean isEmitter)
+	public Tile(Level level, int x, int y, Texture texture, Material material, boolean isEmitter, boolean isSolid)
 	{
-		super(level, x, y, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
+		this(level, x, y, texture, material, isEmitter, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
+	}
+	
+	public Tile(Level level, int x, int y, Texture texture, Material material, boolean isEmitter, Rectangle... hitboxes)
+	{
+		super(level, x, y, hitboxes);
 		this.material = material;
-		solid = isSolid;
-		emitter = isEmitter;
+		this.isEmitter = isEmitter;
+		this.texture = texture;
 		
 		// tiles.put(material, this);
 	}
@@ -33,20 +38,15 @@ public class Tile extends LevelObject
 		return material;
 	}
 	
-	public boolean isSolid()
-	{
-		return solid;
-	}
-	
 	public boolean isEmitter()
 	{
-		return emitter;
+		return isEmitter;
 	}
 	
 	@Override
 	public void render(Texture renderTo)
 	{
-		renderTo.draw(material.getTexture(), x - level.getCameraXOffset(), y - level.getCameraYOffset());
+		renderTo.draw(texture, x - level.getCameraXOffset(), y - level.getCameraYOffset());
 		
 		super.render(renderTo);
 	}
@@ -55,5 +55,10 @@ public class Tile extends LevelObject
 	public void tick()
 	{
 		
+	}
+	
+	public Texture getTexture()
+	{
+		return texture;
 	}
 }

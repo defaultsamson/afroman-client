@@ -2,8 +2,8 @@ package ca.pixel.game.entity;
 
 import java.awt.Rectangle;
 
-import ca.pixel.game.gfx.SpriteAnimation;
-import ca.pixel.game.gfx.Texture;
+import ca.pixel.game.assets.SpriteAnimation;
+import ca.pixel.game.assets.Texture;
 import ca.pixel.game.world.Level;
 
 public class SpriteEntity extends Entity

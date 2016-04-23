@@ -12,7 +12,7 @@ public class PlayerEntity extends SpriteEntity
 	
 	public PlayerEntity(Level level, int x, int y, int speed, InputHandler input)
 	{
-		super(level, Assets.playerUp, Assets.playerDown, Assets.playerLeft, Assets.playerRight, Assets.playerIdleUp, Assets.playerIdleDown, Assets.playerIdleLeft, Assets.playerIdleRight, x, y, speed, new Rectangle(3, 3, 10, 13));
+		super(level, Assets.getSpriteAnimation(Assets.PLAYER_UP), Assets.getSpriteAnimation(Assets.PLAYER_DOWN), Assets.getSpriteAnimation(Assets.PLAYER_LEFT), Assets.getSpriteAnimation(Assets.PLAYER_RIGHT), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_UP), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_DOWN), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_LEFT), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_RIGHT), x, y, speed, new Rectangle(3, 3, 10, 13));
 		
 		this.input = input;
 	}

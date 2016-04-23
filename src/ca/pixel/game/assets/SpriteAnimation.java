@@ -1,6 +1,6 @@
-package ca.pixel.game.gfx;
+package ca.pixel.game.assets;
 
-public class SpriteAnimation
+public class SpriteAnimation extends Asset
 {
 	/** Holds the textures for each frame. */
 	private Texture[] textures;

@@ -1,32 +1,95 @@
 package ca.pixel.game.assets;
 
-import ca.pixel.game.gfx.Font;
-import ca.pixel.game.gfx.SpriteAnimation;
-import ca.pixel.game.gfx.Texture;
-import ca.pixel.game.gfx.TextureArray;
+import java.util.HashMap;
 
-public class Assets
+public enum Assets
 {
-	public static final Texture sheet1 = Texture.fromResource("/spritesheet.png");
-	public static final Texture fonts = Texture.fromResource("/fonts.png");
+	SPRITESHEET,
+	FONTSHEET,
 	
-	public static final Font font_normal = new Font(fonts.getSubTexture(0, 0, 256, 32));
+	FONT_NORMAL,
+	RAW_PLAYER,
+	PLAYER_UP,
+	PLAYER_DOWN,
+	PLAYER_LEFT,
+	PLAYER_RIGHT,
+	PLAYER_IDLE_UP,
+	PLAYER_IDLE_DOWN,
+	PLAYER_IDLE_LEFT,
+	PLAYER_IDLE_RIGHT,
 	
-	// public static final Texture player = sheet1.getSubTexture(0, 0, 16, 16);
-	public static final TextureArray player = new TextureArray(sheet1.getSubTexture(0, 0, 16 * 3, 16 * 4), 3, 4, 16, 16);
+	TILE_GRASS,
+	TILE_DIRT,
+	TILE_WALL,
+	TILE_WALL_GRASS;
 	
-	public static final SpriteAnimation playerUp = new SpriteAnimation(true, 12, player.getTexture(9), player.getTexture(10), player.getTexture(11));
-	public static final SpriteAnimation playerLeft = new SpriteAnimation(true, 12, player.getTexture(3), player.getTexture(4), player.getTexture(5));
-	public static final SpriteAnimation playerRight = new SpriteAnimation(true, 12, player.getTexture(6), player.getTexture(7), player.getTexture(8));
-	public static final SpriteAnimation playerDown = new SpriteAnimation(true, 12, player.getTexture(0), player.getTexture(1), player.getTexture(2));
+	public static HashMap<Assets, Asset> assets = new HashMap<Assets, Asset>();
+	static
+	{
+		assets.put(SPRITESHEET, Texture.fromResource("/spritesheet.png"));
+		assets.put(FONTSHEET, Texture.fromResource("/fonts.png"));
+		
+		Texture sheet = Assets.getTexture(SPRITESHEET);
+		Texture font = Assets.getTexture(FONTSHEET);
+		
+		assets.put(FONT_NORMAL, new Font(font.getSubTexture(0, 0, 256, 32)));
+		assets.put(RAW_PLAYER, new TextureArray(sheet.getSubTexture(0, 0, 16 * 3, 16 * 4), 3, 4, 16, 16));
+		
+		TextureArray player = Assets.getTextureArray(RAW_PLAYER);
+		assets.put(PLAYER_UP, new SpriteAnimation(true, 12, player.getTexture(9), player.getTexture(10), player.getTexture(11)));
+		assets.put(PLAYER_DOWN, new SpriteAnimation(true, 12, player.getTexture(0), player.getTexture(1), player.getTexture(2)));
+		assets.put(PLAYER_LEFT, new SpriteAnimation(true, 12, player.getTexture(3), player.getTexture(4), player.getTexture(5)));
+		assets.put(PLAYER_RIGHT, new SpriteAnimation(true, 12, player.getTexture(6), player.getTexture(7), player.getTexture(8)));
+		assets.put(PLAYER_IDLE_UP, new SpriteAnimation(true, 0, player.getTexture(10)));
+		assets.put(PLAYER_IDLE_DOWN, new SpriteAnimation(true, 0, player.getTexture(1)));
+		assets.put(PLAYER_IDLE_LEFT, new SpriteAnimation(true, 0, player.getTexture(4)));
+		assets.put(PLAYER_IDLE_RIGHT, new SpriteAnimation(true, 0, player.getTexture(7)));
+		
+		assets.put(TILE_GRASS, sheet.getSubTexture(16 * 3, 16 * 0, 16, 16));
+		assets.put(TILE_DIRT, sheet.getSubTexture(16 * 3, 16 * 1, 16, 16));
+		assets.put(TILE_WALL, sheet.getSubTexture(16 * 4, 16 * 0, 16, 16));
+		assets.put(TILE_WALL_GRASS, sheet.getSubTexture(16 * 4, 16 * 1, 16, 16));
+	}
 	
-	public static final SpriteAnimation playerIdleUp = new SpriteAnimation(true, 0, player.getTexture(10));
-	public static final SpriteAnimation playerIdleLeft = new SpriteAnimation(true, 0, player.getTexture(4));
-	public static final SpriteAnimation playerIdleRight = new SpriteAnimation(true, 0, player.getTexture(7));
-	public static final SpriteAnimation playerIdleDown = new SpriteAnimation(true, 0, player.getTexture(1));
+	public static Font getFont(Assets asset)
+	{
+		Asset got = assets.get(asset);
+		
+		if (got instanceof Font)
+		{
+			return (Font) got;
+		}
+		
+		return null;
+	}
 	
-	// public static final Texture grass = sheet1.getSubTexture(48, 0, 16, 16);
-	public static final TextureArray grass = new TextureArray(sheet1.getSubTexture(48, 0, 16 * 6, 16 * 1), 6, 1, 16, 16);
-	public static final Texture dirt = sheet1.getSubTexture(48, 16, 16, 16);
-	public static final Texture wall = sheet1.getSubTexture(64, 16, 16, 16);
+	public static Texture getTexture(Assets asset)
+	{
+		Asset got = assets.get(asset);
+		if (got instanceof Texture)
+		{
+			return (Texture) got;
+		}
+		return null;
+	}
+	
+	public static TextureArray getTextureArray(Assets asset)
+	{
+		Asset got = assets.get(asset);
+		if (got instanceof TextureArray)
+		{
+			return (TextureArray) got;
+		}
+		return null;
+	}
+	
+	public static SpriteAnimation getSpriteAnimation(Assets asset)
+	{
+		Asset got = assets.get(asset);
+		if (got instanceof SpriteAnimation)
+		{
+			return (SpriteAnimation) got;
+		}
+		return null;
+	}
 }

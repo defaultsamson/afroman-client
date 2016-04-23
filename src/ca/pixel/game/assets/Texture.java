@@ -1,4 +1,4 @@
-package ca.pixel.game.gfx;
+package ca.pixel.game.assets;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -10,7 +10,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class Texture
+import ca.pixel.game.gfx.ColourUtil;
+
+public class Texture extends Asset
 {
 	protected BufferedImage image;
 	protected Graphics2D graphics;

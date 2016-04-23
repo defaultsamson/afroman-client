@@ -131,11 +131,27 @@ public abstract class Entity extends LevelObject
 			}
 		}
 		
-		if (deltaY < 0) direction = Direction.UP;
-		if (deltaY > 0) direction = Direction.DOWN;
-		if (deltaX < 0) direction = Direction.LEFT;
-		if (deltaX > 0) direction = Direction.RIGHT;
-		if (deltaX == 0 && deltaY == 0) direction = Direction.NONE;
+		if (direction != Direction.NONE) lastDirection = direction;
+		
+		// If not allowed to move
+		if (deltaX == 0 && deltaY == 0)
+		{
+			// Change the last direction so this entity faces in the direction that it tried to move in
+			
+			direction = Direction.NONE;
+			
+			if (ya < 0) lastDirection = Direction.UP;
+			if (ya > 0) lastDirection = Direction.DOWN;
+			if (xa < 0) lastDirection = Direction.LEFT;
+			if (xa > 0) lastDirection = Direction.RIGHT;
+		}
+		else
+		{
+			if (deltaY < 0) direction = Direction.UP;
+			if (deltaY > 0) direction = Direction.DOWN;
+			if (deltaX < 0) direction = Direction.LEFT;
+			if (deltaX > 0) direction = Direction.RIGHT;
+		}
 	}
 	
 	public void setSpeed(int speed)

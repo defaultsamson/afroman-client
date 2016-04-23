@@ -3,7 +3,7 @@ package ca.pixel.game.world;
 import java.awt.Rectangle;
 
 import ca.pixel.game.Game;
-import ca.pixel.game.gfx.Texture;
+import ca.pixel.game.assets.Texture;
 
 public abstract class LevelObject
 {

@@ -1,8 +1,8 @@
-package ca.pixel.game.gfx;
+package ca.pixel.game.assets;
 
 import java.util.Random;
 
-public class TextureArray
+public class TextureArray extends Asset
 {
 	/** Holds the textures for each character. */
 	private Texture[] textures;

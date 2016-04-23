@@ -14,8 +14,8 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 
 import ca.pixel.game.assets.Assets;
+import ca.pixel.game.assets.Texture;
 import ca.pixel.game.entity.PlayerEntity;
-import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.input.InputHandler;
 import ca.pixel.game.world.Level;
 
@@ -55,6 +55,8 @@ public class Game extends Canvas implements Runnable
 	
 	public Game()
 	{
+		Level.fromFile("/sauce.txt");
+		
 		setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
@@ -224,17 +226,17 @@ public class Game extends Canvas implements Runnable
 			int xPos = (WIDTH / 2);
 			int yPos = 120;
 			
-			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
-			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
-			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
+			Assets.getFont(Assets.FONT_NORMAL).renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
+			Assets.getFont(Assets.FONT_NORMAL).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
+			Assets.getFont(Assets.FONT_NORMAL).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		}
 		
 		if (hudDebug)
 		{
-			Assets.font_normal.render(screen, 1, 0, "TPS: " + tps);
-			Assets.font_normal.render(screen, 1, 10, "FPS: " + fps);
-			Assets.font_normal.render(screen, 1, 20, "x: " + player.getX());
-			Assets.font_normal.render(screen, 1, 30, "y: " + player.getY());
+			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 0, "TPS: " + tps);
+			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 10, "FPS: " + fps);
+			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 20, "x: " + player.getX());
+			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 30, "y: " + player.getY());
 		}
 		
 		// Renders everything that was just drawn

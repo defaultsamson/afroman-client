@@ -9,6 +9,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import ca.pixel.game.Game;
+import ca.pixel.game.assets.Texture;
 
 public class LightMap extends Texture
 {

@@ -1,4 +1,4 @@
-package ca.pixel.game.gfx;
+package ca.pixel.game.assets;
 
 public class Font extends TextureArray
 {
