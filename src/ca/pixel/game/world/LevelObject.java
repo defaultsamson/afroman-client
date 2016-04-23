@@ -2,6 +2,7 @@ package ca.pixel.game.world;
 
 import java.awt.Rectangle;
 
+import ca.pixel.game.Game;
 import ca.pixel.game.gfx.Texture;
 
 public abstract class LevelObject
@@ -15,50 +16,60 @@ public abstract class LevelObject
 	
 	public LevelObject(Level level, int x, int y, Rectangle... hitboxes)
 	{
-		// Instansiates to the first rectangle
-		int lowestX = hitboxes[0].x;
-		int highestX = lowestX + hitboxes[0].width;
-		int lowestY = hitboxes[0].y;
-		int highestY = lowestY + hitboxes[0].width;
+		this.width = 0;
+		this.height = 0;
 		
-		// Goes through all the hitboxes to find the maximum bounds
-		for (Rectangle rect : hitboxes)
+		// Instansiates to the first rectangle
+		if (hitboxes[0] != null)
 		{
-			if (rect.x < lowestX)
+			int lowestX = hitboxes[0].x;
+			int highestX = lowestX + hitboxes[0].width;
+			int lowestY = hitboxes[0].y;
+			int highestY = lowestY + hitboxes[0].height;
+			
+			// Goes through all the hitboxes to find the maximum bounds
+			for (Rectangle rect : hitboxes)
 			{
-				lowestX = rect.x;
-			}
-			if (rect.x + rect.width > highestX)
-			{
-				highestX = rect.x + rect.width;
+				if (rect.x < lowestX)
+				{
+					lowestX = rect.x;
+				}
+				if (rect.x + rect.width > highestX)
+				{
+					highestX = rect.x + rect.width;
+				}
+				
+				if (rect.y < lowestY)
+				{
+					lowestY = rect.y;
+				}
+				if (rect.y + rect.height > highestY)
+				{
+					highestY = rect.y + rect.height;
+				}
 			}
 			
-			if (rect.y < lowestY)
-			{
-				lowestY = rect.y;
-			}
-			if (rect.y + rect.height > highestY)
-			{
-				highestY = rect.y + rect.height;
-			}
-			
-			// Sets the new hitbox coordinates to in-world coordinates
-			rect.x += x;
-			rect.y += y;
+			this.width = highestX - lowestX;
+			this.height = highestY - lowestY;
 		}
 		
 		this.x = x;
 		this.y = y;
 		
-		this.width = highestX - lowestX;
-		this.height = highestY - lowestY;
 		this.level = level;
 		this.hitboxes = hitboxes;
 	}
 	
-	public static Rectangle rectToWorld(Rectangle rect, int objectX, int objectY)
+	public Rectangle[] hitboxInWorld()
 	{
-		return new Rectangle(rect.x + objectX, rect.y + objectY, rect.width, rect.height);
+		Rectangle[] boxes = new Rectangle[hitboxes.length];
+		
+		for (int i = 0; i < hitboxes.length; i++)
+		{
+			boxes[i] = new Rectangle(hitboxes[i].x + x, hitboxes[i].y + y, hitboxes[i].width, hitboxes[i].height);
+		}
+		
+		return boxes;
 	}
 	
 	public void setX(int newX)
@@ -81,6 +92,11 @@ public abstract class LevelObject
 		return y;
 	}
 	
+	public Level getLevel()
+	{
+		return level;
+	}
+	
 	/**
 	 * @return the width of the hitbox.
 	 */
@@ -99,12 +115,15 @@ public abstract class LevelObject
 	
 	public boolean isColliding(LevelObject other)
 	{
-		for (Rectangle oBox : other.hitboxes)
+		if (this.hasHitbox() && other.hasHitbox())
 		{
-			for (Rectangle box : hitboxes)
+			for (Rectangle box : this.hitboxInWorld())
 			{
-				// If the hitboxes are colliding in world
-				if (rectToWorld(oBox, other.x, other.y).intersects(rectToWorld(box, x, y))) return true;
+				for (Rectangle oBox : other.hitboxInWorld())
+				{
+					// If the hitboxes are colliding in world
+					if (oBox.intersects(box)) return true;
+				}
 			}
 		}
 		
@@ -113,5 +132,22 @@ public abstract class LevelObject
 	
 	public abstract void tick();
 	
-	public abstract void render(Texture renderTo);
+	public boolean hasHitbox()
+	{
+		return hitboxes[0] != null;
+	}
+	
+	public void render(Texture renderTo)
+	{
+		if (Game.instance().hitboxDebug)
+		{
+			if (this.hasHitbox())
+			{
+				for (Rectangle box : this.hitboxInWorld())
+				{
+					renderTo.getGraphics().drawRect(box.x - level.getCameraXOffset(), box.y - level.getCameraYOffset(), box.width - 1, box.height - 1);
+				}
+			}
+		}
+	}
 }

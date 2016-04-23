@@ -2,7 +2,6 @@ package ca.pixel.game.entity;
 
 import java.awt.Rectangle;
 
-import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.Level;
 import ca.pixel.game.world.LevelObject;
 
@@ -11,7 +10,6 @@ public abstract class Entity extends LevelObject
 	protected int speed;
 	protected final int originalSpeed;
 	protected int numSteps = 0;
-	protected boolean isMoving;
 	protected Direction direction = Direction.NONE;
 	protected Direction lastDirection = direction;
 	protected boolean cameraFollow = false;
@@ -43,14 +41,6 @@ public abstract class Entity extends LevelObject
 		}
 	}
 	
-	public Level getLevel()
-	{
-		return level;
-	}
-	
-	@Override
-	public abstract void render(Texture renderTo);
-	
 	public void move(int xa, int ya)
 	{
 		/*
@@ -74,48 +64,78 @@ public abstract class Entity extends LevelObject
 		// Moves the obejct
 		int deltaX = xa * speed;
 		int deltaY = ya * speed;
-		x += deltaX;
-		y += deltaY;
 		
-		// Tests if it's allowed to move or not
-		boolean canMove = true;
-		for (LevelObject object : level.getObjects())
+		// Tests if it can move in the x
 		{
-			// Don't let it collide with itself
-			if (object != this && object.isColliding(this))
+			x += deltaX;
+			
+			// Tests if it's allowed to move or not
+			boolean canMove = true;
+			for (LevelObject object : level.getObjects())
 			{
-				canMove = false;
-				break;
+				// Don't let it collide with itself
+				if (object != this && this.isColliding(object))
+				{
+					canMove = false;
+					break;
+				}
+			}
+			
+			for (LevelObject object : level.getTiles())
+			{
+				// Don't let it collide with itself
+				if (object != this && this.isColliding(object))
+				{
+					canMove = false;
+					break;
+				}
+			}
+			
+			if (!canMove)
+			{
+				x -= deltaX;
+				deltaX = 0;
 			}
 		}
 		
-		if (canMove)
+		// Tests if it can move Y
 		{
-			if (direction != Direction.NONE)
+			y += deltaY;
+			
+			// Tests if it's allowed to move or not
+			boolean canMove = true;
+			for (LevelObject object : level.getObjects())
 			{
-				lastDirection = direction;
+				// Don't let it collide with itself
+				if (object != this && this.isColliding(object))
+				{
+					canMove = false;
+					break;
+				}
 			}
 			
-			if (ya < 0) direction = Direction.UP;
-			if (ya > 0) direction = Direction.DOWN;
-			if (xa < 0) direction = Direction.LEFT;
-			if (xa > 0) direction = Direction.RIGHT;
-			// Don't do this because we already did it earlier
-			// x += deltaX;
-			// y += deltaY;
+			for (LevelObject object : level.getTiles())
+			{
+				// Don't let it collide with itself
+				if (object != this && this.isColliding(object))
+				{
+					canMove = false;
+					break;
+				}
+			}
 			
-			isMoving = true;
+			if (!canMove)
+			{
+				y -= deltaY;
+				deltaY = 0;
+			}
 		}
-		else
-		{
-			// Reverts the coordinates back to before it was colliding
-			x -= deltaX;
-			y -= deltaY;
-			
-			// Stops it from moving
-			direction = Direction.NONE;
-			isMoving = false;
-		}
+		
+		if (deltaY < 0) direction = Direction.UP;
+		if (deltaY > 0) direction = Direction.DOWN;
+		if (deltaX < 0) direction = Direction.LEFT;
+		if (deltaX > 0) direction = Direction.RIGHT;
+		if (deltaX == 0 && deltaY == 0) direction = Direction.NONE;
 	}
 	
 	public void setSpeed(int speed)
@@ -126,5 +146,10 @@ public abstract class Entity extends LevelObject
 	public void resetSpeed()
 	{
 		speed = originalSpeed;
+	}
+	
+	public boolean isMoving()
+	{
+		return direction != Direction.NONE;
 	}
 }

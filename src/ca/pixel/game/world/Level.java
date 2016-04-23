@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.pixel.game.Game;
-import ca.pixel.game.assets.Assets;
 import ca.pixel.game.entity.Entity;
 import ca.pixel.game.gfx.FlickeringLight;
 import ca.pixel.game.gfx.LightMap;
 import ca.pixel.game.gfx.PointLight;
 import ca.pixel.game.gfx.Texture;
+import ca.pixel.game.world.tiles.Material;
 import ca.pixel.game.world.tiles.Tile;
 
 public class Level
@@ -41,15 +41,15 @@ public class Level
 			{
 				if (x * y % 10 < 5)// TODO Test generation. Feel free to replace
 				{
-					tiles[x + (y * width)] = Tile.GRASS;
+					tiles[x + (y * width)] = new Tile(this, x * 16, y * 16, Material.GRASS, false, false);
 				}
 				else if (x * 13 / y % 13 < 4)// TODO Test generation. Feel free to replace
 				{
-					tiles[x + (y * width)] = Tile.WALL;
+					tiles[x + (y * width)] = new Tile(this, x * 16, y * 16, Material.WALL, true, false);
 				}
 				else
 				{
-					tiles[x + (y * width)] = Tile.STONE;
+					tiles[x + (y * width)] = new Tile(this, x * 16, y * 16, Material.STONE, false, false);
 				}
 			}
 		}
@@ -61,7 +61,7 @@ public class Level
 		for (int x = 0; x < 30; x++)
 			for (int y = 0; y < 30; y++)
 				lights.add(new PointLight((x * 15) + 500, (y * 15) + 500, 20));
-				
+		
 		lights.add(new PointLight(140, 170, 20));
 		lights.add(new PointLight(20, 240, 20));
 		lights.add(new PointLight(40, 260, 20));
@@ -78,25 +78,9 @@ public class Level
 	public void render(Texture renderTo)
 	{
 		// Renders Tiles
-		for (int y = 0; y < height; y++)
+		for (Tile tile : tiles)
 		{
-			for (int x = 0; x < height; x++)
-			{
-				switch (getTile(x, y).getMaterial())
-				{
-					case GRASS:
-						renderTo.draw(Assets.grass.getTexture(0), (x * 16) - xOffset, (y * 16) - yOffset);
-						break;
-					case STONE:
-						renderTo.draw(Assets.dirt, (x * 16) - xOffset, (y * 16) - yOffset);
-						break;
-					case WALL:
-						renderTo.draw(Assets.wall, (x * 16) - xOffset, (y * 16) - yOffset);
-						break;
-					case VOID:
-						break;
-				}
-			}
+			tile.render(renderTo);
 		}
 		
 		for (LevelObject entity : entities)
@@ -104,17 +88,20 @@ public class Level
 			entity.render(renderTo);
 		}
 		
-		// Draws all the lighting over everything else
-		lightmap.clear();
-		
-		for (PointLight light : lights)
+		if (!Game.instance().lightingDebug)
 		{
-			light.renderCentered(lightmap, xOffset, yOffset);
+			// Draws all the lighting over everything else
+			lightmap.clear();
+			
+			for (PointLight light : lights)
+			{
+				light.renderCentered(lightmap, xOffset, yOffset);
+			}
+			
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, 0, 0);
 		}
-		
-		lightmap.patch();
-		
-		renderTo.draw(lightmap, 0, 0);
 	}
 	
 	public void tick()
@@ -148,7 +135,7 @@ public class Level
 		// If off-screen
 		if (x < 0 || x > width || y < 0 || y > height)
 		{
-			return Tile.VOID;
+			return new Tile(this, 0, 0, Material.VOID, false, false);
 			// return new Tile(Material.VOID, false, false);
 		}
 		
@@ -163,5 +150,10 @@ public class Level
 	public List<LevelObject> getObjects()
 	{
 		return entities;
+	}
+	
+	public Tile[] getTiles()
+	{
+		return tiles;
 	}
 }

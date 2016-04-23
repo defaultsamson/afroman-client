@@ -1,30 +1,31 @@
 package ca.pixel.game.world.tiles;
 
-import java.util.HashMap;
+import java.awt.Rectangle;
 
 import ca.pixel.game.gfx.Texture;
 import ca.pixel.game.world.Level;
-import ca.pixel.game.world.Material;
+import ca.pixel.game.world.LevelObject;
 
-public abstract class Tile
+public class Tile extends LevelObject
 {
-	public static final HashMap<Material, Tile> tiles = new HashMap<Material, Tile>();
-	public static final Tile VOID = new TileBasic(Material.VOID, false, false);
-	public static final Tile STONE = new TileBasic(Material.STONE, false, false);
-	public static final Tile GRASS = new TileBasic(Material.GRASS, false, false);
-	public static final Tile WALL = new TileBasic(Material.WALL, true, false);
+	// public static final HashMap<Material, Tile> tiles = new HashMap<Material, Tile>();
+	// public static final Tile VOID = new TileBasic(Material.VOID, false, false);
+	// public static final Tile STONE = new TileBasic(Material.STONE, false, false);
+	// public static final Tile GRASS = new TileBasic(Material.GRASS, false, false);
+	// public static final Tile WALL = new TileBasic(Material.WALL, true, false);
 	
 	protected Material material;
 	protected boolean solid;
 	protected boolean emitter;
 	
-	public Tile(Material material, boolean isSolid, boolean isEmitter)
+	public Tile(Level level, int x, int y, Material material, boolean isSolid, boolean isEmitter)
 	{
+		super(level, x, y, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
 		this.material = material;
 		solid = isSolid;
 		emitter = isEmitter;
 		
-		tiles.put(material, this);
+		// tiles.put(material, this);
 	}
 	
 	public Material getMaterial()
@@ -42,5 +43,17 @@ public abstract class Tile
 		return emitter;
 	}
 	
-	public abstract void render(Texture renderTo, Level level, int x, int y);
+	@Override
+	public void render(Texture renderTo)
+	{
+		renderTo.draw(material.getTexture(), x - level.getCameraXOffset(), y - level.getCameraYOffset());
+		
+		super.render(renderTo);
+	}
+	
+	@Override
+	public void tick()
+	{
+		
+	}
 }

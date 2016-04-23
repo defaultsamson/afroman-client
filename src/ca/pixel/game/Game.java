@@ -21,13 +21,14 @@ import ca.pixel.game.world.Level;
 
 public class Game extends Canvas implements Runnable
 {
+	private static final long serialVersionUID = 1L;
+	
 	private static Game game;
+	
 	public static Game instance()
 	{
 		return game;
 	}
-	
-	private static final long serialVersionUID = 1L;
 	
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
@@ -42,7 +43,9 @@ public class Game extends Canvas implements Runnable
 	
 	public boolean running = false;
 	public int tickCount = 0;
-	public boolean debug = true; // Shows debug information on the hud
+	public boolean hudDebug = true; // Shows debug information on the hud
+	public boolean hitboxDebug = false; // Shows all hitboxes
+	public boolean lightingDebug = false; // Turns off the lighting engine
 	public int tps = 0;
 	public int fps = 0;
 	
@@ -184,11 +187,25 @@ public class Game extends Canvas implements Runnable
 			// Toggles Fullscreen Mode
 			setFullScreen(!fullscreen);
 		}
-		if (input.debug.isPressedFiltered())
+		if (input.hudDebug.isPressedFiltered())
 		{
-			debug = !debug;
+			hudDebug = !hudDebug;
 			
-			System.out.println("Debug Mode: " + debug);
+			System.out.println("Debug Hud: " + hudDebug);
+		}
+		
+		if (input.hitboxDebug.isPressedFiltered())
+		{
+			hitboxDebug = !hitboxDebug;
+			
+			System.out.println("Show Hitboxes: " + hitboxDebug);
+		}
+		
+		if (input.lightingDebug.isPressedFiltered())
+		{
+			lightingDebug = !lightingDebug;
+			
+			System.out.println("Show Lighting: " + !lightingDebug);
 		}
 		
 		blankLevel.tick();
@@ -212,7 +229,7 @@ public class Game extends Canvas implements Runnable
 			Assets.font_normal.renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		}
 		
-		if (debug)
+		if (hudDebug)
 		{
 			Assets.font_normal.render(screen, 1, 0, "TPS: " + tps);
 			Assets.font_normal.render(screen, 1, 10, "FPS: " + fps);

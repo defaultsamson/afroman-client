@@ -8,6 +8,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
+import ca.pixel.game.Game;
+
 public class LightMap extends Texture
 {
 	public LightMap(int width, int height)
@@ -32,10 +34,14 @@ public class LightMap extends Texture
 			float[] gradientFractions = new float[] { 0.0F, 1.0F };
 			Paint paint = new RadialGradientPaint(new Point2D.Float(radius, radius), radius, gradientFractions, gradientColours);
 			
-			// getGraphics().draw(shape);
-			
 			// Fills the circle with the gradient
 			Graphics2D graphics = lightTexture.createGraphics();
+			
+			if (Game.instance().hitboxDebug)
+			{
+				graphics.drawRect((int) shape.getX(), (int) shape.getY(), (int) shape.getWidth() - 1, (int) shape.getHeight() - 1);;
+			}
+			
 			graphics.setPaint(paint);
 			graphics.fill(shape);
 			

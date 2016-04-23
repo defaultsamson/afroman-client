@@ -86,5 +86,6 @@ public class SpriteEntity extends Entity
 	public void render(Texture renderTo)
 	{
 		renderTo.draw(this.getTexture(), x - level.getCameraXOffset(), y - level.getCameraYOffset());
+		super.render(renderTo);
 	}
 }

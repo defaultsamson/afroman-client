@@ -11,28 +11,22 @@ public class InputHandler implements KeyListener
 {
 	private List<Key> keys = new ArrayList<Key>();
 	
-	public Key up = new Key(KeyEvent.VK_UP, KeyEvent.VK_W);
-	public Key down = new Key(KeyEvent.VK_DOWN, KeyEvent.VK_S);
-	public Key left = new Key(KeyEvent.VK_LEFT, KeyEvent.VK_A);
-	public Key right = new Key(KeyEvent.VK_RIGHT, KeyEvent.VK_D);
+	public Key up = new Key(keys, KeyEvent.VK_UP, KeyEvent.VK_W);
+	public Key down = new Key(keys, KeyEvent.VK_DOWN, KeyEvent.VK_S);
+	public Key left = new Key(keys, KeyEvent.VK_LEFT, KeyEvent.VK_A);
+	public Key right = new Key(keys, KeyEvent.VK_RIGHT, KeyEvent.VK_D);
 	
-	public Key full_screen = new Key(KeyEvent.VK_F11);
-	public Key debug = new Key(KeyEvent.VK_F12);
+	public Key full_screen = new Key(keys, KeyEvent.VK_F11);
+	public Key hudDebug = new Key(keys, KeyEvent.VK_F1);
+	public Key hitboxDebug = new Key(keys, KeyEvent.VK_F2);
+	public Key lightingDebug = new Key(keys, KeyEvent.VK_F3);
 	
-	public Key e = new Key(KeyEvent.VK_E);
-	public Key q = new Key(KeyEvent.VK_Q);
+	public Key e = new Key(keys, KeyEvent.VK_E);
+	public Key q = new Key(keys, KeyEvent.VK_Q);
 	
 	public InputHandler(Game game)
 	{
 		game.addKeyListener(this);
-		keys.add(up);
-		keys.add(down);
-		keys.add(left);
-		keys.add(right);
-		keys.add(full_screen);
-		keys.add(debug);
-		keys.add(e);
-		keys.add(q);
 	}
 	
 	@Override

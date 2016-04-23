@@ -52,7 +52,7 @@ public class TextureArray
 		return textures[index];
 	}
 	
-	public Texture[] getTextures(int index)
+	public Texture[] getTextures()
 	{
 		return textures;
 	}

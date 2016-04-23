@@ -1,14 +1,18 @@
 package ca.pixel.game.input;
 
+import java.util.List;
+
 public class Key
 {
 	private boolean pressed = false;
 	private boolean filteredPress = false;
 	private int[] keyEvents;
 	
-	public Key(int... keyEvents)
+	public Key(List<Key> container, int... keyEvents)
 	{
 		this.keyEvents = keyEvents;
+		
+		container.add(this);
 	}
 	
 	/**
