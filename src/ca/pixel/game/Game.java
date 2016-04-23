@@ -50,12 +50,12 @@ public class Game extends Canvas implements Runnable
 	public int fps = 0;
 	
 	public InputHandler input = new InputHandler(this);
-	public Level blankLevel = new Level(64, 64);
+	public Level blankLevel = Level.fromFile("/level1.txt");
 	public PlayerEntity player = new PlayerEntity(blankLevel, 100, 200, 1, input);
 	
 	public Game()
 	{
-		Level.fromFile("/sauce.txt");
+		//Level.fromFile("/sauce.txt");
 		
 		setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));

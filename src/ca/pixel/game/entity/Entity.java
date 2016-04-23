@@ -19,7 +19,7 @@ public abstract class Entity extends LevelObject
 		super(level, x, y, hitboxes);
 		this.speed = speed;
 		this.originalSpeed = speed;
-		level.addObject(this);
+		level.addEntity(this);
 	}
 	
 	/**
@@ -71,7 +71,7 @@ public abstract class Entity extends LevelObject
 			
 			// Tests if it's allowed to move or not
 			boolean canMove = true;
-			for (LevelObject object : level.getObjects())
+			for (LevelObject object : level.getEntities())
 			{
 				// Don't let it collide with itself
 				if (object != this && this.isColliding(object))
@@ -104,7 +104,7 @@ public abstract class Entity extends LevelObject
 			
 			// Tests if it's allowed to move or not
 			boolean canMove = true;
-			for (LevelObject object : level.getObjects())
+			for (LevelObject object : level.getEntities())
 			{
 				// Don't let it collide with itself
 				if (object != this && this.isColliding(object))

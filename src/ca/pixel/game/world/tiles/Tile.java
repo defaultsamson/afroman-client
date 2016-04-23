@@ -1,6 +1,7 @@
 package ca.pixel.game.world.tiles;
 
 import java.awt.Rectangle;
+import java.util.List;
 
 import ca.pixel.game.assets.Texture;
 import ca.pixel.game.world.Level;
@@ -8,34 +9,40 @@ import ca.pixel.game.world.LevelObject;
 
 public class Tile extends LevelObject
 {
-	// public static final HashMap<Material, Tile> tiles = new HashMap<Material, Tile>();
-	// public static final Tile VOID = new TileBasic(Material.VOID, false, false);
-	// public static final Tile STONE = new TileBasic(Material.STONE, false, false);
-	// public static final Tile GRASS = new TileBasic(Material.GRASS, false, false);
-	// public static final Tile WALL = new TileBasic(Material.WALL, true, false);
-	
 	protected Texture texture;
-	protected Material material;
 	protected boolean isEmitter;
 	
-	public Tile(Level level, int x, int y, Texture texture, Material material, boolean isEmitter, boolean isSolid)
+	private static Rectangle[] hitBoxListToArray(List<Rectangle> hitboxes)
 	{
-		this(level, x, y, texture, material, isEmitter, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
+		Rectangle[] toReturn = new Rectangle[hitboxes.size()];
+		
+		for (int i = 0; i < toReturn.length; i++)
+		{
+			toReturn[i] = hitboxes.get(i);
+		}
+		
+		return toReturn;
 	}
 	
-	public Tile(Level level, int x, int y, Texture texture, Material material, boolean isEmitter, Rectangle... hitboxes)
+	public Tile(Level level, int x, int y, Texture texture, boolean isEmitter, boolean isSolid)
+	{
+		this(level, x, y, texture, isEmitter, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
+	}
+	
+	public Tile(Level level, int x, int y, Texture texture, boolean isEmitter, List<Rectangle> hitboxes)
+	{
+		this(level, x, y, texture, isEmitter, hitBoxListToArray(hitboxes));
+	}
+	
+	public Tile(Level level, int x, int y, Texture texture, boolean isEmitter, Rectangle... hitboxes)
 	{
 		super(level, x, y, hitboxes);
-		this.material = material;
 		this.isEmitter = isEmitter;
 		this.texture = texture;
 		
+		level.addTile(this);
+		
 		// tiles.put(material, this);
-	}
-	
-	public Material getMaterial()
-	{
-		return material;
 	}
 	
 	public boolean isEmitter()

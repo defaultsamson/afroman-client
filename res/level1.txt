@@ -1,0 +1,2 @@
+Level()
+Tile(1, 1, TILE_GRASS, false, false) // x and y coords are multiplied by 16 to get their true world coords
