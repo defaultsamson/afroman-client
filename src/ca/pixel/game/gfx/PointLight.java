@@ -2,31 +2,37 @@ package ca.pixel.game.gfx;
 
 import java.awt.Color;
 
+import ca.pixel.game.world.Level;
+
 public class PointLight
 {
+	protected Level level;
 	protected int x;
 	protected int y;
 	protected int radius;
 	protected float intensity;
 	protected Color colour;
 	
-	public PointLight(int x, int y, int radius)
+	public PointLight(Level level, int x, int y, int radius)
 	{
-		this(x, y, radius, 1.0F);
+		this(level, x, y, radius, 1.0F);
 	}
 	
-	public PointLight(int x, int y, int radius, float intensity)
+	public PointLight(Level level, int x, int y, int radius, float intensity)
 	{
-		this(x, y, radius, intensity, ColourUtil.TRANSPARENT);
+		this(level, x, y, radius, intensity, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(int x, int y, int radius, float intensity, Color colour)
+	public PointLight(Level level, int x, int y, int radius, float intensity, Color colour)
 	{
+		this.level = level;
 		this.x = x;
 		this.y = y;
 		this.radius = radius;
 		this.intensity = intensity;
 		this.colour = colour;
+		
+		level.addLight(this);
 	}
 	
 	public void tick()
@@ -34,9 +40,9 @@ public class PointLight
 		
 	}
 	
-	public void renderCentered(LightMap renderTo, int xOffset, int yOffset)
+	public void renderCentered(LightMap renderTo)
 	{
-		renderTo.drawLight(x - xOffset - radius, y - yOffset - radius, radius, colour);
+		renderTo.drawLight(x - level.getCameraXOffset() - radius, y - level.getCameraYOffset() - radius, radius, colour);
 	}
 	
 	public void setX(int newX)

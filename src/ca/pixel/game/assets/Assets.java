@@ -19,7 +19,21 @@ public enum Assets
 	PLAYER_IDLE_RIGHT,
 	
 	TILE_GRASS,
+	TILE_GRASS_INNER_TOPLEFT,
+	TILE_GRASS_INNER_TOPRIGHT,
+	TILE_GRASS_INNER_BOTTOMLEFT,
+	TILE_GRASS_INNER_BOTTOMRIGHT,
+	TILE_GRASS_OUTER_TOPLEFT,
+	TILE_GRASS_OUTER_TOPRIGHT,
+	TILE_GRASS_OUTER_BOTTOMLEFT,
+	TILE_GRASS_OUTER_BOTTOMRIGHT,
+	TILE_GRASS_OUTER_RIGHT,
+	TILE_GRASS_OUTER_LEFT,
+	TILE_GRASS_OUTER_BOTTOM,
+	TILE_GRASS_OUTER_TOP,
+	
 	TILE_DIRT,
+	
 	TILE_WALL,
 	TILE_WALL_GRASS;
 	
@@ -46,6 +60,18 @@ public enum Assets
 		assets.put(PLAYER_IDLE_RIGHT, new SpriteAnimation(true, 0, player.getTexture(7)));
 		
 		assets.put(TILE_GRASS, sheet.getSubTexture(16 * 3, 16 * 0, 16, 16));
+		assets.put(TILE_GRASS_INNER_TOPLEFT, sheet.getSubTexture(16 * 3, 16 * 3, 16, 16));
+		assets.put(TILE_GRASS_OUTER_BOTTOM, sheet.getSubTexture(16 * 4, 16 * 3, 16, 16));
+		assets.put(TILE_GRASS_INNER_TOPRIGHT, sheet.getSubTexture(16 * 5, 16 * 3, 16, 16));
+		assets.put(TILE_GRASS_OUTER_RIGHT, sheet.getSubTexture(16 * 3, 16 * 4, 16, 16));
+		assets.put(TILE_GRASS_OUTER_LEFT, sheet.getSubTexture(16 * 5, 16 * 4, 16, 16));
+		assets.put(TILE_GRASS_INNER_BOTTOMLEFT, sheet.getSubTexture(16 * 3, 16 * 5, 16, 16));
+		assets.put(TILE_GRASS_OUTER_TOP, sheet.getSubTexture(16 * 4, 16 * 5, 16, 16));
+		assets.put(TILE_GRASS_INNER_BOTTOMRIGHT, sheet.getSubTexture(16 * 5, 16 * 5, 16, 16));
+		assets.put(TILE_GRASS_OUTER_TOPLEFT, sheet.getSubTexture(16 * 6, 16 * 3, 16, 16));
+		assets.put(TILE_GRASS_OUTER_TOPRIGHT, sheet.getSubTexture(16 * 7, 16 * 3, 16, 16));
+		assets.put(TILE_GRASS_OUTER_BOTTOMLEFT, sheet.getSubTexture(16 * 6, 16 * 4, 16, 16));
+		assets.put(TILE_GRASS_OUTER_BOTTOMRIGHT, sheet.getSubTexture(16 * 7, 16 * 4, 16, 16));
 		assets.put(TILE_DIRT, sheet.getSubTexture(16 * 3, 16 * 1, 16, 16));
 		assets.put(TILE_WALL, sheet.getSubTexture(16 * 4, 16 * 0, 16, 16));
 		assets.put(TILE_WALL_GRASS, sheet.getSubTexture(16 * 4, 16 * 1, 16, 16));

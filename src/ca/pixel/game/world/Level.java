@@ -22,13 +22,13 @@ public class Level
 {
 	private List<Tile> tiles;
 	private List<Entity> entities;
+	private List<PointLight> lights;
 	public int width;
 	public int height;
 	public int xOffset = 0;
 	public int yOffset = 0;
-	private LightMap lightmap = new LightMap(Game.WIDTH, Game.HEIGHT);
-	private PointLight playerLight = new FlickeringLight(60, 150, 50, 47, 4);
-	private List<PointLight> lights;
+	private LightMap lightmap;
+	private PointLight playerLight;
 	
 	public Level()
 	{
@@ -36,19 +36,8 @@ public class Level
 		entities = new ArrayList<Entity>();
 		lights = new ArrayList<PointLight>();
 		
-		lights.add(playerLight);
-		
-		lights.add(new PointLight(60, 150, 10));
-		
-		for (int x = 0; x < 30; x++)
-			for (int y = 0; y < 30; y++)
-				lights.add(new PointLight((x * 15) + 500, (y * 15) + 500, 20));
-		
-		lights.add(new PointLight(140, 170, 20));
-		lights.add(new PointLight(20, 240, 20));
-		lights.add(new PointLight(40, 260, 20));
-		lights.add(new PointLight(0, 700, 120));
-		
+		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT);
+		playerLight = new FlickeringLight(this, 0, 0, 50, 47, 4);
 	}
 	
 	public static Level fromFile(String path)
@@ -75,46 +64,69 @@ public class Level
 			
 			List<String> lines = Files.readAllLines(tempFile.toPath());
 			
+			int lineNum = 1;
 			for (String line : lines)
 			{
-				System.out.println(line);
-				
-				String[] split1 = line.split("\\(");
-				String type = split1[0];
-				String[] split2 = split1[1].split("\\)");
-				String[] parameters = split2.length > 0 ? split2[0].split(", ") : null;
-				
-				switch (type)
+				if (line != null && !line.isEmpty() && !line.equals(" "))
 				{
-					case "Level":
-						level = new Level();
-						break;
-					case "Tile":
-						int x = Integer.parseInt(parameters[0]);
-						int y = Integer.parseInt(parameters[1]);
-						Texture texture = Assets.getTexture(Assets.valueOf(parameters[2]));
-						boolean isEmitter = parameters[3].equals("true");
+					try
+					{
+						String[] split1 = line.split("\\(");
+						String type = split1[0];
+						String[] split2 = split1[1].split("\\)");
+						String[] parameters = split2.length > 0 ? split2[0].split(", ") : null;
 						
-						// If it has custom hitboxes defined
-						if (parameters.length > 5)
+						switch (type)
 						{
-							List<Rectangle> hitboxes = new ArrayList<Rectangle>();
-							
-							for (int i = 4; i < parameters.length; i += 4)
+							case "Level":
+								level = new Level();
+								break;
+							case "Tile":
 							{
-								hitboxes.add(new Rectangle(Integer.parseInt(parameters[i]), Integer.parseInt(parameters[i + 1]), Integer.parseInt(parameters[i + 2]), Integer.parseInt(parameters[i + 3])));
+								int x = Integer.parseInt(parameters[0]) * 16;
+								int y = Integer.parseInt(parameters[1]) * 16;
+								Texture texture = Assets.getTexture(Assets.valueOf(parameters[2]));
+								boolean isEmitter = parameters[3].equals("true");
+								
+								// If it has custom hitboxes defined
+								if (parameters.length > 5)
+								{
+									List<Rectangle> hitboxes = new ArrayList<Rectangle>();
+									
+									for (int i = 4; i < parameters.length; i += 4)
+									{
+										hitboxes.add(new Rectangle(Integer.parseInt(parameters[i]), Integer.parseInt(parameters[i + 1]), Integer.parseInt(parameters[i + 2]), Integer.parseInt(parameters[i + 3])));
+									}
+									
+									new Tile(level, x, y, texture, isEmitter, hitboxes);
+								}
+								else // Else, just check for if it's solid or not
+								{
+									boolean isSolid = parameters[4].equals("true");
+									
+									new Tile(level, x, y, texture, isEmitter, isSolid);
+								}
 							}
-							
-							new Tile(level, x, y, texture, isEmitter, hitboxes);
+								break;
+							case "PointLight":
+							{
+								int x = Integer.parseInt(parameters[0]);
+								int y = Integer.parseInt(parameters[1]);
+								int radius = Integer.parseInt(parameters[2]);
+								
+								new PointLight(level, x, y, radius);
+							}
+								break;
 						}
-						else // Else, just check for if it's solid or not
-						{
-							boolean isSolid = parameters[4].equals("true");
-							
-							new Tile(level, x, y, texture, isEmitter, isSolid);
-						}
-						break;
+					}
+					catch (Exception e)
+					{
+						System.err.println("Level failed to load line " + lineNum + ": " + line);
+						e.printStackTrace();
+					}
 				}
+				
+				lineNum++;
 			}
 		}
 		catch (IOException e)
@@ -151,7 +163,7 @@ public class Level
 			
 			for (PointLight light : lights)
 			{
-				light.renderCentered(lightmap, xOffset, yOffset);
+				light.renderCentered(lightmap);
 			}
 			
 			lightmap.patch();
@@ -184,6 +196,11 @@ public class Level
 	public int getCameraYOffset()
 	{
 		return yOffset;
+	}
+	
+	public void addLight(PointLight light)
+	{
+		lights.add(light);
 	}
 	
 	public void addEntity(Entity entity)

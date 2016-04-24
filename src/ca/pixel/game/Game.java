@@ -55,8 +55,6 @@ public class Game extends Canvas implements Runnable
 	
 	public Game()
 	{
-		//Level.fromFile("/sauce.txt");
-		
 		setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
