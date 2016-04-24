@@ -1,6 +1,7 @@
 package ca.pixel.game.assets;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public enum Assets
 {
@@ -8,6 +9,8 @@ public enum Assets
 	FONTSHEET,
 	
 	FONT_NORMAL,
+	FONT_WHITE,
+	
 	RAW_PLAYER,
 	PLAYER_UP,
 	PLAYER_DOWN,
@@ -46,7 +49,9 @@ public enum Assets
 		Texture sheet = Assets.getTexture(SPRITESHEET);
 		Texture font = Assets.getTexture(FONTSHEET);
 		
-		assets.put(FONT_NORMAL, new Font(font.getSubTexture(0, 0, 256, 32)));
+		assets.put(FONT_NORMAL, new Font(font.getSubTexture(0, 8 * 0, 256, 32)));
+		assets.put(FONT_WHITE, new Font(font.getSubTexture(0, 8 * 12, 256, 32)));
+		
 		assets.put(RAW_PLAYER, new TextureArray(sheet.getSubTexture(0, 0, 16 * 3, 16 * 4), 3, 4, 16, 16));
 		
 		TextureArray player = Assets.getTextureArray(RAW_PLAYER);
@@ -116,6 +121,29 @@ public enum Assets
 		{
 			return (SpriteAnimation) got;
 		}
+		return null;
+	}
+	
+	public static Assets getAssetEnum(Asset asset)
+	{
+		for (Map.Entry<Assets, Asset> asset2 : assets.entrySet())
+		{
+			if (asset2.getValue().equals(asset))
+			{
+				return asset2.getKey();
+			}
+		}
+		
+		return null;
+	}
+	
+	public static Assets fromOrdinal(int ordinal)
+	{
+		for (Assets asset : Assets.values())
+		{
+			if (asset.ordinal() == ordinal) return asset;
+		}
+		
 		return null;
 	}
 }

@@ -18,6 +18,11 @@ public class LightMap extends Texture
 		super(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB));
 	}
 	
+	public void drawLight(int x, int y, int radius)
+	{
+		drawLight(x, y, radius, ColourUtil.TRANSPARENT);
+	}
+	
 	public void drawLight(int x, int y, int radius, Color rgbColour)
 	{
 		int width = radius * 2;
@@ -38,7 +43,7 @@ public class LightMap extends Texture
 			// Fills the circle with the gradient
 			Graphics2D graphics = lightTexture.createGraphics();
 			
-			if (Game.instance().hitboxDebug)
+			if (Game.instance().isHitboxDebugging())
 			{
 				graphics.drawRect((int) shape.getX(), (int) shape.getY(), (int) shape.getWidth() - 1, (int) shape.getHeight() - 1);;
 			}

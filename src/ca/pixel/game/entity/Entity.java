@@ -19,6 +19,7 @@ public abstract class Entity extends LevelObject
 		super(level, x, y, hitboxes);
 		this.speed = speed;
 		this.originalSpeed = speed;
+		
 		level.addEntity(this);
 	}
 	
@@ -81,13 +82,28 @@ public abstract class Entity extends LevelObject
 				}
 			}
 			
-			for (LevelObject object : level.getTiles())
+			if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
 			{
-				// Don't let it collide with itself
-				if (object != this && this.isColliding(object))
+				for (LevelObject object : level.getTiles())
 				{
-					canMove = false;
-					break;
+					// Don't let it collide with itself
+					if (object != this && this.isColliding(object))
+					{
+						canMove = false;
+						break;
+					}
+				}
+			}
+			
+			if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
+			{
+				for (Rectangle hitbox : level.getLevelHitboxes())
+				{
+					if (this.isColliding(hitbox))
+					{
+						canMove = false;
+						break;
+					}
 				}
 			}
 			
@@ -114,13 +130,28 @@ public abstract class Entity extends LevelObject
 				}
 			}
 			
-			for (LevelObject object : level.getTiles())
+			if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
 			{
-				// Don't let it collide with itself
-				if (object != this && this.isColliding(object))
+				for (LevelObject object : level.getTiles())
 				{
-					canMove = false;
-					break;
+					// Don't let it collide with itself
+					if (object != this && this.isColliding(object))
+					{
+						canMove = false;
+						break;
+					}
+				}
+			}
+			
+			if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
+			{
+				for (Rectangle hitbox : level.getLevelHitboxes())
+				{
+					if (this.isColliding(hitbox))
+					{
+						canMove = false;
+						break;
+					}
 				}
 			}
 			

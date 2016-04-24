@@ -1,5 +1,6 @@
 package ca.pixel.game.world;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 
 import ca.pixel.game.Game;
@@ -117,16 +118,21 @@ public abstract class LevelObject
 	{
 		if (this.hasHitbox() && other.hasHitbox())
 		{
-			for (Rectangle box : this.hitboxInWorld())
+			return isColliding(other.hitboxInWorld());
+		}
+		return false;
+	}
+	
+	public boolean isColliding(Rectangle... worldHitboxes)
+	{
+		for (Rectangle box : this.hitboxInWorld())
+		{
+			for (Rectangle oBox : worldHitboxes)
 			{
-				for (Rectangle oBox : other.hitboxInWorld())
-				{
-					// If the hitboxes are colliding in world
-					if (oBox.intersects(box)) return true;
-				}
+				// If the hitboxes are colliding in world
+				if (oBox.intersects(box)) return true;
 			}
 		}
-		
 		return false;
 	}
 	
@@ -139,12 +145,15 @@ public abstract class LevelObject
 	
 	public void render(Texture renderTo)
 	{
-		if (Game.instance().hitboxDebug)
+		if (Game.instance().isHitboxDebugging())
 		{
 			if (this.hasHitbox())
 			{
 				for (Rectangle box : this.hitboxInWorld())
 				{
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
+					renderTo.getGraphics().fillRect(box.x - level.getCameraXOffset(), box.y - level.getCameraYOffset(), box.width - 1, box.height - 1);
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
 					renderTo.getGraphics().drawRect(box.x - level.getCameraXOffset(), box.y - level.getCameraYOffset(), box.width - 1, box.height - 1);
 				}
 			}

@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 
+import ca.pixel.console.ConsoleOutput;
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.assets.Texture;
 import ca.pixel.game.entity.PlayerEntity;
@@ -40,18 +41,21 @@ public class Game extends Canvas implements Runnable
 	private Texture screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 	
 	private boolean fullscreen = false;
+	private boolean hudDebug = false; // Shows debug information on the hud
+	private boolean hitboxDebug = false; // Shows all hitboxes
+	private boolean lightingDebug = false; // Turns off the lighting engine
+	private boolean buildMode = false; // Turns off the lighting engine
+	private boolean consoleDebug = false; // Shows a console window
 	
 	public boolean running = false;
 	public int tickCount = 0;
-	public boolean hudDebug = true; // Shows debug information on the hud
-	public boolean hitboxDebug = false; // Shows all hitboxes
-	public boolean lightingDebug = false; // Turns off the lighting engine
 	public int tps = 0;
 	public int fps = 0;
 	
 	public InputHandler input = new InputHandler(this);
-	public Level blankLevel = Level.fromFile("/level1.txt");
-	public PlayerEntity player = new PlayerEntity(blankLevel, 100, 200, 1, input);
+	
+	public Level blankLevel;
+	public PlayerEntity player;
 	
 	public Game()
 	{
@@ -72,7 +76,17 @@ public class Game extends Canvas implements Runnable
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
+		ConsoleOutput.createGui();
+		ConsoleOutput.showGui();
+		ConsoleOutput.hideGui();
+	}
+	
+	public void init()
+	{
+		blankLevel = Level.fromFile("/level1.txt");
+		player = new PlayerEntity(blankLevel, 100, 100, 1, input);
 		player.setCameraToFollow(true);
+		blankLevel.putPlayer();
 	}
 	
 	@Override
@@ -112,6 +126,7 @@ public class Game extends Canvas implements Runnable
 	
 	public synchronized void start()
 	{
+		init();
 		running = true;
 		new Thread(this).start();
 	}
@@ -208,6 +223,33 @@ public class Game extends Canvas implements Runnable
 			System.out.println("Show Lighting: " + !lightingDebug);
 		}
 		
+		if (input.saveLevel.isPressedFiltered())
+		{
+			this.player.getLevel().toSaveFile();
+			System.out.println("Copied current level save data to clipboard");
+		}
+		
+		if (input.levelBuilder.isPressedFiltered())
+		{
+			buildMode = !buildMode;
+			
+			System.out.println("Build Mode: " + buildMode);
+			
+			this.player.setCameraToFollow(!buildMode);
+			this.player.getLevel().toSaveFile();
+		}
+		
+		if (input.consoleDebug.isPressedFiltered())
+		{
+			consoleDebug = !consoleDebug;
+			
+			ConsoleOutput.setGuiVisible(consoleDebug);
+			
+			System.out.println("Show Console: " + consoleDebug);
+			
+			this.requestFocus();
+		}
+		
 		blankLevel.tick();
 	}
 	
@@ -224,9 +266,9 @@ public class Game extends Canvas implements Runnable
 			int xPos = (WIDTH / 2);
 			int yPos = 120;
 			
-			Assets.getFont(Assets.FONT_NORMAL).renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
-			Assets.getFont(Assets.FONT_NORMAL).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
-			Assets.getFont(Assets.FONT_NORMAL).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
+			Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
+			Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
+			Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		}
 		
 		if (hudDebug)
@@ -299,10 +341,35 @@ public class Game extends Canvas implements Runnable
 			frame.setUndecorated(false);
 			frame.setVisible(true);// Shows restarted JFrame
 			frame.pack();
-			frame.setExtendedState(frame.getExtendedState() | JFrame.NORMAL);// Returns to maximized state
+			frame.setExtendedState(frame.getExtendedState() | JFrame.NORMAL);// Returns to normal state
 		}
 		
 		this.requestFocus();
+	}
+	
+	public boolean isFullScreen()
+	{
+		return fullscreen;
+	}
+	
+	public boolean isHudDebugging()
+	{
+		return hudDebug;
+	}
+	
+	public boolean isHitboxDebugging()
+	{
+		return hitboxDebug;
+	}
+	
+	public boolean isLightingDebugging()
+	{
+		return lightingDebug;
+	}
+	
+	public boolean isBuildMode()
+	{
+		return buildMode;
 	}
 	
 	public static void main(String[] args)
