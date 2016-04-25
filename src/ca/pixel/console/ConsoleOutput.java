@@ -14,7 +14,7 @@ public class ConsoleOutput extends JPanel
 	private static final long serialVersionUID = -4401360933188428855L;
 	public static final JFrame frame = new JFrame("CONSOLE");
 	private JTextArea textArea = new JTextArea(30, 40);
-	private TextAreaOutputStream taOutputStream = new TextAreaOutputStream(textArea);
+	private ConsoleOutputStream taOutputStream = new ConsoleOutputStream(textArea);
 	
 	public ConsoleOutput()
 	{

@@ -6,12 +6,12 @@ import java.io.OutputStream;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-public class TextAreaOutputStream extends OutputStream
+public class ConsoleOutputStream extends OutputStream
 {
 	private final JTextArea textArea;
 	private final StringBuilder sb = new StringBuilder();
 	
-	public TextAreaOutputStream(final JTextArea textArea)
+	public ConsoleOutputStream(final JTextArea textArea)
 	{
 		this.textArea = textArea;
 	}
