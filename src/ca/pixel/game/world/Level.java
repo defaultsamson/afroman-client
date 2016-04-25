@@ -298,8 +298,8 @@ public class Level
 			{
 				int x = worldToScreenX((int) box.getX());
 				int y = worldToScreenY((int) box.getY());
-				int width = (int) box.getWidth();
-				int height = (int) box.getHeight();
+				int width = (int) box.getWidth() - 1;
+				int height = (int) box.getHeight() - 1;
 				
 				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
 				renderTo.getGraphics().fillRect(x, y, width, height);
@@ -473,7 +473,7 @@ public class Level
 					}
 					else if (hitboxClickCount == 1)
 					{
-						levelHitboxes.add(new Rectangle(hitboxX1, hitboxY1, Game.instance().input.getMouseX() - worldToScreenX(hitboxX1), Game.instance().input.getMouseY() - worldToScreenY(hitboxY1)));
+						levelHitboxes.add(new Rectangle(hitboxX1, hitboxY1, Game.instance().input.getMouseX() - worldToScreenX(hitboxX1) + 1, Game.instance().input.getMouseY() - worldToScreenY(hitboxY1) + 1));
 						hitboxClickCount = 0;
 					}
 				}
