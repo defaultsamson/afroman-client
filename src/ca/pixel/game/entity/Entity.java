@@ -2,9 +2,6 @@ package ca.pixel.game.entity;
 
 import java.awt.Rectangle;
 
-import ca.pixel.game.world.Level;
-import ca.pixel.game.world.LevelObject;
-
 public abstract class Entity extends LevelObject
 {
 	protected int speed;
@@ -14,13 +11,11 @@ public abstract class Entity extends LevelObject
 	protected Direction lastDirection = direction;
 	protected boolean cameraFollow = false;
 	
-	public Entity(Level level, int x, int y, int speed, Rectangle... hitboxes)
+	public Entity(int x, int y, int speed, Rectangle... hitboxes)
 	{
-		super(level, x, y, hitboxes);
+		super(x, y, hitboxes);
 		this.speed = speed;
 		this.originalSpeed = speed;
-		
-		level.addEntity(this);
 	}
 	
 	/**
@@ -40,6 +35,13 @@ public abstract class Entity extends LevelObject
 		{
 			level.setCameraCenterInWorld(x + (width / 2), y + (height / 2));
 		}
+	}
+	
+	@Override
+	public void addToLevel(Level level)
+	{
+		this.level = level;
+		level.addEntity(this);
 	}
 	
 	public void move(int xa, int ya)

@@ -4,8 +4,8 @@ import java.awt.Rectangle;
 import java.util.List;
 
 import ca.pixel.game.assets.Texture;
-import ca.pixel.game.world.Level;
-import ca.pixel.game.world.LevelObject;
+import ca.pixel.game.entity.Level;
+import ca.pixel.game.entity.LevelObject;
 
 public class Tile extends LevelObject
 {
@@ -26,23 +26,26 @@ public class Tile extends LevelObject
 	
 	public Tile(Level level, int x, int y, Texture texture, boolean isEmitter, boolean isSolid)
 	{
-		this(level, x, y, texture, isEmitter, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
+		this(x, y, texture, isEmitter, (isSolid ? new Rectangle(0, 0, 16, 16) : null));
 	}
 	
-	public Tile(Level level, int x, int y, Texture texture, boolean isEmitter, List<Rectangle> hitboxes)
+	public Tile(int x, int y, Texture texture, boolean isEmitter, List<Rectangle> hitboxes)
 	{
-		this(level, x, y, texture, isEmitter, hitBoxListToArray(hitboxes));
+		this(x, y, texture, isEmitter, hitBoxListToArray(hitboxes));
 	}
 	
-	public Tile(Level level, int x, int y, Texture texture, boolean isEmitter, Rectangle... hitboxes)
+	public Tile(int x, int y, Texture texture, boolean isEmitter, Rectangle... hitboxes)
 	{
-		super(level, x, y, hitboxes);
+		super(x, y, hitboxes);
 		this.isEmitter = isEmitter;
 		this.texture = texture;
-		
+	}
+	
+	@Override
+	public void addToLevel(Level level)
+	{
+		this.level = level;
 		level.addTile(this);
-		
-		// tiles.put(material, this);
 	}
 	
 	public boolean isEmitter()

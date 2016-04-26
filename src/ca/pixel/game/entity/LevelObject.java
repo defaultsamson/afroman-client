@@ -1,4 +1,4 @@
-package ca.pixel.game.world;
+package ca.pixel.game.entity;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -15,7 +15,7 @@ public abstract class LevelObject
 	protected Level level;
 	protected Rectangle[] hitboxes;
 	
-	public LevelObject(Level level, int x, int y, Rectangle... hitboxes)
+	public LevelObject(int x, int y, Rectangle... hitboxes)
 	{
 		this.width = 0;
 		this.height = 0;
@@ -56,8 +56,6 @@ public abstract class LevelObject
 		
 		this.x = x;
 		this.y = y;
-		
-		this.level = level;
 		this.hitboxes = hitboxes;
 	}
 	
@@ -91,6 +89,11 @@ public abstract class LevelObject
 	public int getY()
 	{
 		return y;
+	}
+	
+	public void addToLevel(Level level)
+	{
+		this.level = level;
 	}
 	
 	public Level getLevel()

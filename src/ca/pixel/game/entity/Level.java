@@ -1,4 +1,4 @@
-package ca.pixel.game.world;
+package ca.pixel.game.entity;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -16,7 +16,6 @@ import java.util.List;
 import ca.pixel.game.Game;
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.assets.Texture;
-import ca.pixel.game.entity.Entity;
 import ca.pixel.game.gfx.FlickeringLight;
 import ca.pixel.game.gfx.LightMap;
 import ca.pixel.game.gfx.PointLight;
@@ -32,10 +31,10 @@ public class Level
 	private int yOffset = 0;
 	private LightMap lightmap;
 	private PointLight playerLight;
-	private int playerPointX;
-	private int playerPointY;
+	// private int playerPointX;
+	// private int playerPointY; TODO add spawn points
 	
-	public Level(int playerX, int playerY)
+	public Level()
 	{
 		tiles = new ArrayList<Tile>();
 		levelHitboxes = new ArrayList<Rectangle>();
@@ -43,10 +42,8 @@ public class Level
 		lights = new ArrayList<PointLight>();
 		
 		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT);
-		playerLight = new FlickeringLight(this, 0, 0, 50, 47, 4);
-		
-		playerPointX = playerX;
-		playerPointY = playerY;
+		playerLight = new FlickeringLight(0, 0, 50, 47, 4);
+		playerLight.addToLevel(this);
 	}
 	
 	public static Level fromFile(String path)
@@ -89,10 +86,10 @@ public class Level
 						{
 							case "Level":
 							{
-								int x = Integer.parseInt(parameters[0]);
-								int y = Integer.parseInt(parameters[1]);
+								// int x = Integer.parseInt(parameters[0]); TODO add spawn points
+								// int y = Integer.parseInt(parameters[1]);
 								
-								level = new Level(x, y);
+								level = new Level();
 							}
 								break;
 							case "Tile":
@@ -112,13 +109,15 @@ public class Level
 										hitboxes.add(new Rectangle(Integer.parseInt(parameters[i]), Integer.parseInt(parameters[i + 1]), Integer.parseInt(parameters[i + 2]), Integer.parseInt(parameters[i + 3])));
 									}
 									
-									new Tile(level, x, y, texture, isEmitter, hitboxes);
+									Tile tile = new Tile(x, y, texture, isEmitter, hitboxes);
+									tile.addToLevel(level);
 								}
 								else // Else, just check for if it's solid or not
 								{
 									boolean isSolid = parameters[4].equals("true");
 									
-									new Tile(level, x, y, texture, isEmitter, isSolid);
+									Tile tile = new Tile(level, x, y, texture, isEmitter, isSolid);
+									tile.addToLevel(level);
 								}
 							}
 								break;
@@ -128,7 +127,8 @@ public class Level
 								int y = Integer.parseInt(parameters[1]);
 								int radius = Integer.parseInt(parameters[2]);
 								
-								new PointLight(level, x, y, radius);
+								PointLight light = new PointLight(x, y, radius);
+								light.addToLevel(level);
 							}
 								break;
 							case "HitBox":
@@ -160,7 +160,7 @@ public class Level
 	{
 		List<String> toReturn = new ArrayList<String>();
 		
-		toReturn.add("Level(" + playerPointX + ", " + playerPointY + ")");
+		toReturn.add("Level()");
 		
 		toReturn.add("");
 		toReturn.add("");
@@ -241,21 +241,21 @@ public class Level
 		yOffset = y - (Game.HEIGHT / 2);
 	}
 	
-	public void putPlayer()
-	{
-		// Sets the last level's pointx and y for if the player goes back
-		if (Game.instance().player.level != this)
-		{
-			Game.instance().player.level.playerPointX = Game.instance().player.getX();
-			Game.instance().player.level.playerPointY = Game.instance().player.getX();
-		}
-		
-		// Sets the player position to the new one for this level
-		Game.instance().player.setX(playerPointX);
-		Game.instance().player.setY(playerPointY);
-		
-		Game.instance().player.level = this;
-	}
+	// public void putPlayer() TODO add spawn points
+	// {
+	// // Sets the last level's pointx and y for if the player goes back
+	// if (Game.instance().player.level != this)
+	// {
+	// Game.instance().player.level.playerPointX = Game.instance().player.getX();
+	// Game.instance().player.level.playerPointY = Game.instance().player.getX();
+	// }
+	//
+	// // Sets the player position to the new one for this level
+	// Game.instance().player.setX(playerPointX);
+	// Game.instance().player.setY(playerPointY);
+	//
+	// Game.instance().player.level = this;
+	// }
 	
 	public void render(Texture renderTo)
 	{
@@ -440,7 +440,8 @@ public class Level
 			{
 				if (Game.instance().input.mouseLeft.isPressedFiltered())
 				{
-					new PointLight(this, screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY()), currentBuildLightRadius);
+					PointLight light = new PointLight(screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY()), currentBuildLightRadius);
+					light.addToLevel(this);
 				}
 				
 				if (Game.instance().input.mouseRight.isPressedFiltered())
@@ -512,8 +513,8 @@ public class Level
 			light.tick();
 		}
 		
-		playerLight.setX(Game.instance().player.getX() + 8);
-		playerLight.setY(Game.instance().player.getY() + 8);
+		// playerLight.setX(Game.instance().player.getX() + 8);
+		// playerLight.setY(Game.instance().player.getY() + 8);
 	}
 	
 	public int screenToWorldX(int x)

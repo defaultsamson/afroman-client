@@ -14,15 +14,14 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import ca.afroman.server.GameClient;
+import ca.afroman.server.GameServer;
+import ca.afroman.server.packet.PacketRequestConnection;
 import ca.pixel.console.ConsoleOutput;
-import ca.pixel.game.assets.Assets;
 import ca.pixel.game.assets.Texture;
+import ca.pixel.game.entity.Level;
 import ca.pixel.game.entity.PlayerEntity;
 import ca.pixel.game.input.InputHandler;
-import ca.pixel.game.network.GameClient;
-import ca.pixel.game.network.GameServer;
-import ca.pixel.game.network.packet.PacketLogin;
-import ca.pixel.game.world.Level;
 
 public class Game extends Canvas implements Runnable
 {
@@ -50,6 +49,8 @@ public class Game extends Canvas implements Runnable
 	private boolean lightingDebug = false; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
+	
+	private boolean isHosting = false;
 	
 	public boolean running = false;
 	public int tickCount = 0;
@@ -90,10 +91,54 @@ public class Game extends Canvas implements Runnable
 	
 	public void init()
 	{
-		blankLevel = Level.fromFile("/level1.txt");
-//		player = new PlayerEntity(1, blankLevel, 100, 100, 1, input);
-//		player.setCameraToFollow(true);
-//		blankLevel.putPlayer();
+		String ip = "localhost";
+		String pass = "";
+		
+		if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
+		{
+			pass = JOptionPane.showInputDialog(this, "Please create a password (Leave blank for no password)");
+			
+			socketServer = new GameServer(pass);
+			socketServer.start();
+			isHosting = true;
+		}
+		else
+		{
+			ip = JOptionPane.showInputDialog("What is the server's IP");
+		}
+		
+		socketClient = new GameClient();
+		socketClient.start();
+		
+		socketClient.setServerIP(ip);
+		socketClient.sendPacket(new PacketRequestConnection(pass));
+		
+		/*
+		 * blankLevel = Level.fromFile("/level1.txt");
+		 * String ip = "localhost";
+		 * String pass = "hooplah";
+		 * if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
+		 * {
+		 * socketServer = new GameServer(this);
+		 * socketServer.start();
+		 * isHosting = true;
+		 * }
+		 * else
+		 * {
+		 * ip = JOptionPane.showInputDialog("What is the server's IP");
+		 * pass = JOptionPane.showInputDialog("What is the server's password?");
+		 * }
+		 * socketClient = new GameClient(this, ip);
+		 * socketClient.start();
+		 * player = new PlayerMPEntity(100, 120, 1, input, null, -1);
+		 * player.addToLevel(blankLevel);
+		 * player.setCameraToFollow(true);
+		 * PacketLogin login = new PacketLogin(pass);
+		 * login.writeData(socketClient);
+		 * // player = new PlayerMPEntity(blankLevel, 100, 100, 1, input, null, -1);
+		 * // player.setCameraToFollow(true);
+		 * // blankLevel.putPlayer();
+		 */
 	}
 	
 	@Override
@@ -136,26 +181,6 @@ public class Game extends Canvas implements Runnable
 		init();
 		running = true;
 		new Thread(this).start();
-		
-		String ip = "localhost";
-		String pass = "";
-		
-		if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
-		{
-			socketServer = new GameServer(this);
-			socketServer.start();
-		}
-		else
-		{
-			ip = JOptionPane.showInputDialog("What is the server's IP");
-			pass = JOptionPane.showInputDialog("What is the server's password?");
-		}
-		
-		socketClient = new GameClient(this, ip);
-		socketClient.start();
-		
-		PacketLogin login = new PacketLogin(pass);
-		login.writeData(socketClient);
 	}
 	
 	public synchronized void stop()
@@ -229,44 +254,44 @@ public class Game extends Canvas implements Runnable
 			// Toggles Fullscreen Mode
 			setFullScreen(!fullscreen);
 		}
-		if (input.hudDebug.isPressedFiltered())
-		{
-			hudDebug = !hudDebug;
-			
-			socketClient.sendData("ping".getBytes());
-			
-			System.out.println("Debug Hud: " + hudDebug);
-		}
-		
-		if (input.hitboxDebug.isPressedFiltered())
-		{
-			hitboxDebug = !hitboxDebug;
-			
-			System.out.println("Show Hitboxes: " + hitboxDebug);
-		}
-		
-		if (input.lightingDebug.isPressedFiltered())
-		{
-			lightingDebug = !lightingDebug;
-			
-			System.out.println("Show Lighting: " + !lightingDebug);
-		}
-		
-		if (input.saveLevel.isPressedFiltered())
-		{
-			this.player.getLevel().toSaveFile();
-			System.out.println("Copied current level save data to clipboard");
-		}
-		
-		if (input.levelBuilder.isPressedFiltered())
-		{
-			buildMode = !buildMode;
-			
-			System.out.println("Build Mode: " + buildMode);
-			
-			this.player.setCameraToFollow(!buildMode);
-			this.player.getLevel().toSaveFile();
-		}
+		// TODO
+		// if (input.hudDebug.isPressedFiltered())
+		// {
+		// hudDebug = !hudDebug;
+		//
+		// System.out.println("Debug Hud: " + hudDebug);
+		// }
+		//
+		// if (input.hitboxDebug.isPressedFiltered())
+		// {
+		// hitboxDebug = !hitboxDebug;
+		//
+		// System.out.println("Show Hitboxes: " + hitboxDebug);
+		// }
+		//
+		// if (input.lightingDebug.isPressedFiltered())
+		// {
+		// lightingDebug = !lightingDebug;
+		//
+		// System.out.println("Show Lighting: " + !lightingDebug);
+		// }
+		//
+		// if (input.saveLevel.isPressedFiltered())
+		// {
+		// this.player.getLevel().toSaveFile();
+		// System.out.println("Copied current level save data to clipboard");
+		// }
+		//
+		//
+		// if (input.levelBuilder.isPressedFiltered())
+		// {
+		// buildMode = !buildMode;
+		//
+		// System.out.println("Build Mode: " + buildMode);
+		//
+		// this.player.setCameraToFollow(!buildMode);
+		// this.player.getLevel().toSaveFile();
+		// }
 		
 		if (input.consoleDebug.isPressedFiltered())
 		{
@@ -276,10 +301,10 @@ public class Game extends Canvas implements Runnable
 			
 			System.out.println("Show Console: " + consoleDebug);
 			
-			this.requestFocus();
+			// this.requestFocus();
 		}
 		
-		blankLevel.tick();
+		// TODO blankLevel.tick();
 	}
 	
 	public void render()
@@ -288,25 +313,25 @@ public class Game extends Canvas implements Runnable
 		screen.getGraphics().setColor(Color.WHITE);
 		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
 		
-		blankLevel.render(screen);
-		
-		if (this.tickCount < 240)
-		{
-			int xPos = (WIDTH / 2);
-			int yPos = 120;
-			
-			Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
-			Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
-			Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
-		}
-		
-		if (hudDebug)
-		{
-			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 0, "TPS: " + tps);
-			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 10, "FPS: " + fps);
-			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 20, "x: " + player.getX());
-			Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 30, "y: " + player.getY());
-		}
+		/*
+		 * TODO add back once working with server-side
+		 * blankLevel.render(screen);
+		 * if (this.tickCount < 240)
+		 * {
+		 * int xPos = (WIDTH / 2);
+		 * int yPos = 120;
+		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
+		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
+		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
+		 * }
+		 * if (hudDebug)
+		 * {
+		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 0, "TPS: " + tps);
+		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 10, "FPS: " + fps);
+		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 20, "x: " + player.getX());
+		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 30, "y: " + player.getY());
+		 * }
+		 */
 		
 		// Renders everything that was just drawn
 		BufferStrategy bs = getBufferStrategy();
@@ -405,6 +430,11 @@ public class Game extends Canvas implements Runnable
 	public boolean isBuildMode()
 	{
 		return buildMode;
+	}
+	
+	public boolean isHostingServer()
+	{
+		return isHosting;
 	}
 	
 	public static void main(String[] args)
