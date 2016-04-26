@@ -10,9 +10,18 @@ public class PlayerEntity extends SpriteEntity
 {
 	private InputHandler input;
 	
-	public PlayerEntity(Level level, int x, int y, int speed, InputHandler input)
+	/**
+	 * 
+	 * @param player can be player 1 or 2
+	 * @param level
+	 * @param x
+	 * @param y
+	 * @param speed
+	 * @param input
+	 */
+	public PlayerEntity(int player, Level level, int x, int y, int speed, InputHandler input)
 	{
-		super(level, Assets.getSpriteAnimation(Assets.PLAYER_UP), Assets.getSpriteAnimation(Assets.PLAYER_DOWN), Assets.getSpriteAnimation(Assets.PLAYER_LEFT), Assets.getSpriteAnimation(Assets.PLAYER_RIGHT), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_UP), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_DOWN), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_LEFT), Assets.getSpriteAnimation(Assets.PLAYER_IDLE_RIGHT), x, y, speed, new Rectangle(3, 3, 10, 13));
+		super(level, (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_UP) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_UP)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_DOWN) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_DOWN)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_LEFT) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_LEFT)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_RIGHT) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_RIGHT)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_UP) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_UP)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_DOWN) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_DOWN)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_LEFT) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_LEFT)), (player == 1 ? Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_RIGHT) : Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_RIGHT)), x, y, speed, new Rectangle(3, 3, 10, 13));
 		
 		this.input = input;
 	}
@@ -23,21 +32,24 @@ public class PlayerEntity extends SpriteEntity
 		int xa = 0;
 		int ya = 0;
 		
-		if (input.up.isPressed())
+		if (input != null)
 		{
-			ya--;
-		}
-		if (input.down.isPressed())
-		{
-			ya++;
-		}
-		if (input.left.isPressed())
-		{
-			xa--;
-		}
-		if (input.right.isPressed())
-		{
-			xa++;
+			if (input.up.isPressed())
+			{
+				ya--;
+			}
+			if (input.down.isPressed())
+			{
+				ya++;
+			}
+			if (input.left.isPressed())
+			{
+				xa--;
+			}
+			if (input.right.isPressed())
+			{
+				xa++;
+			}
 		}
 		
 		move(xa, ya);

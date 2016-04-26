@@ -12,12 +12,16 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import ca.pixel.console.ConsoleOutput;
 import ca.pixel.game.assets.Assets;
 import ca.pixel.game.assets.Texture;
 import ca.pixel.game.entity.PlayerEntity;
 import ca.pixel.game.input.InputHandler;
+import ca.pixel.game.network.GameClient;
+import ca.pixel.game.network.GameServer;
+import ca.pixel.game.network.packet.PacketLogin;
 import ca.pixel.game.world.Level;
 
 public class Game extends Canvas implements Runnable
@@ -57,6 +61,9 @@ public class Game extends Canvas implements Runnable
 	public Level blankLevel;
 	public PlayerEntity player;
 	
+	private GameClient socketClient;
+	private GameServer socketServer;
+	
 	public Game()
 	{
 		setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
@@ -84,9 +91,9 @@ public class Game extends Canvas implements Runnable
 	public void init()
 	{
 		blankLevel = Level.fromFile("/level1.txt");
-		player = new PlayerEntity(blankLevel, 100, 100, 1, input);
-		player.setCameraToFollow(true);
-		blankLevel.putPlayer();
+//		player = new PlayerEntity(1, blankLevel, 100, 100, 1, input);
+//		player.setCameraToFollow(true);
+//		blankLevel.putPlayer();
 	}
 	
 	@Override
@@ -129,6 +136,26 @@ public class Game extends Canvas implements Runnable
 		init();
 		running = true;
 		new Thread(this).start();
+		
+		String ip = "localhost";
+		String pass = "";
+		
+		if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
+		{
+			socketServer = new GameServer(this);
+			socketServer.start();
+		}
+		else
+		{
+			ip = JOptionPane.showInputDialog("What is the server's IP");
+			pass = JOptionPane.showInputDialog("What is the server's password?");
+		}
+		
+		socketClient = new GameClient(this, ip);
+		socketClient.start();
+		
+		PacketLogin login = new PacketLogin(pass);
+		login.writeData(socketClient);
 	}
 	
 	public synchronized void stop()
@@ -164,10 +191,10 @@ public class Game extends Canvas implements Runnable
 				shouldRender = true;
 			}
 			
-			// Stops system from overloading
+			// Stops system from overloading the CPU. Gives other threads a chance to run.
 			try
 			{
-				Thread.sleep(2);
+				Thread.sleep((tps < 60 ? 1 : 3));
 			}
 			catch (InterruptedException e)
 			{
@@ -205,6 +232,8 @@ public class Game extends Canvas implements Runnable
 		if (input.hudDebug.isPressedFiltered())
 		{
 			hudDebug = !hudDebug;
+			
+			socketClient.sendData("ping".getBytes());
 			
 			System.out.println("Debug Hud: " + hudDebug);
 		}
@@ -345,6 +374,12 @@ public class Game extends Canvas implements Runnable
 		}
 		
 		this.requestFocus();
+	}
+	
+	public String getPassword()
+	{
+		// TODO implement password setter
+		return "hooplah";
 	}
 	
 	public boolean isFullScreen()
