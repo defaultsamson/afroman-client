@@ -11,7 +11,7 @@ public class GuiButton extends InputType
 {
 	private GuiScreen screen;
 	
-	private Rectangle hitbox;
+	protected Rectangle hitbox;
 	
 	private int id;
 	private boolean canHold = false;

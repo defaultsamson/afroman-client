@@ -9,11 +9,13 @@ import ca.afroman.assets.Texture;
 public abstract class GuiScreen
 {
 	protected Game game;
+	protected GuiScreen parentScreen;
 	protected List<GuiButton> buttons;
 	
-	public GuiScreen(Game game)
+	public GuiScreen(Game game, GuiScreen parentScreen)
 	{
 		this.game = game;
+		this.parentScreen = parentScreen;
 		this.buttons = new ArrayList<GuiButton>();
 		
 		init();

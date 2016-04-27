@@ -12,14 +12,14 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.Level;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.gui.GuiScreen;
 import ca.afroman.input.InputHandler;
-import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.server.GameClient;
 import ca.afroman.server.GameServer;
 
@@ -50,7 +50,7 @@ public class Game extends Canvas implements Runnable
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
 	
-	private boolean isHosting = false;
+	public boolean isHosting = false;
 	
 	public boolean running = false;
 	public int tickCount = 0;
@@ -62,8 +62,10 @@ public class Game extends Canvas implements Runnable
 	public Level blankLevel;
 	public PlayerEntity player;
 	
-	private GameClient socketClient;
-	private GameServer socketServer;
+	public GameClient socketClient;
+	public GameServer socketServer;
+	
+	private GuiScreen currentScreen = null;
 	
 	public Game()
 	{
@@ -91,27 +93,32 @@ public class Game extends Canvas implements Runnable
 	
 	public void init()
 	{
-		String ip = "localhost";
-		String pass = "";
+		setCurrentScreen(new GuiMainMenu(this));
 		
-		if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
-		{
-			pass = JOptionPane.showInputDialog(this, "Please create a password (Leave blank for no password)");
-			
-			socketServer = new GameServer(pass);
-			socketServer.start();
-			isHosting = true;
-		}
-		else
-		{
-			ip = JOptionPane.showInputDialog("What is the server's IP");
-		}
+		// TODO this stuff is fully functional. Add to the gui
+//		String ip = "localhost";
+//		String pass = "";
+//		
+//		if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
+//		{
+//			pass = JOptionPane.showInputDialog(this, "Please create a password (Leave blank for no password)");
+//			
+//			socketServer = new GameServer(pass);
+//			socketServer.start();
+//			isHosting = true;
+//		}
+//		else
+//		{
+//			ip = JOptionPane.showInputDialog("What is the server's IP");
+//		}
+//		
+//		socketClient = new GameClient();
+//		socketClient.start();
+//		
+//		socketClient.setServerIP(ip);
+//		socketClient.sendPacket(new PacketRequestConnection(pass));
+//		
 		
-		socketClient = new GameClient();
-		socketClient.start();
-		
-		socketClient.setServerIP(ip);
-		socketClient.sendPacket(new PacketRequestConnection(pass));
 		
 		/*
 		 * blankLevel = Level.fromFile("/level1.txt");
@@ -249,6 +256,11 @@ public class Game extends Canvas implements Runnable
 	{
 		tickCount++;
 		
+		if (currentScreen != null)
+		{
+			currentScreen.tick();
+		}
+		
 		if (input.full_screen.isPressedFiltered())
 		{
 			// Toggles Fullscreen Mode
@@ -332,6 +344,11 @@ public class Game extends Canvas implements Runnable
 		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 30, "y: " + player.getY());
 		 * }
 		 */
+		
+		if (currentScreen != null)
+		{
+			currentScreen.render(screen);
+		}
 		
 		// Renders everything that was just drawn
 		BufferStrategy bs = getBufferStrategy();
@@ -435,6 +452,11 @@ public class Game extends Canvas implements Runnable
 	public boolean isHostingServer()
 	{
 		return isHosting;
+	}
+	
+	public void setCurrentScreen(GuiScreen screen)
+	{
+		this.currentScreen = screen;
 	}
 	
 	public static void main(String[] args)
