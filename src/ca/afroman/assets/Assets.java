@@ -48,7 +48,11 @@ public enum Assets
 	TILE_DIRT,
 	
 	TILE_WALL,
-	TILE_WALL_GRASS;
+	TILE_WALL_GRASS,
+	
+	BUTTON_PRESSED,
+	BUTTON_HOVER,
+	BUTTON_NORMAL;
 	
 	public static HashMap<Assets, Asset> assets = new HashMap<Assets, Asset>();
 	static
@@ -102,6 +106,10 @@ public enum Assets
 		assets.put(TILE_DIRT, sheet.getSubTexture(16 * 3, 16 * 1, 16, 16));
 		assets.put(TILE_WALL, sheet.getSubTexture(16 * 4, 16 * 0, 16, 16));
 		assets.put(TILE_WALL_GRASS, sheet.getSubTexture(16 * 4, 16 * 1, 16, 16));
+		
+		assets.put(BUTTON_NORMAL, sheet.getSubTexture(0, 120, 72, 16));
+		assets.put(BUTTON_HOVER, sheet.getSubTexture(0, 136, 72, 16));
+		assets.put(BUTTON_PRESSED, sheet.getSubTexture(0, 152, 72, 16));
 	}
 	
 	public static Font getFont(Assets asset)

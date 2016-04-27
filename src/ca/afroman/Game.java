@@ -1,4 +1,4 @@
-package ca.afroman.game;
+package ca.afroman;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
@@ -293,7 +293,7 @@ public class Game extends Canvas implements Runnable
 		// this.player.getLevel().toSaveFile();
 		// }
 		
-		if (input.consoleDebug.isPressedFiltered())
+		if (input.consoleDebug.isReleasedFiltered())
 		{
 			consoleDebug = !consoleDebug;
 			

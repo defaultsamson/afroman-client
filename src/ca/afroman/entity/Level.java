@@ -13,9 +13,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.Game;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
-import ca.afroman.game.Game;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;

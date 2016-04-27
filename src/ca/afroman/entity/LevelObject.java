@@ -3,8 +3,8 @@ package ca.afroman.entity;
 import java.awt.Color;
 import java.awt.Rectangle;
 
+import ca.afroman.Game;
 import ca.afroman.assets.Texture;
-import ca.afroman.game.Game;
 
 public abstract class LevelObject
 {

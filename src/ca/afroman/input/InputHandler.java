@@ -10,7 +10,7 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.game.Game;
+import ca.afroman.Game;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener
 {
