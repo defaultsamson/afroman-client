@@ -30,9 +30,20 @@ public abstract class GuiScreen
 	
 	public void tick()
 	{
-		for(GuiButton button : this.buttons)
+		for (GuiButton button : this.buttons)
 		{
 			button.tick();
+		}
+	}
+	
+	public void unfocusTextFields()
+	{
+		for (GuiButton button : this.buttons)
+		{
+			if (button instanceof GuiTextField)
+			{
+				((GuiTextField) button).setFocussed(false);
+			}
 		}
 	}
 	
@@ -52,7 +63,7 @@ public abstract class GuiScreen
 	{
 		drawScreen(renderTo);
 		
-		for(GuiButton button : this.buttons)
+		for (GuiButton button : this.buttons)
 		{
 			button.render(renderTo);
 		}

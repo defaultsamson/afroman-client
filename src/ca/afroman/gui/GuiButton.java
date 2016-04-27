@@ -9,7 +9,7 @@ import ca.afroman.input.InputType;
 
 public class GuiButton extends InputType
 {
-	private GuiScreen screen;
+	protected GuiScreen screen;
 	
 	protected Rectangle hitbox;
 	
@@ -72,7 +72,7 @@ public class GuiButton extends InputType
 		{
 			onPressed();
 		}
-		else if (this.isReleasedFiltered())
+		else if (this.isReleasedFiltered() && Game.instance().input.mouseLeft.isReleased())
 		{
 			onRelease();
 		}

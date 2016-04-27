@@ -13,9 +13,18 @@ import ca.afroman.assets.Texture;
 
 public class LightMap extends Texture
 {
+	private Color ambientColour;
+	
 	public LightMap(int width, int height)
 	{
+		this(width, height, ColourUtil.AMBIENT_COLOUR);
+	}
+	
+	public LightMap(int width, int height, Color ambientColour)
+	{
 		super(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB));
+		
+		this.ambientColour = ambientColour;
 	}
 	
 	public void drawLight(int x, int y, int radius)
@@ -36,7 +45,7 @@ public class LightMap extends Texture
 			Rectangle2D shape = new Rectangle2D.Float(0, 0, width, height);
 			// Rectangle2D is more efficient than Ellipse2D
 			
-			Color[] gradientColours = new Color[] { rgbColour, ColourUtil.AMBIENT_COLOUR };
+			Color[] gradientColours = new Color[] { rgbColour, ambientColour };
 			float[] gradientFractions = new float[] { 0.0F, 1.0F };
 			Paint paint = new RadialGradientPaint(new Point2D.Float(radius, radius), radius, gradientFractions, gradientColours);
 			
@@ -98,7 +107,7 @@ public class LightMap extends Texture
 		{
 			for (int x = 0; x < image.getWidth(); ++x)
 			{
-				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE) image.setRGB(x, y, ColourUtil.AMBIENT_COLOUR.getRGB());
+				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE) image.setRGB(x, y, ambientColour.getRGB());
 			}
 		}
 	}

@@ -52,7 +52,9 @@ public enum Assets
 	
 	BUTTON_PRESSED,
 	BUTTON_HOVER,
-	BUTTON_NORMAL;
+	BUTTON_NORMAL,
+	
+	TEXT_FIELD;
 	
 	public static HashMap<Assets, Asset> assets = new HashMap<Assets, Asset>();
 	static
@@ -110,6 +112,8 @@ public enum Assets
 		assets.put(BUTTON_NORMAL, sheet.getSubTexture(0, 120, 72, 16));
 		assets.put(BUTTON_HOVER, sheet.getSubTexture(0, 136, 72, 16));
 		assets.put(BUTTON_PRESSED, sheet.getSubTexture(0, 152, 72, 16));
+		
+		assets.put(TEXT_FIELD, sheet.getSubTexture(0, 168, 112, 16));
 	}
 	
 	public static Font getFont(Assets asset)

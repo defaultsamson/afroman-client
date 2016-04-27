@@ -39,8 +39,35 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
 	
+	public Key backspace = new Key(keys, KeyEvent.VK_BACK_SPACE);
+	public Key space = new Key(keys, KeyEvent.VK_SPACE);
+	
+	public Key a = new Key(keys, KeyEvent.VK_A);
+	public Key b = new Key(keys, KeyEvent.VK_B);
+	public Key c = new Key(keys, KeyEvent.VK_C);
+	public Key d = new Key(keys, KeyEvent.VK_D);
 	public Key e = new Key(keys, KeyEvent.VK_E);
+	public Key f = new Key(keys, KeyEvent.VK_F);
+	public Key g = new Key(keys, KeyEvent.VK_G);
+	public Key h = new Key(keys, KeyEvent.VK_H);
+	public Key i = new Key(keys, KeyEvent.VK_I);
+	public Key j = new Key(keys, KeyEvent.VK_J);
+	public Key k = new Key(keys, KeyEvent.VK_K);
+	public Key l = new Key(keys, KeyEvent.VK_L);
+	public Key m = new Key(keys, KeyEvent.VK_M);
+	public Key n = new Key(keys, KeyEvent.VK_N);
+	public Key o = new Key(keys, KeyEvent.VK_O);
+	public Key p = new Key(keys, KeyEvent.VK_P);
 	public Key q = new Key(keys, KeyEvent.VK_Q);
+	public Key r = new Key(keys, KeyEvent.VK_R);
+	public Key s = new Key(keys, KeyEvent.VK_S);
+	public Key t = new Key(keys, KeyEvent.VK_T);
+	public Key u = new Key(keys, KeyEvent.VK_U);
+	public Key v = new Key(keys, KeyEvent.VK_V);
+	public Key w = new Key(keys, KeyEvent.VK_W);
+	public Key x = new Key(keys, KeyEvent.VK_X);
+	public Key y = new Key(keys, KeyEvent.VK_Y);
+	public Key z = new Key(keys, KeyEvent.VK_Z);
 	
 	public Key shift = new Key(keys, KeyEvent.VK_SHIFT);
 	
