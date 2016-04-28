@@ -20,7 +20,7 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.input.InputHandler;
-import ca.afroman.server.GameClient;
+import ca.afroman.network.GameClient;
 import ca.afroman.server.GameServer;
 
 public class Game extends Canvas implements Runnable
@@ -62,6 +62,8 @@ public class Game extends Canvas implements Runnable
 	public Level blankLevel;
 	public PlayerEntity player;
 	
+	private String username = "";
+	
 	public GameClient socketClient;
 	public GameServer socketServer;
 	
@@ -86,6 +88,8 @@ public class Game extends Canvas implements Runnable
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
+		this.setFocusTraversalKeysEnabled(false);
+		
 		ConsoleOutput.createGui();
 		ConsoleOutput.showGui();
 		ConsoleOutput.hideGui();
@@ -93,32 +97,34 @@ public class Game extends Canvas implements Runnable
 	
 	public void init()
 	{
+		socketClient = new GameClient();
+		socketClient.start();
+		
 		setCurrentScreen(new GuiMainMenu(this));
 		
 		// TODO this stuff is fully functional. Add to the gui
-//		String ip = "localhost";
-//		String pass = "";
-//		
-//		if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
-//		{
-//			pass = JOptionPane.showInputDialog(this, "Please create a password (Leave blank for no password)");
-//			
-//			socketServer = new GameServer(pass);
-//			socketServer.start();
-//			isHosting = true;
-//		}
-//		else
-//		{
-//			ip = JOptionPane.showInputDialog("What is the server's IP");
-//		}
-//		
-//		socketClient = new GameClient();
-//		socketClient.start();
-//		
-//		socketClient.setServerIP(ip);
-//		socketClient.sendPacket(new PacketRequestConnection(pass));
-//		
-		
+		// String ip = "localhost";
+		// String pass = "";
+		//
+		// if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
+		// {
+		// pass = JOptionPane.showInputDialog(this, "Please create a password (Leave blank for no password)");
+		//
+		// socketServer = new GameServer(pass);
+		// socketServer.start();
+		// isHosting = true;
+		// }
+		// else
+		// {
+		// ip = JOptionPane.showInputDialog("What is the server's IP");
+		// }
+		//
+		// socketClient = new GameClient();
+		// socketClient.start();
+		//
+		// socketClient.setServerIP(ip);
+		// socketClient.sendPacket(new PacketRequestConnection(pass));
+		//
 		
 		/*
 		 * blankLevel = Level.fromFile("/level1.txt");
@@ -457,6 +463,16 @@ public class Game extends Canvas implements Runnable
 	public void setCurrentScreen(GuiScreen screen)
 	{
 		this.currentScreen = screen;
+	}
+	
+	public String getUsername()
+	{
+		return username;
+	}
+	
+	public void setUsername(String newName)
+	{
+		this.username = newName;
 	}
 	
 	public static void main(String[] args)

@@ -2,8 +2,6 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import javax.swing.JOptionPane;
-
 import ca.afroman.Game;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
@@ -11,7 +9,6 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
-import ca.afroman.server.GameServer;
 
 public class GuiMainMenu extends GuiScreen
 {
@@ -73,33 +70,19 @@ public class GuiMainMenu extends GuiScreen
 	@Override
 	public void releaseAction(int buttonID)
 	{
-		String ip = "localhost";
-		String pass = "";
-		
 		switch (buttonID)
 		{
 			case 2: // Host Server
-				pass = JOptionPane.showInputDialog("Please create a password (Leave blank for no password)");
-				
-				game.socketServer = new GameServer(pass);
-				game.socketServer.start();
-				game.isHosting = true;
-				
+				game.setCurrentScreen(new GuiHostServer(game, this));
+				break;
 			case 1: // Join Server
 				game.setCurrentScreen(new GuiJoinServer(game, this));
-				
-				/*game.socketClient = new GameClient();
-				game.socketClient.start();
-				
-				if (!game.isHostingServer()) // If it's not hosting get IP. If it is hosting, assume localhost
-				{
-					ip = JOptionPane.showInputDialog("What is the server's IP");
-				}
-				
-				game.socketClient.setServerIP(ip);
-				game.socketClient.sendPacket(new PacketRequestConnection(pass));
-				break;*/
 		}
 	}
 	
+	@Override
+	public void keyTyped()
+	{
+		
+	}
 }

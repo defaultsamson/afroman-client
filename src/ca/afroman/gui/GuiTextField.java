@@ -33,7 +33,7 @@ public class GuiTextField extends GuiButton
 	private boolean drawBlinker = false;
 	private int blinkCounter = 0;
 	private static final int BLINK_SPEED = 20;
-	private boolean blinkerLetterTyped = false;
+	private boolean letterTyped = false;
 	
 	@Override
 	public void tick()
@@ -44,7 +44,7 @@ public class GuiTextField extends GuiButton
 		{
 			// Times the blinking of the line at the end
 			blinkCounter++;
-			blinkerLetterTyped = false;
+			letterTyped = false;
 			if (blinkCounter > BLINK_SPEED)
 			{
 				blinkCounter = 0;
@@ -59,11 +59,13 @@ public class GuiTextField extends GuiButton
 				if (text.length() > 0)
 				{
 					text = text.substring(0, text.length() - 1);
+					
+					letterTyped = true;
 				}
 			}
 			if (input.backspace.isPressed())
 			{
-				blinkerLetterTyped = true;
+				letterTyped = true;
 			}
 			
 			if (input.space.isPressedTyping())
@@ -544,10 +546,9 @@ public class GuiTextField extends GuiButton
 				{
 					typeChar("z");
 				}
-				typeChar("z");
 			}
 			
-			if (blinkerLetterTyped)
+			if (letterTyped)
 			{
 				blinkCounter = 0;
 				drawBlinker = true;
@@ -558,11 +559,16 @@ public class GuiTextField extends GuiButton
 			blinkCounter = 0;
 			drawBlinker = false;
 		}
+		
+		if (letterTyped)
+		{
+			this.screen.keyTyped();
+		}
 	}
 	
 	private void typeChar(String character)
 	{
-		blinkerLetterTyped = true;
+		letterTyped = true;
 		if (text.length() < maxLength) text += character;
 	}
 	

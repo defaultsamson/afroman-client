@@ -15,7 +15,7 @@ public class GuiButton extends InputType
 	
 	private int id;
 	private boolean canHold = false;
-	
+	private boolean isEnabled = true;
 	private int state = 0;
 	private Texture[] textures;
 	
@@ -39,48 +39,66 @@ public class GuiButton extends InputType
 	
 	public void tick()
 	{
-		int mouseX = Game.instance().input.getMouseX();
-		int mouseY = Game.instance().input.getMouseY();
-		
-		if (hitbox.contains(mouseX, mouseY))
+		if (isEnabled)
 		{
-			if (Game.instance().input.mouseLeft.isPressed())
+			int mouseX = Game.instance().input.getMouseX();
+			int mouseY = Game.instance().input.getMouseY();
+			
+			if (hitbox.contains(mouseX, mouseY))
 			{
-				state = 2; // Down
-				
-				this.setPressed(true);
+				if (Game.instance().input.mouseLeft.isPressed())
+				{
+					state = 2; // Down
+					
+					this.setPressed(true);
+				}
+				else
+				{
+					state = 1; // Hovering
+					
+					this.setPressed(false);
+				}
 			}
 			else
 			{
-				state = 1; // Hovering
+				state = 0; // Not on the button at all
 				
 				this.setPressed(false);
 			}
-		}
-		else
-		{
-			state = 0; // Not on the button at all
 			
-			this.setPressed(false);
-		}
-		
-		if (this.canHold() && this.isPressed())
-		{
-			onPressed();
-		}
-		else if (this.isPressedFiltered())
-		{
-			onPressed();
-		}
-		else if (this.isReleasedFiltered() && Game.instance().input.mouseLeft.isReleased())
-		{
-			onRelease();
+			if (this.canHold() && this.isPressed())
+			{
+				onPressed();
+			}
+			else if (this.isPressedFiltered())
+			{
+				onPressed();
+			}
+			else if (this.isReleasedFiltered() && Game.instance().input.mouseLeft.isReleased())
+			{
+				onRelease();
+			}
 		}
 	}
 	
 	public boolean canHold()
 	{
 		return canHold;
+	}
+	
+	public void setEnabled()
+	{
+		setEnabled(true);
+	}
+	
+	public void setEnabled(boolean enabled)
+	{
+		isEnabled = enabled;
+	}
+	
+	public boolean isEnabled()
+	{
+		return isEnabled;
 	}
 	
 	public void setCanHold(boolean canHold)
@@ -90,17 +108,17 @@ public class GuiButton extends InputType
 	
 	protected void onPressed()
 	{
-		screen.pressAction(id);
+		if (isEnabled) screen.pressAction(id);
 	}
 	
 	protected void onRelease()
 	{
-		screen.releaseAction(id);
+		if (isEnabled) screen.releaseAction(id);
 	}
 	
 	public Texture getTexture()
 	{
-		return textures[state];
+		return (isEnabled ? textures[state] : textures[2]);
 	}
 	
 	public void render(Texture drawTo)

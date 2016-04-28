@@ -40,6 +40,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
 	
 	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);
+	public Key tab = new Key(keys, KeyEvent.VK_TAB);
 	public Key delete = new Key(keys, KeyEvent.VK_DELETE);
 	public Key backspace = new Key(keys, KeyEvent.VK_BACK_SPACE);
 	public Key space = new Key(keys, KeyEvent.VK_SPACE);

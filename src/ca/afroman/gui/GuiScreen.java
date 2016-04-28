@@ -69,6 +69,8 @@ public abstract class GuiScreen
 		}
 	}
 	
+	public abstract void keyTyped();
+	
 	/**
 	 * Fires whenever a button is pressed.
 	 * 
