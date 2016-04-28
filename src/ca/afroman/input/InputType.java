@@ -33,6 +33,43 @@ public class InputType
 		return toReturn;
 	}
 	
+	private int spot = 0;
+	private static final int INTERVAL = 30;
+	
+	/**
+	 * Filters this key for typing purposes. Does the same as isPressedFiltered(), 
+	 * except it will spam after being held down for an extended period of time.
+	 */
+	public boolean isPressedTyping()
+	{
+		// If it's just pressed for the first time
+		if (isPressedFiltered())
+		{
+			// Return the filtered touch
+			return true;
+		}
+		// Else if it's not the first time, but it is still being pressed
+		else if (isPressed())
+		{
+			spot++;
+			
+			if (spot > INTERVAL)
+			{
+				spot = 28;
+				
+				return true;
+			}
+			
+			return false;
+		}
+		// Else if the key is completely released, reset the times and such
+		else
+		{
+			spot = 0;
+			return false;
+		}
+	}
+	
 	public boolean isPressed()
 	{
 		return pressed;

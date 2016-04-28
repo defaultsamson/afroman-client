@@ -39,8 +39,28 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
 	
+	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);
+	public Key delete = new Key(keys, KeyEvent.VK_DELETE);
 	public Key backspace = new Key(keys, KeyEvent.VK_BACK_SPACE);
 	public Key space = new Key(keys, KeyEvent.VK_SPACE);
+	public Key period = new Key(keys, KeyEvent.VK_PERIOD);
+	public Key comma = new Key(keys, KeyEvent.VK_COMMA);
+	public Key slash = new Key(keys, KeyEvent.VK_SLASH);
+	public Key backslash = new Key(keys, KeyEvent.VK_BACK_SLASH);
+	public Key semicolon = new Key(keys, KeyEvent.VK_SEMICOLON);
+	public Key hyphen = new Key(keys, KeyEvent.VK_MINUS);
+	public Key equals = new Key(keys, KeyEvent.VK_EQUALS);
+	
+	public Key zero = new Key(keys, KeyEvent.VK_0);
+	public Key one = new Key(keys, KeyEvent.VK_1);
+	public Key two = new Key(keys, KeyEvent.VK_2);
+	public Key three = new Key(keys, KeyEvent.VK_3);
+	public Key four = new Key(keys, KeyEvent.VK_4);
+	public Key five = new Key(keys, KeyEvent.VK_5);
+	public Key six = new Key(keys, KeyEvent.VK_6);
+	public Key seven = new Key(keys, KeyEvent.VK_7);
+	public Key eight = new Key(keys, KeyEvent.VK_8);
+	public Key nine = new Key(keys, KeyEvent.VK_9);
 	
 	public Key a = new Key(keys, KeyEvent.VK_A);
 	public Key b = new Key(keys, KeyEvent.VK_B);
@@ -70,6 +90,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key z = new Key(keys, KeyEvent.VK_Z);
 	
 	public Key shift = new Key(keys, KeyEvent.VK_SHIFT);
+	public Key control = new Key(keys, KeyEvent.VK_CONTROL);
 	
 	public InputHandler(Game game)
 	{

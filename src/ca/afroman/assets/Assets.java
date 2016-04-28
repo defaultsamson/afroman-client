@@ -80,7 +80,7 @@ public enum Assets
 		assets.put(PLAYER_ONE_IDLE_LEFT, new SpriteAnimation(true, 0, player.getTexture(4)));
 		assets.put(PLAYER_ONE_IDLE_RIGHT, new SpriteAnimation(true, 0, player.getTexture(7)));
 		
-		assets.put(RAW_PLAYER_TWO, new TextureArray(sheet.getSubTexture(0, 0, 16 * 3, 16 * 4), 3, 4, 16, 16));
+		assets.put(RAW_PLAYER_TWO, new TextureArray(sheet.getSubTexture(0, 184, 16 * 3, 16 * 4), 3, 4, 16, 16));
 		
 		TextureArray player2 = Assets.getTextureArray(RAW_PLAYER_TWO);
 		assets.put(PLAYER_TWO_UP, new SpriteAnimation(true, 12, player2.getTexture(9), player2.getTexture(10), player2.getTexture(11)));

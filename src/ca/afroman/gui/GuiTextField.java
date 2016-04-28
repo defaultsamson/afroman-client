@@ -4,11 +4,12 @@ import ca.afroman.Game;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.input.InputHandler;
 
 public class GuiTextField extends GuiButton
 {
 	private Font font;
-	private int maxLength = 32;
+	private int maxLength = 18;
 	private String text = "";
 	private boolean isFocussed = false;
 	
@@ -29,6 +30,11 @@ public class GuiTextField extends GuiButton
 		maxLength = newMax;
 	}
 	
+	private boolean drawBlinker = false;
+	private int blinkCounter = 0;
+	private static final int BLINK_SPEED = 20;
+	private boolean blinkerLetterTyped = false;
+	
 	@Override
 	public void tick()
 	{
@@ -36,123 +42,528 @@ public class GuiTextField extends GuiButton
 		
 		if (isFocussed)
 		{
-			if (Game.instance().input.backspace.isPressedFiltered())
+			// Times the blinking of the line at the end
+			blinkCounter++;
+			blinkerLetterTyped = false;
+			if (blinkCounter > BLINK_SPEED)
+			{
+				blinkCounter = 0;
+				drawBlinker = !drawBlinker;
+			}
+			
+			InputHandler input = Game.instance().input;
+			boolean isShifting = input.shift.isPressed();
+			
+			if (input.backspace.isPressedTyping())
 			{
 				if (text.length() > 0)
 				{
 					text = text.substring(0, text.length() - 1);
 				}
 			}
+			if (input.backspace.isPressed())
+			{
+				blinkerLetterTyped = true;
+			}
 			
-			if (Game.instance().input.space.isPressedFiltered())
+			if (input.space.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += " ";
+				typeChar(" ");
 			}
-			if (Game.instance().input.a.isPressedFiltered())
+			if (input.period.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "a";
+				if (isShifting)
+				{
+					typeChar(">");
+				}
+				else
+				{
+					typeChar(".");
+				}
 			}
-			if (Game.instance().input.b.isPressedFiltered())
+			if (input.comma.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "b";
+				if (isShifting)
+				{
+					typeChar("<");
+				}
+				else
+				{
+					typeChar(",");
+				}
 			}
-			if (Game.instance().input.c.isPressedFiltered())
+			if (input.slash.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "c";
+				if (isShifting)
+				{
+					typeChar("?");
+				}
+				else
+				{
+					typeChar("/");
+				}
 			}
-			if (Game.instance().input.d.isPressedFiltered())
+			if (input.backslash.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "d";
+				if (isShifting)
+				{
+					typeChar("|");
+				}
+				else
+				{
+					typeChar("\\");
+				}
 			}
-			if (Game.instance().input.e.isPressedFiltered())
+			if (input.semicolon.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "e";
+				if (isShifting)
+				{
+					typeChar(":");
+				}
+				else
+				{
+					typeChar(";");
+				}
 			}
-			if (Game.instance().input.f.isPressedFiltered())
+			if (input.hyphen.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "f";
+				if (isShifting)
+				{
+					typeChar("_");
+				}
+				else
+				{
+					typeChar("-");
+				}
 			}
-			if (Game.instance().input.g.isPressedFiltered())
+			if (input.equals.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "g";
+				if (isShifting)
+				{
+					typeChar("+");
+				}
+				else
+				{
+					typeChar("=");
+				}
 			}
-			if (Game.instance().input.h.isPressedFiltered())
+			
+			if (input.zero.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "h";
+				if (isShifting)
+				{
+					typeChar(")");
+				}
+				else
+				{
+					typeChar("0");
+				}
 			}
-			if (Game.instance().input.i.isPressedFiltered())
+			if (input.one.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "i";
+				if (isShifting)
+				{
+					typeChar("!");
+				}
+				else
+				{
+					typeChar("1");
+				}
 			}
-			if (Game.instance().input.j.isPressedFiltered())
+			if (input.two.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "j";
+				if (isShifting)
+				{
+					typeChar("@");
+				}
+				else
+				{
+					typeChar("2");
+				}
 			}
-			if (Game.instance().input.k.isPressedFiltered())
+			if (input.three.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "k";
+				if (isShifting)
+				{
+					typeChar("#");
+				}
+				else
+				{
+					typeChar("3");
+				}
 			}
-			if (Game.instance().input.l.isPressedFiltered())
+			if (input.four.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "l";
+				if (isShifting)
+				{
+					typeChar("$");
+				}
+				else
+				{
+					typeChar("4");
+				}
 			}
-			if (Game.instance().input.m.isPressedFiltered())
+			if (input.five.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "m";
+				if (isShifting)
+				{
+					typeChar("%");
+				}
+				else
+				{
+					typeChar("5");
+				}
 			}
-			if (Game.instance().input.n.isPressedFiltered())
+			if (input.six.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "n";
+				if (isShifting)
+				{
+					typeChar("^");
+				}
+				else
+				{
+					typeChar("6");
+				}
 			}
-			if (Game.instance().input.o.isPressedFiltered())
+			if (input.seven.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "o";
+				if (isShifting)
+				{
+					typeChar("&");
+				}
+				else
+				{
+					typeChar("7");
+				}
 			}
-			if (Game.instance().input.p.isPressedFiltered())
+			if (input.eight.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "p";
+				if (isShifting)
+				{
+					typeChar("*");
+				}
+				else
+				{
+					typeChar("8");
+				}
 			}
-			if (Game.instance().input.q.isPressedFiltered())
+			if (input.nine.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "q";
+				if (isShifting)
+				{
+					typeChar("(");
+				}
+				else
+				{
+					typeChar("9");
+				}
 			}
-			if (Game.instance().input.r.isPressedFiltered())
+			
+			if (input.a.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "r";
+				if (isShifting)
+				{
+					typeChar("A");
+				}
+				else
+				{
+					typeChar("a");
+				}
 			}
-			if (Game.instance().input.s.isPressedFiltered())
+			if (input.b.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "s";
+				if (isShifting)
+				{
+					typeChar("B");
+				}
+				else
+				{
+					typeChar("b");
+				}
 			}
-			if (Game.instance().input.t.isPressedFiltered())
+			if (input.c.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "t";
+				if (isShifting)
+				{
+					typeChar("C");
+				}
+				else
+				{
+					typeChar("c");
+				}
 			}
-			if (Game.instance().input.u.isPressedFiltered())
+			if (input.d.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "u";
+				if (isShifting)
+				{
+					typeChar("D");
+				}
+				else
+				{
+					typeChar("d");
+				}
 			}
-			if (Game.instance().input.v.isPressedFiltered())
+			if (input.e.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "v";
+				if (isShifting)
+				{
+					typeChar("E");
+				}
+				else
+				{
+					typeChar("e");
+				}
 			}
-			if (Game.instance().input.w.isPressedFiltered())
+			if (input.f.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "w";
+				if (isShifting)
+				{
+					typeChar("F");
+				}
+				else
+				{
+					typeChar("f");
+				}
 			}
-			if (Game.instance().input.x.isPressedFiltered())
+			if (input.g.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "x";
+				if (isShifting)
+				{
+					typeChar("G");
+				}
+				else
+				{
+					typeChar("g");
+				}
 			}
-			if (Game.instance().input.y.isPressedFiltered())
+			if (input.h.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "y";
+				if (isShifting)
+				{
+					typeChar("H");
+				}
+				else
+				{
+					typeChar("h");
+				}
 			}
-			if (Game.instance().input.z.isPressedFiltered())
+			if (input.i.isPressedTyping())
 			{
-				if (text.length() < maxLength) text += "z";
+				if (isShifting)
+				{
+					typeChar("I");
+				}
+				else
+				{
+					typeChar("i");
+				}
+			}
+			if (input.j.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("J");
+				}
+				else
+				{
+					typeChar("j");
+				}
+			}
+			if (input.k.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("K");
+				}
+				else
+				{
+					typeChar("k");
+				}
+			}
+			if (input.l.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("L");
+				}
+				else
+				{
+					typeChar("l");
+				}
+			}
+			if (input.m.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("M");
+				}
+				else
+				{
+					typeChar("m");
+				}
+			}
+			if (input.n.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("N");
+				}
+				else
+				{
+					typeChar("n");
+				}
+			}
+			if (input.o.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("O");
+				}
+				else
+				{
+					typeChar("o");
+				}
+			}
+			if (input.p.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("P");
+				}
+				else
+				{
+					typeChar("p");
+				}
+			}
+			if (input.q.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("Q");
+				}
+				else
+				{
+					typeChar("q");
+				}
+			}
+			if (input.r.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("R");
+				}
+				else
+				{
+					typeChar("r");
+				}
+			}
+			if (input.s.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("S");
+				}
+				else
+				{
+					typeChar("s");
+				}
+			}
+			if (input.t.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("T");
+				}
+				else
+				{
+					typeChar("t");
+				}
+			}
+			if (input.u.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("U");
+				}
+				else
+				{
+					typeChar("u");
+				}
+			}
+			if (input.v.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("V");
+				}
+				else
+				{
+					typeChar("v");
+				}
+			}
+			if (input.w.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("W");
+				}
+				else
+				{
+					typeChar("w");
+				}
+			}
+			if (input.x.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("X");
+				}
+				else
+				{
+					typeChar("x");
+				}
+			}
+			if (input.y.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("Y");
+				}
+				else
+				{
+					typeChar("y");
+				}
+			}
+			if (input.z.isPressedTyping())
+			{
+				if (isShifting)
+				{
+					typeChar("Z");
+				}
+				else
+				{
+					typeChar("z");
+				}
+				typeChar("z");
+			}
+			
+			if (blinkerLetterTyped)
+			{
+				blinkCounter = 0;
+				drawBlinker = true;
 			}
 		}
+		else
+		{
+			blinkCounter = 0;
+			drawBlinker = false;
+		}
+	}
+	
+	private void typeChar(String character)
+	{
+		blinkerLetterTyped = true;
+		if (text.length() < maxLength) text += character;
 	}
 	
 	public void setFocussed()
@@ -162,6 +573,7 @@ public class GuiTextField extends GuiButton
 	
 	public void setFocussed(boolean isFocussed)
 	{
+		if (isFocussed) screen.unfocusTextFields();
 		this.isFocussed = isFocussed;
 	}
 	
@@ -188,7 +600,6 @@ public class GuiTextField extends GuiButton
 	@Override
 	protected void onPressed()
 	{
-		screen.unfocusTextFields();
 		this.setFocussed();
 	}
 	
@@ -202,6 +613,9 @@ public class GuiTextField extends GuiButton
 	public void render(Texture drawTo)
 	{
 		super.render(drawTo);
-		font.render(drawTo, hitbox.x + 2, hitbox.y + 4, text);
+		
+		String displayText = text + (drawBlinker && text.length() < maxLength ? "_" : "");
+		
+		font.render(drawTo, hitbox.x + 2, hitbox.y + 4, displayText);
 	}
 }
