@@ -164,12 +164,8 @@ public class GameClient extends Thread
 	
 	public ConnectedPlayer playerByID(int id)
 	{
-		System.out.println("Looking For ID: " + id);
-		
 		for (ConnectedPlayer player : playerList)
 		{
-			System.out.println("ID Found: " + player.getID());
-			
 			if (player.getID() == id) return player;
 		}
 		

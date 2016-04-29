@@ -9,10 +9,12 @@ import ca.afroman.assets.Texture;
 import ca.afroman.entity.Role;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.network.ConnectedPlayer;
 
 public class GuiChooseRole extends GuiScreen
 {
 	private int playerID;
+	private ConnectedPlayer player;
 	
 	private SpriteAnimation player1;
 	private int player1X = 0;
@@ -48,8 +50,10 @@ public class GuiChooseRole extends GuiScreen
 		light1 = new FlickeringLight(0, 0, 42, 44, 8);
 		light2 = new FlickeringLight(0, 0, 42, 44, 8);
 		
-		Role role = game.socketClient.playerByID(playerID).getRole();
+		player = game.socketClient.playerByID(playerID);
 		
+		Role role = player.getRole();
+				
 		this.buttons.add(new GuiTextButton(this, 200, (Game.WIDTH / 2) - (72 / 2), 116, blackFont, "Cancel"));
 		player1b = new GuiTextButton(this, 201, (Game.WIDTH / 2) - (72 / 2) - 78, 116, blackFont, "Player 1");
 		player1b.setEnabled(role != Role.PLAYER1);
@@ -85,6 +89,15 @@ public class GuiChooseRole extends GuiScreen
 		switch (buttonID)
 		{
 			case 200:
+				Game.instance().setCurrentScreen(this.parentScreen);
+				break;
+			case 201: 
+				// TODO instead, request the server for a role change, and update the player list
+				player.setRole(Role.PLAYER1);
+				Game.instance().setCurrentScreen(this.parentScreen);
+				break;
+			case 202:
+				player.setRole(Role.PLAYER2);
 				Game.instance().setCurrentScreen(this.parentScreen);
 				break;
 		}
