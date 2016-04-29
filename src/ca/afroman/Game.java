@@ -63,6 +63,8 @@ public class Game extends Canvas implements Runnable
 	public PlayerEntity player;
 	
 	private String username = "";
+	private String password = "";
+	private String typedIP = "";
 	
 	public GameClient socketClient;
 	public GameServer socketServer;
@@ -100,7 +102,7 @@ public class Game extends Canvas implements Runnable
 		socketClient = new GameClient();
 		socketClient.start();
 		
-		setCurrentScreen(new GuiMainMenu(this));
+		setCurrentScreen(new GuiMainMenu());
 		
 		// TODO this stuff is fully functional. Add to the gui
 		// String ip = "localhost";
@@ -344,10 +346,10 @@ public class Game extends Canvas implements Runnable
 		 * }
 		 * if (hudDebug)
 		 * {
-		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 0, "TPS: " + tps);
-		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 10, "FPS: " + fps);
-		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 20, "x: " + player.getX());
-		 * Assets.getFont(Assets.FONT_NORMAL).render(screen, 1, 30, "y: " + player.getY());
+		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
+		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
+		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX());
+		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
 		 * }
 		 */
 		
@@ -424,12 +426,6 @@ public class Game extends Canvas implements Runnable
 		this.requestFocus();
 	}
 	
-	public String getPassword()
-	{
-		// TODO implement password setter
-		return "hooplah";
-	}
-	
 	public boolean isFullScreen()
 	{
 		return fullscreen;
@@ -465,14 +461,39 @@ public class Game extends Canvas implements Runnable
 		this.currentScreen = screen;
 	}
 	
+	public GuiScreen getCurrentScreen()
+	{
+		return currentScreen;
+	}
+	
+	public void setUsername(String newUsername)
+	{
+		this.username = newUsername;
+	}
+	
 	public String getUsername()
 	{
 		return username;
 	}
 	
-	public void setUsername(String newName)
+	public void setPassword(String newPassword)
 	{
-		this.username = newName;
+		this.password = newPassword;
+	}
+	
+	public String getPassword()
+	{
+		return password;
+	}
+	
+	public void setServerIP(String newIP)
+	{
+		this.typedIP = newIP;
+	}
+	
+	public String getServerIP()
+	{
+		return typedIP;
 	}
 	
 	public static void main(String[] args)

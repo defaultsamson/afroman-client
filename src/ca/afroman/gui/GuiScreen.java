@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.Game;
+import ca.afroman.assets.Assets;
+import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 
 public abstract class GuiScreen
@@ -11,12 +13,18 @@ public abstract class GuiScreen
 	protected Game game;
 	protected GuiScreen parentScreen;
 	protected List<GuiButton> buttons;
+	private List<GuiButton> buttonToRemove;
 	
-	public GuiScreen(Game game, GuiScreen parentScreen)
+	protected static Font nobleFont = Assets.getFont(Assets.FONT_NOBLE);
+	protected static Font whiteFont = Assets.getFont(Assets.FONT_WHITE);
+	protected static Font blackFont = Assets.getFont(Assets.FONT_BLACK);
+	
+	public GuiScreen(GuiScreen parentScreen)
 	{
-		this.game = game;
+		this.game = Game.instance();
 		this.parentScreen = parentScreen;
 		this.buttons = new ArrayList<GuiButton>();
+		this.buttonToRemove = new ArrayList<GuiButton>();
 		
 		init();
 	}
@@ -28,8 +36,20 @@ public abstract class GuiScreen
 		buttons.add(button);
 	}
 	
+	public void removeButton(GuiButton button)
+	{
+		buttonToRemove.add(button);
+	}
+	
 	public void tick()
 	{
+		// Removes all the buttons pending removal
+		for (GuiButton button : this.buttonToRemove)
+		{
+			buttons.remove(button);
+		}
+		
+		// Ticks all the buttons
 		for (GuiButton button : this.buttons)
 		{
 			button.tick();

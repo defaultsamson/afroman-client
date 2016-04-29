@@ -4,17 +4,14 @@ import java.awt.Color;
 
 import ca.afroman.Game;
 import ca.afroman.assets.Assets;
-import ca.afroman.assets.Font;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
-import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.server.GameServer;
 
 public class GuiHostServer extends GuiScreen
 {
-	private Font font;
 	private SpriteAnimation afroMan;
 	private SpriteAnimation player2;
 	private LightMap lightmap;
@@ -25,15 +22,14 @@ public class GuiHostServer extends GuiScreen
 	
 	private GuiTextButton joinButton;
 	
-	public GuiHostServer(Game game, GuiScreen parent)
+	public GuiHostServer(GuiScreen parent)
 	{
-		super(game, parent);
+		super(parent);
 	}
 	
 	@Override
 	public void init()
 	{
-		font = Assets.getFont(Assets.FONT_NORMAL);
 		afroMan = Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_DOWN);
 		
@@ -43,15 +39,18 @@ public class GuiHostServer extends GuiScreen
 		username = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 62);
 		username.setText(game.getUsername());
 		password = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 90);
-
+		password.setText(game.getPassword());
+		
+		game.setServerIP(GameServer.IPv4_LOCALHOST);
+		
 		buttons.add(username);
 		buttons.add(password);
 		
-		joinButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_NORMAL), "Host Server");
+		joinButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_BLACK), "Host Server");
 		joinButton.setEnabled(false);
 		
 		buttons.add(joinButton);
-		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(Assets.FONT_NORMAL), "Back"));
+		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(Assets.FONT_BLACK), "Back"));
 	}
 	
 	@Override
@@ -63,10 +62,10 @@ public class GuiHostServer extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		font.renderCentered(renderTo, Game.WIDTH / 2, 15, "Host A Server");
+		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 15, "Host A Server");
 		
-		font.renderCentered(renderTo, Game.WIDTH / 2 - 57, 62 - 10, "Username");
-		font.renderCentered(renderTo, Game.WIDTH / 2 - 57, 90 - 10, "Server Pass");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 62 - 10, "Username");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 90 - 10, "Server Pass");
 		
 		renderTo.draw(afroMan.getCurrentFrame(), (Game.WIDTH / 2) - 20, 30);
 		renderTo.draw(player2.getCurrentFrame(), (Game.WIDTH / 2) + 4, 30);
@@ -109,11 +108,7 @@ public class GuiHostServer extends GuiScreen
 					game.isHosting = true;
 				}
 				
-				game.socketClient.setServerIP(GameServer.IPv4_LOCALHOST);
-				game.socketClient.sendPacket(new PacketRequestConnection(this.password.getText()));
-				break;
-			case 200:
-				Game.instance().setCurrentScreen(this.parentScreen);
+				Game.instance().setCurrentScreen(new GuiConnectToServer(this));
 				break;
 		}
 	}
@@ -123,7 +118,9 @@ public class GuiHostServer extends GuiScreen
 	{
 		switch (buttonID)
 		{
-			
+			case 200:
+				Game.instance().setCurrentScreen(this.parentScreen);
+				break;
 		}
 	}
 	
@@ -138,5 +135,8 @@ public class GuiHostServer extends GuiScreen
 		{
 			this.joinButton.setEnabled(false);
 		}
+		
+		game.setUsername(this.username.getText());
+		game.setPassword(this.password.getText());
 	}
 }

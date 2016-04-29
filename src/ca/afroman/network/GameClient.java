@@ -6,9 +6,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.afroman.Game;
+import ca.afroman.entity.Role;
+import ca.afroman.gui.GuiClickNotification;
+import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
+import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketType;
@@ -20,9 +26,12 @@ public class GameClient extends Thread
 	private InetAddress serverIP;
 	private DatagramSocket socket;
 	// private Game game;
+	private List<ConnectedPlayer> playerList;
 	
 	public GameClient()
 	{
+		playerList = new ArrayList<ConnectedPlayer>();
+		
 		try
 		{
 			this.socket = new DatagramSocket();
@@ -64,16 +73,15 @@ public class GameClient extends Thread
 				e.printStackTrace();
 			}
 			
-			this.parsePacket(packet.getData(), new Connection(packet.getAddress(), packet.getPort()));
+			this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 		}
 	}
 	
-	public void parsePacket(byte[] data, Connection connection)
+	public void parsePacket(byte[] data, IPConnection connection)
 	{
 		PacketType type = Packet.readType(data);
-		// String message = Packet.readContent(data);
 		
-		System.out.println("[CLIENT] [RECIEVE] [" + connection.toString() + "] " + type.toString());
+		System.out.println("[CLIENT] [RECIEVE] [" + connection.getIPAddress().getHostAddress() + ":" + connection.getPort() + "] " + type.toString());
 		
 		switch (type)
 		{
@@ -82,42 +90,37 @@ public class GameClient extends Thread
 				System.out.println("INVALID PACKET");
 				break;
 			case REQUEST_PASSWORD:
-			{
-				GuiJoinServer.passwordText = "INVALID PASSWORD";
-				Game.instance().setCurrentScreen(new GuiJoinServer(Game.instance(), new GuiMainMenu(Game.instance())));
-			}
+				// Game.instance().setPassword("INVALID PASSWORD");
+				Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+				new GuiClickNotification(Game.instance().getCurrentScreen(), "INVALID", "PASSWORD");
 				break;
 			case ASSIDN_CLIENTID:
 				id = Integer.parseInt(Packet.readContent(data));
 				break;
-			// case THIS_PLAYER_JOIN:
-			// {
-			// PacketThisPlayerJoin packet = new PacketThisPlayerJoin(data);
-			// PlayerMPEntity joined = new PlayerMPEntity(packet.getX(), packet.getY(), 1, Game.instance().input, address, port);
-			// }
-			// break;
-			// case PLAYER_JOIN:
-			// PacketPlayerJoin packet = new PacketPlayerJoin(data);
-			//
-			// PlayerMPEntity joined = new PlayerMPEntity(packet.getX(), packet.getY(), 1, address, port);
-			//
-			// // PacketLogin packet = new PacketLogin(data);
-			// //
-			// // if (packet.getPassword().trim().equals(Game.instance().getPassword()))
-			// // {
-			// // System.out.println("[SERVER] Password accepted: " + packet.getPassword());
-			// //
-			// // PlayerMPEntity player = new PlayerMPEntity(game.blankLevel, 100, 120, 1, address, port);
-			// // }
-			// // else
-			// // {
-			// // System.out.println("[SERVER] Password denied: " + packet.getPassword());
-			// // // TODO tell the client that they failed
-			// // }
-			// break;
-			// case DISCONNECT:
-			// break;
+			case UPDATE_PLAYERLIST:
+			{
+				String[] split = Packet.readContent(data).split(",");
+				
+				List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
+				for (int i = 0; i < split.length; i += 3)
+				{
+					players.add(new ConnectedPlayer(Integer.parseInt(split[i]), Role.fromOrdinal(Integer.parseInt(split[i + 1])), split[i + 2]));
+				}
+				
+				this.playerList = players;
+				
+				if (Game.instance().getCurrentScreen() instanceof GuiConnectToServer)
+				{
+					Game.instance().setCurrentScreen(new GuiLobby(null));
+				}
+			}
+				break;
 		}
+	}
+	
+	public int getID()
+	{
+		return id;
 	}
 	
 	/**
@@ -142,7 +145,7 @@ public class GameClient extends Thread
 	{
 		DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, GameServer.PORT);
 		
-		System.out.println("[CLIENT] [SEND] " + new String(data));
+		System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + GameServer.PORT + "] " + new String(data));
 		
 		try
 		{
@@ -152,6 +155,44 @@ public class GameClient extends Thread
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public ConnectedPlayer thisPlayer()
+	{
+		return playerByID(id);
+	}
+	
+	public ConnectedPlayer playerByID(int id)
+	{
+		System.out.println("Looking For ID: " + id);
 		
+		for (ConnectedPlayer player : playerList)
+		{
+			System.out.println("ID Found: " + player.getID());
+			
+			if (player.getID() == id) return player;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @return a list of all the ConnectedPlayers, exclusing this current player.
+	 */
+	public List<ConnectedPlayer> otherPlayers()
+	{
+		List<ConnectedPlayer> toReturn = new ArrayList<ConnectedPlayer>();
+		
+		for (ConnectedPlayer player : playerList)
+		{
+			if (player.getID() != id) toReturn.add(player);
+		}
+		
+		return toReturn;
+	}
+	
+	public List<ConnectedPlayer> getPlayers()
+	{
+		return playerList;
 	}
 }

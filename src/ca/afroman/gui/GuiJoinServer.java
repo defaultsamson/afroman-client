@@ -4,7 +4,6 @@ import java.awt.Color;
 
 import ca.afroman.Game;
 import ca.afroman.assets.Assets;
-import ca.afroman.assets.Font;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
@@ -12,10 +11,6 @@ import ca.afroman.gfx.LightMap;
 
 public class GuiJoinServer extends GuiScreen
 {
-	public static String ipText = "";
-	public static String passwordText = "";
-	
-	private Font font;
 	private SpriteAnimation afroMan;
 	private SpriteAnimation player2;
 	private LightMap lightmap;
@@ -27,15 +22,14 @@ public class GuiJoinServer extends GuiScreen
 	
 	private GuiTextButton joinButton;
 	
-	public GuiJoinServer(Game game, GuiScreen parent)
+	public GuiJoinServer(GuiScreen parent)
 	{
-		super(game, parent);
+		super(parent);
 	}
 	
 	@Override
 	public void init()
 	{
-		font = Assets.getFont(Assets.FONT_NORMAL);
 		afroMan = Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_DOWN);
 		
@@ -46,20 +40,20 @@ public class GuiJoinServer extends GuiScreen
 		username.setText(game.getUsername());
 		serverIP = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
 		serverIP.setMaxLength(64);
-		serverIP.setText(ipText);
+		serverIP.setText(game.getServerIP());
 		password = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 120 - 8);
-		password.setText(passwordText);
+		password.setText(game.getPassword());
 		
 		buttons.add(username);
 		buttons.add(serverIP);
 		buttons.add(password);
 		
-		joinButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_NORMAL), "Join Server");
+		joinButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_BLACK), "Join Server");
 		
 		keyTyped();
 		
 		buttons.add(joinButton);
-		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(Assets.FONT_NORMAL), "Back"));
+		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(Assets.FONT_BLACK), "Back"));
 	}
 	
 	@Override
@@ -71,11 +65,11 @@ public class GuiJoinServer extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		font.renderCentered(renderTo, Game.WIDTH / 2, 15, "Join a Server");
+		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 15, "Join a Server");
 		
-		font.renderCentered(renderTo, Game.WIDTH / 2 - 57, 50 - 4, "Username");
-		font.renderCentered(renderTo, Game.WIDTH / 2 - 57, 80 - 6, "Server IP");
-		font.renderCentered(renderTo, Game.WIDTH / 2 - 57, 110 - 8, "Server Pass");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 50 - 4, "Username");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 80 - 6, "Server IP");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 110 - 8, "Server Pass");
 		
 		renderTo.draw(afroMan.getCurrentFrame(), (Game.WIDTH / 2) - 20, 30);
 		renderTo.draw(player2.getCurrentFrame(), (Game.WIDTH / 2) + 4, 30);
@@ -112,9 +106,7 @@ public class GuiJoinServer extends GuiScreen
 	{
 		switch (buttonID)
 		{
-			case 200:
-				Game.instance().setCurrentScreen(this.parentScreen);
-				break;
+			
 		}
 	}
 	
@@ -124,8 +116,10 @@ public class GuiJoinServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 1: // Join Server
-				game.setUsername(this.username.getText());
-				Game.instance().setCurrentScreen(new GuiConnectToServer(game, this));
+				Game.instance().setCurrentScreen(new GuiConnectToServer(this));
+				break;
+			case 200:
+				Game.instance().setCurrentScreen(this.parentScreen);
 				break;
 		}
 	}
@@ -143,7 +137,7 @@ public class GuiJoinServer extends GuiScreen
 		}
 		
 		game.setUsername(this.username.getText());
-		ipText = this.serverIP.getText();
-		passwordText = this.password.getText();
+		game.setServerIP(this.serverIP.getText());
+		game.setPassword(this.password.getText());
 	}
 }

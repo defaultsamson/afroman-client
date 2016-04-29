@@ -11,27 +11,24 @@ public class GuiConnectToServer extends GuiScreen
 {
 	private Font font;
 	
-	public GuiConnectToServer(Game game, GuiScreen parent)
+	public GuiConnectToServer(GuiScreen parent)
 	{
-		super(game, parent);
+		super(parent);
 	}
 	
 	@Override
 	public void init()
 	{
-		font = Assets.getFont(Assets.FONT_NORMAL);
+		font = Assets.getFont(Assets.FONT_BLACK);
 		
-		String ip = GuiJoinServer.ipText;
-		String pass = GuiJoinServer.passwordText;
-		
-		game.socketClient.setServerIP(ip);
-		game.socketClient.sendPacket(new PacketRequestConnection(pass));
+		game.socketClient.setServerIP(game.getServerIP());
+		game.socketClient.sendPacket(new PacketRequestConnection(game.getUsername(), game.getPassword()));
 	}
 	
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		font.renderCentered(renderTo, Game.WIDTH / 2, 80, "Connecting to Server: " + GuiJoinServer.ipText);
+		font.renderCentered(renderTo, Game.WIDTH / 2, 80, "Connecting to Server: " + game.getServerIP());
 		font.renderCentered(renderTo, Game.WIDTH / 2, 100, "Client ID: " + (GameClient.id == -1 ? "NONE" : GameClient.id));
 	}
 	

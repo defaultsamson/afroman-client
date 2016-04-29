@@ -5,7 +5,7 @@ import ca.afroman.assets.Texture;
 
 public class GuiTextButton extends GuiButton
 {
-	private Font font;
+	protected Font font;
 	private String text;
 	
 	public GuiTextButton(GuiScreen screen, int id, int x, int y, Font font, String text)

@@ -108,12 +108,12 @@ public class GuiButton extends InputType
 	
 	protected void onPressed()
 	{
-		if (isEnabled) screen.pressAction(id);
+		if (isEnabled && screen != null) screen.pressAction(id);
 	}
 	
 	protected void onRelease()
 	{
-		if (isEnabled) screen.releaseAction(id);
+		if (isEnabled && screen != null) screen.releaseAction(id);
 	}
 	
 	public Texture getTexture()
