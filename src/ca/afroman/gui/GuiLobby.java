@@ -48,51 +48,60 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void tick()
 	{
-		// Removes all buttons except for that at index 0 (The Start Game Button)
-		for (int i = 1; i < buttons.size(); i++)
+		// Draws all the new buttons if the server list has been updated
+		if (game.hasServerListBeenUpdated())
 		{
-			this.buttons.remove(i);
+			// Removes all buttons except for that at index 0 (The Start Game Button)
+			buttons.clear();
+			buttons.add(startButton);
+			
+			light1.tick();
+			light2.tick();
+			
+			player1X = -300;
+			player1Y = -300;
+			player2X = -300;
+			player2Y = -300;
+			
+			// Draws the player list
+			int counter = 0;
+			int row = 0;
+			for (ConnectedPlayer player : game.socketClient.getPlayers())
+			{
+				System.out.println("NEW BUTTON ID: " + player.getID());
+				boolean isEvenNum = (counter & 1) == 0;
+				
+				if (isEvenNum) row++;
+				
+				int buttonX = (isEvenNum ? 20 : 148);
+				int buttonY = 20 + (18 * row);
+				
+				// Add each player in the last as a button. Only lets the host of the server edit
+				GuiTextButton button = new GuiTextButton(this, player.getID(), buttonX, buttonY, (game.isHostingServer() ? blackFont : whiteFont), player.getUsername());
+				button.setEnabled(game.isHostingServer());
+				this.buttons.add(button);
+				
+				// Draws the player sprite beside the name of the user playing as that character
+				if (player.getRole() == Role.PLAYER1)
+				{
+					player1X = buttonX + (isEvenNum ? 80 : -24);
+					player1Y = buttonY;
+				}
+				else if (player.getRole() == Role.PLAYER2)
+				{
+					player2X = buttonX + (isEvenNum ? 80 : -24);
+					player2Y = buttonY;
+				}
+				
+				counter++;
+			}
+			
+			// Only enable the start button if both the player roles are not null
+			startButton.setEnabled(game.socketClient.playerByRole(Role.PLAYER1) != null && game.socketClient.playerByRole(Role.PLAYER2) != null);
 		}
 		
 		light1.tick();
 		light2.tick();
-		
-		player1X = -300;
-		player1Y = -300;
-		player2X = -300;
-		player2Y = -300;
-		
-		// Draws the player list
-		int counter = 0;
-		int row = 0;
-		for (ConnectedPlayer player : game.socketClient.getPlayers())
-		{
-			boolean isEvenNum = (counter & 1) == 0;
-			
-			if (isEvenNum) row++;
-			
-			int buttonX = (isEvenNum ? 20 : 148);
-			int buttonY = 20 + (18 * row);
-			
-			// Add each player in the last as a button. Only lets the host of the server edit
-			GuiTextButton button = new GuiTextButton(this, player.getID(), buttonX, buttonY, (game.isHostingServer() ? blackFont : whiteFont), player.getUsername());
-			button.setEnabled(game.isHostingServer());
-			this.buttons.add(button);
-			
-			// Draws the player sprite beside the name of the user playing as that character
-			if (player.getRole() == Role.PLAYER1)
-			{
-				player1X = buttonX + (isEvenNum ? 80 : -24);
-				player1Y = buttonY;
-			}
-			else if (player.getRole() == Role.PLAYER2)
-			{
-				player2X = buttonX + (isEvenNum ? 80 : -24);
-				player2Y = buttonY;
-			}
-			
-			counter++;
-		}
 		
 		super.tick();
 	}
@@ -136,9 +145,11 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void pressAction(int buttonID)
 	{
+		System.out.println("Current ID: " + buttonID);
+		
 		if (buttonID != 2000)
 		{
-			Game.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
+			// Game.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
 		}
 	}
 	

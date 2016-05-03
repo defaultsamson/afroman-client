@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 
+import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.Level;
@@ -51,6 +52,7 @@ public class Game extends Canvas implements Runnable
 	private boolean consoleDebug = false; // Shows a console window
 	
 	public boolean isHosting = false;
+	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	public boolean running = false;
 	public int tickCount = 0;
@@ -104,31 +106,8 @@ public class Game extends Canvas implements Runnable
 		
 		setCurrentScreen(new GuiMainMenu());
 		
-		// TODO this stuff is fully functional. Add to the gui
-		// String ip = "localhost";
-		// String pass = "";
-		//
-		// if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
-		// {
-		// pass = JOptionPane.showInputDialog(this, "Please create a password (Leave blank for no password)");
-		//
-		// socketServer = new GameServer(pass);
-		// socketServer.start();
-		// isHosting = true;
-		// }
-		// else
-		// {
-		// ip = JOptionPane.showInputDialog("What is the server's IP");
-		// }
-		//
-		// socketClient = new GameClient();
-		// socketClient.start();
-		//
-		// socketClient.setServerIP(ip);
-		// socketClient.sendPacket(new PacketRequestConnection(pass));
-		//
-		
 		/*
+		 * TODO add level loading
 		 * blankLevel = Level.fromFile("/level1.txt");
 		 * String ip = "localhost";
 		 * String pass = "hooplah";
@@ -274,14 +253,17 @@ public class Game extends Canvas implements Runnable
 			// Toggles Fullscreen Mode
 			setFullScreen(!fullscreen);
 		}
+		
+		if (input.hudDebug.isPressedFiltered())
+		{
+			hudDebug = !hudDebug;
+			
+			System.out.println("Game ID: " + this.socketClient.getPlayerID());
+			
+			System.out.println("Debug Hud: " + hudDebug);
+		}
+		
 		// TODO
-		// if (input.hudDebug.isPressedFiltered())
-		// {
-		// hudDebug = !hudDebug;
-		//
-		// System.out.println("Debug Hud: " + hudDebug);
-		// }
-		//
 		// if (input.hitboxDebug.isPressedFiltered())
 		// {
 		// hitboxDebug = !hitboxDebug;
@@ -325,6 +307,9 @@ public class Game extends Canvas implements Runnable
 		}
 		
 		// TODO blankLevel.tick();
+		
+		// Don't update the player list after the first tick that it has been updated.
+		updatePlayerList = false;
 	}
 	
 	public void render()
@@ -344,14 +329,14 @@ public class Game extends Canvas implements Runnable
 		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
 		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
 		 * }
-		 * if (hudDebug)
-		 * {
-		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
-		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
-		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX());
-		 * Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
-		 * }
 		 */
+		if (hudDebug)
+		{
+			Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
+			Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
+			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
+			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
+		}
 		
 		if (currentScreen != null)
 		{
@@ -494,6 +479,11 @@ public class Game extends Canvas implements Runnable
 	public String getServerIP()
 	{
 		return typedIP;
+	}
+	
+	public boolean hasServerListBeenUpdated()
+	{
+		return updatePlayerList;
 	}
 	
 	public static void main(String[] args)

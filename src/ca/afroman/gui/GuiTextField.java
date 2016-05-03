@@ -12,6 +12,7 @@ public class GuiTextField extends GuiButton
 	private int maxLength = 18;
 	private String text = "";
 	private boolean isFocussed = false;
+	private boolean allowPunc = true;
 	
 	public GuiTextField(GuiScreen screen, int x, int y)
 	{
@@ -68,85 +69,89 @@ public class GuiTextField extends GuiButton
 				letterTyped = true;
 			}
 			
-			if (input.space.isPressedTyping())
+			// All the punctuation
+			if (allowPunc)
 			{
-				typeChar(" ");
-			}
-			if (input.period.isPressedTyping())
-			{
-				if (isShifting)
+				if (input.space.isPressedTyping())
 				{
-					typeChar(">");
+					typeChar(" ");
 				}
-				else
+				if (input.period.isPressedTyping())
 				{
-					typeChar(".");
+					if (isShifting)
+					{
+						typeChar(">");
+					}
+					else
+					{
+						typeChar(".");
+					}
 				}
-			}
-			if (input.comma.isPressedTyping())
-			{
-				if (isShifting)
+				if (input.comma.isPressedTyping())
 				{
-					typeChar("<");
+					if (isShifting)
+					{
+						typeChar("<");
+					}
+					else
+					{
+						typeChar(",");
+					}
 				}
-				else
+				if (input.slash.isPressedTyping())
 				{
-					typeChar(",");
+					if (isShifting)
+					{
+						typeChar("?");
+					}
+					else
+					{
+						typeChar("/");
+					}
 				}
-			}
-			if (input.slash.isPressedTyping())
-			{
-				if (isShifting)
+				if (input.backslash.isPressedTyping())
 				{
-					typeChar("?");
+					if (isShifting)
+					{
+						typeChar("|");
+					}
+					else
+					{
+						typeChar("\\");
+					}
 				}
-				else
+				if (input.semicolon.isPressedTyping())
 				{
-					typeChar("/");
+					if (isShifting)
+					{
+						typeChar(":");
+					}
+					else
+					{
+						typeChar(";");
+					}
 				}
-			}
-			if (input.backslash.isPressedTyping())
-			{
-				if (isShifting)
+				if (input.hyphen.isPressedTyping())
 				{
-					typeChar("|");
+					if (isShifting)
+					{
+						typeChar("_");
+					}
+					else
+					{
+						typeChar("-");
+					}
 				}
-				else
+				if (input.equals.isPressedTyping())
 				{
-					typeChar("\\");
-				}
-			}
-			if (input.semicolon.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar(":");
-				}
-				else
-				{
-					typeChar(";");
-				}
-			}
-			if (input.hyphen.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("_");
-				}
-				else
-				{
-					typeChar("-");
-				}
-			}
-			if (input.equals.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("+");
-				}
-				else
-				{
-					typeChar("=");
+					if (isShifting)
+					{
+						typeChar("+");
+					}
+					else
+					{
+						typeChar("=");
+					}
 				}
 			}
 			
@@ -154,7 +159,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar(")");
+					if (allowPunc) typeChar(")");
 				}
 				else
 				{
@@ -165,7 +170,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("!");
+					if (allowPunc) typeChar("!");
 				}
 				else
 				{
@@ -176,7 +181,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("@");
+					if (allowPunc) typeChar("@");
 				}
 				else
 				{
@@ -187,7 +192,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("#");
+					if (allowPunc) typeChar("#");
 				}
 				else
 				{
@@ -198,7 +203,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("$");
+					if (allowPunc) typeChar("$");
 				}
 				else
 				{
@@ -209,7 +214,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("%");
+					if (allowPunc) typeChar("%");
 				}
 				else
 				{
@@ -220,7 +225,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("^");
+					if (allowPunc) typeChar("^");
 				}
 				else
 				{
@@ -231,7 +236,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("&");
+					if (allowPunc) typeChar("&");
 				}
 				else
 				{
@@ -242,7 +247,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("*");
+					if (allowPunc) typeChar("*");
 				}
 				else
 				{
@@ -253,7 +258,7 @@ public class GuiTextField extends GuiButton
 			{
 				if (isShifting)
 				{
-					typeChar("(");
+					if (allowPunc) typeChar("(");
 				}
 				else
 				{
@@ -570,6 +575,11 @@ public class GuiTextField extends GuiButton
 	{
 		letterTyped = true;
 		if (text.length() < maxLength) text += character;
+	}
+	
+	public void setAllowPunctuation(boolean newAllowPunc)
+	{
+		allowPunc = newAllowPunc;
 	}
 	
 	public void setFocussed()

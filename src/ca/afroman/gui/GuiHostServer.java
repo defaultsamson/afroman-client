@@ -20,7 +20,7 @@ public class GuiHostServer extends GuiScreen
 	private GuiTextField username;
 	private GuiTextField password;
 	
-	private GuiTextButton joinButton;
+	private GuiTextButton hostButton;
 	
 	public GuiHostServer(GuiScreen parent)
 	{
@@ -38,18 +38,20 @@ public class GuiHostServer extends GuiScreen
 		
 		username = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 62);
 		username.setText(game.getUsername());
+		username.setAllowPunctuation(false);
 		password = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 90);
 		password.setText(game.getPassword());
+		password.setAllowPunctuation(false);
 		
 		game.setServerIP(GameServer.IPv4_LOCALHOST);
 		
 		buttons.add(username);
 		buttons.add(password);
 		
-		joinButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_BLACK), "Host Server");
-		joinButton.setEnabled(false);
+		hostButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_BLACK), "Host Server");
+		hostButton.setEnabled(!this.username.getText().isEmpty());
 		
-		buttons.add(joinButton);
+		buttons.add(hostButton);
 		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(Assets.FONT_BLACK), "Back"));
 	}
 	
@@ -127,14 +129,7 @@ public class GuiHostServer extends GuiScreen
 	@Override
 	public void keyTyped()
 	{
-		if (!this.username.getText().isEmpty())
-		{
-			this.joinButton.setEnabled(true);
-		}
-		else
-		{
-			this.joinButton.setEnabled(false);
-		}
+		this.hostButton.setEnabled(!this.username.getText().isEmpty());
 		
 		game.setUsername(this.username.getText());
 		game.setPassword(this.password.getText());

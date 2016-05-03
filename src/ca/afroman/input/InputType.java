@@ -37,7 +37,7 @@ public class InputType
 	private static final int INTERVAL = 30;
 	
 	/**
-	 * Filters this key for typing purposes. Does the same as isPressedFiltered(), 
+	 * Filters this key for typing purposes. Does the same as isPressedFiltered(),
 	 * except it will spam after being held down for an extended period of time.
 	 */
 	public boolean isPressedTyping()

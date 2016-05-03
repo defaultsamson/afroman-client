@@ -17,7 +17,7 @@ public class FlickeringLight extends PointLight
 	
 	public FlickeringLight(int x, int y, int radius1, int radius2, int ticksPerFrame, float intensity)
 	{
-		this( x, y, radius1, radius2, ticksPerFrame, intensity, ColourUtil.TRANSPARENT);
+		this(x, y, radius1, radius2, ticksPerFrame, intensity, ColourUtil.TRANSPARENT);
 	}
 	
 	public FlickeringLight(int x, int y, int radius1, int radius2, int ticksPerFrame, float intensity, Color colour)

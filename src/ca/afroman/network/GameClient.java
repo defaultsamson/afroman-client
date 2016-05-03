@@ -16,6 +16,7 @@ import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketType;
 import ca.afroman.server.GameServer;
@@ -89,16 +90,41 @@ public class GameClient extends Thread
 			case INVALID:
 				System.out.println("INVALID PACKET");
 				break;
-			case REQUEST_PASSWORD:
+			case DENY_JOIN:
 				// Game.instance().setPassword("INVALID PASSWORD");
 				Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
-				new GuiClickNotification(Game.instance().getCurrentScreen(), "INVALID", "PASSWORD");
+				
+				DenyJoinReason reason = DenyJoinReason.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
+				
+				switch (reason)
+				{
+					default:
+						new GuiClickNotification(Game.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
+						break;
+					case DUPLICATE_USERNAME:
+						new GuiClickNotification(Game.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
+						break;
+					case FULL_SERVER:
+						new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "FULL");
+						break;
+					case NEED_PASSWORD:
+						new GuiClickNotification(Game.instance().getCurrentScreen(), "INVALID", "PASSWORD");
+						break;
+					case OLD_CLIENT:
+						new GuiClickNotification(Game.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
+						break;
+					case OLD_SERVER:
+						new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "OUTDATED");
+						break;
+				}
 				break;
 			case ASSIDN_CLIENTID:
 				id = Integer.parseInt(Packet.readContent(data));
 				break;
 			case UPDATE_PLAYERLIST:
 			{
+				Game.instance().updatePlayerList = true;
+				
 				String[] split = Packet.readContent(data).split(",");
 				
 				List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
@@ -118,7 +144,7 @@ public class GameClient extends Thread
 		}
 	}
 	
-	public int getID()
+	public int getPlayerID()
 	{
 		return id;
 	}
@@ -160,6 +186,16 @@ public class GameClient extends Thread
 	public ConnectedPlayer thisPlayer()
 	{
 		return playerByID(id);
+	}
+	
+	public ConnectedPlayer playerByRole(Role role)
+	{
+		for (ConnectedPlayer player : playerList)
+		{
+			if (player.getRole() == role) return player;
+		}
+		
+		return null;
 	}
 	
 	public ConnectedPlayer playerByID(int id)

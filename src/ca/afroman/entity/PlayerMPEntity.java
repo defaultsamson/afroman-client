@@ -8,7 +8,7 @@ public class PlayerMPEntity extends PlayerEntity
 {
 	public InetAddress ipAddress;
 	public int port;
-
+	
 	public PlayerMPEntity(int x, int y, int speed, InputHandler input, InetAddress ipAddress, int port)
 	{
 		super(1, x, y, speed, input);
