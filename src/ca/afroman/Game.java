@@ -52,7 +52,7 @@ public class Game extends Canvas implements Runnable
 	private boolean consoleDebug = false; // Shows a console window
 	
 	public boolean isHosting = false;
-	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
+	public int updatePlayerList = 0; // Tells if the player list has been updated within the last tick
 	
 	public boolean running = false;
 	public int tickCount = 0;
@@ -68,8 +68,8 @@ public class Game extends Canvas implements Runnable
 	private String password = "";
 	private String typedIP = "";
 	
-	public GameClient socketClient;
-	public GameServer socketServer;
+	public GameClient socketClient = null;
+	public GameServer socketServer = null;
 	
 	private GuiScreen currentScreen = null;
 	
@@ -109,26 +109,8 @@ public class Game extends Canvas implements Runnable
 		/*
 		 * TODO add level loading
 		 * blankLevel = Level.fromFile("/level1.txt");
-		 * String ip = "localhost";
-		 * String pass = "hooplah";
-		 * if (JOptionPane.showConfirmDialog(this, "Do you want to run the server?") == 0)
-		 * {
-		 * socketServer = new GameServer(this);
-		 * socketServer.start();
-		 * isHosting = true;
-		 * }
-		 * else
-		 * {
-		 * ip = JOptionPane.showInputDialog("What is the server's IP");
-		 * pass = JOptionPane.showInputDialog("What is the server's password?");
-		 * }
-		 * socketClient = new GameClient(this, ip);
-		 * socketClient.start();
 		 * player = new PlayerMPEntity(100, 120, 1, input, null, -1);
 		 * player.addToLevel(blankLevel);
-		 * player.setCameraToFollow(true);
-		 * PacketLogin login = new PacketLogin(pass);
-		 * login.writeData(socketClient);
 		 * // player = new PlayerMPEntity(blankLevel, 100, 100, 1, input, null, -1);
 		 * // player.setCameraToFollow(true);
 		 * // blankLevel.putPlayer();
@@ -243,9 +225,15 @@ public class Game extends Canvas implements Runnable
 	{
 		tickCount++;
 		
-		if (currentScreen != null)
+		if (input.consoleDebug.isReleasedFiltered())
 		{
-			currentScreen.tick();
+			consoleDebug = !consoleDebug;
+			
+			ConsoleOutput.setGuiVisible(consoleDebug);
+			
+			System.out.println("Show Console: " + consoleDebug);
+			
+			// this.requestFocus();
 		}
 		
 		if (input.full_screen.isPressedFiltered())
@@ -257,8 +245,6 @@ public class Game extends Canvas implements Runnable
 		if (input.hudDebug.isPressedFiltered())
 		{
 			hudDebug = !hudDebug;
-			
-			System.out.println("Game ID: " + this.socketClient.getPlayerID());
 			
 			System.out.println("Debug Hud: " + hudDebug);
 		}
@@ -295,25 +281,21 @@ public class Game extends Canvas implements Runnable
 		// this.player.getLevel().toSaveFile();
 		// }
 		
-		if (input.consoleDebug.isReleasedFiltered())
-		{
-			consoleDebug = !consoleDebug;
-			
-			ConsoleOutput.setGuiVisible(consoleDebug);
-			
-			System.out.println("Show Console: " + consoleDebug);
-			
-			// this.requestFocus();
-		}
-		
 		// TODO blankLevel.tick();
 		
 		// Don't update the player list after the first tick that it has been updated.
-		updatePlayerList = false;
+		if (updatePlayerList > 0) updatePlayerList--;
+		
+		if (currentScreen != null)
+		{
+			currentScreen.tick();
+		}
 	}
 	
 	public void render()
 	{
+		// System.out.println("RENDERING");
+		
 		// Clears the canvas
 		screen.getGraphics().setColor(Color.WHITE);
 		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
@@ -483,7 +465,14 @@ public class Game extends Canvas implements Runnable
 	
 	public boolean hasServerListBeenUpdated()
 	{
-		return updatePlayerList;
+		return updatePlayerList > 0;
+	}
+	
+	public void exitFromGame()
+	{
+		// TODO Stop the game
+		Game.instance().setCurrentScreen(new GuiMainMenu());
+		this.socketClient.getPlayers().clear();
 	}
 	
 	public static void main(String[] args)

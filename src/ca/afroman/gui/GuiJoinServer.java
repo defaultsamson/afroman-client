@@ -8,6 +8,7 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.packet.PacketRequestConnection;
 
 public class GuiJoinServer extends GuiScreen
 {
@@ -120,6 +121,10 @@ public class GuiJoinServer extends GuiScreen
 		{
 			case 1: // Join Server
 				Game.instance().setCurrentScreen(new GuiConnectToServer(this));
+				Game.instance().render();
+				
+				game.socketClient.setServerIP(game.getServerIP());
+				game.socketClient.sendPacket(new PacketRequestConnection(game.getUsername(), game.getPassword()));
 				break;
 			case 200:
 				Game.instance().setCurrentScreen(this.parentScreen);

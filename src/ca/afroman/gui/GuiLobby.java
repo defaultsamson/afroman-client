@@ -10,6 +10,9 @@ import ca.afroman.entity.Role;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.packet.PacketDisconnect;
+import ca.afroman.packet.PacketStopServer;
+import ca.afroman.server.GameServer;
 
 public class GuiLobby extends GuiScreen
 {
@@ -24,6 +27,7 @@ public class GuiLobby extends GuiScreen
 	private FlickeringLight light2;
 	
 	private GuiTextButton startButton;
+	private GuiTextButton stopButton;
 	
 	public GuiLobby(GuiScreen parentScreen)
 	{
@@ -38,11 +42,22 @@ public class GuiLobby extends GuiScreen
 		
 		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
 		
-		light1 = new FlickeringLight(0, 0, 42, 44, 8);
-		light2 = new FlickeringLight(0, 0, 42, 44, 8);
+		light1 = new FlickeringLight(0, 0, 42, 44, 6);
+		light2 = new FlickeringLight(0, 0, 42, 44, 6);
 		
-		startButton = new GuiTextButton(this, 2000, (Game.WIDTH / 2) - (72 / 2), 116, blackFont, "Start Game");
+		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Start Game");
 		buttons.add(startButton);
+		
+		// Draw a stop server button
+		if (game.isHostingServer())
+		{
+			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, blackFont, "Stop Server");
+		}
+		// Draw a leave server button
+		else
+		{
+			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, blackFont, "Disconnect");
+		}
 	}
 	
 	@Override
@@ -54,6 +69,7 @@ public class GuiLobby extends GuiScreen
 			// Removes all buttons except for that at index 0 (The Start Game Button)
 			buttons.clear();
 			buttons.add(startButton);
+			buttons.add(stopButton);
 			
 			light1.tick();
 			light2.tick();
@@ -68,7 +84,6 @@ public class GuiLobby extends GuiScreen
 			int row = 0;
 			for (ConnectedPlayer player : game.socketClient.getPlayers())
 			{
-				System.out.println("NEW BUTTON ID: " + player.getID());
 				boolean isEvenNum = (counter & 1) == 0;
 				
 				if (isEvenNum) row++;
@@ -97,7 +112,7 @@ public class GuiLobby extends GuiScreen
 			}
 			
 			// Only enable the start button if both the player roles are not null
-			startButton.setEnabled(game.socketClient.playerByRole(Role.PLAYER1) != null && game.socketClient.playerByRole(Role.PLAYER2) != null);
+			startButton.setEnabled(game.isHostingServer() && game.socketClient.playerByRole(Role.PLAYER1) != null && game.socketClient.playerByRole(Role.PLAYER2) != null);
 		}
 		
 		light1.tick();
@@ -125,7 +140,7 @@ public class GuiLobby extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 6, "Connected Players");
+		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 6, "Connected Players: " + game.socketClient.getPlayers().size() + "/" + GameServer.MAX_PLAYERS);
 		if (game.isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, Game.WIDTH / 2, 20, "(Click on a name to choose role)");
@@ -145,20 +160,24 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void pressAction(int buttonID)
 	{
-		System.out.println("Current ID: " + buttonID);
 		
-		if (buttonID != 2000)
-		{
-			// Game.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
-		}
 	}
 	
 	@Override
 	public void releaseAction(int buttonID)
 	{
-		if (buttonID == 2000)
+		if (buttonID == 2000) // Start Game
 		{
 			// TODO start game
+		}
+		else if (buttonID == 2001) // Stop Server
+		{
+			game.socketClient.sendPacket(new PacketStopServer());
+		}
+		else if (buttonID == 2002) // Leave server
+		{
+			game.socketClient.sendPacket(new PacketDisconnect());
+			Game.instance().exitFromGame();
 		}
 		else
 		{

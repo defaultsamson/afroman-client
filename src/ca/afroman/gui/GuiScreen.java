@@ -49,6 +49,8 @@ public abstract class GuiScreen
 			buttons.remove(button);
 		}
 		
+		this.buttonToRemove.clear();
+		
 		// Ticks all the buttons
 		for (GuiButton button : this.buttons)
 		{
@@ -87,6 +89,11 @@ public abstract class GuiScreen
 		{
 			button.render(renderTo);
 		}
+	}
+	
+	public GuiScreen getParent()
+	{
+		return this.parentScreen;
 	}
 	
 	public abstract void keyTyped();

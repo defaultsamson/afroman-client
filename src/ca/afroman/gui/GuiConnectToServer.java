@@ -1,15 +1,12 @@
 package ca.afroman.gui;
 
 import ca.afroman.Game;
-import ca.afroman.assets.Assets;
-import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
-import ca.afroman.network.GameClient;
-import ca.afroman.packet.PacketRequestConnection;
 
 public class GuiConnectToServer extends GuiScreen
 {
-	private Font font;
+	private long startTime;
+	private int millsPassed;
 	
 	public GuiConnectToServer(GuiScreen parent)
 	{
@@ -19,17 +16,30 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void init()
 	{
-		font = Assets.getFont(Assets.FONT_BLACK);
+		buttons.add(new GuiTextButton(this, 0, (Game.WIDTH / 2) - (72 / 2), 110, blackFont, "Cancel"));
 		
-		game.socketClient.setServerIP(game.getServerIP());
-		game.socketClient.sendPacket(new PacketRequestConnection(game.getUsername(), game.getPassword()));
+		startTime = System.currentTimeMillis();
+		millsPassed = 0;
+	}
+	
+	@Override
+	public void tick()
+	{
+		millsPassed = (int) (System.currentTimeMillis() - startTime);
+		
+		super.tick();
 	}
 	
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		font.renderCentered(renderTo, Game.WIDTH / 2, 80, "Connecting to Server: " + game.getServerIP());
-		font.renderCentered(renderTo, Game.WIDTH / 2, 100, "Client ID: " + (GameClient.id == -1 ? "NONE" : GameClient.id));
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 20, "Connecting to Server: " + game.getServerIP());
+		
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 45, "Waiting for server response");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
+		
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 80, "If nothing happens for a while,");
+		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 90, "cancel and try rejoining.");
 	}
 	
 	@Override
@@ -41,7 +51,13 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void releaseAction(int buttonID)
 	{
-		
+		switch(buttonID)
+		{
+			case 0:
+				Game.instance().setCurrentScreen(this.parentScreen);
+				Game.instance().socketClient.setServerIP(null);
+				break;
+		}
 	}
 	
 	@Override

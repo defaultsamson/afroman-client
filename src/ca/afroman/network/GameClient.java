@@ -24,7 +24,7 @@ import ca.afroman.server.GameServer;
 public class GameClient extends Thread
 {
 	public static int id = -1;
-	private InetAddress serverIP;
+	private InetAddress serverIP = null;
 	private DatagramSocket socket;
 	// private Game game;
 	private List<ConnectedPlayer> playerList;
@@ -43,16 +43,30 @@ public class GameClient extends Thread
 		}
 	}
 	
-	public void setServerIP(String serverIpAddress)
+	public synchronized void setServerIP(String serverIpAddress)
 	{
+		if (serverIpAddress == null)
+		{
+			serverIP = null;
+			return;
+		}
+		
+		InetAddress ip = null;
+		
 		try
 		{
-			this.serverIP = InetAddress.getByName(serverIpAddress);
+			ip = InetAddress.getByName(serverIpAddress);
 		}
 		catch (UnknownHostException e)
 		{
 			e.printStackTrace();
+			
+			Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+			new GuiClickNotification(Game.instance().getCurrentScreen(), "UNKNOWN", "HOST");
+			return;
 		}
+		
+		this.serverIP = ip;
 	}
 	
 	@Override
@@ -82,65 +96,76 @@ public class GameClient extends Thread
 	{
 		PacketType type = Packet.readType(data);
 		
-		System.out.println("[CLIENT] [RECIEVE] [" + connection.getIPAddress().getHostAddress() + ":" + connection.getPort() + "] " + type.toString());
-		
-		switch (type)
+		if (isListening())
 		{
-			default:
-			case INVALID:
-				System.out.println("INVALID PACKET");
-				break;
-			case DENY_JOIN:
-				// Game.instance().setPassword("INVALID PASSWORD");
-				Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
-				
-				DenyJoinReason reason = DenyJoinReason.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
-				
-				switch (reason)
-				{
-					default:
-						new GuiClickNotification(Game.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
-						break;
-					case DUPLICATE_USERNAME:
-						new GuiClickNotification(Game.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
-						break;
-					case FULL_SERVER:
-						new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "FULL");
-						break;
-					case NEED_PASSWORD:
-						new GuiClickNotification(Game.instance().getCurrentScreen(), "INVALID", "PASSWORD");
-						break;
-					case OLD_CLIENT:
-						new GuiClickNotification(Game.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
-						break;
-					case OLD_SERVER:
-						new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "OUTDATED");
-						break;
-				}
-				break;
-			case ASSIDN_CLIENTID:
-				id = Integer.parseInt(Packet.readContent(data));
-				break;
-			case UPDATE_PLAYERLIST:
+			System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
+			
+			switch (type)
 			{
-				Game.instance().updatePlayerList = true;
-				
-				String[] split = Packet.readContent(data).split(",");
-				
-				List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
-				for (int i = 0; i < split.length; i += 3)
+				default:
+				case INVALID:
+					System.out.println("INVALID PACKET");
+					break;
+				case DENY_JOIN:
+					// Game.instance().setPassword("INVALID PASSWORD");
+					Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+					
+					DenyJoinReason reason = DenyJoinReason.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
+					
+					switch (reason)
+					{
+						default:
+							new GuiClickNotification(Game.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
+							break;
+						case DUPLICATE_USERNAME:
+							new GuiClickNotification(Game.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
+							break;
+						case FULL_SERVER:
+							new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "FULL");
+							break;
+						case NEED_PASSWORD:
+							new GuiClickNotification(Game.instance().getCurrentScreen(), "INVALID", "PASSWORD");
+							break;
+						case OLD_CLIENT:
+							new GuiClickNotification(Game.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
+							break;
+						case OLD_SERVER:
+							new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "OUTDATED");
+							break;
+					}
+					break;
+				case ASSIDN_CLIENTID:
+					id = Integer.parseInt(Packet.readContent(data));
+					break;
+				case UPDATE_PLAYERLIST:
 				{
-					players.add(new ConnectedPlayer(Integer.parseInt(split[i]), Role.fromOrdinal(Integer.parseInt(split[i + 1])), split[i + 2]));
+					Game.instance().updatePlayerList = 2;
+					
+					String[] split = Packet.readContent(data).split(",");
+					
+					List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
+					for (int i = 0; i < split.length; i += 3)
+					{
+						players.add(new ConnectedPlayer(Integer.parseInt(split[i]), Role.fromOrdinal(Integer.parseInt(split[i + 1])), split[i + 2]));
+					}
+					
+					this.playerList = players;
+					
+					if (Game.instance().getCurrentScreen() instanceof GuiConnectToServer)
+					{
+						Game.instance().setCurrentScreen(new GuiLobby(null));
+					}
 				}
-				
-				this.playerList = players;
-				
-				if (Game.instance().getCurrentScreen() instanceof GuiConnectToServer)
-				{
-					Game.instance().setCurrentScreen(new GuiLobby(null));
-				}
+					break;
+				case STOP_SERVER:
+					Game.instance().exitFromGame();
+					new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "CLOSED");
+					break;
 			}
-				break;
+		}
+		else
+		{
+			System.out.println("[CLIENT] [CRITICAL] The server (" + connection.asReadable() + ") is tring to send a packet to this unlistening client: " + type.toString());
 		}
 	}
 	
@@ -169,18 +194,26 @@ public class GameClient extends Thread
 	@Deprecated
 	public void sendData(byte[] data)
 	{
-		DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, GameServer.PORT);
-		
-		System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + GameServer.PORT + "] " + new String(data));
-		
-		try
+		if (serverIP != null)
 		{
-			socket.send(packet);
+			DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, GameServer.PORT);
+			
+			System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + GameServer.PORT + "] " + new String(data));
+			
+			try
+			{
+				socket.send(packet);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+	}
+	
+	public boolean isListening()
+	{
+		return this.serverIP != null;
 	}
 	
 	public ConnectedPlayer thisPlayer()

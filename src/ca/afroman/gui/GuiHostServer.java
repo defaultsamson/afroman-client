@@ -105,10 +105,11 @@ public class GuiHostServer extends GuiScreen
 				
 				if (!game.isHosting)
 				{
-					game.socketServer = new GameServer(this.password.getText());
-					game.socketServer.start();
-					game.isHosting = true;
+					if (game.socketServer == null) game.socketServer = new GameServer(this.password.getText());
 				}
+				
+				game.socketServer.start();
+				game.isHosting = true;
 				
 				Game.instance().setCurrentScreen(new GuiConnectToServer(this));
 				break;
