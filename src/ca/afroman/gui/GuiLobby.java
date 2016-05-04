@@ -46,6 +46,7 @@ public class GuiLobby extends GuiScreen
 		light2 = new FlickeringLight(0, 0, 42, 44, 6);
 		
 		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Start Game");
+		startButton.setEnabled(game.isHostingServer());
 		buttons.add(startButton);
 		
 		// Draw a stop server button
@@ -58,6 +59,7 @@ public class GuiLobby extends GuiScreen
 		{
 			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, blackFont, "Disconnect");
 		}
+		buttons.add(stopButton);
 	}
 	
 	@Override

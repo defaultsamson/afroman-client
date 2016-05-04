@@ -467,13 +467,17 @@ public class Game extends Canvas implements Runnable
 	
 	public boolean hasServerListBeenUpdated()
 	{
+		// TODO make it only run one tick, but throughout the entirety of the tick/
+		// Currently it just runs throughout a random portion of the tick, so I make it
+		// Run through twice just in case. THIS IS AN ISSUE
 		return updatePlayerList > 0;
 	}
 	
 	public void exitFromGame()
 	{
 		// TODO Stop the game
-		Game.instance().setCurrentScreen(new GuiMainMenu());
+		this.isHosting = false;
+		setCurrentScreen(new GuiMainMenu());
 		this.socketClient.getPlayers().clear();
 	}
 	
