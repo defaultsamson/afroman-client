@@ -18,10 +18,12 @@ import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.Level;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.input.InputHandler;
 import ca.afroman.network.GameClient;
+import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.server.GameServer;
 
 public class Game extends Canvas implements Runnable
@@ -473,6 +475,15 @@ public class Game extends Canvas implements Runnable
 		// TODO Stop the game
 		Game.instance().setCurrentScreen(new GuiMainMenu());
 		this.socketClient.getPlayers().clear();
+	}
+	
+	public void joinServer()
+	{
+		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
+		render();
+		
+		socketClient.setServerIP(getServerIP());
+		socketClient.sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
 	}
 	
 	public static void main(String[] args)

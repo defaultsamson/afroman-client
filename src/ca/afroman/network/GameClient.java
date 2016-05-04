@@ -96,7 +96,8 @@ public class GameClient extends Thread
 	{
 		PacketType type = Packet.readType(data);
 		
-		if (isListening())
+		// If is the server sending the packet
+		if (connection.getIPAddress().getHostAddress().equals(this.serverIP.getHostAddress()) && GameServer.PORT == connection.getPort())
 		{
 			System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 			
@@ -165,7 +166,7 @@ public class GameClient extends Thread
 		}
 		else
 		{
-			System.out.println("[CLIENT] [CRITICAL] The server (" + connection.asReadable() + ") is tring to send a packet to this unlistening client: " + type.toString());
+			System.out.println("[CLIENT] [CRITICAL] A server (" + connection.asReadable() + ") is tring to send a packet to this unlistening client." + type.toString());
 		}
 	}
 	
@@ -211,6 +212,9 @@ public class GameClient extends Thread
 		}
 	}
 	
+	/**
+	 * @return if this client has a server that it's listening to.
+	 */
 	public boolean isListening()
 	{
 		return this.serverIP != null;
