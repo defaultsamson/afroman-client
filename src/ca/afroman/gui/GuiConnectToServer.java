@@ -51,7 +51,7 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void releaseAction(int buttonID)
 	{
-		switch(buttonID)
+		switch (buttonID)
 		{
 			case 0:
 				Game.instance().setCurrentScreen(this.parentScreen);

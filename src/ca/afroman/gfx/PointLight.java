@@ -2,11 +2,11 @@ package ca.afroman.gfx;
 
 import java.awt.Color;
 
-import ca.afroman.entity.Level;
+import ca.afroman.level.ClientLevel;
 
 public class PointLight
 {
-	protected Level level;
+	protected ClientLevel level;
 	protected int x;
 	protected int y;
 	protected int radius;
@@ -37,15 +37,9 @@ public class PointLight
 		
 	}
 	
-	public void addToLevel(Level level)
-	{
-		this.level = level;
-		level.addLight(this);
-	}
-	
 	public void renderCentered(LightMap renderTo)
 	{
-		renderTo.drawLight(x - level.getCameraXOffset() - radius, y - level.getCameraYOffset() - radius, radius, colour);
+		renderTo.drawLight(level.worldToScreenX(x) - radius, level.worldToScreenY(y) - radius, radius, colour);
 	}
 	
 	public void setX(int newX)

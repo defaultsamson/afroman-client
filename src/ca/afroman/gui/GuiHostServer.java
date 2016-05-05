@@ -8,6 +8,7 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.server.AssetType;
 import ca.afroman.server.GameServer;
 
 public class GuiHostServer extends GuiScreen
@@ -30,8 +31,8 @@ public class GuiHostServer extends GuiScreen
 	@Override
 	public void init()
 	{
-		afroMan = Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_DOWN);
+		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
 		light = new FlickeringLight(Game.WIDTH / 2, 38, 60, 62, 5);
@@ -48,11 +49,11 @@ public class GuiHostServer extends GuiScreen
 		buttons.add(username);
 		buttons.add(password);
 		
-		hostButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(Assets.FONT_BLACK), "Host Server");
+		hostButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
 		hostButton.setEnabled(!this.username.getText().isEmpty());
 		
 		buttons.add(hostButton);
-		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(Assets.FONT_BLACK), "Back"));
+		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	@Override

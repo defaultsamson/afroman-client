@@ -5,6 +5,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.input.InputHandler;
+import ca.afroman.server.AssetType;
 
 public class GuiTextField extends GuiButton
 {
@@ -16,7 +17,7 @@ public class GuiTextField extends GuiButton
 	
 	public GuiTextField(GuiScreen screen, int x, int y)
 	{
-		this(screen, Assets.getTexture(Assets.TEXT_FIELD), Assets.getFont(Assets.FONT_WHITE), x, y);
+		this(screen, Assets.getTexture(AssetType.TEXT_FIELD), Assets.getFont(AssetType.FONT_WHITE), x, y);
 	}
 	
 	public GuiTextField(GuiScreen screen, Texture field, Font font, int x, int y)

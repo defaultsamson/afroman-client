@@ -1,28 +1,31 @@
 package ca.afroman.entity;
 
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.level.ClientLevel;
+import ca.afroman.server.AssetType;
 
-public class SpriteEntity extends Entity
+public class SpriteEntity extends ClientEntity
 {
 	protected SpriteAnimation[] sprites;
 	protected SpriteAnimation[] idleSprites;
 	
-	public SpriteEntity(Texture texture, int x, int y, int width, int height, int speed, Rectangle... hitboxes)
+	public SpriteEntity(ClientLevel level, Texture texture, double x, double y, double width, double height, double speed, Rectangle2D.Double... hitboxes)
 	{
-		this(texture, texture, texture, texture, x, y, speed, hitboxes);
+		this(level, texture, texture, texture, texture, x, y, width, height, speed, hitboxes);
 	}
 	
-	public SpriteEntity(Texture texture1, Texture texture2, Texture texture3, Texture texture4, int x, int y, int speed, Rectangle... hitboxes)
+	public SpriteEntity(ClientLevel level, Texture texture1, Texture texture2, Texture texture3, Texture texture4, double x, double y, double width, double height, double speed, Rectangle2D.Double... hitboxes)
 	{
-		this(new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), x, y, speed, hitboxes);
+		this(level, new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), x, y, width, height, speed, hitboxes);
 	}
 	
-	public SpriteEntity(SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, SpriteAnimation upIdle, SpriteAnimation downIdle, SpriteAnimation leftIdle, SpriteAnimation rightIdle, int x, int y, int speed, Rectangle... hitboxes)
+	public SpriteEntity(ClientLevel level, SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, SpriteAnimation upIdle, SpriteAnimation downIdle, SpriteAnimation leftIdle, SpriteAnimation rightIdle, double x, double y, double width, double height, double speed, Rectangle2D.Double... hitboxes)
 	{
-		super(x, y, speed, hitboxes);
+		super(level, AssetType.INVALID, x, y, width, height, hitboxes);
+		this.setSpeed(speed);
 		
 		this.sprites = new SpriteAnimation[4];
 		this.sprites[0] = up;
@@ -81,10 +84,8 @@ public class SpriteEntity extends Entity
 		}
 	}
 	
-	@Override
 	public void render(Texture renderTo)
 	{
-		renderTo.draw(this.getTexture(), x - level.getCameraXOffset(), y - level.getCameraYOffset());
-		super.render(renderTo);
+		renderTo.draw(this.getTexture(), getLevel().worldToScreenX(x), getLevel().worldToScreenY(y));
 	}
 }

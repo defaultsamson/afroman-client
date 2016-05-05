@@ -34,16 +34,16 @@ public class FlickeringLight extends PointLight
 	@Override
 	public void renderCentered(LightMap renderTo)
 	{
-		int xOffset = 0;
-		int yOffset = 0;
+		int xOffset = x;
+		int yOffset = y;
 		
 		if (level != null)
 		{
-			xOffset = level.getCameraXOffset();
-			yOffset = level.getCameraYOffset();
+			xOffset = level.worldToScreenX(x);
+			yOffset = level.worldToScreenY(y);
 		}
 		
-		renderTo.drawLight(x - xOffset - displayRadius, y - yOffset - displayRadius, displayRadius, colour);
+		renderTo.drawLight(xOffset - displayRadius, yOffset - displayRadius, displayRadius, colour);
 	}
 	
 	@Override

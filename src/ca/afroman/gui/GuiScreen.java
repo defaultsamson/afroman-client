@@ -7,6 +7,7 @@ import ca.afroman.Game;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.server.AssetType;
 
 public abstract class GuiScreen
 {
@@ -15,9 +16,9 @@ public abstract class GuiScreen
 	protected List<GuiButton> buttons;
 	private List<GuiButton> buttonToRemove;
 	
-	protected static Font nobleFont = Assets.getFont(Assets.FONT_NOBLE);
-	protected static Font whiteFont = Assets.getFont(Assets.FONT_WHITE);
-	protected static Font blackFont = Assets.getFont(Assets.FONT_BLACK);
+	protected static Font nobleFont = Assets.getFont(AssetType.FONT_NOBLE);
+	protected static Font whiteFont = Assets.getFont(AssetType.FONT_WHITE);
+	protected static Font blackFont = Assets.getFont(AssetType.FONT_BLACK);
 	
 	public GuiScreen(GuiScreen parentScreen)
 	{

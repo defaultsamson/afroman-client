@@ -16,14 +16,13 @@ import javax.swing.JFrame;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
-import ca.afroman.entity.Level;
-import ca.afroman.entity.PlayerEntity;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.input.InputHandler;
 import ca.afroman.network.GameClient;
 import ca.afroman.packet.PacketRequestConnection;
+import ca.afroman.server.AssetType;
 import ca.afroman.server.GameServer;
 
 public class Game extends Canvas implements Runnable
@@ -63,8 +62,8 @@ public class Game extends Canvas implements Runnable
 	
 	public InputHandler input = new InputHandler(this);
 	
-	public Level blankLevel;
-	public PlayerEntity player;
+	// public Level blankLevel; TODO make level loading
+	// public PlayerEntity player;
 	
 	private String username = "";
 	private String password = "";
@@ -316,8 +315,8 @@ public class Game extends Canvas implements Runnable
 		 */
 		if (hudDebug)
 		{
-			Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
-			Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
 			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
 			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
 		}

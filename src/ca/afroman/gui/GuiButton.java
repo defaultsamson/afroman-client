@@ -6,6 +6,7 @@ import ca.afroman.Game;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.input.InputType;
+import ca.afroman.server.AssetType;
 
 public class GuiButton extends InputType
 {
@@ -21,7 +22,7 @@ public class GuiButton extends InputType
 	
 	public GuiButton(GuiScreen screen, int id, int x, int y)
 	{
-		this(screen, Assets.getTexture(Assets.BUTTON_NORMAL), Assets.getTexture(Assets.BUTTON_HOVER), Assets.getTexture(Assets.BUTTON_PRESSED), id, x, y);
+		this(screen, Assets.getTexture(AssetType.BUTTON_NORMAL), Assets.getTexture(AssetType.BUTTON_HOVER), Assets.getTexture(AssetType.BUTTON_PRESSED), id, x, y);
 	}
 	
 	public GuiButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y)

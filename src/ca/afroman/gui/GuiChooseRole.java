@@ -6,11 +6,12 @@ import ca.afroman.Game;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
-import ca.afroman.entity.Role;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketSetRole;
+import ca.afroman.player.Role;
+import ca.afroman.server.AssetType;
 
 public class GuiChooseRole extends GuiScreen
 {
@@ -66,8 +67,8 @@ public class GuiChooseRole extends GuiScreen
 		this.buttons.add(player1b);
 		this.buttons.add(player2b);
 		
-		player1 = Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_DOWN);
+		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
 		

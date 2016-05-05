@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.Game;
-import ca.afroman.entity.Role;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
@@ -19,6 +18,7 @@ import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketType;
+import ca.afroman.player.Role;
 import ca.afroman.server.GameServer;
 
 public class GameClient extends Thread

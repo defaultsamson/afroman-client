@@ -8,6 +8,7 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.server.AssetType;
 
 public class GuiMainMenu extends GuiScreen
 {
@@ -24,8 +25,8 @@ public class GuiMainMenu extends GuiScreen
 	@Override
 	public void init()
 	{
-		afroMan = Assets.getSpriteAnimation(Assets.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(Assets.PLAYER_TWO_IDLE_DOWN);
+		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
 		light = new FlickeringLight(Game.WIDTH / 2, 38, 60, 62, 5);
