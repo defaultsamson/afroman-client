@@ -5,7 +5,7 @@ import java.awt.geom.Rectangle2D;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.server.AssetType;
+import ca.afroman.asset.AssetType;
 
 public class SpriteEntity extends ClientEntity
 {

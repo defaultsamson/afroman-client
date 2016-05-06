@@ -1,6 +1,6 @@
 package ca.afroman.gui;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
 import ca.afroman.assets.Texture;
 
 public class GuiConnectToServer extends GuiScreen
@@ -16,7 +16,7 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void init()
 	{
-		buttons.add(new GuiTextButton(this, 0, (Game.WIDTH / 2) - (72 / 2), 110, blackFont, "Cancel"));
+		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 110, blackFont, "Cancel"));
 		
 		startTime = System.currentTimeMillis();
 		millsPassed = 0;
@@ -33,13 +33,13 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 20, "Connecting to Server: " + game.getServerIP());
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Connecting to Server: " + game.getServerIP());
 		
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 45, "Waiting for server response");
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for server response");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
 		
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 80, "If nothing happens for a while,");
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 90, "cancel and try rejoining.");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 80, "If nothing happens for a while,");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 90, "cancel and try rejoining.");
 	}
 	
 	@Override
@@ -54,8 +54,8 @@ public class GuiConnectToServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 0:
-				Game.instance().setCurrentScreen(this.parentScreen);
-				Game.instance().socketClient.setServerIP(null);
+				ClientGame.instance().setCurrentScreen(this.parentScreen);
+				ClientGame.instance().socketClient.setServerIP(null);
 				break;
 		}
 	}

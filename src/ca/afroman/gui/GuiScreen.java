@@ -3,15 +3,15 @@ package ca.afroman.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
-import ca.afroman.server.AssetType;
+import ca.afroman.asset.AssetType;
 
 public abstract class GuiScreen
 {
-	protected Game game;
+	protected ClientGame game;
 	protected GuiScreen parentScreen;
 	protected List<GuiButton> buttons;
 	private List<GuiButton> buttonToRemove;
@@ -22,7 +22,7 @@ public abstract class GuiScreen
 	
 	public GuiScreen(GuiScreen parentScreen)
 	{
-		this.game = Game.instance();
+		this.game = ClientGame.instance();
 		this.parentScreen = parentScreen;
 		this.buttons = new ArrayList<GuiButton>();
 		this.buttonToRemove = new ArrayList<GuiButton>();

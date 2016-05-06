@@ -4,10 +4,10 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
 import ca.afroman.assets.Texture;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.server.AssetType;
+import ca.afroman.asset.AssetType;
 
 public class TextureEntity extends ClientEntity
 {
@@ -28,7 +28,7 @@ public class TextureEntity extends ClientEntity
 	
 	public void render(Texture renderTo)
 	{
-		if (Game.instance().isHitboxDebugging())
+		if (ClientGame.instance().isHitboxDebugging())
 		{
 			if (this.hasHitbox())
 			{

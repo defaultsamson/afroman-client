@@ -2,13 +2,13 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
+import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
-import ca.afroman.server.AssetType;
 
 public class GuiMainMenu extends GuiScreen
 {
@@ -28,18 +28,18 @@ public class GuiMainMenu extends GuiScreen
 		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
-		light = new FlickeringLight(Game.WIDTH / 2, 38, 60, 62, 5);
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
-		buttons.add(new GuiTextButton(this, 1, (Game.WIDTH / 2) - (72 / 2), 60, blackFont, "Join Game"));
-		buttons.add(new GuiTextButton(this, 2, (Game.WIDTH / 2) - (72 / 2), 90, blackFont, "Host Game"));
+		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 60, blackFont, "Join Game"));
+		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 90, blackFont, "Host Game"));
 	}
 	
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(afroMan.getCurrentFrame(), (Game.WIDTH / 2) - 20, 30);
-		renderTo.draw(player2.getCurrentFrame(), (Game.WIDTH / 2) + 4, 30);
+		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
+		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
 		
 		lightmap.clear();
 		light.renderCentered(lightmap);
@@ -47,7 +47,7 @@ public class GuiMainMenu extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 15, "Cancer: The Adventures of Afro Man");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Cancer: The Adventures of Afro Man");
 	}
 	
 	@Override

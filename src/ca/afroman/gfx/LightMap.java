@@ -8,7 +8,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
 import ca.afroman.assets.Texture;
 
 public class LightMap extends Texture
@@ -27,32 +27,35 @@ public class LightMap extends Texture
 		this.ambientColour = ambientColour;
 	}
 	
-	public void drawLight(int x, int y, int radius)
+	public void drawLight(double x, double y, double radius)
 	{
 		drawLight(x, y, radius, ColourUtil.TRANSPARENT);
 	}
 	
-	public void drawLight(int x, int y, int radius, Color rgbColour)
+	public void drawLight(double x, double y, double radius, Color rgbColour)
 	{
-		int width = radius * 2;
-		int height = width;
+		int drawX = (int) x;
+		int drawY = (int) y;
+		int drawRadius = (int) radius;
+		int drawWidth = (int) (radius * 2);
+		int drawHeight = drawWidth;
 		
-		if (x + width > 0 && y + height > 0 && x < getWidth() && y < getHeight())
+		if (x + drawWidth > 0 && y + drawHeight > 0 && x < getWidth() && y < getHeight())
 		{
-			BufferedImage lightTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage lightTexture = new BufferedImage(drawWidth, drawHeight, BufferedImage.TYPE_INT_ARGB);
 			
 			// Polygon shape = new RegularPolygon(x, y, width, 10);
-			Rectangle2D shape = new Rectangle2D.Float(0, 0, width, height);
+			Rectangle2D shape = new Rectangle2D.Float(0, 0, drawWidth, drawHeight);
 			// Rectangle2D is more efficient than Ellipse2D
 			
 			Color[] gradientColours = new Color[] { rgbColour, ambientColour };
 			float[] gradientFractions = new float[] { 0.0F, 1.0F };
-			Paint paint = new RadialGradientPaint(new Point2D.Float(radius, radius), radius, gradientFractions, gradientColours);
+			Paint paint = new RadialGradientPaint(new Point2D.Float(drawRadius, drawRadius), drawRadius, gradientFractions, gradientColours);
 			
 			// Fills the circle with the gradient
 			Graphics2D graphics = lightTexture.createGraphics();
 			
-			if (Game.instance().isHitboxDebugging())
+			if (ClientGame.instance().isHitboxDebugging())
 			{
 				graphics.drawRect((int) shape.getX(), (int) shape.getY(), (int) shape.getWidth() - 1, (int) shape.getHeight() - 1);;
 			}
@@ -61,12 +64,12 @@ public class LightMap extends Texture
 			graphics.fill(shape);
 			
 			// Loop over pixels within light radius
-			for (int iy = 0; iy < height; iy++)
+			for (int iy = 0; iy < drawHeight; iy++)
 			{
-				for (int ix = 0; ix < width; ix++)
+				for (int ix = 0; ix < drawWidth; ix++)
 				{
-					int lightMapX = x + ix;
-					int lightMapY = y + iy;
+					int lightMapX = drawX + ix;
+					int lightMapY = drawY + iy;
 					
 					// If it's off-screen, don't try to render it.
 					if (lightMapX < 0 || lightMapY < 0 || lightMapX >= image.getWidth() || lightMapY >= image.getHeight()) continue;

@@ -2,13 +2,13 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
+import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
-import ca.afroman.server.AssetType;
 
 public class GuiJoinServer extends GuiScreen
 {
@@ -34,16 +34,16 @@ public class GuiJoinServer extends GuiScreen
 		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
-		light = new FlickeringLight(Game.WIDTH / 2, 38, 60, 62, 5);
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
-		username = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 60 - 4);
+		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4);
 		username.setText(game.getUsername());
 		username.setAllowPunctuation(false);
-		serverIP = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
+		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
 		serverIP.setMaxLength(64);
 		serverIP.setText(game.getServerIP());
-		password = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 120 - 8);
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8);
 		password.setText(game.getPassword());
 		password.setAllowPunctuation(false);
 		
@@ -69,14 +69,14 @@ public class GuiJoinServer extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 15, "Join a Server");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Join a Server");
 		
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 50 - 4, "Username");
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 80 - 6, "Server IP");
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 110 - 8, "Server Pass");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 50 - 4, "Username");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 80 - 6, "Server IP");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 110 - 8, "Server Pass");
 		
-		renderTo.draw(afroMan.getCurrentFrame(), (Game.WIDTH / 2) - 20, 30);
-		renderTo.draw(player2.getCurrentFrame(), (Game.WIDTH / 2) + 4, 30);
+		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
+		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
 	}
 	
 	@Override
@@ -88,7 +88,7 @@ public class GuiJoinServer extends GuiScreen
 		afroMan.tick();
 		player2.tick();
 		
-		if (Game.instance().input.tab.isPressedFiltered())
+		if (ClientGame.instance().input.tab.isPressedFiltered())
 		{
 			if (username.isFocussed())
 			{
@@ -120,10 +120,10 @@ public class GuiJoinServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 1: // Join Server
-				Game.instance().joinServer();
+				ClientGame.instance().joinServer();
 				break;
 			case 200:
-				Game.instance().setCurrentScreen(this.parentScreen);
+				ClientGame.instance().setCurrentScreen(this.parentScreen);
 				break;
 		}
 	}

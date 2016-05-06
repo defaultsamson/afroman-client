@@ -2,7 +2,8 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
+import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
@@ -12,8 +13,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.player.Role;
-import ca.afroman.server.AssetType;
-import ca.afroman.server.GameServer;
+import ca.afroman.server.ServerSocket;
 
 public class GuiLobby extends GuiScreen
 {
@@ -41,10 +41,10 @@ public class GuiLobby extends GuiScreen
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
 		
-		light1 = new FlickeringLight(0, 0, 42, 44, 6);
-		light2 = new FlickeringLight(0, 0, 42, 44, 6);
+		light1 = new FlickeringLight(null, 0, 0, 42, 44, 6);
+		light2 = new FlickeringLight(null, 0, 0, 42, 44, 6);
 		
 		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Start Game");
 		startButton.setEnabled(game.isHostingServer());
@@ -143,14 +143,14 @@ public class GuiLobby extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 6, "Connected Players: " + game.socketClient.getPlayers().size() + "/" + GameServer.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + game.socketClient.getPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
 		if (game.isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, Game.WIDTH / 2, 20, "(Click on a name to choose role)");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Click on a name to choose role)");
 		}
 		else
 		{
-			blackFont.renderCentered(renderTo, Game.WIDTH / 2, 20, "(Only the host can choose roles)");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Only the host can choose roles)");
 		}
 	}
 	
@@ -180,11 +180,11 @@ public class GuiLobby extends GuiScreen
 		else if (buttonID == 2002) // Leave server
 		{
 			game.socketClient.sendPacket(new PacketDisconnect());
-			Game.instance().exitFromGame();
+			ClientGame.instance().exitFromGame();
 		}
 		else
 		{
-			Game.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
+			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
 		}
 	}
 	

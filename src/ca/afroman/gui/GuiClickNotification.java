@@ -2,10 +2,10 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
-import ca.afroman.server.AssetType;
+import ca.afroman.asset.AssetType;
 
 public class GuiClickNotification extends GuiTextButton
 {
@@ -19,7 +19,7 @@ public class GuiClickNotification extends GuiTextButton
 	
 	public GuiClickNotification(GuiScreen screen, String text1, String text2)
 	{
-		super(screen, -1, (Game.WIDTH / 2) - 36, (Game.HEIGHT / 2) + 10, Assets.getFont(AssetType.FONT_BLACK), "Okay");
+		super(screen, -1, (ClientGame.WIDTH / 2) - 36, (ClientGame.HEIGHT / 2) + 10, Assets.getFont(AssetType.FONT_BLACK), "Okay");
 		
 		this.notifText1 = text1;
 		this.notifText2 = text2;

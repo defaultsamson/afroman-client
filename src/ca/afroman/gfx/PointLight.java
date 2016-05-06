@@ -2,36 +2,28 @@ package ca.afroman.gfx;
 
 import java.awt.Color;
 
+import ca.afroman.asset.AssetType;
+import ca.afroman.entity.Entity;
 import ca.afroman.level.ClientLevel;
 
-public class PointLight
+public class PointLight extends Entity
 {
 	protected ClientLevel level;
-	protected int x;
-	protected int y;
-	protected int radius;
-	protected float intensity;
 	protected Color colour;
 	
-	public PointLight(int x, int y, int radius)
+	public PointLight(ClientLevel level, double x, double y, double radius)
 	{
-		this(x, y, radius, 1.0F);
+		this(level, x, y, radius, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(int x, int y, int radius, float intensity)
+	public PointLight(ClientLevel level, double x, double y, double radius, Color colour)
 	{
-		this(x, y, radius, intensity, ColourUtil.TRANSPARENT);
-	}
-	
-	public PointLight(int x, int y, int radius, float intensity, Color colour)
-	{
-		this.x = x;
-		this.y = y;
-		this.radius = radius;
-		this.intensity = intensity;
+		super(level, AssetType.INVALID, x, y, radius * 2, radius * 2);
+		
 		this.colour = colour;
 	}
 	
+	@Override
 	public void tick()
 	{
 		
@@ -39,47 +31,12 @@ public class PointLight
 	
 	public void renderCentered(LightMap renderTo)
 	{
-		renderTo.drawLight(level.worldToScreenX(x) - radius, level.worldToScreenY(y) - radius, radius, colour);
+		renderTo.drawLight(level.worldToScreenX(x) - getRadius(), level.worldToScreenY(y) - getRadius(), getRadius(), colour);
 	}
 	
-	public void setX(int newX)
+	public double getRadius()
 	{
-		x = newX;
-	}
-	
-	public void setY(int newY)
-	{
-		y = newY;
-	}
-	
-	public int getX()
-	{
-		return x;
-	}
-	
-	public int getY()
-	{
-		return y;
-	}
-	
-	public int getWidth()
-	{
-		return radius * 2;
-	}
-	
-	public int getHeight()
-	{
-		return radius * 2;
-	}
-	
-	public int getRadius()
-	{
-		return radius;
-	}
-	
-	public float getIntensity()
-	{
-		return intensity;
+		return width / 2;
 	}
 	
 	public Color getColour()

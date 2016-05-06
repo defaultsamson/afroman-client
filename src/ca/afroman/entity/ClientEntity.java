@@ -4,7 +4,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import ca.afroman.level.ClientLevel;
-import ca.afroman.server.AssetType;
+import ca.afroman.asset.AssetType;
 
 public class ClientEntity extends Entity
 {

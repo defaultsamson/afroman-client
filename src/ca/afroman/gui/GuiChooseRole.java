@@ -2,7 +2,8 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
+import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
@@ -11,7 +12,6 @@ import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketSetRole;
 import ca.afroman.player.Role;
-import ca.afroman.server.AssetType;
 
 public class GuiChooseRole extends GuiScreen
 {
@@ -26,7 +26,7 @@ public class GuiChooseRole extends GuiScreen
 	
 	private int p1X = 58;
 	private int p1Y = 48;
-	private int p2X = Game.WIDTH - 58 - 16;
+	private int p2X = ClientGame.WIDTH - 58 - 16;
 	private int p2Y = 48;
 	private LightMap lightmap;
 	private FlickeringLight light1;
@@ -57,11 +57,11 @@ public class GuiChooseRole extends GuiScreen
 		
 		Role role = player.getRole();
 		
-		this.buttons.add(new GuiTextButton(this, 200, (Game.WIDTH / 2) - (72 / 2), 98, blackFont, "Cancel"));
-		player1b = new GuiTextButton(this, 201, (Game.WIDTH / 2) - (72 / 2) - 54, 68, blackFont, "Player 1");
+		this.buttons.add(new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - (72 / 2), 98, blackFont, "Cancel"));
+		player1b = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) - (72 / 2) - 54, 68, blackFont, "Player 1");
 		player1b.setEnabled(role != Role.PLAYER1);
 		
-		player2b = new GuiTextButton(this, 202, (Game.WIDTH / 2) - (72 / 2) + 54, 68, blackFont, "Player 2");
+		player2b = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) - (72 / 2) + 54, 68, blackFont, "Player 2");
 		player2b.setEnabled(role != Role.PLAYER2);
 		
 		this.buttons.add(player1b);
@@ -70,10 +70,10 @@ public class GuiChooseRole extends GuiScreen
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
 		
-		light1 = new FlickeringLight(p1X + 8, p2Y + 8, 42, 44, 6);
-		light2 = new FlickeringLight(p2X + 8, p1Y + 8, 42, 44, 6);
+		light1 = new FlickeringLight(null, p1X + 8, p2Y + 8, 42, 44, 6);
+		light2 = new FlickeringLight(null, p2X + 8, p1Y + 8, 42, 44, 6);
 	}
 	
 	@Override
@@ -98,7 +98,7 @@ public class GuiChooseRole extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2, 20, "Choose a new role for " + player.getUsername());
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Choose a new role for " + player.getUsername());
 	}
 	
 	@Override
@@ -119,7 +119,7 @@ public class GuiChooseRole extends GuiScreen
 		switch (buttonID)
 		{
 			case 200:
-				Game.instance().setCurrentScreen(this.parentScreen);
+				ClientGame.instance().setCurrentScreen(this.parentScreen);
 				break;
 			case 201:
 				// player.setRole(Role.PLAYER1);

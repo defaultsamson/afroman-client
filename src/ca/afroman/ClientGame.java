@@ -10,6 +10,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -20,18 +21,19 @@ import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.input.InputHandler;
-import ca.afroman.network.GameClient;
+import ca.afroman.level.ClientLevel;
+import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketRequestConnection;
-import ca.afroman.server.AssetType;
-import ca.afroman.server.GameServer;
+import ca.afroman.asset.AssetType;
+import ca.afroman.server.ServerSocket;
 
-public class Game extends Canvas implements Runnable
+public class ClientGame extends Canvas implements Runnable
 {
 	private static final long serialVersionUID = 1L;
 	
-	private static Game game;
+	private static ClientGame game;
 	
-	public static Game instance()
+	public static ClientGame instance()
 	{
 		return game;
 	}
@@ -62,6 +64,7 @@ public class Game extends Canvas implements Runnable
 	
 	public InputHandler input = new InputHandler(this);
 	
+	public List<ClientLevel> levels;
 	// public Level blankLevel; TODO make level loading
 	// public PlayerEntity player;
 	
@@ -69,12 +72,12 @@ public class Game extends Canvas implements Runnable
 	private String password = "";
 	private String typedIP = "";
 	
-	public GameClient socketClient = null;
-	public GameServer socketServer = null;
+	public ClientSocket socketClient = null;
+	public ServerSocket socketServer = null;
 	
 	private GuiScreen currentScreen = null;
 	
-	public Game()
+	public ClientGame()
 	{
 		setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
@@ -102,7 +105,7 @@ public class Game extends Canvas implements Runnable
 	
 	public void init()
 	{
-		socketClient = new GameClient();
+		socketClient = new ClientSocket();
 		socketClient.start();
 		
 		setCurrentScreen(new GuiMainMenu());
@@ -196,7 +199,8 @@ public class Game extends Canvas implements Runnable
 			// Stops system from overloading the CPU. Gives other threads a chance to run.
 			try
 			{
-				Thread.sleep((tps < 60 ? 1 : 3));
+				// If the ticks per second is less than desired, allow this thread to run with less sleep-time
+				Thread.sleep((tps < ticksPerSecond ? 1 : 3));
 			}
 			catch (InterruptedException e)
 			{
@@ -489,9 +493,18 @@ public class Game extends Canvas implements Runnable
 		socketClient.sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
 	}
 	
+	public ClientLevel getLevelByType(LevelType type)
+	{
+		for (ClientLevel level : levels)
+		{
+			if (level.getType() == type) return level;
+		}
+		return null;
+	}
+	
 	public static void main(String[] args)
 	{
-		game = new Game();
+		game = new ClientGame();
 		game.start();
 	}
 }

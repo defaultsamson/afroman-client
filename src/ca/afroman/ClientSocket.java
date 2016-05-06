@@ -1,4 +1,4 @@
-package ca.afroman.network;
+package ca.afroman;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,19 +9,20 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.Game;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketType;
 import ca.afroman.player.Role;
-import ca.afroman.server.GameServer;
+import ca.afroman.server.ServerSocket;
 
-public class GameClient extends Thread
+public class ClientSocket extends Thread
 {
 	public static int id = -1;
 	private InetAddress serverIP = null;
@@ -29,7 +30,7 @@ public class GameClient extends Thread
 	// private Game game;
 	private List<ConnectedPlayer> playerList;
 	
-	public GameClient()
+	public ClientSocket()
 	{
 		playerList = new ArrayList<ConnectedPlayer>();
 		
@@ -61,8 +62,8 @@ public class GameClient extends Thread
 		{
 			e.printStackTrace();
 			
-			Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
-			new GuiClickNotification(Game.instance().getCurrentScreen(), "UNKNOWN", "HOST");
+			ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+			new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "UNKNOWN", "HOST");
 			return;
 		}
 		
@@ -97,7 +98,7 @@ public class GameClient extends Thread
 		PacketType type = Packet.readType(data);
 		
 		// If is the server sending the packet
-		if (connection.getIPAddress().getHostAddress().equals(this.serverIP.getHostAddress()) && GameServer.PORT == connection.getPort())
+		if (connection.getIPAddress().getHostAddress().equals(this.serverIP.getHostAddress()) && ServerSocket.PORT == connection.getPort())
 		{
 			System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 			
@@ -109,29 +110,29 @@ public class GameClient extends Thread
 					break;
 				case DENY_JOIN:
 					// Game.instance().setPassword("INVALID PASSWORD");
-					Game.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+					ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 					
 					DenyJoinReason reason = DenyJoinReason.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
 					
 					switch (reason)
 					{
 						default:
-							new GuiClickNotification(Game.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
 							break;
 						case DUPLICATE_USERNAME:
-							new GuiClickNotification(Game.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
 							break;
 						case FULL_SERVER:
-							new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "FULL");
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "FULL");
 							break;
 						case NEED_PASSWORD:
-							new GuiClickNotification(Game.instance().getCurrentScreen(), "INVALID", "PASSWORD");
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "INVALID", "PASSWORD");
 							break;
 						case OLD_CLIENT:
-							new GuiClickNotification(Game.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
 							break;
 						case OLD_SERVER:
-							new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "OUTDATED");
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "OUTDATED");
 							break;
 					}
 					break;
@@ -140,7 +141,7 @@ public class GameClient extends Thread
 					break;
 				case UPDATE_PLAYERLIST:
 				{
-					Game.instance().updatePlayerList = 2;
+					ClientGame.instance().updatePlayerList = 2;
 					
 					String[] split = Packet.readContent(data).split(",");
 					
@@ -152,15 +153,15 @@ public class GameClient extends Thread
 					
 					this.playerList = players;
 					
-					if (Game.instance().getCurrentScreen() instanceof GuiConnectToServer)
+					if (ClientGame.instance().getCurrentScreen() instanceof GuiConnectToServer)
 					{
-						Game.instance().setCurrentScreen(new GuiLobby(null));
+						ClientGame.instance().setCurrentScreen(new GuiLobby(null));
 					}
 				}
 					break;
 				case STOP_SERVER:
-					Game.instance().exitFromGame();
-					new GuiClickNotification(Game.instance().getCurrentScreen(), "SERVER", "CLOSED");
+					ClientGame.instance().exitFromGame();
+					new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
 					break;
 			}
 		}
@@ -197,9 +198,9 @@ public class GameClient extends Thread
 	{
 		if (serverIP != null)
 		{
-			DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, GameServer.PORT);
+			DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, ServerSocket.PORT);
 			
-			System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + GameServer.PORT + "] " + new String(data));
+			System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + ServerSocket.PORT + "] " + new String(data));
 			
 			try
 			{

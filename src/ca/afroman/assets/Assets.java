@@ -3,7 +3,7 @@ package ca.afroman.assets;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import ca.afroman.server.AssetType;
+import ca.afroman.asset.AssetType;
 
 public class Assets
 {

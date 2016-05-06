@@ -2,14 +2,14 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.Game;
+import ca.afroman.ClientGame;
+import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
-import ca.afroman.server.AssetType;
-import ca.afroman.server.GameServer;
+import ca.afroman.server.ServerSocket;
 
 public class GuiHostServer extends GuiScreen
 {
@@ -34,17 +34,17 @@ public class GuiHostServer extends GuiScreen
 		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(Game.WIDTH, Game.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
-		light = new FlickeringLight(Game.WIDTH / 2, 38, 60, 62, 5);
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
-		username = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 62);
+		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62);
 		username.setText(game.getUsername());
 		username.setAllowPunctuation(false);
-		password = new GuiTextField(this, (Game.WIDTH / 2) - (112 / 2) - 57, 90);
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90);
 		password.setText(game.getPassword());
 		password.setAllowPunctuation(false);
 		
-		game.setServerIP(GameServer.IPv4_LOCALHOST);
+		game.setServerIP(ServerSocket.IPv4_LOCALHOST);
 		
 		buttons.add(username);
 		buttons.add(password);
@@ -65,13 +65,13 @@ public class GuiHostServer extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, Game.WIDTH / 2, 15, "Host A Server");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Host A Server");
 		
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 62 - 10, "Username");
-		blackFont.renderCentered(renderTo, Game.WIDTH / 2 - 57, 90 - 10, "Server Pass");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 62 - 10, "Username");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 90 - 10, "Server Pass");
 		
-		renderTo.draw(afroMan.getCurrentFrame(), (Game.WIDTH / 2) - 20, 30);
-		renderTo.draw(player2.getCurrentFrame(), (Game.WIDTH / 2) + 4, 30);
+		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
+		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
 	}
 	
 	@Override
@@ -83,7 +83,7 @@ public class GuiHostServer extends GuiScreen
 		afroMan.tick();
 		player2.tick();
 		
-		if (Game.instance().input.tab.isPressedFiltered())
+		if (ClientGame.instance().input.tab.isPressedFiltered())
 		{
 			if (username.isFocussed())
 			{
@@ -106,13 +106,13 @@ public class GuiHostServer extends GuiScreen
 				
 				if (!game.isHosting)
 				{
-					if (game.socketServer == null) game.socketServer = new GameServer(this.password.getText());
+					if (game.socketServer == null) game.socketServer = new ServerSocket(this.password.getText());
 				}
 				
 				game.socketServer.start();
 				game.isHosting = true;
 				
-				Game.instance().joinServer();
+				ClientGame.instance().joinServer();
 				break;
 		}
 	}
@@ -123,7 +123,7 @@ public class GuiHostServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 200:
-				Game.instance().setCurrentScreen(this.parentScreen);
+				ClientGame.instance().setCurrentScreen(this.parentScreen);
 				break;
 		}
 	}
