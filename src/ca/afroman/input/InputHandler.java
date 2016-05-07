@@ -138,6 +138,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
+		if (ClientGame.instance() == null) return;
+		
 		// The Game resolution width / canvas width (ONLY the canvas, no black borders or JFrame)
 		double xRatio = (double) ClientGame.WIDTH / (double) ClientGame.instance().getWidth();
 		mouseX = (int) (e.getX() * xRatio);

@@ -5,29 +5,40 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import ca.afroman.ClientGame;
+import ca.afroman.asset.AssetType;
+import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.asset.AssetType;
 
 public class TextureEntity extends ClientEntity
 {
+	Texture texture;
+	
 	public TextureEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double hitbox)
 	{
 		super(level, asset, x, y, width, height, hitbox);
+		
+		texture = Assets.getTexture(asset);
 	}
 	
 	public TextureEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, List<Rectangle2D.Double> hitboxes)
 	{
 		super(level, asset, x, y, width, height, hitboxes);
+		
+		texture = Assets.getTexture(asset);
 	}
 	
 	public TextureEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double... hitboxes)
 	{
 		super(level, asset, x, y, width, height, hitboxes);
+		
+		texture = Assets.getTexture(asset);
 	}
 	
 	public void render(Texture renderTo)
 	{
+		if (texture != null) renderTo.draw(texture, getLevel().worldToScreenX(getX()), getLevel().worldToScreenY(getY()));
+		
 		if (ClientGame.instance().isHitboxDebugging())
 		{
 			if (this.hasHitbox())

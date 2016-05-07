@@ -10,6 +10,7 @@ import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.Entity;
+import ca.afroman.entity.TextureEntity;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
@@ -33,19 +34,19 @@ public class ClientLevel extends Level
 	}
 	
 	// TODO move into client-side level
-	public void setCameraCenterInWorld(double x, double y)
+	public synchronized void setCameraCenterInWorld(double x, double y)
 	{
 		xOffset = x - (ClientGame.WIDTH / 2);
 		yOffset = y - (ClientGame.HEIGHT / 2);
 	}
 	
-	public void render(Texture renderTo)
+	public synchronized void render(Texture renderTo)
 	{
 		// Renders Tiles
 		for (Entity tile : tiles)
 		{
-			// TODO add rendering
-			// tile.render(renderTo);
+			// If it has a texture, render it
+			if (tile instanceof TextureEntity) ((TextureEntity) tile).render(renderTo);
 		}
 		
 		for (Entity entity : entities)
@@ -72,7 +73,7 @@ public class ClientLevel extends Level
 			
 			lightmap.patch();
 			
-			renderTo.draw(lightmap, 0, 0);
+			// TODO add back renderTo.draw(lightmap, 0, 0);
 		}
 		
 		// Draws out the hitboxes
@@ -110,7 +111,7 @@ public class ClientLevel extends Level
 	private int buildModes = 3;
 	
 	// Mode 1, Tiles
-	private int currentBuildTextureOrdinal = 0;
+	private int currentBuildTextureOrdinal = 1;
 	
 	// Mode 2, PointLights
 	private int currentBuildLightRadius = 10;
@@ -298,7 +299,7 @@ public class ClientLevel extends Level
 		// playerLight.setX(Game.instance().player.getX() + 8);
 		// playerLight.setY(Game.instance().player.getY() + 8);
 		
-		super.tick();
+		// TODO tick the super? super.tick();
 	}
 	
 	public double screenToWorldX(double x)
@@ -331,7 +332,7 @@ public class ClientLevel extends Level
 		return yOffset;
 	}
 	
-	public PointLight getLight(double x, double y)
+	public synchronized PointLight getLight(double x, double y)
 	{
 		for (PointLight light : lights)
 		{
@@ -347,13 +348,13 @@ public class ClientLevel extends Level
 		return null;
 	}
 	
-	public void removeLight(double x, double y)
+	public synchronized void removeLight(double x, double y)
 	{
 		PointLight light = getLight(x, y);
 		if (light != null) lights.remove(light);
 	}
 	
-	public void addLight(PointLight light)
+	public synchronized void addLight(PointLight light)
 	{
 		lights.add(light);
 	}

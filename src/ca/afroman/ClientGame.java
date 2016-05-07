@@ -10,10 +10,12 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 
+import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
@@ -24,8 +26,7 @@ import ca.afroman.input.InputHandler;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketRequestConnection;
-import ca.afroman.asset.AssetType;
-import ca.afroman.server.ServerSocket;
+import ca.afroman.server.ServerGame;
 
 public class ClientGame extends Canvas implements Runnable
 {
@@ -45,7 +46,7 @@ public class ClientGame extends Canvas implements Runnable
 	
 	private JFrame frame;
 	
-	private Texture screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
+	private Texture screen;
 	
 	private boolean fullscreen = false;
 	private boolean hudDebug = false; // Shows debug information on the hud
@@ -62,9 +63,10 @@ public class ClientGame extends Canvas implements Runnable
 	public int tps = 0;
 	public int fps = 0;
 	
-	public InputHandler input = new InputHandler(this);
+	public InputHandler input;
 	
 	public List<ClientLevel> levels;
+	private ClientLevel currentLevel = null;
 	// public Level blankLevel; TODO make level loading
 	// public PlayerEntity player;
 	
@@ -73,7 +75,7 @@ public class ClientGame extends Canvas implements Runnable
 	private String typedIP = "";
 	
 	public ClientSocket socketClient = null;
-	public ServerSocket socketServer = null;
+	public ServerGame server = null;
 	
 	private GuiScreen currentScreen = null;
 	
@@ -92,15 +94,72 @@ public class ClientGame extends Canvas implements Runnable
 		
 		frame.add(this, BorderLayout.CENTER);
 		frame.pack();
-		frame.setResizable(true);
+		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
+		// Loading screen
+		long startTime = System.currentTimeMillis();
+		this.repaint();
+		final Texture loading = Texture.fromResource("/loading.png");
+		StoppableThread renderLoading = new StoppableThread()
+		{
+			@Override
+			public void run()
+			{
+				while (!isStopped)
+				{
+					getGraphics().drawImage(loading.getImage(), 0, 0, getWidth(), getHeight(), null);
+					
+					try
+					{
+						Thread.sleep(200);
+					}
+					catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		renderLoading.start();
+		
+		// DO THE LOADING
+		
+		// Allows key listens for TAB and such
 		this.setFocusTraversalKeysEnabled(false);
 		
 		ConsoleOutput.createGui();
 		ConsoleOutput.showGui();
 		ConsoleOutput.hideGui();
+		
+		screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
+		input = new InputHandler(this);
+		levels = new ArrayList<ClientLevel>();
+		
+		// WHEN FINISHED LOADING
+		
+		long loadTime = System.currentTimeMillis() - startTime;
+		
+		int forcedDisplayTime = 1300;
+		
+		// Makes you see the loading screen for at least a half second
+		if (loadTime < forcedDisplayTime)
+		{
+			try
+			{
+				Thread.sleep(forcedDisplayTime - loadTime);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		// End the loading screen
+		frame.setResizable(true);
+		this.repaint();
+		renderLoading.stopThread();
 	}
 	
 	public void init()
@@ -254,13 +313,14 @@ public class ClientGame extends Canvas implements Runnable
 			System.out.println("Debug Hud: " + hudDebug);
 		}
 		
+		if (input.hitboxDebug.isPressedFiltered())
+		{
+			hitboxDebug = !hitboxDebug;
+			
+			System.out.println("Show Hitboxes: " + hitboxDebug);
+		}
+		
 		// TODO
-		// if (input.hitboxDebug.isPressedFiltered())
-		// {
-		// hitboxDebug = !hitboxDebug;
-		//
-		// System.out.println("Show Hitboxes: " + hitboxDebug);
-		// }
 		//
 		// if (input.lightingDebug.isPressedFiltered())
 		// {
@@ -276,20 +336,27 @@ public class ClientGame extends Canvas implements Runnable
 		// }
 		//
 		//
-		// if (input.levelBuilder.isPressedFiltered())
-		// {
-		// buildMode = !buildMode;
-		//
-		// System.out.println("Build Mode: " + buildMode);
-		//
-		// this.player.setCameraToFollow(!buildMode);
-		// this.player.getLevel().toSaveFile();
-		// }
+		
+		if (input.levelBuilder.isPressedFiltered())
+		{
+			buildMode = !buildMode;
+			
+			System.out.println("Build Mode: " + buildMode);
+			
+			// TODO player shiz
+			// this.player.setCameraToFollow(!buildMode);
+			// this.player.getLevel().toSaveFile();
+		}
 		
 		// TODO blankLevel.tick();
 		
 		// Don't update the player list after the first tick that it has been updated.
 		if (updatePlayerList > 0) updatePlayerList--;
+		
+		if (currentLevel != null)
+		{
+			currentLevel.tick();
+		}
 		
 		if (currentScreen != null)
 		{
@@ -304,6 +371,11 @@ public class ClientGame extends Canvas implements Runnable
 		// Clears the canvas
 		screen.getGraphics().setColor(Color.WHITE);
 		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
+		
+		if (currentLevel != null)
+		{
+			currentLevel.render(screen);
+		}
 		
 		/*
 		 * TODO add back once working with server-side
@@ -479,6 +551,7 @@ public class ClientGame extends Canvas implements Runnable
 	public void exitFromGame()
 	{
 		// TODO Stop the game
+		this.levels.clear();
 		this.isHosting = false;
 		setCurrentScreen(new GuiMainMenu());
 		this.socketClient.getPlayers().clear();
@@ -491,6 +564,16 @@ public class ClientGame extends Canvas implements Runnable
 		
 		socketClient.setServerIP(getServerIP());
 		socketClient.sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
+	}
+	
+	public ClientLevel getCurrentLevel()
+	{
+		return currentLevel;
+	}
+	
+	public void setCurrentLevel(ClientLevel newLevel)
+	{
+		currentLevel = newLevel;
 	}
 	
 	public ClientLevel getLevelByType(LevelType type)

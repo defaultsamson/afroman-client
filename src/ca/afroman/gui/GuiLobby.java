@@ -11,6 +11,7 @@ import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketDisconnect;
+import ca.afroman.packet.PacketStartGame;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.player.Role;
 import ca.afroman.server.ServerSocket;
@@ -66,6 +67,9 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void tick()
 	{
+		light1.tick();
+		light2.tick();
+		
 		// Draws all the new buttons if the server list has been updated
 		if (game.hasServerListBeenUpdated())
 		{
@@ -73,9 +77,6 @@ public class GuiLobby extends GuiScreen
 			buttons.clear();
 			buttons.add(startButton);
 			buttons.add(stopButton);
-			
-			light1.tick();
-			light2.tick();
 			
 			player1X = -300;
 			player1Y = -300;
@@ -171,7 +172,7 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			// TODO start game
+			game.socketClient.sendPacket(new PacketStartGame());
 		}
 		else if (buttonID == 2001) // Stop Server
 		{

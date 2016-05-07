@@ -9,6 +9,7 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.server.ServerGame;
 import ca.afroman.server.ServerSocket;
 
 public class GuiHostServer extends GuiScreen
@@ -104,12 +105,16 @@ public class GuiHostServer extends GuiScreen
 			case 1: // Host Server
 				game.setUsername(this.username.getText());
 				
+				// If not already hosting
 				if (!game.isHosting)
 				{
-					if (game.socketServer == null) game.socketServer = new ServerSocket(this.password.getText());
+					// If the server is null, instantiate it
+					if (game.server == null) game.server = new ServerGame(this.password.getText());
+					
+					// Start that server thread
+					game.server.start();
 				}
 				
-				game.socketServer.start();
 				game.isHosting = true;
 				
 				ClientGame.instance().joinServer();

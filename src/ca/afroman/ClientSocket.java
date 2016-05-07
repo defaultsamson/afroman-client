@@ -1,5 +1,6 @@
 package ca.afroman;
 
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,11 +10,15 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.asset.AssetType;
+import ca.afroman.entity.TextureEntity;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.level.ClientLevel;
+import ca.afroman.level.LevelType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
@@ -106,7 +111,7 @@ public class ClientSocket extends Thread
 			{
 				default:
 				case INVALID:
-					System.out.println("INVALID PACKET");
+					System.out.println("[CLIENT] INVALID PACKET");
 					break;
 				case DENY_JOIN:
 					// Game.instance().setPassword("INVALID PASSWORD");
@@ -162,6 +167,70 @@ public class ClientSocket extends Thread
 				case STOP_SERVER:
 					ClientGame.instance().exitFromGame();
 					new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
+					break;
+				case INSTANTIATE_LEVEL:
+				{
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
+					
+					if (ClientGame.instance().getLevelByType(levelType) == null)
+					{
+						System.out.println("[CLIENT] Adding Level: " + levelType);
+						ClientGame.instance().levels.add(new ClientLevel(levelType));
+						ClientGame.instance().setCurrentLevel(ClientGame.instance().getLevelByType(levelType));
+					}
+					else
+					{
+						System.out.println("[CLIENT] Level with type " + levelType + " already exists.");
+					}
+				}
+					break;
+				case ADD_LEVEL_TILE:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					ClientLevel level = ClientGame.instance().getLevelByType(LevelType.fromOrdinal(Integer.parseInt(split[0])));
+					
+					if (level != null)
+					{
+						System.out.println("Adding Tile");
+						
+						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[1]));
+						
+						double x = Double.parseDouble(split[2]);
+						double y = Double.parseDouble(split[3]);
+						double width = Double.parseDouble(split[4]);
+						double height = Double.parseDouble(split[5]);
+						
+						// If it has custom hitboxes defined
+						if (split.length > 6)
+						{
+							List<Rectangle2D.Double> tileHitboxes = new ArrayList<Rectangle2D.Double>();
+							
+							for (int i = 4; i < split.length; i += 4)
+							{
+								tileHitboxes.add(new Rectangle2D.Double(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
+							}
+							
+							level.addTile(new TextureEntity(level, asset, x, y, width, height, tileHitboxes));
+						}
+						else
+						{
+							level.addTile(new TextureEntity(level, asset, x, y, width, height));
+						}
+					}
+				}
+					break;
+				case ADD_LEVEL_HITBOX:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					
+					ClientLevel level = ClientGame.instance().getLevelByType(LevelType.fromOrdinal(Integer.parseInt(split[0])));
+					double x = Double.parseDouble(split[1]);
+					double y = Double.parseDouble(split[2]);
+					double width = Double.parseDouble(split[3]);
+					double height = Double.parseDouble(split[4]);
+					
+					level.addHitbox(new Rectangle2D.Double(x, y, width, height));
+				}
 					break;
 			}
 		}
