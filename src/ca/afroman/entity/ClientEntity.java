@@ -1,32 +1,24 @@
 package ca.afroman.entity;
 
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 
-import ca.afroman.level.ClientLevel;
 import ca.afroman.asset.AssetType;
+import ca.afroman.level.ClientLevel;
 
 public class ClientEntity extends Entity
 {
 	protected boolean cameraFollow;
 	
-	public ClientEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double hitbox)
+	public ClientEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double hitbox)
 	{
-		super(level, asset, x, y, width, height, hitbox);
+		super(id, level, asset, x, y, width, height, hitbox);
 		
 		cameraFollow = false;
 	}
 	
-	public ClientEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, List<Rectangle2D.Double> hitboxes)
+	public ClientEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double... hitboxes)
 	{
-		super(level, asset, x, y, width, height, hitboxes);
-		
-		cameraFollow = false;
-	}
-	
-	public ClientEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double... hitboxes)
-	{
-		super(level, asset, x, y, width, height, hitboxes);
+		super(id, level, asset, x, y, width, height, hitboxes);
 		
 		cameraFollow = false;
 	}

@@ -141,7 +141,7 @@ public class ClientGame extends Canvas implements Runnable
 		
 		long loadTime = System.currentTimeMillis() - startTime;
 		
-		int forcedDisplayTime = 1300;
+		int forcedDisplayTime = 500;
 		
 		// Makes you see the loading screen for at least a half second
 		if (loadTime < forcedDisplayTime)

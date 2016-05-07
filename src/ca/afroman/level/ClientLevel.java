@@ -10,10 +10,13 @@ import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.Entity;
+import ca.afroman.entity.SpriteEntity;
 import ca.afroman.entity.TextureEntity;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.packet.PacketAddLevelTile;
+import ca.afroman.packet.PacketRemoveLevelTileLocation;
 
 public class ClientLevel extends Level
 {
@@ -51,6 +54,8 @@ public class ClientLevel extends Level
 		
 		for (Entity entity : entities)
 		{
+			if (entity instanceof TextureEntity) ((TextureEntity) entity).render(renderTo);
+			if (entity instanceof SpriteEntity) ((SpriteEntity) entity).render(renderTo);
 			// TODO add rendering
 			// entity.render(renderTo);
 		}
@@ -172,13 +177,19 @@ public class ClientLevel extends Level
 			{
 				if (ClientGame.instance().input.mouseLeft.isPressedFiltered())
 				{
-					// TODO Place Tile
-					// new Tile(this, screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY()), Assets.getTexture(Assets.fromOrdinal(currentBuildTextureOrdinal)), false, false);
+					AssetType asset = AssetType.fromOrdinal(currentBuildTextureOrdinal);
+					Texture texture = Assets.getTexture(asset);
+					
+					Entity tileToAdd = new Entity(this, asset, screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), texture.getWidth(), texture.getHeight());
+					PacketAddLevelTile pack = new PacketAddLevelTile(tileToAdd);
+					ClientGame.instance().socketClient.sendPacket(pack);
 				}
 				
 				if (ClientGame.instance().input.mouseRight.isPressedFiltered())
 				{
 					// TODO Remove Tile
+					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
+					ClientGame.instance().socketClient.sendPacket(pack);
 					// tiles.remove(getTile(screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY())));
 				}
 				

@@ -2,7 +2,6 @@ package ca.afroman.entity;
 
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 
 import ca.afroman.ClientGame;
 import ca.afroman.asset.AssetType;
@@ -14,23 +13,16 @@ public class TextureEntity extends ClientEntity
 {
 	Texture texture;
 	
-	public TextureEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double hitbox)
+	public TextureEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double hitbox)
 	{
-		super(level, asset, x, y, width, height, hitbox);
+		super(id, level, asset, x, y, width, height, hitbox);
 		
 		texture = Assets.getTexture(asset);
 	}
 	
-	public TextureEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, List<Rectangle2D.Double> hitboxes)
+	public TextureEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double... hitboxes)
 	{
-		super(level, asset, x, y, width, height, hitboxes);
-		
-		texture = Assets.getTexture(asset);
-	}
-	
-	public TextureEntity(ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double... hitboxes)
-	{
-		super(level, asset, x, y, width, height, hitboxes);
+		super(id, level, asset, x, y, width, height, hitboxes);
 		
 		texture = Assets.getTexture(asset);
 	}
