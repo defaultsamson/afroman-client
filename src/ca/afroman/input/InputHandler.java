@@ -95,10 +95,10 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	
 	public InputHandler(ClientGame game)
 	{
-		game.addKeyListener(this);
-		game.addMouseListener(this);
-		game.addMouseMotionListener(this);
-		game.addMouseWheelListener(this);
+		game.getCanvas().addKeyListener(this);
+		game.getCanvas().addMouseListener(this);
+		game.getCanvas().addMouseMotionListener(this);
+		game.getCanvas().addMouseWheelListener(this);
 	}
 	
 	@Override
@@ -141,11 +141,11 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		if (ClientGame.instance() == null) return;
 		
 		// The Game resolution width / canvas width (ONLY the canvas, no black borders or JFrame)
-		double xRatio = (double) ClientGame.WIDTH / (double) ClientGame.instance().getWidth();
+		double xRatio = ClientGame.WIDTH / (double) ClientGame.instance().getCanvas().getWidth();
 		mouseX = (int) (e.getX() * xRatio);
 		
 		// The Game resolution height / canvas height (ONLY the canvas, no black borders or JFrame)
-		double yRatio = (double) ClientGame.HEIGHT / (double) ClientGame.instance().getHeight();
+		double yRatio = ClientGame.HEIGHT / (double) ClientGame.instance().getCanvas().getHeight();
 		mouseY = (int) (e.getY() * yRatio);
 		
 		// System.out.println(mouseX + ", " + mouseY);

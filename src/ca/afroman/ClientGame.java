@@ -8,6 +8,8 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -27,11 +29,11 @@ import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.server.ServerGame;
+import ca.afroman.thread.DynamicThread;
+import ca.afroman.thread.DynamicTickRenderThread;
 
-public class ClientGame extends Canvas implements Runnable
+public class ClientGame extends DynamicTickRenderThread // implements Runnable
 {
-	private static final long serialVersionUID = 1L;
-	
 	private static ClientGame game;
 	
 	public static ClientGame instance()
@@ -45,7 +47,7 @@ public class ClientGame extends Canvas implements Runnable
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	
 	private JFrame frame;
-	
+	private Canvas canvas;
 	private Texture screen;
 	
 	private boolean fullscreen = false;
@@ -57,11 +59,6 @@ public class ClientGame extends Canvas implements Runnable
 	
 	public boolean isHosting = false;
 	public int updatePlayerList = 0; // Tells if the player list has been updated within the last tick
-	
-	public boolean running = false;
-	public int tickCount = 0;
-	public int tps = 0;
-	public int fps = 0;
 	
 	public InputHandler input;
 	
@@ -81,18 +78,63 @@ public class ClientGame extends Canvas implements Runnable
 	
 	public ClientGame()
 	{
-		setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		
+		super(60);
+		canvas = new Canvas();
 		frame = new JFrame(NAME);
+	}
+	
+	@Override
+	public void onStart()
+	{
+		super.onStart();
+		
+		// Makes it so that when the window is resized, this ClientGame will resize the canvas accordingly
+		canvas.addComponentListener(new ComponentListener()
+		{
+			private boolean doIt = true;
+			
+			@Override
+			public void componentResized(ComponentEvent e)
+			{
+				if (doIt) // Stops it from detecting the resizeGame method from resizing its bounds.
+				{
+					doIt = false;
+					ClientGame.instance().resizeGame(canvas.getWidth(), canvas.getHeight());
+				}
+				else
+				{
+					doIt = true;
+				}
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e)
+			{
+				
+			}
+			
+			@Override
+			public void componentShown(ComponentEvent e)
+			{
+				
+			}
+			
+			@Override
+			public void componentHidden(ComponentEvent e)
+			{
+				
+			}
+		});
+		
+		canvas.setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		canvas.setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		
 		frame.getContentPane().setBackground(Color.black);
-		
-		frame.add(this, BorderLayout.CENTER);
+		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.pack();
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
@@ -100,26 +142,47 @@ public class ClientGame extends Canvas implements Runnable
 		
 		// Loading screen
 		long startTime = System.currentTimeMillis();
-		this.repaint();
+		canvas.repaint();
 		final Texture loading = Texture.fromResource("/loading.png");
-		StoppableThread renderLoading = new StoppableThread()
+		DynamicThread renderLoading = new DynamicThread()
 		{
 			@Override
-			public void run()
+			public void onRun()
 			{
-				while (!isStopped)
+				canvas.getGraphics().drawImage(loading.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+				
+				try
 				{
-					getGraphics().drawImage(loading.getImage(), 0, 0, getWidth(), getHeight(), null);
-					
-					try
-					{
-						Thread.sleep(200);
-					}
-					catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
+					Thread.sleep(200);
 				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+			
+			@Override
+			public void onStart()
+			{
+				
+			}
+			
+			@Override
+			public void onPause()
+			{
+				
+			}
+			
+			@Override
+			public void onUnpause()
+			{
+				
+			}
+			
+			@Override
+			public void onStop()
+			{
+				loading.getImage().flush();
 			}
 		};
 		renderLoading.start();
@@ -127,7 +190,7 @@ public class ClientGame extends Canvas implements Runnable
 		// DO THE LOADING
 		
 		// Allows key listens for TAB and such
-		this.setFocusTraversalKeysEnabled(false);
+		canvas.setFocusTraversalKeysEnabled(false);
 		
 		ConsoleOutput.createGui();
 		ConsoleOutput.showGui();
@@ -158,12 +221,10 @@ public class ClientGame extends Canvas implements Runnable
 		
 		// End the loading screen
 		frame.setResizable(true);
-		this.repaint();
+		canvas.repaint();
 		renderLoading.stopThread();
-	}
-	
-	public void init()
-	{
+		
+		// TODO only start the socket when it needs to be listening
 		socketClient = new ClientSocket();
 		socketClient.start();
 		
@@ -177,14 +238,6 @@ public class ClientGame extends Canvas implements Runnable
 		 * // player.setCameraToFollow(true);
 		 * // blankLevel.putPlayer();
 		 */
-	}
-	
-	@Override
-	public void validate()
-	{
-		super.validate();
-		
-		resizeGame(this.getWidth(), this.getHeight());
 	}
 	
 	/**
@@ -211,79 +264,10 @@ public class ClientGame extends Canvas implements Runnable
 		}
 		
 		// Resizes the canvas to match the new window size, keeping it centred.
-		setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
-	}
-	
-	public synchronized void start()
-	{
-		init();
-		running = true;
-		new Thread(this).start();
-	}
-	
-	public synchronized void stop()
-	{
-		running = false;
+		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
 	}
 	
 	@Override
-	public void run()
-	{
-		long lastTime = System.nanoTime();
-		double ticksPerSecond = 60D;
-		double nsPerTick = 1000000000D / ticksPerSecond;
-		
-		int ticks = 0;
-		int frames = 0;
-		
-		long lastTimer = System.currentTimeMillis();
-		double delta = 0;
-		
-		while (running)
-		{
-			long now = System.nanoTime();
-			delta += (now - lastTime) / nsPerTick;
-			lastTime = now;
-			boolean shouldRender = true; // true for unlimited frames, false for limited to tick rate
-			
-			while (delta >= 1)
-			{
-				ticks++;
-				tick();
-				delta--;
-				shouldRender = true;
-			}
-			
-			// Stops system from overloading the CPU. Gives other threads a chance to run.
-			try
-			{
-				// If the ticks per second is less than desired, allow this thread to run with less sleep-time
-				Thread.sleep((tps < ticksPerSecond ? 1 : 3));
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-			
-			// Only render when something has been updated
-			if (shouldRender)
-			{
-				frames++;
-				render();
-			}
-			
-			// If current time - the last time we updated is >= 1 second
-			if (System.currentTimeMillis() - lastTimer >= 1000)
-			{
-				tps = ticks;
-				fps = frames;
-				lastTimer += 1000;
-				frames = 0;
-				ticks = 0;
-			}
-		}
-	}
-	
 	public void tick()
 	{
 		tickCount++;
@@ -295,8 +279,6 @@ public class ClientGame extends Canvas implements Runnable
 			ConsoleOutput.setGuiVisible(consoleDebug);
 			
 			System.out.println("Show Console: " + consoleDebug);
-			
-			// this.requestFocus();
 		}
 		
 		if (input.full_screen.isPressedFiltered())
@@ -361,10 +343,9 @@ public class ClientGame extends Canvas implements Runnable
 		}
 	}
 	
+	@Override
 	public void render()
 	{
-		// System.out.println("RENDERING");
-		
 		// Clears the canvas
 		screen.getGraphics().setColor(Color.WHITE);
 		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
@@ -374,18 +355,6 @@ public class ClientGame extends Canvas implements Runnable
 			currentLevel.render(screen);
 		}
 		
-		/*
-		 * TODO add back once working with server-side
-		 * blankLevel.render(screen);
-		 * if (this.tickCount < 240)
-		 * {
-		 * int xPos = (WIDTH / 2);
-		 * int yPos = 120;
-		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT - yPos, "CANCER:");
-		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 15 - yPos, "The Adventures of");
-		 * Assets.getFont(Assets.FONT_WHITE).renderCentered(screen, WIDTH - xPos, HEIGHT + 25 - yPos, "Afro Man");
-		 * }
-		 */
 		if (hudDebug)
 		{
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
@@ -400,15 +369,15 @@ public class ClientGame extends Canvas implements Runnable
 		}
 		
 		// Renders everything that was just drawn
-		BufferStrategy bs = getBufferStrategy();
+		BufferStrategy bs = canvas.getBufferStrategy();
 		if (bs == null)
 		{
-			createBufferStrategy(2);
+			canvas.createBufferStrategy(2);
 			return;
 		}
 		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
 		// g.rotate(Math.toRadians(1), WIDTH /2, HEIGHT/2);
-		g.drawImage(screen.getImage(), 0, 0, getWidth(), getHeight(), null);
+		g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
 		g.dispose();
 		bs.show();
 	}
@@ -432,7 +401,7 @@ public class ClientGame extends Canvas implements Runnable
 			frame.setUndecorated(true);
 			frame.setVisible(true);
 			frame.revalidate();
-			this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+			canvas.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 			try
 			{
 				gd.setFullScreenWindow(frame);// Makes it full screen
@@ -443,8 +412,8 @@ public class ClientGame extends Canvas implements Runnable
 				// this.setVisible(true);
 				// }
 				
-				this.repaint();
-				this.revalidate();
+				canvas.repaint();
+				canvas.revalidate();
 			}
 			catch (Exception e)
 			{
@@ -464,7 +433,7 @@ public class ClientGame extends Canvas implements Runnable
 			frame.setExtendedState(frame.getExtendedState() | JFrame.NORMAL);// Returns to normal state
 		}
 		
-		this.requestFocus();
+		canvas.requestFocus();
 	}
 	
 	public boolean isFullScreen()
@@ -586,5 +555,31 @@ public class ClientGame extends Canvas implements Runnable
 	{
 		game = new ClientGame();
 		game.start();
+	}
+	
+	public Canvas getCanvas()
+	{
+		return canvas;
+	}
+	
+	@Override
+	public void onPause()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void onUnpause()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void onStop()
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

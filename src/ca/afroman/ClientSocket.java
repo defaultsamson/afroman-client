@@ -28,8 +28,9 @@ import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketType;
 import ca.afroman.player.Role;
 import ca.afroman.server.ServerSocket;
+import ca.afroman.thread.DynamicThread;
 
-public class ClientSocket extends Thread
+public class ClientSocket extends DynamicThread
 {
 	public static int id = -1;
 	private InetAddress serverIP = null;
@@ -78,26 +79,23 @@ public class ClientSocket extends Thread
 	}
 	
 	@Override
-	public void run()
+	public void onRun()
 	{
-		while (true)
+		byte[] buffer = new byte[1024];
+		
+		// Loads up the buffer with incoming data
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+		
+		try
 		{
-			byte[] buffer = new byte[1024];
-			
-			// Loads up the buffer with incoming data
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			
-			try
-			{
-				socket.receive(packet);
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			
-			this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
+			socket.receive(packet);
 		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 	}
 	
 	public void parsePacket(byte[] data, IPConnection connection)
@@ -361,7 +359,7 @@ public class ClientSocket extends Thread
 	}
 	
 	/**
-	 * @return a list of all the ConnectedPlayers, exclusing this current player.
+	 * @return a list of all the ConnectedPlayers, excluding this current player.
 	 */
 	public List<ConnectedPlayer> otherPlayers()
 	{
@@ -378,5 +376,29 @@ public class ClientSocket extends Thread
 	public List<ConnectedPlayer> getPlayers()
 	{
 		return playerList;
+	}
+	
+	@Override
+	public void onStart()
+	{
+		
+	}
+	
+	@Override
+	public void onPause()
+	{
+		
+	}
+	
+	@Override
+	public void onUnpause()
+	{
+		
+	}
+	
+	@Override
+	public void onStop()
+	{
+		
 	}
 }
