@@ -1,7 +1,6 @@
 package ca.afroman.level;
 
 import java.awt.Color;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,9 @@ import ca.afroman.entity.TextureEntity;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelTile;
+import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
 import ca.afroman.packet.PacketRemoveLevelTileLocation;
 
 public class ClientLevel extends Level
@@ -84,7 +85,7 @@ public class ClientLevel extends Level
 		// Draws out the hitboxes
 		if (ClientGame.instance().isHitboxDebugging())
 		{
-			for (Rectangle2D.Double box : hitboxes)
+			for (Hitbox box : hitboxes)
 			{
 				int x = worldToScreenX((int) box.getX());
 				int y = worldToScreenY((int) box.getY());
@@ -275,8 +276,9 @@ public class ClientLevel extends Level
 					}
 					else if (hitboxClickCount == 1)
 					{
-						// TODO add a hitbox
-						// levelHitboxes.add(new Rectangle(hitboxX1, hitboxY1, Game.instance().input.getMouseX() - worldToScreenX(hitboxX1) + 1, Game.instance().input.getMouseY() - worldToScreenY(hitboxY1) + 1));
+						PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX1, hitboxY1, ClientGame.instance().input.getMouseX() - worldToScreenX(hitboxX1) + 1, ClientGame.instance().input.getMouseY() - worldToScreenY(hitboxY1) + 1));
+						ClientGame.instance().socketClient.sendPacket(pack);
+						
 						hitboxClickCount = 0;
 					}
 				}
@@ -289,8 +291,8 @@ public class ClientLevel extends Level
 					}
 					else
 					{
-						// TODO remove hitbox
-						// levelHitboxes.remove(getHitbox(screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY())));
+						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
+						ClientGame.instance().socketClient.sendPacket(pack);
 					}
 				}
 			}
@@ -350,7 +352,7 @@ public class ClientLevel extends Level
 			double width = light.getWidth();
 			double height = light.getHeight();
 			
-			if (new Rectangle2D.Double(light.getX() - light.getRadius(), light.getY() - light.getRadius(), width, height).contains(x, y))
+			if (new Hitbox(light.getX() - light.getRadius(), light.getY() - light.getRadius(), width, height).contains(x, y))
 			{
 				return light;
 			}

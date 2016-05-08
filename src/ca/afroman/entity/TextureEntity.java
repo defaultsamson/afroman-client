@@ -1,26 +1,26 @@
 package ca.afroman.entity;
 
 import java.awt.Color;
-import java.awt.geom.Rectangle2D;
 
 import ca.afroman.ClientGame;
 import ca.afroman.asset.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.Hitbox;
 
 public class TextureEntity extends ClientEntity
 {
 	Texture texture;
 	
-	public TextureEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double hitbox)
+	public TextureEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Hitbox hitbox)
 	{
 		super(id, level, asset, x, y, width, height, hitbox);
 		
 		texture = Assets.getTexture(asset);
 	}
 	
-	public TextureEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Rectangle2D.Double... hitboxes)
+	public TextureEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Hitbox... hitboxes)
 	{
 		super(id, level, asset, x, y, width, height, hitboxes);
 		
@@ -35,7 +35,7 @@ public class TextureEntity extends ClientEntity
 		{
 			if (this.hasHitbox())
 			{
-				for (Rectangle2D.Double box : this.hitboxInLevel())
+				for (Hitbox box : this.hitboxInLevel())
 				{
 					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
 					renderTo.getGraphics().fillRect(getLevel().worldToScreenX(box.x), getLevel().worldToScreenY(box.y), (int) box.width - 1, (int) box.height - 1);

@@ -1,28 +1,27 @@
 package ca.afroman.entity;
 
-import java.awt.geom.Rectangle2D;
-
 import ca.afroman.asset.AssetType;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.Hitbox;
 
 public class SpriteEntity extends ClientEntity
 {
 	protected SpriteAnimation[] sprites;
 	protected SpriteAnimation[] idleSprites;
 	
-	public SpriteEntity(int id, ClientLevel level, Texture texture, double x, double y, double width, double height, double speed, Rectangle2D.Double... hitboxes)
+	public SpriteEntity(int id, ClientLevel level, Texture texture, double x, double y, double width, double height, double speed, Hitbox... hitboxes)
 	{
 		this(id, level, texture, texture, texture, texture, x, y, width, height, speed, hitboxes);
 	}
 	
-	public SpriteEntity(int id, ClientLevel level, Texture texture1, Texture texture2, Texture texture3, Texture texture4, double x, double y, double width, double height, double speed, Rectangle2D.Double... hitboxes)
+	public SpriteEntity(int id, ClientLevel level, Texture texture1, Texture texture2, Texture texture3, Texture texture4, double x, double y, double width, double height, double speed, Hitbox... hitboxes)
 	{
 		this(id, level, new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), new SpriteAnimation(0, texture1), new SpriteAnimation(0, texture2), new SpriteAnimation(0, texture3), new SpriteAnimation(0, texture4), x, y, width, height, speed, hitboxes);
 	}
 	
-	public SpriteEntity(int id, ClientLevel level, SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, SpriteAnimation upIdle, SpriteAnimation downIdle, SpriteAnimation leftIdle, SpriteAnimation rightIdle, double x, double y, double width, double height, double speed, Rectangle2D.Double... hitboxes)
+	public SpriteEntity(int id, ClientLevel level, SpriteAnimation up, SpriteAnimation down, SpriteAnimation left, SpriteAnimation right, SpriteAnimation upIdle, SpriteAnimation downIdle, SpriteAnimation leftIdle, SpriteAnimation rightIdle, double x, double y, double width, double height, double speed, Hitbox... hitboxes)
 	{
 		super(id, level, AssetType.INVALID, x, y, width, height, hitboxes);
 		this.setSpeed(speed);

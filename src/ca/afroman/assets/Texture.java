@@ -122,6 +122,13 @@ public class Texture extends Asset
 		image = op.filter(image, null);
 	}
 	
+	public void scale(double xScale, double yScale)
+	{
+		AffineTransform at = AffineTransform.getScaleInstance(xScale, yScale);
+		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		image = op.filter(image, null);
+	}
+	
 	public BufferedImage getImage()
 	{
 		return image;

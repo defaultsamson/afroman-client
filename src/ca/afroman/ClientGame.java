@@ -170,8 +170,7 @@ public class ClientGame extends Canvas implements Runnable
 		setCurrentScreen(new GuiMainMenu());
 		
 		/*
-		 * TODO add level loading
-		 * blankLevel = Level.fromFile("/level1.txt");
+		 * TODO add player to level
 		 * player = new PlayerMPEntity(100, 120, 1, input, null, -1);
 		 * player.addToLevel(blankLevel);
 		 * // player = new PlayerMPEntity(blankLevel, 100, 100, 1, input, null, -1);
@@ -328,14 +327,12 @@ public class ClientGame extends Canvas implements Runnable
 		//
 		// System.out.println("Show Lighting: " + !lightingDebug);
 		// }
-		//
-		// if (input.saveLevel.isPressedFiltered())
-		// {
-		// this.player.getLevel().toSaveFile();
-		// System.out.println("Copied current level save data to clipboard");
-		// }
-		//
-		//
+		
+		if (input.saveLevel.isPressedFiltered())
+		{
+			if (currentLevel != null) currentLevel.toSaveFile();
+			System.out.println("Copied current level save data to clipboard");
+		}
 		
 		if (input.levelBuilder.isPressedFiltered())
 		{

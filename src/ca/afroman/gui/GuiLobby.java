@@ -65,7 +65,7 @@ public class GuiLobby extends GuiScreen
 	}
 	
 	@Override
-	public void tick()
+	public synchronized void tick()
 	{
 		light1.tick();
 		light2.tick();

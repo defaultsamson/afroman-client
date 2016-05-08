@@ -1,6 +1,5 @@
 package ca.afroman;
 
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -19,6 +18,7 @@ import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.Hitbox;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.ConnectedPlayer;
@@ -193,8 +193,6 @@ public class ClientSocket extends Thread
 					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[1]));
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
-					System.out.println("LEVEL SHIT: " + id);
-					
 					if (level != null)
 					{
 						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[2]));
@@ -207,11 +205,11 @@ public class ClientSocket extends Thread
 						// If it has custom hitboxes defined
 						if (split.length > 7)
 						{
-							List<Rectangle2D.Double> tileHitboxes = new ArrayList<Rectangle2D.Double>();
+							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
 							
 							for (int i = 8; i < split.length; i += 4)
 							{
-								tileHitboxes.add(new Rectangle2D.Double(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
+								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
 							}
 							
 							level.addTile(new TextureEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
@@ -249,12 +247,34 @@ public class ClientSocket extends Thread
 					String[] split = Packet.readContent(data).split(",");
 					
 					ClientLevel level = ClientGame.instance().getLevelByType(LevelType.fromOrdinal(Integer.parseInt(split[0])));
-					double x = Double.parseDouble(split[1]);
-					double y = Double.parseDouble(split[2]);
-					double width = Double.parseDouble(split[3]);
-					double height = Double.parseDouble(split[4]);
 					
-					level.addHitbox(new Rectangle2D.Double(x, y, width, height));
+					if (level != null)
+					{
+						int id = Integer.parseInt(split[1]);
+						double x = Double.parseDouble(split[2]);
+						double y = Double.parseDouble(split[3]);
+						double width = Double.parseDouble(split[4]);
+						double height = Double.parseDouble(split[5]);
+						
+						level.addHitbox(new Hitbox(id, x, y, width, height));
+					}
+				}
+					break;
+				case REMOVE_LEVEL_HITBOX:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					Level level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						Hitbox box = level.getHitbox(Integer.parseInt(split[1]));
+						
+						if (box != null)
+						{
+							level.removeHitbox(box);
+						}
+					}
 				}
 					break;
 			}
