@@ -146,7 +146,7 @@ public class ClientSocket extends DynamicThread
 					break;
 				case UPDATE_PLAYERLIST:
 				{
-					ClientGame.instance().updatePlayerList = 2;
+					ClientGame.instance().updatePlayerList();
 					
 					String[] split = Packet.readContent(data).split(",");
 					
@@ -338,7 +338,7 @@ public class ClientSocket extends DynamicThread
 		return playerByID(id);
 	}
 	
-	public ConnectedPlayer playerByRole(Role role)
+	public synchronized ConnectedPlayer playerByRole(Role role)
 	{
 		for (ConnectedPlayer player : playerList)
 		{
@@ -348,7 +348,7 @@ public class ClientSocket extends DynamicThread
 		return null;
 	}
 	
-	public ConnectedPlayer playerByID(int id)
+	public synchronized ConnectedPlayer playerByID(int id)
 	{
 		for (ConnectedPlayer player : playerList)
 		{
@@ -361,7 +361,7 @@ public class ClientSocket extends DynamicThread
 	/**
 	 * @return a list of all the ConnectedPlayers, excluding this current player.
 	 */
-	public List<ConnectedPlayer> otherPlayers()
+	public synchronized List<ConnectedPlayer> otherPlayers()
 	{
 		List<ConnectedPlayer> toReturn = new ArrayList<ConnectedPlayer>();
 		
@@ -373,7 +373,7 @@ public class ClientSocket extends DynamicThread
 		return toReturn;
 	}
 	
-	public List<ConnectedPlayer> getPlayers()
+	public synchronized List<ConnectedPlayer> getPlayers()
 	{
 		return playerList;
 	}

@@ -37,7 +37,6 @@ public class ClientLevel extends Level
 		// TODO playerLight.addToLevel(this);
 	}
 	
-	// TODO move into client-side level
 	public synchronized void setCameraCenterInWorld(double x, double y)
 	{
 		xOffset = x - (ClientGame.WIDTH / 2);
@@ -108,7 +107,7 @@ public class ClientLevel extends Level
 			}
 			else if (currentBuildMode == 3 && hitboxClickCount == 1)
 			{
-				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX1), worldToScreenY(hitboxY1), ClientGame.instance().input.getMouseX() - worldToScreenX(hitboxX1), ClientGame.instance().input.getMouseY() - worldToScreenY(hitboxY1));
+				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
 			}
 		}
 	}
@@ -125,6 +124,12 @@ public class ClientLevel extends Level
 	// Mode 3, HitBoxes
 	private double hitboxX1 = 0;
 	private double hitboxY1 = 0;
+	private double hitboxX2 = 0;
+	private double hitboxY2 = 0;
+	private double hitboxX = 0;
+	private double hitboxY = 0;
+	private double hitboxWidth = 0;
+	private double hitboxHeight = 0;
 	private int hitboxClickCount = 0;
 	
 	@Override
@@ -188,10 +193,8 @@ public class ClientLevel extends Level
 				
 				if (ClientGame.instance().input.mouseRight.isPressedFiltered())
 				{
-					// TODO Remove Tile
 					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
 					ClientGame.instance().socketClient.sendPacket(pack);
-					// tiles.remove(getTile(screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY())));
 				}
 				
 				int ordinalDir = 0;
@@ -276,7 +279,7 @@ public class ClientLevel extends Level
 					}
 					else if (hitboxClickCount == 1)
 					{
-						PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX1, hitboxY1, ClientGame.instance().input.getMouseX() - worldToScreenX(hitboxX1) + 1, ClientGame.instance().input.getMouseY() - worldToScreenY(hitboxY1) + 1));
+						PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
 						ClientGame.instance().socketClient.sendPacket(pack);
 						
 						hitboxClickCount = 0;
@@ -294,6 +297,34 @@ public class ClientLevel extends Level
 						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
 						ClientGame.instance().socketClient.sendPacket(pack);
 					}
+				}
+				
+				// Sets the new X and Y ordinates for point 2 to that of the mouse
+				hitboxX2 = screenToWorldX(ClientGame.instance().input.getMouseX());
+				hitboxY2 = screenToWorldY(ClientGame.instance().input.getMouseY());
+				
+				// Finds the x, y, and height depending on which ones are greater than the other.
+				// Have to do this because Java doesn't support rectangles with negative width or height
+				if (hitboxX1 > hitboxX2)
+				{
+					hitboxX = hitboxX2;
+					hitboxWidth = hitboxX1 - hitboxX2 + 1;
+				}
+				else
+				{
+					hitboxX = hitboxX1;
+					hitboxWidth = hitboxX2 - hitboxX1 + 1;
+				}
+				
+				if (hitboxY1 > hitboxY2)
+				{
+					hitboxY = hitboxY2;
+					hitboxHeight = hitboxY1 - hitboxY2 + 1;
+				}
+				else
+				{
+					hitboxY = hitboxY1;
+					hitboxHeight = hitboxY2 - hitboxY1 + 1;
 				}
 			}
 		}

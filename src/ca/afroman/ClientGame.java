@@ -58,7 +58,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	private boolean consoleDebug = false; // Shows a console window
 	
 	public boolean isHosting = false;
-	public int updatePlayerList = 0; // Tells if the player list has been updated within the last tick
+	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	public InputHandler input;
 	
@@ -226,7 +226,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		// TODO only start the socket when it needs to be listening
 		socketClient = new ClientSocket();
-		socketClient.start();
 		
 		setCurrentScreen(new GuiMainMenu());
 		
@@ -271,6 +270,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public void tick()
 	{
 		tickCount++;
+		
+		if (updatePlayerList) hasStartedUpdateList = true;
 		
 		if (input.consoleDebug.isReleasedFiltered())
 		{
@@ -329,9 +330,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		// TODO blankLevel.tick();
 		
-		// Don't update the player list after the first tick that it has been updated.
-		if (updatePlayerList > 0) updatePlayerList--;
-		
 		if (currentLevel != null)
 		{
 			currentLevel.tick();
@@ -340,6 +338,12 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		if (currentScreen != null)
 		{
 			currentScreen.tick();
+		}
+		
+		if (hasStartedUpdateList)
+		{
+			hasStartedUpdateList = false;
+			updatePlayerList = false;
 		}
 	}
 	
@@ -355,17 +359,17 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			currentLevel.render(screen);
 		}
 		
+		if (currentScreen != null)
+		{
+			currentScreen.render(screen);
+		}
+		
 		if (hudDebug)
 		{
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
 			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
 			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
-		}
-		
-		if (currentScreen != null)
-		{
-			currentScreen.render(screen);
 		}
 		
 		// Renders everything that was just drawn
@@ -376,7 +380,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			return;
 		}
 		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
-		// g.rotate(Math.toRadians(1), WIDTH /2, HEIGHT/2);
 		g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
 		g.dispose();
 		bs.show();
@@ -506,12 +509,14 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return typedIP;
 	}
 	
+	private boolean hasStartedUpdateList = false;
+	
 	public boolean hasServerListBeenUpdated()
 	{
 		// TODO make it only run one tick, but throughout the entirety of the tick/
 		// Currently it just runs throughout a random portion of the tick, so I make it
 		// Run through twice just in case. THIS IS AN ISSUE
-		return updatePlayerList > 0;
+		return updatePlayerList && hasStartedUpdateList;
 	}
 	
 	public void exitFromGame()
@@ -520,11 +525,13 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		this.levels.clear();
 		this.isHosting = false;
 		setCurrentScreen(new GuiMainMenu());
-		this.socketClient.getPlayers().clear();
+		socketClient.getPlayers().clear();
+		socketClient.pauseThread();
 	}
 	
 	public void joinServer()
 	{
+		socketClient.start();
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
@@ -565,21 +572,23 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	@Override
 	public void onPause()
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void onUnpause()
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void onStop()
 	{
-		// TODO Auto-generated method stub
 		
+	}
+	
+	public void updatePlayerList()
+	{
+		this.updatePlayerList = true;
 	}
 }
