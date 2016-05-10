@@ -39,12 +39,14 @@ public class GuiJoinServer extends GuiScreen
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4);
 		username.setText(game.getUsername());
+		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
 		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
 		serverIP.setMaxLength(64);
 		serverIP.setText(game.getServerIP());
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8);
 		password.setText(game.getPassword());
+		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
 		
 		buttons.add(username);

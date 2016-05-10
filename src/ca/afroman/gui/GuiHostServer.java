@@ -40,9 +40,11 @@ public class GuiHostServer extends GuiScreen
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62);
 		username.setText(game.getUsername());
+		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90);
 		password.setText(game.getPassword());
+		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
 		
 		game.setServerIP(ServerSocket.IPv4_LOCALHOST);

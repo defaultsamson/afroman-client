@@ -200,6 +200,10 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
 		
+		socketClient = new ClientSocket();
+		
+		setCurrentScreen(new GuiMainMenu());
+		
 		// WHEN FINISHED LOADING
 		
 		long loadTime = System.currentTimeMillis() - startTime;
@@ -220,14 +224,9 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		}
 		
 		// End the loading screen
+		renderLoading.stopThread();
 		frame.setResizable(true);
 		canvas.repaint();
-		renderLoading.stopThread();
-		
-		// TODO only start the socket when it needs to be listening
-		socketClient = new ClientSocket();
-		
-		setCurrentScreen(new GuiMainMenu());
 		
 		/*
 		 * TODO add player to level

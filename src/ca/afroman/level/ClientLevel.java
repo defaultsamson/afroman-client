@@ -21,7 +21,9 @@ import ca.afroman.packet.PacketRemoveLevelTileLocation;
 
 public class ClientLevel extends Level
 {
+	/** PointLights in this Level. */
 	private List<PointLight> lights;
+	
 	private LightMap lightmap;
 	private PointLight playerLight;
 	private double xOffset = 0;
@@ -392,10 +394,9 @@ public class ClientLevel extends Level
 		return null;
 	}
 	
-	public synchronized void removeLight(double x, double y)
+	public synchronized void removeLight(PointLight light)
 	{
-		PointLight light = getLight(x, y);
-		if (light != null) lights.remove(light);
+		lights.remove(light);
 	}
 	
 	public synchronized void addLight(PointLight light)
