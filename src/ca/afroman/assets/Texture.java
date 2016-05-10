@@ -14,6 +14,8 @@ import ca.afroman.gfx.ColourUtil;
 
 public class Texture extends Asset
 {
+	public static final String TEXTURE_PATH = "/texture";
+	
 	protected BufferedImage image;
 	protected Graphics2D graphics;
 	
@@ -29,7 +31,7 @@ public class Texture extends Asset
 		BufferedImage inImage = null;
 		try
 		{
-			inImage = ImageIO.read(Texture.class.getResourceAsStream(path));
+			inImage = ImageIO.read(Texture.class.getResourceAsStream(TEXTURE_PATH + path));
 		}
 		catch (IOException e)
 		{
