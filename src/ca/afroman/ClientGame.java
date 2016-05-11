@@ -71,8 +71,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	private String password = "";
 	private String typedIP = "";
 	
-	public ClientSocket socketClient = null;
-	public ServerGame server = null;
+	private ClientSocket socketClient = null;
 	
 	private GuiScreen currentScreen = null;
 	
@@ -518,7 +517,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return updatePlayerList && hasStartedUpdateList;
 	}
 	
-	public void exitFromGame()
+	public synchronized void exitFromGame()
 	{
 		// TODO Stop the game
 		this.levels.clear();
@@ -568,6 +567,16 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return canvas;
 	}
 	
+	public JFrame getFrame()
+	{
+		return frame;
+	}
+	
+	public ClientSocket socket()
+	{
+		return socketClient;
+	}
+	
 	@Override
 	public void onPause()
 	{
@@ -583,7 +592,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	@Override
 	public void onStop()
 	{
-		
+		socketClient.stopThread();
+		if (ServerGame.instance() != null) ServerGame.instance().stopThread();
 	}
 	
 	public void updatePlayerList()

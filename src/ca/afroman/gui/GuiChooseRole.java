@@ -53,7 +53,7 @@ public class GuiChooseRole extends GuiScreen
 	 */
 	public void overrideInit()
 	{
-		player = game.socketClient.playerByID(playerID);
+		player = game.socket().playerByID(playerID);
 		
 		Role role = player.getRole();
 		
@@ -125,14 +125,14 @@ public class GuiChooseRole extends GuiScreen
 				// player.setRole(Role.PLAYER1);
 				
 				PacketSetRole packet1 = new PacketSetRole(playerID, Role.PLAYER1);
-				game.socketClient.sendPacket(packet1);
+				game.socket().sendPacket(packet1);
 				game.setCurrentScreen(this.parentScreen);
 				break;
 			case 202:
 				// player.setRole(Role.PLAYER2);
 				
 				PacketSetRole packet2 = new PacketSetRole(playerID, Role.PLAYER2);
-				game.socketClient.sendPacket(packet2);
+				game.socket().sendPacket(packet2);
 				game.setCurrentScreen(this.parentScreen);
 				break;
 		}

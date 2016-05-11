@@ -55,7 +55,7 @@ public class GuiConnectToServer extends GuiScreen
 		{
 			case 0:
 				ClientGame.instance().setCurrentScreen(this.parentScreen);
-				ClientGame.instance().socketClient.setServerIP(null);
+				ClientGame.instance().socket().setServerIP(null);
 				break;
 		}
 	}

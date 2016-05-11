@@ -190,13 +190,13 @@ public class ClientLevel extends Level
 					
 					Entity tileToAdd = new Entity(this, asset, screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), texture.getWidth(), texture.getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(tileToAdd);
-					ClientGame.instance().socketClient.sendPacket(pack);
+					ClientGame.instance().socket().sendPacket(pack);
 				}
 				
 				if (ClientGame.instance().input.mouseRight.isPressedFiltered())
 				{
 					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
-					ClientGame.instance().socketClient.sendPacket(pack);
+					ClientGame.instance().socket().sendPacket(pack);
 				}
 				
 				int ordinalDir = 0;
@@ -282,7 +282,7 @@ public class ClientLevel extends Level
 					else if (hitboxClickCount == 1)
 					{
 						PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
-						ClientGame.instance().socketClient.sendPacket(pack);
+						ClientGame.instance().socket().sendPacket(pack);
 						
 						hitboxClickCount = 0;
 					}
@@ -297,7 +297,7 @@ public class ClientLevel extends Level
 					else
 					{
 						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
-						ClientGame.instance().socketClient.sendPacket(pack);
+						ClientGame.instance().socket().sendPacket(pack);
 					}
 				}
 				

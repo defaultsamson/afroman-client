@@ -7,12 +7,14 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.ClientGame;
 
-public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener
+public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener
 {
 	private List<MouseButton> mouseButtons = new ArrayList<MouseButton>();
 	
@@ -99,6 +101,20 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		game.getCanvas().addMouseListener(this);
 		game.getCanvas().addMouseMotionListener(this);
 		game.getCanvas().addMouseWheelListener(this);
+		game.getFrame().addWindowListener(this);
+	}
+	
+	@Override
+	public void windowClosing(WindowEvent e)
+	{
+		windowClosed(e);
+	}
+	
+	@Override
+	public void windowClosed(WindowEvent e)
+	{
+		// Stops the client properly when being closed
+		ClientGame.instance().stopThread();
 	}
 	
 	@Override
@@ -210,5 +226,35 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void mouseClicked(MouseEvent e)
 	{
 		// Not needed
+	}
+	
+	@Override
+	public void windowOpened(WindowEvent e)
+	{
+		
+	}
+	
+	@Override
+	public void windowIconified(WindowEvent e)
+	{
+		
+	}
+	
+	@Override
+	public void windowDeiconified(WindowEvent e)
+	{
+		
+	}
+	
+	@Override
+	public void windowActivated(WindowEvent e)
+	{
+		
+	}
+	
+	@Override
+	public void windowDeactivated(WindowEvent e)
+	{
+		
 	}
 }

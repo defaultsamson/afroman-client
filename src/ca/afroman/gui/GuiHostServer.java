@@ -110,11 +110,15 @@ public class GuiHostServer extends GuiScreen
 				// If not already hosting
 				if (!game.isHosting)
 				{
-					// If the server is null, instantiate it
-					if (game.server == null) game.server = new ServerGame(this.password.getText());
+					// If a server already exists, rid of it
+					if (ServerGame.instance() != null)
+					{
+						ServerGame.instance().stopThread();
+					}
 					
+					new ServerGame(this.password.getText());
 					// Start that server thread
-					game.server.start();
+					ServerGame.instance().start();
 				}
 				
 				game.isHosting = true;

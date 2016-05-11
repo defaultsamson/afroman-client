@@ -86,7 +86,7 @@ public class GuiLobby extends GuiScreen
 			// Draws the player list
 			int counter = 0;
 			int row = 0;
-			for (ConnectedPlayer player : game.socketClient.getPlayers())
+			for (ConnectedPlayer player : game.socket().getPlayers())
 			{
 				boolean isEvenNum = (counter & 1) == 0;
 				
@@ -116,7 +116,7 @@ public class GuiLobby extends GuiScreen
 			}
 			
 			// Only enable the start button if both the player roles are not null
-			startButton.setEnabled(game.isHostingServer() && game.socketClient.playerByRole(Role.PLAYER1) != null && game.socketClient.playerByRole(Role.PLAYER2) != null);
+			startButton.setEnabled(game.isHostingServer() && game.socket().playerByRole(Role.PLAYER1) != null && game.socket().playerByRole(Role.PLAYER2) != null);
 		}
 		
 		light1.tick();
@@ -144,7 +144,7 @@ public class GuiLobby extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + game.socketClient.getPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + game.socket().getPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
 		if (game.isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Click on a name to choose role)");
@@ -172,15 +172,15 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			game.socketClient.sendPacket(new PacketStartGame());
+			game.socket().sendPacket(new PacketStartGame());
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			game.socketClient.sendPacket(new PacketStopServer());
+			game.socket().sendPacket(new PacketStopServer());
 		}
 		else if (buttonID == 2002) // Leave server
 		{
-			game.socketClient.sendPacket(new PacketDisconnect());
+			game.socket().sendPacket(new PacketDisconnect());
 			ClientGame.instance().exitFromGame();
 		}
 		else
@@ -188,5 +188,4 @@ public class GuiLobby extends GuiScreen
 			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
 		}
 	}
-	
 }

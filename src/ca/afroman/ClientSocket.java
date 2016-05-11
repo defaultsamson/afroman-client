@@ -17,6 +17,7 @@ import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Hitbox;
 import ca.afroman.level.Level;
@@ -25,6 +26,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
+import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketType;
 import ca.afroman.player.Role;
 import ca.afroman.server.ServerSocket;
@@ -170,11 +172,15 @@ public class ClientSocket extends DynamicThread
 					break;
 				case INSTANTIATE_LEVEL:
 				{
+					if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
+					{
+						ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
+					}
+					
 					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
 					
 					if (ClientGame.instance().getLevelByType(levelType) == null)
 					{
-						System.out.println("[CLIENT] Adding Level: " + levelType);
 						ClientGame.instance().levels.add(new ClientLevel(levelType));
 						ClientGame.instance().setCurrentLevel(ClientGame.instance().getLevelByType(levelType));
 					}
@@ -283,6 +289,11 @@ public class ClientSocket extends DynamicThread
 		}
 	}
 	
+	public boolean isConnected()
+	{
+		return this.serverIP != null;
+	}
+	
 	public int getPlayerID()
 	{
 		return id;
@@ -379,6 +390,18 @@ public class ClientSocket extends DynamicThread
 	}
 	
 	@Override
+	public void onStop()
+	{
+		if (this.isConnected())
+		{
+			PacketDisconnect pack = new PacketDisconnect();
+			this.sendPacket(pack);
+		}
+		
+		socket.close();
+	}
+	
+	@Override
 	public void onStart()
 	{
 		
@@ -392,12 +415,6 @@ public class ClientSocket extends DynamicThread
 	
 	@Override
 	public void onUnpause()
-	{
-		
-	}
-	
-	@Override
-	public void onStop()
 	{
 		
 	}
