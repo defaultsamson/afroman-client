@@ -1,6 +1,6 @@
 package ca.afroman.packet;
 
-import ca.afroman.server.ServerSocket;
+import ca.afroman.client.ClientGame;
 
 public class PacketRequestConnection extends Packet
 {
@@ -37,6 +37,6 @@ public class PacketRequestConnection extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + username + "," + password + "," + ServerSocket.GAME_VERSION).getBytes();
+		return (type.ordinal() + Packet.SEPARATOR + username + "," + password + "," + ClientGame.VERSION).getBytes();
 	}
 }

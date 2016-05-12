@@ -42,10 +42,10 @@ public class GuiLobby extends GuiScreen
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
 		
-		light1 = new FlickeringLight(null, 0, 0, 42, 44, 6);
-		light2 = new FlickeringLight(null, 0, 0, 42, 44, 6);
+		light1 = new FlickeringLight(null, 0, 0, 42, 45, 8);
+		light2 = new FlickeringLight(null, 0, 0, 42, 45, 8);
 		
 		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());

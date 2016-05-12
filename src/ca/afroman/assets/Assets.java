@@ -11,6 +11,10 @@ public class Assets
 		assets.put(AssetType.SPRITESHEET, Texture.fromResource("/spritesheet.png"));
 		assets.put(AssetType.FONTSHEET, Texture.fromResource("/fonts.png"));
 		
+		Texture filter = Texture.fromResource("/filter_opaque.png");
+		filter.setFromGreyscaleToAlphaMask();
+		assets.put(AssetType.FILTER, filter);
+		
 		Texture sheet = Assets.getTexture(AssetType.SPRITESHEET);
 		Texture font = Assets.getTexture(AssetType.FONTSHEET);
 		
@@ -55,7 +59,11 @@ public class Assets
 		assets.put(AssetType.TILE_GRASS_OUTER_TOPRIGHT, sheet.getSubTexture(16 * 7, 16 * 3, 16, 16));
 		assets.put(AssetType.TILE_GRASS_OUTER_BOTTOMLEFT, sheet.getSubTexture(16 * 6, 16 * 4, 16, 16));
 		assets.put(AssetType.TILE_GRASS_OUTER_BOTTOMRIGHT, sheet.getSubTexture(16 * 7, 16 * 4, 16, 16));
+		
 		assets.put(AssetType.TILE_DIRT, sheet.getSubTexture(16 * 3, 16 * 1, 16, 16));
+		
+		assets.put(AssetType.TILE_WATER, sheet.getSubTexture(16 * 5, 16 * 0, 16, 16));
+		
 		assets.put(AssetType.TILE_WALL, sheet.getSubTexture(16 * 4, 16 * 0, 16, 16));
 		assets.put(AssetType.TILE_WALL_GRASS, sheet.getSubTexture(16 * 4, 16 * 1, 16, 16));
 		

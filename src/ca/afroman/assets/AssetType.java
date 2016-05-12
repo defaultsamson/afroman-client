@@ -7,6 +7,8 @@ public enum AssetType
 	SPRITESHEET,
 	FONTSHEET,
 	
+	FILTER,
+	
 	FONT_BLACK,
 	FONT_WHITE,
 	FONT_NOBLE,
@@ -46,6 +48,8 @@ public enum AssetType
 	TILE_GRASS_OUTER_TOP,
 	
 	TILE_DIRT,
+	
+	TILE_WATER,
 	
 	TILE_WALL,
 	TILE_WALL_GRASS,

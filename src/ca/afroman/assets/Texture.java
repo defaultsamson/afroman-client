@@ -68,6 +68,25 @@ public class Texture extends Asset
 		return new Texture(image);
 	}
 	
+	/**
+	 * Converts the greyscale to alpha mask.
+	 */
+	public void setFromGreyscaleToAlphaMask()
+	{
+		for (int y = 0; y < image.getHeight(); y++)
+		{
+			for (int x = 0; x < image.getWidth(); x++)
+			{
+				int origRGB = this.image.getRGB(x, y);
+				int origColor = origRGB & 0x00FFFFFF; // mask away any alpha present
+				
+				int newRGB = (origColor & 0x00FF0000) << 8; // shift red into alpha bits
+				
+				this.image.setRGB(x, y, newRGB);
+			}
+		}
+	}
+	
 	public int getWidth()
 	{
 		return image.getWidth();

@@ -35,7 +35,7 @@ public class GuiHostServer extends GuiScreen
 		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
 		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62);
@@ -62,6 +62,9 @@ public class GuiHostServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
+		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
+		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
+		
 		lightmap.clear();
 		light.renderCentered(lightmap);
 		lightmap.patch();
@@ -72,9 +75,6 @@ public class GuiHostServer extends GuiScreen
 		
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 62 - 10, "Username");
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 90 - 10, "Server Pass");
-		
-		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
-		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
 	}
 	
 	@Override

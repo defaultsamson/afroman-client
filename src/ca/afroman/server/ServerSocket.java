@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
+import ca.afroman.client.ClientGame;
 import ca.afroman.entity.Entity;
 import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.ServerPlayerEntity;
@@ -37,7 +38,6 @@ public class ServerSocket extends DynamicThread
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
 	public static final int PORT = 2413;
 	public static final int MAX_PLAYERS = 8;
-	public static final int GAME_VERSION = 2;
 	
 	private DatagramSocket socket;
 	private List<IPConnectedPlayer> clientConnections;
@@ -349,14 +349,14 @@ public class ServerSocket extends DynamicThread
 			int sentGameVersion = Integer.parseInt(sent[2]);
 			
 			// Checks that the client's game version is not above or below this version
-			if (sentGameVersion > GAME_VERSION)
+			if (sentGameVersion > ClientGame.VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER);
 				this.sendPacket(passPacket, connection);
 				return;
 			}
 			
-			if (sentGameVersion < GAME_VERSION)
+			if (sentGameVersion < ClientGame.VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT);
 				this.sendPacket(passPacket, connection);

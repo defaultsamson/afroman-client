@@ -8,6 +8,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
+import ca.afroman.assets.AssetType;
+import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 
@@ -113,5 +115,7 @@ public class LightMap extends Texture
 				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE) image.setRGB(x, y, ambientColour.getRGB());
 			}
 		}
+		
+		this.draw(Assets.getTexture(AssetType.FILTER), 0, 0);
 	}
 }

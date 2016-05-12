@@ -40,7 +40,6 @@ public class ClientSocket extends DynamicThread
 	public static int id = -1;
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;
-	// private Game game;
 	private List<ConnectedPlayer> playerList;
 	
 	public ClientSocket()

@@ -47,6 +47,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
+	public static final int VERSION = 2;
 	
 	private JFrame frame;
 	private Canvas canvas;
@@ -276,8 +277,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		if (input.full_screen.isPressedFiltered())
 		{
-			// Toggles Fullscreen Mode
-			setFullScreen(!fullscreen);
+			// TODO Fix full-screen from just showing a black screen
+			// setFullScreen(!fullscreen);
 		}
 		
 		if (input.hudDebug.isPressedFiltered())
