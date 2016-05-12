@@ -3,11 +3,10 @@ package ca.afroman.entity;
 import java.awt.Color;
 
 import ca.afroman.ClientGame;
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.level.Hitbox;
 
 public class TextureEntity extends ClientEntity
 {

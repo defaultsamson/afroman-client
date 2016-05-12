@@ -1,8 +1,7 @@
 package ca.afroman.entity;
 
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.level.Hitbox;
 
 public class ClientEntity extends Entity
 {

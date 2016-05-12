@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.ClientGame;
+import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
-import ca.afroman.asset.AssetType;
 
 public abstract class GuiScreen
 {

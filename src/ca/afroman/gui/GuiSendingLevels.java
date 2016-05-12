@@ -52,14 +52,21 @@ public class GuiSendingLevels extends GuiScreen
 	
 	@Override
 	public void drawScreen(Texture renderTo)
-	{// TODO
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().socket().getPlayers().size() + ") players");
-		
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for client responses");
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
-		
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 80, "If nothing happens for a while,");
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 90, "try resending the levels.");
+	{
+		if (ClientGame.instance().isHostingServer())
+		{
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().socket().getPlayers().size() + ") players");
+			
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for client responses");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
+			
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 80, "If nothing happens for a while,");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 90, "try resending the levels.");
+		}
+		else
+		{
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Recieving levels...");
+		}
 	}
 	
 	@Override

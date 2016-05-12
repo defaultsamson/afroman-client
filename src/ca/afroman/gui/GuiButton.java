@@ -3,10 +3,10 @@ package ca.afroman.gui;
 import java.awt.Rectangle;
 
 import ca.afroman.ClientGame;
+import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.input.InputType;
-import ca.afroman.asset.AssetType;
 
 public class GuiButton extends InputType
 {

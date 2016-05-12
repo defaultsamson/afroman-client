@@ -2,7 +2,7 @@ package ca.afroman.gfx;
 
 import java.awt.Color;
 
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
 import ca.afroman.entity.Entity;
 import ca.afroman.level.ClientLevel;
 

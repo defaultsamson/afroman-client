@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.ClientGame;
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
+import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.Entity;
+import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.SpriteEntity;
 import ca.afroman.entity.TextureEntity;
 import ca.afroman.gfx.FlickeringLight;
@@ -18,6 +20,7 @@ import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
 import ca.afroman.packet.PacketRemoveLevelTileLocation;
+import ca.afroman.player.Role;
 
 public class ClientLevel extends Level
 {
@@ -58,8 +61,11 @@ public class ClientLevel extends Level
 		{
 			if (entity instanceof TextureEntity) ((TextureEntity) entity).render(renderTo);
 			if (entity instanceof SpriteEntity) ((SpriteEntity) entity).render(renderTo);
-			// TODO add rendering
-			// entity.render(renderTo);
+		}
+		
+		for (Entity player : players)
+		{
+			((ClientPlayerEntity) player).render(renderTo);
 		}
 		
 		if (!ClientGame.instance().isLightingDebugging())
@@ -97,6 +103,38 @@ public class ClientLevel extends Level
 				renderTo.getGraphics().fillRect(x, y, width, height);
 				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
 				renderTo.getGraphics().drawRect(x, y, width, height);
+			}
+			
+			for (Entity entity : entities)
+			{
+				for (Hitbox box : entity.hitboxInLevel())
+				{
+					int x = worldToScreenX((int) box.getX());
+					int y = worldToScreenY((int) box.getY());
+					int width = (int) box.getWidth() - 1;
+					int height = (int) box.getHeight() - 1;
+					
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
+					renderTo.getGraphics().fillRect(x, y, width, height);
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
+					renderTo.getGraphics().drawRect(x, y, width, height);
+				}
+			}
+			
+			for (Entity entity : players)
+			{
+				for (Hitbox box : entity.hitboxInLevel())
+				{
+					int x = worldToScreenX((int) box.getX());
+					int y = worldToScreenY((int) box.getY());
+					int width = (int) box.getWidth() - 1;
+					int height = (int) box.getHeight() - 1;
+					
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
+					renderTo.getGraphics().fillRect(x, y, width, height);
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
+					renderTo.getGraphics().drawRect(x, y, width, height);
+				}
 			}
 		}
 		
@@ -345,7 +383,8 @@ public class ClientLevel extends Level
 		// playerLight.setX(Game.instance().player.getX() + 8);
 		// playerLight.setY(Game.instance().player.getY() + 8);
 		
-		// TODO tick the super? super.tick();
+		// TODO keep the super tick?
+		super.tick();
 	}
 	
 	public double screenToWorldX(double x)
@@ -402,5 +441,55 @@ public class ClientLevel extends Level
 	public synchronized void addLight(PointLight light)
 	{
 		lights.add(light);
+	}
+	
+	/**
+	 * Gets the player at the given coordinates.
+	 * 
+	 * @param x the x in-level ordinate
+	 * @param y the y in-level ordinate
+	 * @return the player. <b>null</b> if there are no players at that given location.
+	 */
+	@Override
+	public synchronized Entity getPlayer(double x, double y)
+	{
+		for (Entity entity : players)
+		{
+			if (entity instanceof ClientPlayerEntity)
+			{
+				for (Hitbox hitbox : entity.hitboxInLevel())
+				{
+					if (hitbox.contains(x, y)) return entity;
+				}
+			}
+			else
+			{
+				System.out.println("[LEVEL] Non-ClientPlayerEntity in the player list of level " + this.getType());
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets the player with the given role.
+	 * 
+	 * @param role whether it's player 1 or 2
+	 * @return the player.
+	 */
+	@Override
+	public synchronized Entity getPlayer(Role role)
+	{
+		for (Entity entity : players)
+		{
+			if (entity instanceof ClientPlayerEntity)
+			{
+				if (((ClientPlayerEntity) entity).getRole() == role) return entity;
+			}
+			else
+			{
+				System.out.println("[LEVEL] Non-ClientPlayerEntity in the player list of level " + this.getType());
+			}
+		}
+		return null;
 	}
 }

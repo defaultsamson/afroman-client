@@ -17,10 +17,11 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
+import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
@@ -28,6 +29,7 @@ import ca.afroman.input.InputHandler;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketRequestConnection;
+import ca.afroman.player.Role;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
@@ -64,8 +66,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
-	// public Level blankLevel; TODO make level loading
-	// public PlayerEntity player;
+	private List<ClientPlayerEntity> players;
 	
 	private String username = "";
 	private String password = "";
@@ -198,6 +199,9 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
+		players = new ArrayList<ClientPlayerEntity>();
+		players.add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
+		players.add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
 		
 		socketClient = new ClientSocket();
 		
@@ -226,15 +230,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		renderLoading.stopThread();
 		frame.setResizable(true);
 		canvas.repaint();
-		
-		/*
-		 * TODO add player to level
-		 * player = new PlayerMPEntity(100, 120, 1, input, null, -1);
-		 * player.addToLevel(blankLevel);
-		 * // player = new PlayerMPEntity(blankLevel, 100, 100, 1, input, null, -1);
-		 * // player.setCameraToFollow(true);
-		 * // blankLevel.putPlayer();
-		 */
 	}
 	
 	/**
@@ -326,8 +321,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			// this.player.getLevel().toSaveFile();
 		}
 		
-		// TODO blankLevel.tick();
-		
+		// TODO Have it not run the main game code. Leave that to the server
 		if (currentLevel != null)
 		{
 			currentLevel.tick();
@@ -519,9 +513,9 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public synchronized void exitFromGame()
 	{
-		// TODO Stop the game
 		this.levels.clear();
 		this.isHosting = false;
+		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
 		socketClient.getPlayers().clear();
 		socketClient.pauseThread();
@@ -592,12 +586,32 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	@Override
 	public void onStop()
 	{
-		socketClient.stopThread();
 		if (ServerGame.instance() != null) ServerGame.instance().stopThread();
+		socketClient.stopThread();
 	}
 	
 	public void updatePlayerList()
 	{
 		this.updatePlayerList = true;
+	}
+	
+	/**
+	 * Gets the player with the given role.
+	 * 
+	 * @param role whether it's player 1 or 2
+	 * @return the player.
+	 */
+	public synchronized ClientPlayerEntity getPlayer(Role role)
+	{
+		for (ClientPlayerEntity entity : players)
+		{
+			if (entity.getRole() == role) return entity;
+		}
+		return null;
+	}
+	
+	public Role getRole()
+	{
+		return this.socketClient.thisPlayer().getRole();
 	}
 }

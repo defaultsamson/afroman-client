@@ -9,8 +9,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
+import ca.afroman.entity.ClientPlayerEntity;
+import ca.afroman.entity.Direction;
 import ca.afroman.entity.Entity;
+import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.TextureEntity;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
@@ -19,7 +22,6 @@ import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.level.Hitbox;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.ConnectedPlayer;
@@ -170,13 +172,19 @@ public class ClientSocket extends DynamicThread
 					ClientGame.instance().exitFromGame();
 					new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
 					break;
-				case INSTANTIATE_LEVEL:
-				{
+				case SEND_LEVELS:
+					synchronized (this)
+					{
+						ClientGame.instance().levels.clear();
+					}
+					
 					if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
 					{
 						ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
 					}
-					
+					break;
+				case INSTANTIATE_LEVEL:
+				{
 					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
 					
 					if (ClientGame.instance().getLevelByType(levelType) == null)
@@ -278,6 +286,39 @@ public class ClientSocket extends DynamicThread
 						{
 							level.removeHitbox(box);
 						}
+					}
+				}
+					break;
+				case ADD_LEVEL_PLAYER:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						ClientPlayerEntity player = ClientGame.instance().getPlayer(Role.fromOrdinal(Integer.parseInt(split[1])));
+						
+						if (player != null)
+						{
+							player.setX(Double.parseDouble(split[2]));
+							player.setY(Double.parseDouble(split[3]));
+							player.addToLevel(level);
+						}
+					}
+				}
+					break;
+				case SET_PLAYER_LOCATION:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					ClientPlayerEntity player = ClientGame.instance().getPlayer(Role.fromOrdinal(Integer.parseInt(split[0])));
+					
+					if (player != null)
+					{
+						player.setDirection(Direction.fromOrdinal(Integer.parseInt(split[1])));
+						player.setLastDirection(Direction.fromOrdinal(Integer.parseInt(split[2])));
+						player.setX(Double.parseDouble(split[3]));
+						player.setY(Double.parseDouble(split[4]));
 					}
 				}
 					break;
@@ -390,14 +431,13 @@ public class ClientSocket extends DynamicThread
 	}
 	
 	@Override
-	public void onStop()
+	public synchronized void onStop()
 	{
 		if (this.isConnected())
 		{
 			PacketDisconnect pack = new PacketDisconnect();
 			this.sendPacket(pack);
 		}
-		
 		socket.close();
 	}
 	

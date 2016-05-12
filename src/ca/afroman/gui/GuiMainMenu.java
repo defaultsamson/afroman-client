@@ -3,7 +3,7 @@ package ca.afroman.gui;
 import java.awt.Color;
 
 import ca.afroman.ClientGame;
-import ca.afroman.asset.AssetType;
+import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;

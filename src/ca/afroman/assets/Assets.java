@@ -3,8 +3,6 @@ package ca.afroman.assets;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import ca.afroman.asset.AssetType;
-
 public class Assets
 {
 	public static HashMap<AssetType, Asset> assets = new HashMap<AssetType, Asset>();
