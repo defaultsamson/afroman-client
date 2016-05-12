@@ -33,6 +33,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ServerSocket extends DynamicThread
 {
+	public static final boolean TRACE_PACKETS = false;
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
 	public static final int PORT = 2413;
 	public static final int MAX_PLAYERS = 8;
@@ -103,7 +104,7 @@ public class ServerSocket extends DynamicThread
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 		
-		// System.out.println("[SERVER] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
+		if (TRACE_PACKETS) System.out.println("[SERVER] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 		if (sentByConnected)
 		{
 			switch (type)
@@ -561,7 +562,7 @@ public class ServerSocket extends DynamicThread
 	{
 		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, port);
 		
-		System.out.println("[SERVER] [SEND] [" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
+		if (TRACE_PACKETS) System.out.println("[SERVER] [SEND] [" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
 		
 		try
 		{

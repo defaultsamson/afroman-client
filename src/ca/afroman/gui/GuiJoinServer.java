@@ -2,11 +2,11 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 
@@ -38,14 +38,14 @@ public class GuiJoinServer extends GuiScreen
 		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4);
-		username.setText(game.getUsername());
+		username.setText(ClientGame.instance().getUsername());
 		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
 		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
 		serverIP.setMaxLength(64);
-		serverIP.setText(game.getServerIP());
+		serverIP.setText(ClientGame.instance().getServerIP());
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8);
-		password.setText(game.getPassword());
+		password.setText(ClientGame.instance().getPassword());
 		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
 		
@@ -135,8 +135,8 @@ public class GuiJoinServer extends GuiScreen
 	{
 		this.joinButton.setEnabled(!this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty());
 		
-		game.setUsername(this.username.getText());
-		game.setServerIP(this.serverIP.getText());
-		game.setPassword(this.password.getText());
+		ClientGame.instance().setUsername(this.username.getText());
+		ClientGame.instance().setServerIP(this.serverIP.getText());
+		ClientGame.instance().setPassword(this.password.getText());
 	}
 }

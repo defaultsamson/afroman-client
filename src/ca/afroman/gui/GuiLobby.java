@@ -2,11 +2,11 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
@@ -48,11 +48,11 @@ public class GuiLobby extends GuiScreen
 		light2 = new FlickeringLight(null, 0, 0, 42, 44, 6);
 		
 		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Start Game");
-		startButton.setEnabled(game.isHostingServer());
+		startButton.setEnabled(ClientGame.instance().isHostingServer());
 		buttons.add(startButton);
 		
 		// Draw a stop server button
-		if (game.isHostingServer())
+		if (ClientGame.instance().isHostingServer())
 		{
 			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, blackFont, "Stop Server");
 		}
@@ -71,7 +71,7 @@ public class GuiLobby extends GuiScreen
 		light2.tick();
 		
 		// Draws all the new buttons if the server list has been updated
-		if (game.hasServerListBeenUpdated())
+		if (ClientGame.instance().hasServerListBeenUpdated())
 		{
 			// Removes all buttons except for that at index 0 (The Start Game Button)
 			buttons.clear();
@@ -86,7 +86,7 @@ public class GuiLobby extends GuiScreen
 			// Draws the player list
 			int counter = 0;
 			int row = 0;
-			for (ConnectedPlayer player : game.socket().getPlayers())
+			for (ConnectedPlayer player : ClientGame.instance().socket().getPlayers())
 			{
 				boolean isEvenNum = (counter & 1) == 0;
 				
@@ -96,8 +96,8 @@ public class GuiLobby extends GuiScreen
 				int buttonY = 20 + (18 * row);
 				
 				// Add each player in the last as a button. Only lets the host of the server edit
-				GuiTextButton button = new GuiTextButton(this, player.getID(), buttonX, buttonY, (game.isHostingServer() ? blackFont : whiteFont), player.getUsername());
-				button.setEnabled(game.isHostingServer());
+				GuiTextButton button = new GuiTextButton(this, player.getID(), buttonX, buttonY, (ClientGame.instance().isHostingServer() ? blackFont : whiteFont), player.getUsername());
+				button.setEnabled(ClientGame.instance().isHostingServer());
 				this.buttons.add(button);
 				
 				// Draws the player sprite beside the name of the user playing as that character
@@ -116,7 +116,7 @@ public class GuiLobby extends GuiScreen
 			}
 			
 			// Only enable the start button if both the player roles are not null
-			startButton.setEnabled(game.isHostingServer() && game.socket().playerByRole(Role.PLAYER1) != null && game.socket().playerByRole(Role.PLAYER2) != null);
+			startButton.setEnabled(ClientGame.instance().isHostingServer() && ClientGame.instance().socket().playerByRole(Role.PLAYER1) != null && ClientGame.instance().socket().playerByRole(Role.PLAYER2) != null);
 		}
 		
 		light1.tick();
@@ -144,8 +144,8 @@ public class GuiLobby extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + game.socket().getPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
-		if (game.isHostingServer())
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().socket().getPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
+		if (ClientGame.instance().isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Click on a name to choose role)");
 		}
@@ -172,15 +172,15 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			game.socket().sendPacket(new PacketStartGame());
+			ClientGame.instance().socket().sendPacket(new PacketStartGame());
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			game.socket().sendPacket(new PacketStopServer());
+			ClientGame.instance().socket().sendPacket(new PacketStopServer());
 		}
 		else if (buttonID == 2002) // Leave server
 		{
-			game.socket().sendPacket(new PacketDisconnect());
+			ClientGame.instance().socket().sendPacket(new PacketDisconnect());
 			ClientGame.instance().exitFromGame();
 		}
 		else

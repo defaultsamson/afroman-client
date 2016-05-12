@@ -12,7 +12,7 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.ClientGame;
+import ca.afroman.client.ClientGame;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener
 {
@@ -163,8 +163,6 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		// The Game resolution height / canvas height (ONLY the canvas, no black borders or JFrame)
 		double yRatio = ClientGame.HEIGHT / (double) ClientGame.instance().getCanvas().getHeight();
 		mouseY = (int) (e.getY() * yRatio);
-		
-		// System.out.println(mouseX + ", " + mouseY);
 	}
 	
 	/**
@@ -198,8 +196,6 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e)
 	{
-		// System.out.println(e.getWheelRotation());
-		
 		mouseWheelDown.setPressed((e.getWheelRotation() > 0));
 		mouseWheelUp.setPressed((e.getWheelRotation() < 0));
 	}

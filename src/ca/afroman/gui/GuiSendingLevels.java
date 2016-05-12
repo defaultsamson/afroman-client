@@ -1,7 +1,7 @@
 package ca.afroman.gui;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketStartGame;
 import ca.afroman.packet.PacketStopServer;
@@ -23,11 +23,11 @@ public class GuiSendingLevels extends GuiScreen
 	public void init()
 	{
 		resendButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Resend Levels");
-		resendButton.setEnabled(game.isHostingServer());
+		resendButton.setEnabled(ClientGame.instance().isHostingServer());
 		buttons.add(resendButton);
 		
 		// Draw a stop server button
-		if (game.isHostingServer())
+		if (ClientGame.instance().isHostingServer())
 		{
 			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, blackFont, "Stop Server");
 		}
@@ -81,12 +81,12 @@ public class GuiSendingLevels extends GuiScreen
 		switch (buttonID)
 		{
 			case 2000: // TODO Resend Levels
-				game.socket().sendPacket(new PacketStartGame());
+				ClientGame.instance().socket().sendPacket(new PacketStartGame());
 				break;
 			case 2001: // Stop Server
-				game.socket().sendPacket(new PacketStopServer());
+				ClientGame.instance().socket().sendPacket(new PacketStopServer());
 			case 2002: // Leave server
-				game.socket().sendPacket(new PacketDisconnect());
+				ClientGame.instance().socket().sendPacket(new PacketDisconnect());
 				ClientGame.instance().exitFromGame();
 		}
 	}

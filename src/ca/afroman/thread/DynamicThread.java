@@ -45,7 +45,7 @@ public abstract class DynamicThread extends Thread
 	{
 		if (exit)
 		{
-			System.out.println("[THREAD] Thread is trying to be started from a stopped state.");
+			System.out.println("[THREAD] [CRITICAL] Thread is trying to be started from a stopped state.");
 			return;
 		}
 		
@@ -66,7 +66,7 @@ public abstract class DynamicThread extends Thread
 		}
 		else
 		{
-			System.out.println("[THREAD] Thread is already running: " + this.toString());
+			System.out.println("[THREAD] [WARNING] Thread is already running: " + this.toString());
 		}
 	}
 	

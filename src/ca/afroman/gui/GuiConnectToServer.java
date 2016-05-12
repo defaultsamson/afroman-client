@@ -1,7 +1,7 @@
 package ca.afroman.gui;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 
 public class GuiConnectToServer extends GuiScreen
 {
@@ -33,7 +33,7 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Connecting to Server: " + game.getServerIP());
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Connecting to Server: " + ClientGame.instance().getServerIP());
 		
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for server response");
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");

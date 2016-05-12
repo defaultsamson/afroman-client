@@ -2,11 +2,11 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
@@ -53,7 +53,7 @@ public class GuiChooseRole extends GuiScreen
 	 */
 	public void overrideInit()
 	{
-		player = game.socket().playerByID(playerID);
+		player = ClientGame.instance().socket().playerByID(playerID);
 		
 		Role role = player.getRole();
 		
@@ -125,15 +125,15 @@ public class GuiChooseRole extends GuiScreen
 				// player.setRole(Role.PLAYER1);
 				
 				PacketSetRole packet1 = new PacketSetRole(playerID, Role.PLAYER1);
-				game.socket().sendPacket(packet1);
-				game.setCurrentScreen(this.parentScreen);
+				ClientGame.instance().socket().sendPacket(packet1);
+				ClientGame.instance().setCurrentScreen(this.parentScreen);
 				break;
 			case 202:
 				// player.setRole(Role.PLAYER2);
 				
 				PacketSetRole packet2 = new PacketSetRole(playerID, Role.PLAYER2);
-				game.socket().sendPacket(packet2);
-				game.setCurrentScreen(this.parentScreen);
+				ClientGame.instance().socket().sendPacket(packet2);
+				ClientGame.instance().setCurrentScreen(this.parentScreen);
 				break;
 		}
 	}

@@ -1,8 +1,8 @@
 package ca.afroman.entity;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.client.ClientGame;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 import ca.afroman.player.Role;

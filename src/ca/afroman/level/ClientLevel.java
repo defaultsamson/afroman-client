@@ -4,10 +4,10 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.Entity;
 import ca.afroman.entity.Hitbox;

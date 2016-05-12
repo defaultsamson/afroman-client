@@ -2,11 +2,11 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 
@@ -72,10 +72,10 @@ public class GuiMainMenu extends GuiScreen
 		switch (buttonID)
 		{
 			case 2: // Host Server
-				game.setCurrentScreen(new GuiHostServer(this));
+				ClientGame.instance().setCurrentScreen(new GuiHostServer(this));
 				break;
 			case 1: // Join Server
-				game.setCurrentScreen(new GuiJoinServer(this));
+				ClientGame.instance().setCurrentScreen(new GuiJoinServer(this));
 		}
 	}
 	

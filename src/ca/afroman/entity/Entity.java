@@ -2,8 +2,8 @@ package ca.afroman.entity;
 
 import java.util.List;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
+import ca.afroman.client.ClientGame;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketMovePlayer;

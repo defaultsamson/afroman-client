@@ -2,11 +2,11 @@ package ca.afroman.gui;
 
 import java.awt.Color;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.server.ServerGame;
@@ -39,15 +39,15 @@ public class GuiHostServer extends GuiScreen
 		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62);
-		username.setText(game.getUsername());
+		username.setText(ClientGame.instance().getUsername());
 		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90);
-		password.setText(game.getPassword());
+		password.setText(ClientGame.instance().getPassword());
 		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
 		
-		game.setServerIP(ServerSocket.IPv4_LOCALHOST);
+		ClientGame.instance().setServerIP(ServerSocket.IPv4_LOCALHOST);
 		
 		buttons.add(username);
 		buttons.add(password);
@@ -105,23 +105,15 @@ public class GuiHostServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 1: // Host Server
-				game.setUsername(this.username.getText());
+				ClientGame.instance().setUsername(this.username.getText());
 				
 				// If not already hosting
-				if (!game.isHosting)
+				if (!ClientGame.instance().isHostingServer())
 				{
-					// If a server already exists, rid of it
-					if (ServerGame.instance() != null)
-					{
-						ServerGame.instance().stopThread();
-					}
-					
 					new ServerGame(this.password.getText());
 					// Start that server thread
 					ServerGame.instance().start();
 				}
-				
-				game.isHosting = true;
 				
 				ClientGame.instance().joinServer();
 				break;
@@ -144,7 +136,7 @@ public class GuiHostServer extends GuiScreen
 	{
 		this.hostButton.setEnabled(!this.username.getText().isEmpty());
 		
-		game.setUsername(this.username.getText());
-		game.setPassword(this.password.getText());
+		ClientGame.instance().setUsername(this.username.getText());
+		ClientGame.instance().setPassword(this.password.getText());
 	}
 }

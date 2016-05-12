@@ -18,9 +18,13 @@ public class ConsoleOutput extends JPanel
 	
 	public ConsoleOutput()
 	{
+		JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setAutoscrolls(true);
+		
 		setLayout(new BorderLayout());
-		add(new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+		add(scrollPane);
 		System.setOut(new PrintStream(taOutputStream));
+		
 	}
 	
 	public static void setGuiVisible(boolean show)

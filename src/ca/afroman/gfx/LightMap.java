@@ -8,8 +8,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import ca.afroman.ClientGame;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 
 public class LightMap extends Texture
 {

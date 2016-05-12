@@ -50,7 +50,6 @@ public class Texture extends Asset
 				int argb = image.getRGB(x, y);
 				if (argb == ColourUtil.ALPHA_COLOUR1 || argb == ColourUtil.ALPHA_COLOUR2)
 				{
-					// System.out.println("Editing");
 					image.setRGB(x, y, 0x00000000);
 				}
 			}

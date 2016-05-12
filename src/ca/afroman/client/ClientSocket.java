@@ -1,4 +1,4 @@
-package ca.afroman;
+package ca.afroman.client;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -36,6 +36,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ClientSocket extends DynamicThread
 {
+	public static final boolean TRACE_PACKETS = false;
 	public static int id = -1;
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;
@@ -109,7 +110,7 @@ public class ClientSocket extends DynamicThread
 		// If is the server sending the packet
 		if (connection.getIPAddress().getHostAddress().equals(this.serverIP.getHostAddress()) && ServerSocket.PORT == connection.getPort())
 		{
-			System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
+			if (TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 			
 			switch (type)
 			{
@@ -364,7 +365,7 @@ public class ClientSocket extends DynamicThread
 		{
 			DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, ServerSocket.PORT);
 			
-			System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + ServerSocket.PORT + "] " + new String(data));
+			if (TRACE_PACKETS) System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + ServerSocket.PORT + "] " + new String(data));
 			
 			try
 			{
