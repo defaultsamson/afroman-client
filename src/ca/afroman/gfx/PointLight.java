@@ -5,6 +5,7 @@ import java.awt.Color;
 import ca.afroman.assets.AssetType;
 import ca.afroman.entity.Entity;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.Level;
 
 public class PointLight extends Entity
 {
@@ -42,5 +43,36 @@ public class PointLight extends Entity
 	public Color getColour()
 	{
 		return colour;
+	}
+	
+	/**
+	 * Removes an entity from their current level and puts them in another level.
+	 * 
+	 * @param level the new level.
+	 */
+	@Override
+	public void addToLevel(Level level)
+	{
+		if (this.level == level) return;
+		
+		if (this.level != null)
+		{
+			// TODO remove from the previous level
+			for (Entity entity : this.level.getLights())
+			{
+				if (entity == this)
+				{
+					this.level.removeLight(this);
+					this.level = (ClientLevel) level;
+					this.level.addLight(this);
+					return;
+				}
+			}
+		}
+		else
+		{
+			this.level = (ClientLevel) level;
+			this.level.addLight(this);
+		}
 	}
 }

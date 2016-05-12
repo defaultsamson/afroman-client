@@ -1,8 +1,6 @@
 package ca.afroman.level;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
@@ -13,7 +11,6 @@ import ca.afroman.entity.Entity;
 import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.SpriteEntity;
 import ca.afroman.entity.TextureEntity;
-import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.packet.PacketAddLevelHitbox;
@@ -24,11 +21,7 @@ import ca.afroman.player.Role;
 
 public class ClientLevel extends Level
 {
-	/** PointLights in this Level. */
-	private List<PointLight> lights;
-	
 	private LightMap lightmap;
-	private PointLight playerLight;
 	private double xOffset = 0;
 	private double yOffset = 0;
 	
@@ -36,10 +29,7 @@ public class ClientLevel extends Level
 	{
 		super(type);
 		
-		lights = new ArrayList<PointLight>();
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT);
-		playerLight = new FlickeringLight(this, 0, 0, 50, 47, 4);
-		// TODO playerLight.addToLevel(this);
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
 	}
 	
 	public synchronized void setCameraCenterInWorld(double x, double y)
@@ -86,7 +76,8 @@ public class ClientLevel extends Level
 			
 			lightmap.patch();
 			
-			// TODO add back renderTo.draw(lightmap, 0, 0);
+			// TODO add back
+			renderTo.draw(lightmap, 0, 0);
 		}
 		
 		// Draws out the hitboxes
@@ -415,32 +406,6 @@ public class ClientLevel extends Level
 	public double getCameraYOffset()
 	{
 		return yOffset;
-	}
-	
-	public synchronized PointLight getLight(double x, double y)
-	{
-		for (PointLight light : lights)
-		{
-			double width = light.getWidth();
-			double height = light.getHeight();
-			
-			if (new Hitbox(light.getX() - light.getRadius(), light.getY() - light.getRadius(), width, height).contains(x, y))
-			{
-				return light;
-			}
-		}
-		
-		return null;
-	}
-	
-	public synchronized void removeLight(PointLight light)
-	{
-		lights.remove(light);
-	}
-	
-	public synchronized void addLight(PointLight light)
-	{
-		lights.add(light);
 	}
 	
 	/**

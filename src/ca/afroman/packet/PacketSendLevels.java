@@ -2,6 +2,8 @@ package ca.afroman.packet;
 
 public class PacketSendLevels extends Packet
 {
+	private boolean isSending;
+	
 	/**
 	 * Designed to be sent from...
 	 * <p>
@@ -9,15 +11,19 @@ public class PacketSendLevels extends Packet
 	 * <p>
 	 * the <b>server</b> to the <b>client</b> to inform that the server is going to be sending all the levels.
 	 * <p>
+	 * 
+	 * @param isSending whether the server is sending levels, or is stopping sending levels
 	 */
-	public PacketSendLevels()
+	public PacketSendLevels(boolean isSending)
 	{
 		super(PacketType.SEND_LEVELS);
+		
+		this.isSending = isSending;
 	}
 	
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR).getBytes();
+		return (type.ordinal() + Packet.SEPARATOR + (isSending ? 1 : 0)).getBytes();
 	}
 }

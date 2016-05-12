@@ -104,7 +104,7 @@ public class LightMap extends Texture
 	}
 	
 	/**
-	 * Fills all blank spots with ambient colour.
+	 * Fills all blank spots with ambient colour, and applies the filter.
 	 */
 	public void patch()
 	{

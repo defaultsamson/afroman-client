@@ -16,6 +16,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.entity.Entity;
 import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.gfx.PointLight;
 import ca.afroman.player.Role;
 
 public class Level
@@ -24,6 +25,8 @@ public class Level
 	
 	/** The level identified. */
 	private LevelType type;
+	/** PointLights in this Level. */
+	protected List<PointLight> lights;
 	/** Entities that cannot be interacted with, and will always be there. */
 	protected List<Entity> tiles;
 	/** Entities that can move, be interacted with, or be removed. */
@@ -37,6 +40,7 @@ public class Level
 	{
 		this.type = type;
 		
+		lights = new ArrayList<PointLight>();
 		tiles = new ArrayList<Entity>();
 		entities = new ArrayList<Entity>();
 		players = new ArrayList<Entity>();
@@ -503,5 +507,36 @@ public class Level
 	public LevelType getType()
 	{
 		return type;
+	}
+	
+	public synchronized PointLight getLight(double x, double y)
+	{
+		for (PointLight light : lights)
+		{
+			double width = light.getWidth();
+			double height = light.getHeight();
+			
+			if (new Hitbox(light.getX() - light.getRadius(), light.getY() - light.getRadius(), width, height).contains(x, y))
+			{
+				return light;
+			}
+		}
+		
+		return null;
+	}
+	
+	public synchronized void removeLight(PointLight light)
+	{
+		lights.remove(light);
+	}
+	
+	public synchronized void addLight(PointLight light)
+	{
+		lights.add(light);
+	}
+	
+	public synchronized List<PointLight> getLights()
+	{
+		return lights;
 	}
 }

@@ -25,7 +25,6 @@ import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketRemoveLevelHitboxID;
 import ca.afroman.packet.PacketRemoveLevelTileID;
-import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.packet.PacketType;
 import ca.afroman.packet.PacketUpdatePlayerList;
@@ -181,7 +180,6 @@ public class ServerSocket extends DynamicThread
 				case SEND_LEVELS:
 					if (sentByHost)
 					{
-						sendPacketToAllClients(new PacketSendLevels());
 						ServerGame.instance().loadGame();
 					}
 					else

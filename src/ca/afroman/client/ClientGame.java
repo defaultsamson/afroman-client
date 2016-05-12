@@ -13,7 +13,9 @@ import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.swing.JFrame;
 
@@ -22,6 +24,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.ClientPlayerEntity;
+import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
@@ -67,6 +70,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
 	private List<ClientPlayerEntity> players;
+	private HashMap<Role, FlickeringLight> lights;
 	
 	private String username = "";
 	private String password = "";
@@ -199,9 +203,14 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
+		
 		players = new ArrayList<ClientPlayerEntity>();
 		players.add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
 		players.add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
+		
+		lights = new HashMap<Role, FlickeringLight>();
+		lights.put(Role.PLAYER1, new FlickeringLight(null, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(null, 0, 0, 50, 47, 4));
 		
 		socketClient = new ClientSocket();
 		
@@ -266,6 +275,15 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		if (updatePlayerList) hasStartedUpdateList = true;
 		
+		for (Entry<Role, FlickeringLight> light : lights.entrySet())
+		{
+			ClientPlayerEntity player = getPlayer(light.getKey());
+			
+			light.getValue().addToLevel(player.getLevel());
+			light.getValue().setX(player.getX());
+			light.getValue().setY(player.getY());
+		}
+		
 		if (input.consoleDebug.isReleasedFiltered())
 		{
 			consoleDebug = !consoleDebug;
@@ -294,16 +312,12 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			
 			System.out.println("Show Hitboxes: " + hitboxDebug);
 		}
-		
-		// TODO
-		//
-		// if (input.lightingDebug.isPressedFiltered())
-		// {
-		// lightingDebug = !lightingDebug;
-		//
-		// System.out.println("Show Lighting: " + !lightingDebug);
-		// }
-		
+		if (input.lightingDebug.isPressedFiltered())
+		{
+			lightingDebug = !lightingDebug;
+			
+			System.out.println("Show Lighting: " + !lightingDebug);
+		}
 		if (input.saveLevel.isPressedFiltered())
 		{
 			if (currentLevel != null) currentLevel.toSaveFile();
@@ -316,9 +330,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			
 			System.out.println("Build Mode: " + buildMode);
 			
-			// TODO player shiz
-			// this.player.setCameraToFollow(!buildMode);
-			// this.player.getLevel().toSaveFile();
+			this.getPlayer(this.getRole()).setCameraToFollow(!buildMode);
 		}
 		
 		// TODO Have it not run the main game code. Leave that to the server
@@ -617,5 +629,10 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public Role getRole()
 	{
 		return this.socketClient.thisPlayer().getRole();
+	}
+	
+	public FlickeringLight getLight(Role role)
+	{
+		return lights.get(role);
 	}
 }

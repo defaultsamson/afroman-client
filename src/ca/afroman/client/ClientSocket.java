@@ -173,15 +173,32 @@ public class ClientSocket extends DynamicThread
 					new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
 					break;
 				case SEND_LEVELS:
+				{
+					boolean sendingLevels = (Integer.parseInt(Packet.readContent(data)) == 1);
+					
 					synchronized (this)
 					{
-						ClientGame.instance().levels.clear();
+						if (sendingLevels)
+						{
+							// Prepare the level storage for new levels to be sent
+							ClientGame.instance().levels.clear();
+							
+							// Display the loading level screen
+							if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
+							{
+								ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
+							}
+						}
+						else
+						{
+							// Display the loading level screen
+							if (ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels)
+							{
+								ClientGame.instance().setCurrentScreen(ClientGame.instance().getCurrentScreen().getParent());
+							}
+						}
 					}
-					
-					if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
-					{
-						ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
-					}
+				}
 					break;
 				case INSTANTIATE_LEVEL:
 				{
@@ -304,6 +321,12 @@ public class ClientSocket extends DynamicThread
 							player.setX(Double.parseDouble(split[2]));
 							player.setY(Double.parseDouble(split[3]));
 							player.addToLevel(level);
+							
+							// If it's adding the player that this player is, center the camera on them
+							if (player.getRole() == this.thisPlayer().getRole())
+							{
+								ClientGame.instance().getPlayer(player.getRole()).setCameraToFollow(true);
+							}
 						}
 					}
 				}

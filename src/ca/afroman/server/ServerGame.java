@@ -12,6 +12,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketInstantiateLevel;
+import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.player.Role;
 import ca.afroman.thread.DynamicTickThread;
 
@@ -42,6 +43,8 @@ public class ServerGame extends DynamicTickThread
 	
 	public void loadGame()
 	{
+		socket().sendPacketToAllClients(new PacketSendLevels(true));
+		
 		levels = new ArrayList<Level>();
 		levels.add(Level.fromFile(LevelType.MAIN));
 		
@@ -85,6 +88,8 @@ public class ServerGame extends DynamicTickThread
 		
 		// TODO only start ticking once the game has loaded for all clients
 		// isInGame = true;
+		
+		socket().sendPacketToAllClients(new PacketSendLevels(false));
 	}
 	
 	@Override
