@@ -1,4 +1,4 @@
-package ca.afroman;
+package ca.afroman.client;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
@@ -59,7 +59,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
 	
-	public boolean isHosting = false;
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	public InputHandler input;
@@ -458,7 +457,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public boolean isHostingServer()
 	{
-		return isHosting;
+		return ServerGame.instance() != null;
 	}
 	
 	public void setCurrentScreen(GuiScreen screen)
@@ -514,11 +513,15 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public synchronized void exitFromGame()
 	{
 		this.levels.clear();
-		this.isHosting = false;
 		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
 		socketClient.getPlayers().clear();
 		socketClient.pauseThread();
+		
+		if (this.isHostingServer())
+		{
+			ServerGame.instance().stopThread();
+		}
 	}
 	
 	public void joinServer()
@@ -586,7 +589,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	@Override
 	public void onStop()
 	{
-		if (ServerGame.instance() != null) ServerGame.instance().stopThread();
+		if (this.isHostingServer()) ServerGame.instance().stopThread();
 		socketClient.stopThread();
 	}
 	
