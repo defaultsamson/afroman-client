@@ -14,9 +14,9 @@ public class Font extends AssetArray
 	 * 
 	 * @param fontTexture
 	 */
-	public Font(Texture fontTexture)
+	public Font(AssetType type, Texture fontTexture)
 	{
-		super(fontTexture.toTextureArray(COLUMNS, ROWS));
+		super(type, fontTexture.toTextureArray(COLUMNS, ROWS));
 	}
 	
 	public void renderRight(Texture renderTo, int x, int y, String message)

@@ -147,7 +147,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		// Loading screen
 		long startTime = System.currentTimeMillis();
 		canvas.repaint();
-		final Texture loading = Texture.fromResource("/loading.png");
+		final Texture loading = Texture.fromResource(AssetType.INVALID, "/loading.png");
 		DynamicThread renderLoading = new DynamicThread()
 		{
 			@Override
@@ -200,7 +200,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		ConsoleOutput.showGui();
 		ConsoleOutput.hideGui();
 		
-		screen = new Texture(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
+		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
 		
@@ -280,8 +280,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			ClientPlayerEntity player = getPlayer(light.getKey());
 			
 			light.getValue().addToLevel(player.getLevel());
-			light.getValue().setX(player.getX());
-			light.getValue().setY(player.getY());
+			light.getValue().setX(player.getX() + (player.getWidth() / 2));
+			light.getValue().setY(player.getY() + (player.getHeight() / 2));
 		}
 		
 		if (input.consoleDebug.isReleasedFiltered())

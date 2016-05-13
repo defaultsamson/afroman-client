@@ -12,13 +12,15 @@ public class SpriteAnimation extends Asset implements ITickable
 	private int ticksPerFrame;
 	private int tickCounter = 0;
 	
-	public SpriteAnimation(int ticksPerFrame, Texture... frames)
+	public SpriteAnimation(AssetType type, int ticksPerFrame, Texture... frames)
 	{
-		this(false, ticksPerFrame, frames);
+		this(type, false, ticksPerFrame, frames);
 	}
 	
-	public SpriteAnimation(boolean pingPong, int ticksPerFrame, Texture... frames)
+	public SpriteAnimation(AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
+		super(type, frames[0].getWidth(), frames[0].getHeight());
+		
 		this.pingPong = pingPong;
 		textures = frames;
 		this.ticksPerFrame = ticksPerFrame;
@@ -109,6 +111,6 @@ public class SpriteAnimation extends Asset implements ITickable
 			newTextures[i] = textures[i].clone();
 		}
 		
-		return new SpriteAnimation(pingPong, ticksPerFrame, newTextures);
+		return new SpriteAnimation(type, pingPong, ticksPerFrame, newTextures);
 	}
 }

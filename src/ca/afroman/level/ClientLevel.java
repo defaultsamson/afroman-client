@@ -8,11 +8,10 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.entity.ClientAssetEntity;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.Entity;
 import ca.afroman.entity.Hitbox;
-import ca.afroman.entity.SpriteEntity;
-import ca.afroman.entity.TextureEntity;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.interfaces.ITickable;
@@ -47,13 +46,12 @@ public class ClientLevel extends Level
 		for (Entity tile : tiles)
 		{
 			// If it has a texture, render it
-			if (tile instanceof TextureEntity) ((TextureEntity) tile).render(renderTo);
+			if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
 		}
 		
 		for (Entity entity : entities)
 		{
-			if (entity instanceof TextureEntity) ((TextureEntity) entity).render(renderTo);
-			if (entity instanceof SpriteEntity) ((SpriteEntity) entity).render(renderTo);
+			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
 		}
 		
 		for (Entity player : players)
@@ -220,10 +218,9 @@ public class ClientLevel extends Level
 			{
 				if (ClientGame.instance().input.mouseLeft.isPressedFiltered())
 				{
-					AssetType asset = AssetType.fromOrdinal(currentBuildTextureOrdinal);
-					Texture texture = Assets.getTexture(asset);
+					System.out.println(cursorAsset.assetType());
 					
-					Entity tileToAdd = new Entity(this, asset, screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), texture.getWidth(), texture.getHeight());
+					Entity tileToAdd = new Entity(this, cursorAsset.assetType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(tileToAdd);
 					ClientGame.instance().socket().sendPacket(pack);
 				}

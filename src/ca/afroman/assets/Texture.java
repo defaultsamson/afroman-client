@@ -19,13 +19,15 @@ public class Texture extends Asset
 	protected BufferedImage image;
 	protected Graphics2D graphics;
 	
-	public Texture(BufferedImage image)
+	public Texture(AssetType type, BufferedImage image)
 	{
+		super(type, image.getWidth(), image.getHeight());
+		
 		this.image = image;
 		this.graphics = image.createGraphics();
 	}
 	
-	public static Texture fromResource(String path)
+	public static Texture fromResource(AssetType type, String path)
 	{
 		// Loads the image
 		BufferedImage inImage = null;
@@ -65,7 +67,7 @@ public class Texture extends Asset
 		// int green = (pixels[i] >>> 8) & 0xFF;
 		// int blue = (pixels[i] >>> 0) & 0xFF;
 		
-		return new Texture(image);
+		return new Texture(type, image);
 	}
 	
 	/**
@@ -87,23 +89,13 @@ public class Texture extends Asset
 		}
 	}
 	
-	public int getWidth()
-	{
-		return image.getWidth();
-	}
-	
-	public int getHeight()
-	{
-		return image.getHeight();
-	}
-	
 	@Override
 	public Texture clone()
 	{
 		ColorModel cm = image.getColorModel();
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		WritableRaster raster = image.copyData(image.getRaster().createCompatibleWritableRaster());
-		return new Texture(new BufferedImage(cm, raster, isAlphaPremultiplied, null));
+		return new Texture(type, new BufferedImage(cm, raster, isAlphaPremultiplied, null));
 	}
 	
 	public Graphics2D getGraphics()
@@ -163,9 +155,9 @@ public class Texture extends Asset
 	 * @param height the height of the selection
 	 * @return the sub-section of this with the given parameters.
 	 */
-	public Texture getSubTexture(int x, int y, int width, int height)
+	public Texture getSubTexture(AssetType newType, int x, int y, int width, int height)
 	{
-		return new Texture(getSubImage(x, y, width, height));
+		return new Texture(newType, getSubImage(x, y, width, height));
 	}
 	
 	/**
@@ -224,7 +216,7 @@ public class Texture extends Asset
 		{
 			for (int x = 0; x < xColumns; x++)
 			{
-				textures[(y * xColumns) + x] = this.getSubTexture(x * subTextWidth, y * subTextHeight, subTextWidth, subTextHeight);
+				textures[(y * xColumns) + x] = this.getSubTexture(type, x * subTextWidth, y * subTextHeight, subTextWidth, subTextHeight);
 			}
 		}
 		

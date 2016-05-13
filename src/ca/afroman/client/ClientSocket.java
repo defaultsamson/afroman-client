@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
+import ca.afroman.entity.ClientAssetEntity;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.Direction;
 import ca.afroman.entity.Entity;
 import ca.afroman.entity.Hitbox;
-import ca.afroman.entity.TextureEntity;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
@@ -241,11 +241,11 @@ public class ClientSocket extends DynamicThread
 								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
 							}
 							
-							level.addTile(new TextureEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+							level.addTile(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 						}
 						else
 						{
-							level.addTile(new TextureEntity(id, level, asset, x, y, width, height));
+							level.addTile(new ClientAssetEntity(id, level, asset, x, y, width, height));
 						}
 					}
 					else
@@ -325,7 +325,7 @@ public class ClientSocket extends DynamicThread
 							// If it's adding the player that this player is, center the camera on them
 							if (player.getRole() == this.thisPlayer().getRole())
 							{
-								ClientGame.instance().getPlayer(player.getRole()).setCameraToFollow(true);
+								player.setCameraToFollow(true);
 							}
 						}
 					}

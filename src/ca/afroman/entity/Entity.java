@@ -18,7 +18,7 @@ public class Entity implements ITickable
 	// All the required variables needed to create an Entity
 	private int id;
 	protected Level level;
-	protected AssetType asset;
+	protected AssetType assetType;
 	protected double x;
 	protected double y;
 	protected double width;
@@ -69,9 +69,9 @@ public class Entity implements ITickable
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Entity(int id, Level level, AssetType asset, double x, double y, double width, double height)
+	public Entity(int id, Level level, AssetType assetType, double x, double y, double width, double height)
 	{
-		this(id, level, asset, x, y, width, height, false, new Hitbox[] { null });
+		this(id, level, assetType, x, y, width, height, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -84,9 +84,9 @@ public class Entity implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(int id, Level level, AssetType asset, double x, double y, double width, double height, Hitbox... hitboxes)
+	public Entity(int id, Level level, AssetType assetType, double x, double y, double width, double height, Hitbox... hitboxes)
 	{
-		this(id, level, asset, x, y, width, height, true, hitboxes);
+		this(id, level, assetType, x, y, width, height, true, hitboxes);
 	}
 	
 	/**
@@ -98,11 +98,11 @@ public class Entity implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(int id, Level level, AssetType asset, double x, double y, double width, double height, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(int id, Level level, AssetType assetType, double x, double y, double width, double height, boolean hasHitbox, Hitbox... hitboxes)
 	{
 		this.id = id; // -1 if this is not an object in a level
 		this.level = level;
-		this.asset = asset;
+		this.assetType = assetType;
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -182,7 +182,7 @@ public class Entity implements ITickable
 	 */
 	public AssetType getAssetType()
 	{
-		return asset;
+		return assetType;
 	}
 	
 	/**
@@ -194,7 +194,6 @@ public class Entity implements ITickable
 	{
 		if (this.level != null)
 		{
-			// TODO remove from the previous level
 			for (Entity entity : this.level.getEntities())
 			{
 				if (entity == this)

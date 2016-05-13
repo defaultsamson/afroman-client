@@ -11,5 +11,5 @@ public interface IRenderable
 	 * @param x the x ordinate to draw at
 	 * @param y the y ordinate to draw at
 	 */
-	public void render(Texture renderTo, int x, int y);
+	public abstract void render(Texture renderTo, int x, int y);
 }

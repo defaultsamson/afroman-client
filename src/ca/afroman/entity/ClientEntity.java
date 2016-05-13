@@ -7,16 +7,9 @@ public class ClientEntity extends Entity
 {
 	protected boolean cameraFollow;
 	
-	public ClientEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Hitbox hitbox)
+	public ClientEntity(int id, ClientLevel level, AssetType assetType, double x, double y, double width, double height, Hitbox... hitboxes)
 	{
-		super(id, level, asset, x, y, width, height, hitbox);
-		
-		cameraFollow = false;
-	}
-	
-	public ClientEntity(int id, ClientLevel level, AssetType asset, double x, double y, double width, double height, Hitbox... hitboxes)
-	{
-		super(id, level, asset, x, y, width, height, hitboxes);
+		super(id, level, assetType, x, y, width, height, hitboxes);
 		
 		cameraFollow = false;
 	}

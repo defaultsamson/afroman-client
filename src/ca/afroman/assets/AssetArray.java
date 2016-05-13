@@ -7,8 +7,10 @@ public class AssetArray extends Asset
 	/** Holds the assets. */
 	private Asset[] assets;
 	
-	public AssetArray(Asset... assets)
+	public AssetArray(AssetType type, Asset... assets)
 	{
+		super(type, assets[0].getWidth(), assets[0].getHeight());
+		
 		this.assets = assets;
 	}
 	
@@ -57,6 +59,6 @@ public class AssetArray extends Asset
 			newAssets[i] = assets[i].clone();
 		}
 		
-		return new AssetArray(newAssets);
+		return new AssetArray(type, newAssets);
 	}
 }
