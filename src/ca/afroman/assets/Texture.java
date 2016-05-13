@@ -182,7 +182,7 @@ public class Texture extends Asset
 	}
 	
 	/**
-	 * Superimposes an image's pixels over this one, listening for alpha on the ALPHA_COLOUR channel.
+	 * Superimposes a Texture over this one.
 	 * 
 	 * @param toDraw the image to draw's RGB pixel data
 	 * @param width the width of <b>toDraw</b>'s image
@@ -196,5 +196,38 @@ public class Texture extends Asset
 		{
 			graphics.drawImage(toDraw.image, x, y, null);
 		}
+	}
+	
+	@Override
+	public void render(Texture renderTo, int x, int y)
+	{
+		renderTo.draw(this, x, y);
+	}
+	
+	/**
+	 * Creates an array of textures from a this.
+	 * <p>
+	 * <b>WARNING: </b> This constructor assumes that the width and height of each texture
+	 * is the same. If not all the textures have the same dimensions, this will break.
+	 * 
+	 * @param xColumns how many textures there are in the horizontal plane
+	 * @param yRows how many textures there are in the vertical plane
+	 */
+	public Texture[] toTextureArray(int xColumns, int yRows)
+	{
+		int subTextWidth = this.getWidth() / xColumns;
+		int subTextHeight = this.getHeight() / yRows;
+		
+		Texture[] textures = new Texture[xColumns * yRows];
+		
+		for (int y = 0; y < yRows; y++)
+		{
+			for (int x = 0; x < xColumns; x++)
+			{
+				textures[(y * xColumns) + x] = this.getSubTexture(x * subTextWidth, y * subTextHeight, subTextWidth, subTextHeight);
+			}
+		}
+		
+		return textures;
 	}
 }

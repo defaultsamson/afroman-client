@@ -1,6 +1,8 @@
 package ca.afroman.thread;
 
-public abstract class DynamicTickThread extends DynamicThread
+import ca.afroman.interfaces.ITickable;
+
+public abstract class DynamicTickThread extends DynamicThread implements ITickable
 {
 	protected long lastTime;
 	protected double ticksPerSecond;
@@ -72,6 +74,7 @@ public abstract class DynamicTickThread extends DynamicThread
 		}
 	}
 	
+	@Override
 	public abstract void tick();
 	
 	public int getTicksPerSecond()

@@ -1,6 +1,8 @@
 package ca.afroman.assets;
 
-public class SpriteAnimation extends Asset
+import ca.afroman.interfaces.ITickable;
+
+public class SpriteAnimation extends Asset implements ITickable
 {
 	/** Holds the textures for each frame. */
 	private Texture[] textures;
@@ -25,6 +27,7 @@ public class SpriteAnimation extends Asset
 	/**
 	 * Progresses this to the next frame.
 	 */
+	@Override
 	public void tick()
 	{
 		if (ticksPerFrame != 0)
@@ -90,6 +93,7 @@ public class SpriteAnimation extends Asset
 		currentFrameIndex = frame;
 	}
 	
+	@Override
 	public void render(Texture renderTo, int x, int y)
 	{
 		renderTo.draw(getCurrentFrame(), x, y);

@@ -5,6 +5,8 @@ import java.util.Map.Entry;
 
 public class Assets
 {
+	public static HashMap<AssetType, AssetArray> assetArrays = new HashMap<AssetType, AssetArray>();
+	
 	public static HashMap<AssetType, Asset> assets = new HashMap<AssetType, Asset>();
 	static
 	{
@@ -18,33 +20,33 @@ public class Assets
 		Texture sheet = Assets.getTexture(AssetType.SPRITESHEET);
 		Texture font = Assets.getTexture(AssetType.FONTSHEET);
 		
-		assets.put(AssetType.FONT_BLACK, new Font(font.getSubTexture(0, 8 * 0, 256, 32)));
-		assets.put(AssetType.FONT_WHITE, new Font(font.getSubTexture(0, 8 * 12, 256, 32)));
-		assets.put(AssetType.FONT_NOBLE, new Font(font.getSubTexture(0, 8 * 4, 256, 32)));
+		assetArrays.put(AssetType.FONT_BLACK, new Font(font.getSubTexture(0, 8 * 0, 256, 32)));
+		assetArrays.put(AssetType.FONT_WHITE, new Font(font.getSubTexture(0, 8 * 12, 256, 32)));
+		assetArrays.put(AssetType.FONT_NOBLE, new Font(font.getSubTexture(0, 8 * 4, 256, 32)));
 		
-		assets.put(AssetType.RAW_PLAYER_ONE, new TextureArray(sheet.getSubTexture(0, 0, 16 * 3, 16 * 4), 3, 4, 16, 16));
+		assetArrays.put(AssetType.RAW_PLAYER_ONE, new AssetArray(sheet.getSubTexture(0, 0, 16 * 3, 16 * 4).toTextureArray(3, 4)));
 		
-		TextureArray player = Assets.getTextureArray(AssetType.RAW_PLAYER_ONE);
-		assets.put(AssetType.PLAYER_ONE_UP, new SpriteAnimation(true, 12, player.getTexture(9), player.getTexture(10), player.getTexture(11)));
-		assets.put(AssetType.PLAYER_ONE_DOWN, new SpriteAnimation(true, 12, player.getTexture(0), player.getTexture(1), player.getTexture(2)));
-		assets.put(AssetType.PLAYER_ONE_LEFT, new SpriteAnimation(true, 12, player.getTexture(3), player.getTexture(4), player.getTexture(5)));
-		assets.put(AssetType.PLAYER_ONE_RIGHT, new SpriteAnimation(true, 12, player.getTexture(6), player.getTexture(7), player.getTexture(8)));
-		assets.put(AssetType.PLAYER_ONE_IDLE_UP, new SpriteAnimation(true, 0, player.getTexture(10)));
-		assets.put(AssetType.PLAYER_ONE_IDLE_DOWN, new SpriteAnimation(true, 0, player.getTexture(1)));
-		assets.put(AssetType.PLAYER_ONE_IDLE_LEFT, new SpriteAnimation(true, 0, player.getTexture(4)));
-		assets.put(AssetType.PLAYER_ONE_IDLE_RIGHT, new SpriteAnimation(true, 0, player.getTexture(7)));
+		AssetArray player = Assets.getAssetArray(AssetType.RAW_PLAYER_ONE);
+		assets.put(AssetType.PLAYER_ONE_UP, new SpriteAnimation(true, 12, (Texture) player.getAsset(9), (Texture) player.getAsset(10), (Texture) player.getAsset(11)));
+		assets.put(AssetType.PLAYER_ONE_DOWN, new SpriteAnimation(true, 12, (Texture) player.getAsset(0), (Texture) player.getAsset(1), (Texture) player.getAsset(2)));
+		assets.put(AssetType.PLAYER_ONE_LEFT, new SpriteAnimation(true, 12, (Texture) player.getAsset(3), (Texture) player.getAsset(4), (Texture) player.getAsset(5)));
+		assets.put(AssetType.PLAYER_ONE_RIGHT, new SpriteAnimation(true, 12, (Texture) player.getAsset(6), (Texture) player.getAsset(7), (Texture) player.getAsset(8)));
+		assets.put(AssetType.PLAYER_ONE_IDLE_UP, new SpriteAnimation(true, 0, (Texture) player.getAsset(10)));
+		assets.put(AssetType.PLAYER_ONE_IDLE_DOWN, new SpriteAnimation(true, 0, (Texture) player.getAsset(1)));
+		assets.put(AssetType.PLAYER_ONE_IDLE_LEFT, new SpriteAnimation(true, 0, (Texture) player.getAsset(4)));
+		assets.put(AssetType.PLAYER_ONE_IDLE_RIGHT, new SpriteAnimation(true, 0, (Texture) player.getAsset(7)));
 		
-		assets.put(AssetType.RAW_PLAYER_TWO, new TextureArray(sheet.getSubTexture(0, 184, 16 * 3, 16 * 4), 3, 4, 16, 16));
+		assetArrays.put(AssetType.RAW_PLAYER_TWO, new AssetArray(sheet.getSubTexture(0, 184, 16 * 3, 16 * 4).toTextureArray(3, 4)));
 		
-		TextureArray player2 = Assets.getTextureArray(AssetType.RAW_PLAYER_TWO);
-		assets.put(AssetType.PLAYER_TWO_UP, new SpriteAnimation(true, 12, player2.getTexture(9), player2.getTexture(10), player2.getTexture(11)));
-		assets.put(AssetType.PLAYER_TWO_DOWN, new SpriteAnimation(true, 12, player2.getTexture(0), player2.getTexture(1), player2.getTexture(2)));
-		assets.put(AssetType.PLAYER_TWO_LEFT, new SpriteAnimation(true, 12, player2.getTexture(3), player2.getTexture(4), player2.getTexture(5)));
-		assets.put(AssetType.PLAYER_TWO_RIGHT, new SpriteAnimation(true, 12, player2.getTexture(6), player2.getTexture(7), player2.getTexture(8)));
-		assets.put(AssetType.PLAYER_TWO_IDLE_UP, new SpriteAnimation(true, 0, player2.getTexture(10)));
-		assets.put(AssetType.PLAYER_TWO_IDLE_DOWN, new SpriteAnimation(true, 0, player2.getTexture(1)));
-		assets.put(AssetType.PLAYER_TWO_IDLE_LEFT, new SpriteAnimation(true, 0, player2.getTexture(4)));
-		assets.put(AssetType.PLAYER_TWO_IDLE_RIGHT, new SpriteAnimation(true, 0, player2.getTexture(7)));
+		AssetArray player2 = Assets.getAssetArray(AssetType.RAW_PLAYER_TWO);
+		assets.put(AssetType.PLAYER_TWO_UP, new SpriteAnimation(true, 12, (Texture) player2.getAsset(9), (Texture) player2.getAsset(10), (Texture) player2.getAsset(11)));
+		assets.put(AssetType.PLAYER_TWO_DOWN, new SpriteAnimation(true, 12, (Texture) player2.getAsset(0), (Texture) player2.getAsset(1), (Texture) player2.getAsset(2)));
+		assets.put(AssetType.PLAYER_TWO_LEFT, new SpriteAnimation(true, 12, (Texture) player2.getAsset(3), (Texture) player2.getAsset(4), (Texture) player2.getAsset(5)));
+		assets.put(AssetType.PLAYER_TWO_RIGHT, new SpriteAnimation(true, 12, (Texture) player2.getAsset(6), (Texture) player2.getAsset(7), (Texture) player2.getAsset(8)));
+		assets.put(AssetType.PLAYER_TWO_IDLE_UP, new SpriteAnimation(true, 0, (Texture) player2.getAsset(10)));
+		assets.put(AssetType.PLAYER_TWO_IDLE_DOWN, new SpriteAnimation(true, 0, (Texture) player2.getAsset(1)));
+		assets.put(AssetType.PLAYER_TWO_IDLE_LEFT, new SpriteAnimation(true, 0, (Texture) player2.getAsset(4)));
+		assets.put(AssetType.PLAYER_TWO_IDLE_RIGHT, new SpriteAnimation(true, 0, (Texture) player2.getAsset(7)));
 		
 		assets.put(AssetType.TILE_GRASS, sheet.getSubTexture(16 * 3, 16 * 0, 16, 16));
 		assets.put(AssetType.TILE_GRASS_INNER_TOPLEFT, sheet.getSubTexture(16 * 3, 16 * 3, 16, 16));
@@ -76,7 +78,7 @@ public class Assets
 	
 	public static Font getFont(AssetType asset)
 	{
-		Asset got = assets.get(asset);
+		AssetArray got = assetArrays.get(asset);
 		
 		if (got instanceof Font)
 		{
@@ -96,12 +98,12 @@ public class Assets
 		return null;
 	}
 	
-	public static TextureArray getTextureArray(AssetType asset)
+	public static AssetArray getAssetArray(AssetType asset)
 	{
-		Asset got = assets.get(asset);
-		if (got instanceof TextureArray)
+		AssetArray got = assetArrays.get(asset);
+		if (got instanceof AssetArray)
 		{
-			return (TextureArray) got;
+			return got;
 		}
 		return null;
 	}

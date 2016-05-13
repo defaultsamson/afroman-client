@@ -1,6 +1,6 @@
 package ca.afroman.assets;
 
-public class Font extends TextureArray
+public class Font extends AssetArray
 {
 	private static final int ROWS = 4;
 	private static final int COLUMNS = 32;
@@ -16,7 +16,7 @@ public class Font extends TextureArray
 	 */
 	public Font(Texture fontTexture)
 	{
-		super(fontTexture, COLUMNS, ROWS);
+		super(fontTexture.toTextureArray(COLUMNS, ROWS));
 	}
 	
 	public void renderRight(Texture renderTo, int x, int y, String message)
@@ -36,7 +36,7 @@ public class Font extends TextureArray
 			int charIndex = chars.indexOf(message.charAt(i));
 			if (charIndex >= 0)
 			{
-				renderTo.draw(getTexture(charIndex), x + (i * 6), y);
+				renderTo.draw((Texture) getAsset(charIndex), x + (i * 6), y);
 			}
 		}
 	}
