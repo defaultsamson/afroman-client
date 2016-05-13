@@ -98,4 +98,17 @@ public class SpriteAnimation extends Asset implements ITickable
 	{
 		renderTo.draw(getCurrentFrame(), x, y);
 	}
+	
+	@Override
+	public Asset clone()
+	{
+		Texture[] newTextures = new Texture[textures.length];
+		
+		for (int i = 0; i < textures.length; i++)
+		{
+			newTextures[i] = textures[i].clone();
+		}
+		
+		return new SpriteAnimation(pingPong, ticksPerFrame, newTextures);
+	}
 }

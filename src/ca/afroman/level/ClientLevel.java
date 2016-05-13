@@ -2,8 +2,10 @@ package ca.afroman.level;
 
 import java.awt.Color;
 
+import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.ClientPlayerEntity;
@@ -13,6 +15,7 @@ import ca.afroman.entity.SpriteEntity;
 import ca.afroman.entity.TextureEntity;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.interfaces.ITickable;
 import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
@@ -134,7 +137,9 @@ public class ClientLevel extends Level
 		{
 			if (currentBuildMode == 1)
 			{
-				renderTo.draw(Assets.getTexture(AssetType.fromOrdinal(currentBuildTextureOrdinal)), ClientGame.instance().input.getMouseX(), ClientGame.instance().input.getMouseY());
+				if (cursorAsset != null) cursorAsset.render(renderTo, ClientGame.instance().input.getMouseX(), ClientGame.instance().input.getMouseY());
+				
+				// renderTo.draw(Assets.getTexture(AssetType.fromOrdinal(currentBuildTextureOrdinal)), ClientGame.instance().input.getMouseX(), ClientGame.instance().input.getMouseY());
 			}
 			else if (currentBuildMode == 3 && hitboxClickCount == 1)
 			{
@@ -148,6 +153,7 @@ public class ClientLevel extends Level
 	
 	// Mode 1, Tiles
 	private int currentBuildTextureOrdinal = 1;
+	private Asset cursorAsset = null;
 	
 	// Mode 2, PointLights
 	private int currentBuildLightRadius = 10;
@@ -228,33 +234,25 @@ public class ClientLevel extends Level
 					ClientGame.instance().socket().sendPacket(pack);
 				}
 				
+				boolean assetUpdated = false;
+				
 				int ordinalDir = 0;
 				
 				if (ClientGame.instance().input.mouseWheelDown.isPressedFiltered())
 				{
 					ordinalDir -= speed;
+					assetUpdated = true;
 				}
 				
 				if (ClientGame.instance().input.mouseWheelUp.isPressedFiltered())
 				{
 					ordinalDir += speed;
+					assetUpdated = true;
 				}
 				
-				// If it goes over the index bounds, loop back to 0
-				currentBuildTextureOrdinal += ordinalDir;
-				
-				if (currentBuildTextureOrdinal > AssetType.values().length - 1)
+				if (assetUpdated || cursorAsset == null)
 				{
-					currentBuildTextureOrdinal = 0;
-				}
-				
-				if (currentBuildTextureOrdinal < 0)
-				{
-					currentBuildTextureOrdinal = AssetType.values().length - 1;
-				}
-				
-				while (Assets.getTexture(AssetType.fromOrdinal(currentBuildTextureOrdinal)) == null)
-				{
+					// If it goes over the index bounds, loop back to 0
 					currentBuildTextureOrdinal += ordinalDir;
 					
 					if (currentBuildTextureOrdinal > AssetType.values().length - 1)
@@ -266,7 +264,27 @@ public class ClientLevel extends Level
 					{
 						currentBuildTextureOrdinal = AssetType.values().length - 1;
 					}
+					
+					// Only allow ordinals of assets that are Textures or SpriteAnimations
+					while (!(Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)) instanceof Texture || Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)) instanceof SpriteAnimation))
+					{
+						currentBuildTextureOrdinal += ordinalDir;
+						
+						if (currentBuildTextureOrdinal > AssetType.values().length - 1)
+						{
+							currentBuildTextureOrdinal = 0;
+						}
+						
+						if (currentBuildTextureOrdinal < 0)
+						{
+							currentBuildTextureOrdinal = AssetType.values().length - 1;
+						}
+					}
+					
+					cursorAsset = Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)).clone();
 				}
+				
+				if (cursorAsset instanceof ITickable) ((ITickable) cursorAsset).tick();
 			}
 			
 			// PointLight mode

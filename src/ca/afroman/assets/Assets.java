@@ -98,6 +98,11 @@ public class Assets
 		return null;
 	}
 	
+	public static Asset getAsset(AssetType asset)
+	{
+		return assets.get(asset);
+	}
+	
 	public static AssetArray getAssetArray(AssetType asset)
 	{
 		AssetArray got = assetArrays.get(asset);

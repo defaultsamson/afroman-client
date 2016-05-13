@@ -2,6 +2,7 @@ package ca.afroman.entity;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.client.ClientGame;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
@@ -22,8 +23,8 @@ public class ClientPlayerEntity extends SpriteEntity
 	 */
 	public ClientPlayerEntity(Role role, double x, double y)
 	{
-		super(-1, null, (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_UP) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_UP)), (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_DOWN) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_DOWN)), (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_LEFT) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_LEFT)), (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_RIGHT) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_RIGHT)), (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP)), (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN)), (role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT)),
-				(role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT)), x, y, 16, 16, new Hitbox(3, 5, 10, 10));
+		super(-1, null, (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_UP).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_UP).clone()), (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_DOWN).clone()), (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_LEFT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_LEFT).clone()), (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_RIGHT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_RIGHT).clone()), (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP).clone()),
+				(role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN).clone()), (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT).clone()), (role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT).clone()), x, y, 16, 16, new Hitbox(3, 5, 10, 11));
 		
 		this.role = role;
 	}

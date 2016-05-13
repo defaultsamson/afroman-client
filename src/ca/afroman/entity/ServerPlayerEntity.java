@@ -23,7 +23,7 @@ public class ServerPlayerEntity extends Entity
 	 */
 	public ServerPlayerEntity(Role role, double x, double y)
 	{
-		super(-1, null, (role == Role.PLAYER1 ? PLAYER1_ASSET : (role == Role.PLAYER1 ? PLAYER2_ASSET : null)), x, y, 16, 16, new Hitbox(3, 5, 10, 10));
+		super(-1, null, (role == Role.PLAYER1 ? PLAYER1_ASSET : (role == Role.PLAYER1 ? PLAYER2_ASSET : null)), x, y, 16, 16, new Hitbox(3, 5, 10, 11));
 		
 		this.role = role;
 	}
