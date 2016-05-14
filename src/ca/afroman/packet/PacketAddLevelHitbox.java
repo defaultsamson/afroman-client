@@ -1,6 +1,6 @@
 package ca.afroman.packet;
 
-import ca.afroman.entity.Hitbox;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.LevelType;
 
 public class PacketAddLevelHitbox extends Packet

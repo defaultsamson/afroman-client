@@ -1,6 +1,6 @@
 package ca.afroman.packet;
 
-import ca.afroman.entity.Entity;
+import ca.afroman.entity.api.Entity;
 
 public class PacketAddLevelEntity extends Packet
 {

@@ -8,10 +8,10 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.ClientAssetEntity;
 import ca.afroman.entity.ClientPlayerEntity;
-import ca.afroman.entity.Entity;
-import ca.afroman.entity.Hitbox;
+import ca.afroman.entity.api.ClientAssetEntity;
+import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.interfaces.ITickable;
@@ -77,7 +77,6 @@ public class ClientLevel extends Level
 			
 			lightmap.patch();
 			
-			// TODO add back
 			renderTo.draw(lightmap, 0, 0);
 		}
 		
@@ -220,7 +219,7 @@ public class ClientLevel extends Level
 				{
 					System.out.println(cursorAsset.assetType());
 					
-					Entity tileToAdd = new Entity(this, cursorAsset.assetType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
+					Entity tileToAdd = new Entity(-1, this, cursorAsset.assetType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(tileToAdd);
 					ClientGame.instance().socket().sendPacket(pack);
 				}
@@ -471,5 +470,10 @@ public class ClientLevel extends Level
 			}
 		}
 		return null;
+	}
+	
+	public LightMap getLightMap()
+	{
+		return lightmap;
 	}
 }

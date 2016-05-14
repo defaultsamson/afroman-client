@@ -1,9 +1,11 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
+import ca.afroman.entity.ClientPlayerEntity;
+import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketMovePlayer;
@@ -32,34 +34,7 @@ public class Entity implements ITickable
 	protected int numSteps;
 	protected Direction direction;
 	protected Direction lastDirection;
-	
-	/**
-	 * Creates a new Entity without a hitbox.
-	 * 
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
-	 * @param width the width of this
-	 * @param height the height of this
-	 */
-	public Entity(Level level, AssetType asset, double x, double y, double width, double height)
-	{
-		this(-1, level, asset, x, y, width, height);
-	}
-	
-	/**
-	 * Creates a new Entity.
-	 * 
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
-	 * @param width the width of this
-	 * @param height the height of this
-	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
-	 */
-	public Entity(Level level, AssetType asset, double x, double y, double width, double height, Hitbox... hitboxes)
-	{
-		this(-1, level, asset, x, y, width, height, hitboxes);
-	}
-	
+
 	/**
 	 * Creates a new Entity without a hitbox.
 	 * 

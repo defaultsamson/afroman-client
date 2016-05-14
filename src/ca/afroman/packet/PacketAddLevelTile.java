@@ -1,7 +1,7 @@
 package ca.afroman.packet;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.entity.Entity;
+import ca.afroman.entity.api.Entity;
 
 public class PacketAddLevelTile extends Packet
 {

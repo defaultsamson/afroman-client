@@ -8,7 +8,8 @@ public class Assets
 	public static List<AssetArray> assetArrays = new ArrayList<AssetArray>();
 	
 	public static List<Asset> assets = new ArrayList<Asset>();
-	static
+	
+	public static void load()
 	{
 		assets.add(Texture.fromResource(AssetType.SPRITESHEET, "/spritesheet.png"));
 		assets.add(Texture.fromResource(AssetType.FONTSHEET, "/fonts.png"));

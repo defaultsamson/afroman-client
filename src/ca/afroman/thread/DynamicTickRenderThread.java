@@ -28,7 +28,7 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread
 		long now = System.nanoTime();
 		delta += (now - lastTime) / nsPerTick;
 		lastTime = now;
-		boolean shouldRender = false; // true for unlimited frames, false for limited to tick rate
+		boolean shouldRender = true; // true for unlimited frames, false for limited to tick rate
 		
 		while (delta >= 1)
 		{

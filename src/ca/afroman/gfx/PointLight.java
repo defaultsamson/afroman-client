@@ -3,7 +3,7 @@ package ca.afroman.gfx;
 import java.awt.Color;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.entity.Entity;
+import ca.afroman.entity.api.Entity;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 
@@ -19,7 +19,7 @@ public class PointLight extends Entity
 	
 	public PointLight(ClientLevel level, double x, double y, double radius, Color colour)
 	{
-		super(level, AssetType.INVALID, x, y, radius * 2, radius * 2);
+		super(-1, level, AssetType.INVALID, x, y, radius * 2, radius * 2);
 		
 		this.colour = colour;
 	}

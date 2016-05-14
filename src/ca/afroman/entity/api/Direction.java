@@ -1,4 +1,4 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 public enum Direction
 {

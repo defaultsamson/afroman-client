@@ -12,9 +12,12 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.entity.ClientLightEntity;
 
 public class LightMap extends Texture
 {
+	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.5F);
+	
 	private Color ambientColour;
 	
 	public LightMap(int width, int height)
@@ -29,11 +32,28 @@ public class LightMap extends Texture
 		this.ambientColour = ambientColour;
 	}
 	
+	/**
+	 * @deprecated Moving to new renderLight()
+	 * 
+	 * @param x
+	 * @param y
+	 * @param radius
+	 */
+	@Deprecated
 	public void drawLight(double x, double y, double radius)
 	{
 		drawLight(x, y, radius, ColourUtil.TRANSPARENT);
 	}
 	
+	/**
+	 * @deprecated Moving to new renderLight()
+	 * 
+	 * @param x
+	 * @param y
+	 * @param radius
+	 * @param rgbColour
+	 */
+	@Deprecated
 	public void drawLight(double x, double y, double radius, Color rgbColour)
 	{
 		int drawX = (int) x;
@@ -92,6 +112,33 @@ public class LightMap extends Texture
 		}
 	}
 	
+	public void putLight(ClientLightEntity light)
+	{
+		// Loop over pixels within light radius
+		for (int iy = 0; iy < light.getHeight(); iy++)
+		{
+			for (int ix = 0; ix < light.getWidth(); ix++)
+			{
+				// If it has a level, use the level's worldToScreen() coordinates, otherwise just draw it to the screen with its current coordinates
+				int lightMapX = (int) (light.getLevel() != null ? light.getLevel().worldToScreenX(light.getX() - light.getRadius()) : light.getX() - light.getRadius()) + ix;
+				int lightMapY = (int) (light.getLevel() != null ? light.getLevel().worldToScreenY(light.getY() - light.getRadius()) : light.getY() - light.getRadius()) + iy;
+				
+				// If it's off-screen, don't try to render it.
+				if (lightMapX < 0 || lightMapY < 0 || lightMapX >= image.getWidth() || lightMapY >= image.getHeight()) continue;
+				
+				int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
+				int lightmapPixel = image.getRGB(lightMapX, lightMapY);
+				
+				// Only set the pixel to it if the new colour doesn't go below the ambient colour.
+				
+				if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+				{
+					image.setRGB(lightMapX, lightMapY, lightPixel);
+				}
+			}
+		}
+	}
+	
 	public void clear()
 	{
 		for (int y = 0; y < image.getHeight(); ++y)
@@ -117,5 +164,10 @@ public class LightMap extends Texture
 		}
 		
 		this.draw(Assets.getTexture(AssetType.FILTER), 0, 0);
+	}
+	
+	public Color getAmbientColour()
+	{
+		return ambientColour;
 	}
 }

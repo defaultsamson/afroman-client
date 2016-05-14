@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.entity.ClientAssetEntity;
 import ca.afroman.entity.ClientPlayerEntity;
-import ca.afroman.entity.Direction;
-import ca.afroman.entity.Entity;
-import ca.afroman.entity.Hitbox;
+import ca.afroman.entity.api.ClientAssetEntity;
+import ca.afroman.entity.api.Direction;
+import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;

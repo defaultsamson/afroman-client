@@ -1,4 +1,4 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
@@ -29,7 +29,10 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	
 	public void render(Texture renderTo)
 	{
-		asset.render(renderTo, getLevel().worldToScreenX(x), getLevel().worldToScreenY(y));
+		if (asset != null && getLevel() != null)
+		{
+			asset.render(renderTo, getLevel().worldToScreenX(x), getLevel().worldToScreenY(y));
+		}
 	}
 	
 	/**
@@ -40,5 +43,10 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	public void render(Texture renderTo, int x, int y)
 	{
 		asset.render(renderTo, x, y);
+	}
+	
+	public Asset getAsset()
+	{
+		return asset;
 	}
 }

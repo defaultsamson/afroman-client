@@ -1,4 +1,4 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.level.ClientLevel;

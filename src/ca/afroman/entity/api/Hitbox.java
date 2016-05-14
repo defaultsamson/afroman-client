@@ -1,4 +1,4 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 import java.awt.geom.Rectangle2D;
 

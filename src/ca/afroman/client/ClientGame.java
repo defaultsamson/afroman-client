@@ -200,6 +200,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		ConsoleOutput.showGui();
 		ConsoleOutput.hideGui();
 		
+		Assets.load();
+		
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();

@@ -13,9 +13,9 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.entity.Entity;
-import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.player.Role;
 

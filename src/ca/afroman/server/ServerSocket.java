@@ -10,9 +10,9 @@ import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.Entity;
-import ca.afroman.entity.Hitbox;
 import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnectedPlayer;

@@ -1,4 +1,4 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
