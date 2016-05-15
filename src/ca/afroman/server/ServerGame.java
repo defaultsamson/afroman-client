@@ -27,8 +27,8 @@ public class ServerGame extends DynamicTickThread
 		return game;
 	}
 	
-	public List<Level> levels;
-	public List<ServerPlayerEntity> players;
+	private List<Level> levels;
+	private List<ServerPlayerEntity> players;
 	
 	private ServerSocket socketServer = null;
 	
@@ -46,35 +46,35 @@ public class ServerGame extends DynamicTickThread
 		socket().sendPacketToAllClients(new PacketSendLevels(true));
 		
 		levels = new ArrayList<Level>();
-		levels.add(Level.fromFile(LevelType.MAIN));
+		getLevels().add(Level.fromFile(LevelType.MAIN));
 		
 		players = new ArrayList<ServerPlayerEntity>();
 		
 		// Sends the levels to everyone else
-		for (Level level : levels)
+		for (Level level : getLevels())
 		{
 			PacketInstantiateLevel levelPack = new PacketInstantiateLevel(level.getType());
 			
-			socketServer.sendPacketToAllClients(levelPack);
+			socket().sendPacketToAllClients(levelPack);
 			
 			for (Entity tile : level.getTiles())
 			{
-				socketServer.sendPacketToAllClients(new PacketAddLevelTile(tile));
+				socket().sendPacketToAllClients(new PacketAddLevelTile(tile));
 			}
 			
 			for (Hitbox box : level.getHitboxes())
 			{
-				socketServer.sendPacketToAllClients(new PacketAddLevelHitbox(level.getType(), box));
+				socket().sendPacketToAllClients(new PacketAddLevelHitbox(level.getType(), box));
 			}
 		}
 		
 		players = new ArrayList<ServerPlayerEntity>();
-		players.add(new ServerPlayerEntity(Role.PLAYER1, 80, 50));
-		players.add(new ServerPlayerEntity(Role.PLAYER2, 20, 20));
+		getPlayers().add(new ServerPlayerEntity(Role.PLAYER1, 80, 50));
+		getPlayers().add(new ServerPlayerEntity(Role.PLAYER2, 20, 20));
 		
-		for (ServerPlayerEntity player : players)
+		for (ServerPlayerEntity player : getPlayers())
 		{
-			player.addToLevel(levels.get(0));
+			player.addToLevel(getLevels().get(0));
 		}
 		
 		/*
@@ -93,36 +93,36 @@ public class ServerGame extends DynamicTickThread
 	}
 	
 	@Override
-	public synchronized void onStart()
+	public void onStart()
 	{
 		super.onStart();
 		
-		socketServer.start();
+		socket().start();
 	}
 	
 	@Override
-	public synchronized void onStop()
+	public void onStop()
 	{
 		// TODO save levels?
 		
-		socketServer.stopThread();
+		socket().stopThread();
 		
-		game = null;
-		
-		if (levels != null) levels.clear();
+		if (getLevels() != null) getLevels().clear();
 		ConnectedPlayer.resetNextAvailableID();
 		Hitbox.resetNextAvailableID();
 		Entity.resetNextAvailableID();
+		
+		game = null;
 	}
 	
 	@Override
-	public synchronized void tick()
+	public void tick()
 	{
 		if (isInGame)
 		{
-			if (levels != null)
+			if (getLevels() != null)
 			{
-				for (Level level : levels)
+				for (Level level : getLevels())
 				{
 					level.tick();
 				}
@@ -132,7 +132,7 @@ public class ServerGame extends DynamicTickThread
 	
 	public Level getLevelByType(LevelType type)
 	{
-		for (Level level : levels)
+		for (Level level : getLevels())
 		{
 			if (level.getType() == type) return level;
 		}
@@ -162,7 +162,7 @@ public class ServerGame extends DynamicTickThread
 		isInGame = true;
 	}
 	
-	public ServerSocket socket()
+	public synchronized ServerSocket socket()
 	{
 		return socketServer;
 	}
@@ -173,12 +173,22 @@ public class ServerGame extends DynamicTickThread
 	 * @param role whether it's player 1 or 2
 	 * @return the player.
 	 */
-	public synchronized ServerPlayerEntity getPlayer(Role role)
+	public ServerPlayerEntity getPlayer(Role role)
 	{
-		for (ServerPlayerEntity entity : players)
+		for (ServerPlayerEntity entity : getPlayers())
 		{
 			if (entity.getRole() == role) return entity;
 		}
 		return null;
+	}
+	
+	public synchronized List<Level> getLevels()
+	{
+		return levels;
+	}
+	
+	public synchronized List<ServerPlayerEntity> getPlayers()
+	{
+		return players;
 	}
 }

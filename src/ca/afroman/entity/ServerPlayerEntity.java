@@ -37,21 +37,14 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	{
 		if (this.level != null)
 		{
-			Entity ePlayer = this.level.getPlayer(role);
-			
-			if (ePlayer != null && ePlayer instanceof ServerPlayerEntity)
-			{
-				ServerPlayerEntity player = (ServerPlayerEntity) ePlayer;
-				
-				this.level.removePlayer(player);
-				this.level = level;
-				this.level.addPlayer(this);
-			}
+			this.level.getPlayers().remove(this);
 		}
-		else
+		
+		this.level = level;
+		
+		if (this.level != null)
 		{
-			this.level = level;
-			this.level.addPlayer(this);
+			this.level.getPlayers().add(this);
 		}
 		
 		ServerGame.instance().socket().sendPacketToAllClients(new PacketAddPlayer(level.getType(), this));

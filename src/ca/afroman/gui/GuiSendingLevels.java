@@ -55,7 +55,7 @@ public class GuiSendingLevels extends GuiScreen
 	{
 		if (ClientGame.instance().isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().socket().getPlayers().size() + ") players");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().socket().getConnectedPlayers().size() + ") players");
 			
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for client responses");
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");

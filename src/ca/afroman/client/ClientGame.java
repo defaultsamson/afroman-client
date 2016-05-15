@@ -67,7 +67,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public InputHandler input;
 	
-	public List<ClientLevel> levels;
+	private List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
 	private List<ClientPlayerEntity> players;
 	private HashMap<Role, FlickeringLight> lights;
@@ -207,8 +207,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		levels = new ArrayList<ClientLevel>();
 		
 		players = new ArrayList<ClientPlayerEntity>();
-		players.add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
-		players.add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
+		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
+		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
 		
 		lights = new HashMap<Role, FlickeringLight>();
 		lights.put(Role.PLAYER1, new FlickeringLight(null, 0, 0, 50, 47, 4));
@@ -475,12 +475,12 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return ServerGame.instance() != null;
 	}
 	
-	public void setCurrentScreen(GuiScreen screen)
+	public synchronized void setCurrentScreen(GuiScreen screen)
 	{
 		this.currentScreen = screen;
 	}
 	
-	public GuiScreen getCurrentScreen()
+	public synchronized GuiScreen getCurrentScreen()
 	{
 		return currentScreen;
 	}
@@ -525,13 +525,13 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return updatePlayerList && hasStartedUpdateList;
 	}
 	
-	public synchronized void exitFromGame()
+	public void exitFromGame()
 	{
-		this.levels.clear();
+		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
-		socketClient.getPlayers().clear();
 		socketClient.pauseThread();
+		socketClient.getConnectedPlayers().clear();
 		
 		if (this.isHostingServer())
 		{
@@ -561,7 +561,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public ClientLevel getLevelByType(LevelType type)
 	{
-		for (ClientLevel level : levels)
+		for (ClientLevel level : getLevels())
 		{
 			if (level.getType() == type) return level;
 		}
@@ -619,13 +619,23 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	 * @param role whether it's player 1 or 2
 	 * @return the player.
 	 */
-	public synchronized ClientPlayerEntity getPlayer(Role role)
+	public ClientPlayerEntity getPlayer(Role role)
 	{
-		for (ClientPlayerEntity entity : players)
+		for (ClientPlayerEntity entity : getPlayers())
 		{
 			if (entity.getRole() == role) return entity;
 		}
 		return null;
+	}
+	
+	public synchronized List<ClientPlayerEntity> getPlayers()
+	{
+		return players;
+	}
+	
+	public synchronized List<ClientLevel> getLevels()
+	{
+		return levels;
 	}
 	
 	public Role getRole()

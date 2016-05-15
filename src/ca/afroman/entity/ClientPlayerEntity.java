@@ -74,25 +74,17 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 	{
 		if (this.level != null)
 		{
-			Entity ePlayer = this.level.getPlayer(role);
-			
-			if (ePlayer != null && ePlayer instanceof ClientPlayerEntity)
-			{
-				ClientPlayerEntity player = (ClientPlayerEntity) ePlayer;
-				
-				this.level.removePlayer(player);
-				this.level = level;
-				this.level.addPlayer(this);
-				return;
-			}
+			this.level.getPlayers().remove(this);
 		}
-		else
+		
+		this.level = level;
+		
+		if (this.level != null)
 		{
-			this.level = level;
-			this.level.addPlayer(this);
+			this.level.getPlayers().add(this);
 		}
 	}
-
+	
 	@Override
 	public Role getRole()
 	{

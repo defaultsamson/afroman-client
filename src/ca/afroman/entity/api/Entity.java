@@ -34,7 +34,7 @@ public class Entity implements ITickable
 	protected int numSteps;
 	protected Direction direction;
 	protected Direction lastDirection;
-
+	
 	/**
 	 * Creates a new Entity without a hitbox.
 	 * 
@@ -169,22 +169,17 @@ public class Entity implements ITickable
 	{
 		if (this.level != null)
 		{
-			for (Entity entity : this.level.getEntities())
-			{
-				if (entity == this)
-				{
-					this.level.removeEntity(this);
-					this.level = level;
-					this.level.addEntity(this);
-					return;
-				}
-			}
+			this.level.getEntities().remove(this);
 		}
-		else
+		
+		this.level = level;
+		
+		if (this.level != null)
 		{
-			this.level = level;
-			this.level.addEntity(this);
+			this.level.getEntities().add(this);
 		}
+		
+		// TODO Packet add level entity
 	}
 	
 	public Level getLevel()

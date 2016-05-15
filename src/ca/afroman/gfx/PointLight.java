@@ -62,9 +62,9 @@ public class PointLight extends Entity
 			{
 				if (entity == this)
 				{
-					this.level.removeLight(this);
+					this.level.getLights().remove(this);
 					this.level = (ClientLevel) level;
-					this.level.addLight(this);
+					this.level.getLights().add(this);
 					return;
 				}
 			}
@@ -72,7 +72,7 @@ public class PointLight extends Entity
 		else
 		{
 			this.level = (ClientLevel) level;
-			this.level.addLight(this);
+			this.level.getLights().add(this);
 		}
 	}
 }

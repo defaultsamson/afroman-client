@@ -13,11 +13,9 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.PointLight;
-import ca.afroman.player.Role;
 
 public class Level
 {
@@ -26,15 +24,15 @@ public class Level
 	/** The level identified. */
 	private LevelType type;
 	/** PointLights in this Level. */
-	protected List<PointLight> lights;
+	private List<PointLight> lights;
 	/** Entities that cannot be interacted with, and will always be there. */
-	protected List<Entity> tiles;
+	private List<Entity> tiles;
 	/** Entities that can move, be interacted with, or be removed. */
-	protected List<Entity> entities;
+	private List<Entity> entities;
 	/** Player objects. */
-	protected List<Entity> players;
+	private List<Entity> players;
 	/** Hitbox in this Level. */
-	protected List<Hitbox> hitboxes;
+	private List<Hitbox> hitboxes;
 	
 	public Level(LevelType type)
 	{
@@ -133,16 +131,16 @@ public class Level
 										tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
 									}
 									
-									level.addTile(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+									level.getTiles().add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 								}
 								else
 								{
-									level.addTile(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
+									level.getTiles().add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
 								}
 							}
 								break;
 							case HITBOX:
-								level.addHitbox(new Hitbox(Hitbox.getNextAvailableID(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
+								level.getHitboxes().add(new Hitbox(Hitbox.getNextAvailableID(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
 								break;
 						}
 						
@@ -198,7 +196,7 @@ public class Level
 		toReturn.add("// The Tiles. LevelObjectType(AssetType, x, y, width, height, hitboxes[if any])");
 		toReturn.add("");
 		
-		for (Entity tile : tiles)
+		for (Entity tile : getTiles())
 		{
 			String tileString = LevelObjectType.TILE + "(" + tile.getX() + ", " + tile.getY() + ", " + tile.getWidth() + ", " + tile.getHeight() + ", " + tile.getAssetType();
 			
@@ -217,7 +215,7 @@ public class Level
 		toReturn.add("// The world hitboxes. HitBox(x, y, width, height)");
 		toReturn.add("");
 		
-		for (Hitbox box : hitboxes)
+		for (Hitbox box : getHitboxes())
 		{
 			toReturn.add(LevelObjectType.HITBOX + "(" + box.getX() + ", " + box.getY() + ", " + box.getWidth() + ", " + box.getHeight() + ")");
 		}
@@ -271,21 +269,21 @@ public class Level
 	 * @param y the y in-level ordinate
 	 * @return the tile. <b>null</b> if there are no tiles at that given location.
 	 */
-	public synchronized Entity getTile(double x, double y)
+	public Entity getTile(double x, double y)
 	{
-		Collections.reverse(tiles);
+		Collections.reverse(getTiles());
 		
-		for (Entity tile : tiles)
+		for (Entity tile : getTiles())
 		{
 			Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
 			
 			if (surrounding.contains(x, y))
 			{
-				Collections.reverse(tiles);
+				Collections.reverse(getTiles());
 				return tile;
 			}
 		}
-		Collections.reverse(tiles);
+		Collections.reverse(getTiles());
 		return null;
 	}
 	
@@ -295,36 +293,20 @@ public class Level
 	 * @param id the id of the tile
 	 * @return the entity. <b>null</b> if there are no tiles with the given id.
 	 */
-	public synchronized Entity getTile(int id)
+	public Entity getTile(int id)
 	{
-		for (Entity tile : tiles)
+		for (Entity tile : getTiles())
 		{
 			if (tile.getID() == id) return tile;
 		}
 		return null;
 	}
 	
-	/**
-	 * Removes a tile at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 */
-	public synchronized void removeTile(Entity tile)
+	public void addTileBehind(Entity tile)
 	{
-		tiles.remove(tile);
-	}
-	
-	public synchronized void addTile(Entity tile)
-	{
-		tiles.add(tile);
-	}
-	
-	public synchronized void addTileBehind(Entity tile)
-	{
-		Collections.reverse(tiles);
-		tiles.add(tile);
-		Collections.reverse(tiles);
+		Collections.reverse(getTiles());
+		getTiles().add(tile);
+		Collections.reverse(getTiles());
 	}
 	
 	public synchronized List<Entity> getEntities()
@@ -339,9 +321,9 @@ public class Level
 	 * @param y the y in-level ordinate
 	 * @return the entity. <b>null</b> if there are no entities at that given location.
 	 */
-	public synchronized Entity getEntity(double x, double y)
+	public Entity getEntity(double x, double y)
 	{
-		for (Entity entity : entities)
+		for (Entity entity : getEntities())
 		{
 			for (Hitbox hitbox : entity.hitboxInLevel())
 			{
@@ -357,31 +339,21 @@ public class Level
 	 * @param id the id of the entity
 	 * @return the entity. <b>null</b> if there are no entities with the given id.
 	 */
-	public synchronized Entity getEntity(int id)
+	public Entity getEntity(int id)
 	{
-		for (Entity entity : entities)
+		for (Entity entity : getEntities())
 		{
 			if (entity.getID() == id) return entity;
 		}
 		return null;
 	}
 	
-	public synchronized void removeEntity(Entity entity)
-	{
-		tiles.remove(entity);
-	}
-	
-	public synchronized void addEntity(Entity entity)
-	{
-		entities.add(entity);
-	}
-	
-	public synchronized void addEntityBehind(Entity entity)
-	{
-		Collections.reverse(entities);
-		entities.add(entity);
-		Collections.reverse(entities);
-	}
+	// public void addEntityBehind(Entity entity)
+	// {
+	// Collections.reverse(entities);
+	// entities.add(entity);
+	// Collections.reverse(entities);
+	// }
 	
 	public synchronized List<Hitbox> getHitboxes()
 	{
@@ -395,9 +367,9 @@ public class Level
 	 * @param y the y in-level ordinate
 	 * @return the entity. <b>null</b> if there are no entities at that given location.
 	 */
-	public synchronized Hitbox getHitbox(double x, double y)
+	public Hitbox getHitbox(double x, double y)
 	{
-		for (Hitbox hitbox : hitboxes)
+		for (Hitbox hitbox : getHitboxes())
 		{
 			if (hitbox.contains(x, y)) return hitbox;
 		}
@@ -410,9 +382,9 @@ public class Level
 	 * @param id the id of the hitbox
 	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
 	 */
-	public synchronized Hitbox getHitbox(int id)
+	public Hitbox getHitbox(int id)
 	{
-		for (Hitbox box : hitboxes)
+		for (Hitbox box : getHitboxes())
 		{
 			if (box.getID() == id) return box;
 		}
@@ -425,93 +397,73 @@ public class Level
 	 * @param x the x in-level ordinate
 	 * @param y the y in-level ordinate
 	 */
-	public synchronized void removeHitbox(double x, double y)
+	public void removeHitbox(double x, double y)
 	{
 		Hitbox hitbox = getHitbox(x, y);
-		if (hitbox != null) hitboxes.remove(hitbox);
-	}
-	
-	public synchronized void removeHitbox(Hitbox hitbox)
-	{
-		hitboxes.remove(hitbox);
-	}
-	
-	public synchronized void addHitbox(Hitbox hitbox)
-	{
-		hitboxes.add(hitbox);
+		if (hitbox != null) getHitboxes().remove(hitbox);
 	}
 	
 	public synchronized List<Entity> getPlayers()
 	{
 		return players;
 	}
-	
-	/**
-	 * Gets the player at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 * @return the player. <b>null</b> if there are no players at that given location.
-	 */
-	public synchronized Entity getPlayer(double x, double y)
-	{
-		for (Entity entity : players)
-		{
-			if (entity instanceof ServerPlayerEntity)
-			{
-				for (Hitbox hitbox : entity.hitboxInLevel())
-				{
-					if (hitbox.contains(x, y)) return entity;
-				}
-			}
-			else
-			{
-				System.out.println("[LEVEL] Non-PlayerEntity in the player list of level " + this.type);
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets the player with the given role.
-	 * 
-	 * @param role whether it's player 1 or 2
-	 * @return the player.
-	 */
-	public synchronized Entity getPlayer(Role role)
-	{
-		for (Entity entity : players)
-		{
-			if (entity instanceof ServerPlayerEntity)
-			{
-				if (((ServerPlayerEntity) entity).getRole() == role) return entity;
-			}
-			else
-			{
-				System.out.println("[LEVEL] Non-PlayerEntity in the player list of level " + this.type);
-			}
-		}
-		return null;
-	}
-	
-	public synchronized void removePlayer(Entity player)
-	{
-		players.remove(player);
-	}
-	
-	public synchronized void addPlayer(Entity player)
-	{
-		players.add(player);
-	}
+	//
+	// /**
+	// * Gets the player at the given coordinates.
+	// *
+	// * @param x the x in-level ordinate
+	// * @param y the y in-level ordinate
+	// * @return the player. <b>null</b> if there are no players at that given location.
+	// */
+	// public Entity getPlayer(double x, double y)
+	// {
+	// for (Entity entity : players)
+	// {
+	// if (entity instanceof ServerPlayerEntity)
+	// {
+	// for (Hitbox hitbox : entity.hitboxInLevel())
+	// {
+	// if (hitbox.contains(x, y)) return entity;
+	// }
+	// }
+	// else
+	// {
+	// System.out.println("[LEVEL] Non-PlayerEntity in the player list of level " + this.type);
+	// }
+	// }
+	// return null;
+	// }
+	//
+	// /**
+	// * Gets the player with the given role.
+	// *
+	// * @param role whether it's player 1 or 2
+	// * @return the player.
+	// */
+	// public Entity getPlayer(Role role)
+	// {
+	// for (Entity entity : getPlayers())
+	// {
+	// if (entity instanceof ServerPlayerEntity)
+	// {
+	// if (((ServerPlayerEntity) entity).getRole() == role) return entity;
+	// }
+	// else
+	// {
+	// System.out.println("[LEVEL] Non-PlayerEntity in the player list of level " + this.type);
+	// }
+	// }
+	// return null;
+	// }
 	
 	public LevelType getType()
 	{
 		return type;
 	}
 	
-	public synchronized PointLight getLight(double x, double y)
+	public PointLight getLight(double x, double y)
 	{
-		for (PointLight light : lights)
+		for (PointLight light : getLights())
 		{
 			double width = light.getWidth();
 			double height = light.getHeight();
@@ -523,16 +475,6 @@ public class Level
 		}
 		
 		return null;
-	}
-	
-	public synchronized void removeLight(PointLight light)
-	{
-		lights.remove(light);
-	}
-	
-	public synchronized void addLight(PointLight light)
-	{
-		lights.add(light);
 	}
 	
 	public synchronized List<PointLight> getLights()

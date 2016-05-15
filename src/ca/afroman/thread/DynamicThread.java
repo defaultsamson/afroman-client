@@ -41,7 +41,7 @@ public abstract class DynamicThread extends Thread
 	public abstract void onRun();
 	
 	@Override
-	public synchronized void start()
+	public void start()
 	{
 		if (exit)
 		{

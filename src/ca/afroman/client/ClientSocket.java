@@ -36,7 +36,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ClientSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = false;
+	public static final boolean TRACE_PACKETS = true;
 	public static int id = -1;
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;
@@ -92,7 +92,7 @@ public class ClientSocket extends DynamicThread
 		
 		try
 		{
-			socket.receive(packet);
+			socket().receive(packet);
 		}
 		catch (IOException e)
 		{
@@ -176,26 +176,23 @@ public class ClientSocket extends DynamicThread
 				{
 					boolean sendingLevels = (Integer.parseInt(Packet.readContent(data)) == 1);
 					
-					synchronized (this)
+					if (sendingLevels)
 					{
-						if (sendingLevels)
+						// Prepare the level storage for new levels to be sent
+						ClientGame.instance().getLevels().clear();
+						
+						// Display the loading level screen
+						if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
 						{
-							// Prepare the level storage for new levels to be sent
-							ClientGame.instance().levels.clear();
-							
-							// Display the loading level screen
-							if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
-							{
-								ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
-							}
+							ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
 						}
-						else
+					}
+					else
+					{
+						// Display the loading level screen
+						if (ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels)
 						{
-							// Display the loading level screen
-							if (ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels)
-							{
-								ClientGame.instance().setCurrentScreen(ClientGame.instance().getCurrentScreen().getParent());
-							}
+							ClientGame.instance().setCurrentScreen(ClientGame.instance().getCurrentScreen().getParent());
 						}
 					}
 				}
@@ -206,7 +203,7 @@ public class ClientSocket extends DynamicThread
 					
 					if (ClientGame.instance().getLevelByType(levelType) == null)
 					{
-						ClientGame.instance().levels.add(new ClientLevel(levelType));
+						ClientGame.instance().getLevels().add(new ClientLevel(levelType));
 						ClientGame.instance().setCurrentLevel(ClientGame.instance().getLevelByType(levelType));
 					}
 					else
@@ -241,11 +238,11 @@ public class ClientSocket extends DynamicThread
 								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
 							}
 							
-							level.addTile(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+							level.getTiles().add(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 						}
 						else
 						{
-							level.addTile(new ClientAssetEntity(id, level, asset, x, y, width, height));
+							level.getTiles().add(new ClientAssetEntity(id, level, asset, x, y, width, height));
 						}
 					}
 					else
@@ -266,7 +263,7 @@ public class ClientSocket extends DynamicThread
 						
 						if (tile != null)
 						{
-							level.removeTile(tile);
+							level.getTiles().remove(tile);
 						}
 					}
 				}
@@ -285,7 +282,7 @@ public class ClientSocket extends DynamicThread
 						double width = Double.parseDouble(split[4]);
 						double height = Double.parseDouble(split[5]);
 						
-						level.addHitbox(new Hitbox(id, x, y, width, height));
+						level.getHitboxes().add(new Hitbox(id, x, y, width, height));
 					}
 				}
 					break;
@@ -301,7 +298,7 @@ public class ClientSocket extends DynamicThread
 						
 						if (box != null)
 						{
-							level.removeHitbox(box);
+							level.getHitboxes().remove(box);
 						}
 					}
 				}
@@ -391,7 +388,7 @@ public class ClientSocket extends DynamicThread
 			
 			try
 			{
-				socket.send(packet);
+				socket().send(packet);
 			}
 			catch (IOException e)
 			{
@@ -413,9 +410,9 @@ public class ClientSocket extends DynamicThread
 		return playerByID(id);
 	}
 	
-	public synchronized ConnectedPlayer playerByRole(Role role)
+	public ConnectedPlayer playerByRole(Role role)
 	{
-		for (ConnectedPlayer player : playerList)
+		for (ConnectedPlayer player : getConnectedPlayers())
 		{
 			if (player.getRole() == role) return player;
 		}
@@ -423,9 +420,9 @@ public class ClientSocket extends DynamicThread
 		return null;
 	}
 	
-	public synchronized ConnectedPlayer playerByID(int id)
+	public ConnectedPlayer playerByID(int id)
 	{
-		for (ConnectedPlayer player : playerList)
+		for (ConnectedPlayer player : getConnectedPlayers())
 		{
 			if (player.getID() == id) return player;
 		}
@@ -436,11 +433,11 @@ public class ClientSocket extends DynamicThread
 	/**
 	 * @return a list of all the ConnectedPlayers, excluding this current player.
 	 */
-	public synchronized List<ConnectedPlayer> otherPlayers()
+	public List<ConnectedPlayer> otherPlayers()
 	{
 		List<ConnectedPlayer> toReturn = new ArrayList<ConnectedPlayer>();
 		
-		for (ConnectedPlayer player : playerList)
+		for (ConnectedPlayer player : getConnectedPlayers())
 		{
 			if (player.getID() != id) toReturn.add(player);
 		}
@@ -448,20 +445,25 @@ public class ClientSocket extends DynamicThread
 		return toReturn;
 	}
 	
-	public synchronized List<ConnectedPlayer> getPlayers()
+	public synchronized List<ConnectedPlayer> getConnectedPlayers()
 	{
 		return playerList;
 	}
 	
 	@Override
-	public synchronized void onStop()
+	public void onStop()
 	{
 		if (this.isConnected())
 		{
 			PacketDisconnect pack = new PacketDisconnect();
 			this.sendPacket(pack);
 		}
-		socket.close();
+		socket().close();
+	}
+	
+	private synchronized DatagramSocket socket()
+	{
+		return socket;
 	}
 	
 	@Override

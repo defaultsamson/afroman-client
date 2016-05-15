@@ -65,7 +65,7 @@ public class GuiLobby extends GuiScreen
 	}
 	
 	@Override
-	public synchronized void tick()
+	public void tick()
 	{
 		light1.tick();
 		light2.tick();
@@ -86,7 +86,7 @@ public class GuiLobby extends GuiScreen
 			// Draws the player list
 			int counter = 0;
 			int row = 0;
-			for (ConnectedPlayer player : ClientGame.instance().socket().getPlayers())
+			for (ConnectedPlayer player : ClientGame.instance().socket().getConnectedPlayers())
 			{
 				boolean isEvenNum = (counter & 1) == 0;
 				
@@ -144,7 +144,7 @@ public class GuiLobby extends GuiScreen
 		
 		renderTo.draw(lightmap, 0, 0);
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().socket().getPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().socket().getConnectedPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Click on a name to choose role)");

@@ -19,7 +19,6 @@ import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
 import ca.afroman.packet.PacketRemoveLevelTileLocation;
-import ca.afroman.player.Role;
 
 public class ClientLevel extends Level
 {
@@ -34,7 +33,7 @@ public class ClientLevel extends Level
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
 	}
 	
-	public synchronized void setCameraCenterInWorld(double x, double y)
+	public void setCameraCenterInWorld(double x, double y)
 	{
 		xOffset = x - (ClientGame.WIDTH / 2);
 		yOffset = y - (ClientGame.HEIGHT / 2);
@@ -43,18 +42,18 @@ public class ClientLevel extends Level
 	public synchronized void render(Texture renderTo)
 	{
 		// Renders Tiles
-		for (Entity tile : tiles)
+		for (Entity tile : this.getTiles())
 		{
 			// If it has a texture, render it
 			if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
 		}
 		
-		for (Entity entity : entities)
+		for (Entity entity : this.getEntities())
 		{
 			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
 		}
 		
-		for (Entity player : players)
+		for (Entity player : this.getPlayers())
 		{
 			((ClientPlayerEntity) player).render(renderTo);
 		}
@@ -64,7 +63,7 @@ public class ClientLevel extends Level
 			// Draws all the lighting over everything else
 			lightmap.clear();
 			
-			for (PointLight light : lights)
+			for (PointLight light : this.getLights())
 			{
 				light.renderCentered(lightmap);
 			}
@@ -83,7 +82,7 @@ public class ClientLevel extends Level
 		// Draws out the hitboxes
 		if (ClientGame.instance().isHitboxDebugging())
 		{
-			for (Hitbox box : hitboxes)
+			for (Hitbox box : this.getHitboxes())
 			{
 				int x = worldToScreenX((int) box.getX());
 				int y = worldToScreenY((int) box.getY());
@@ -96,7 +95,7 @@ public class ClientLevel extends Level
 				renderTo.getGraphics().drawRect(x, y, width, height);
 			}
 			
-			for (Entity entity : entities)
+			for (Entity entity : this.getEntities())
 			{
 				for (Hitbox box : entity.hitboxInLevel())
 				{
@@ -112,7 +111,7 @@ public class ClientLevel extends Level
 				}
 			}
 			
-			for (Entity entity : players)
+			for (Entity entity : this.getPlayers())
 			{
 				for (Hitbox box : entity.hitboxInLevel())
 				{
@@ -380,7 +379,7 @@ public class ClientLevel extends Level
 			hitboxClickCount = 0;
 		}
 		
-		for (PointLight light : lights)
+		for (PointLight light : this.getLights())
 		{
 			light.tick();
 		}
@@ -422,57 +421,7 @@ public class ClientLevel extends Level
 		return yOffset;
 	}
 	
-	/**
-	 * Gets the player at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 * @return the player. <b>null</b> if there are no players at that given location.
-	 */
-	@Override
-	public synchronized Entity getPlayer(double x, double y)
-	{
-		for (Entity entity : players)
-		{
-			if (entity instanceof ClientPlayerEntity)
-			{
-				for (Hitbox hitbox : entity.hitboxInLevel())
-				{
-					if (hitbox.contains(x, y)) return entity;
-				}
-			}
-			else
-			{
-				System.out.println("[LEVEL] Non-ClientPlayerEntity in the player list of level " + this.getType());
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets the player with the given role.
-	 * 
-	 * @param role whether it's player 1 or 2
-	 * @return the player.
-	 */
-	@Override
-	public synchronized Entity getPlayer(Role role)
-	{
-		for (Entity entity : players)
-		{
-			if (entity instanceof ClientPlayerEntity)
-			{
-				if (((ClientPlayerEntity) entity).getRole() == role) return entity;
-			}
-			else
-			{
-				System.out.println("[LEVEL] Non-ClientPlayerEntity in the player list of level " + this.getType());
-			}
-		}
-		return null;
-	}
-	
-	public LightMap getLightMap()
+	public synchronized LightMap getLightMap()
 	{
 		return lightmap;
 	}

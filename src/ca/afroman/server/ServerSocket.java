@@ -215,14 +215,14 @@ public class ServerSocket extends DynamicThread
 							
 							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 							Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes));
-							level.addTile(tile); // Adds tile to the server's level
+							level.getTiles().add(tile); // Adds tile to the server's level
 							sendPacketToAllClients(new PacketAddLevelTile(tile)); // Adds the tile to all the clients' levels
 						}
 						else
 						{
 							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 							Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height);
-							level.addTile(tile);
+							level.getTiles().add(tile);
 							sendPacketToAllClients(new PacketAddLevelTile(tile));
 						}
 					}
@@ -252,7 +252,7 @@ public class ServerSocket extends DynamicThread
 							sendPacketToAllClients(pack);
 						}
 						
-						level.removeTile(tile);
+						level.getTiles().remove(tile);
 					}
 					else
 					{
@@ -276,7 +276,7 @@ public class ServerSocket extends DynamicThread
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						Hitbox box = new Hitbox(Hitbox.getNextAvailableID(), x, y, width, height);
-						level.addHitbox(box);
+						level.getHitboxes().add(box);
 						sendPacketToAllClients(new PacketAddLevelHitbox(levelType, box));
 					}
 					else
@@ -305,7 +305,7 @@ public class ServerSocket extends DynamicThread
 							sendPacketToAllClients(pack);
 						}
 						
-						level.removeHitbox(box);
+						level.getHitboxes().remove(box);
 					}
 					else
 					{
