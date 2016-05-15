@@ -14,7 +14,7 @@ import ca.afroman.gfx.ColourUtil;
 
 public class Texture extends Asset
 {
-	public static final String TEXTURE_PATH = "/texture";
+	public static final String TEXTURE_PATH = "/texture/";
 	
 	protected BufferedImage image;
 	protected Graphics2D graphics;

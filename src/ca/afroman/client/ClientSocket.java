@@ -36,7 +36,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ClientSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = true;
+	public static final boolean TRACE_PACKETS = false;
 	public static int id = -1;
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;

@@ -13,8 +13,8 @@ import ca.afroman.player.Role;
 
 public class ClientPlayerEntity extends ClientAssetEntityDirectional implements IRoleEntity
 {
-	public static final AssetType PLAYER1_ASSET = AssetType.RAW_PLAYER_ONE;
-	public static final AssetType PLAYER2_ASSET = AssetType.RAW_PLAYER_TWO;
+	public static final AssetType PLAYER1_ASSET = AssetType.PLAYER_ONE_RAW;
+	public static final AssetType PLAYER2_ASSET = AssetType.PLAYER_TWO_RAW;
 	
 	private Role role;
 	

@@ -11,23 +11,20 @@ public class Assets
 	
 	public static void load()
 	{
-		assets.add(Texture.fromResource(AssetType.SPRITESHEET, "/spritesheet.png"));
-		assets.add(Texture.fromResource(AssetType.FONTSHEET, "/fonts.png"));
+		Texture sheet = Texture.fromResource(AssetType.INVALID, "spritesheet.png");
+		Texture font = Texture.fromResource(AssetType.INVALID, "fonts.png");
 		
-		Texture filter = Texture.fromResource(AssetType.FILTER, "/filter_opaque.png");
+		Texture filter = Texture.fromResource(AssetType.FILTER, "filter_opaque.png");
 		filter.setFromGreyscaleToAlphaMask();
 		assets.add(filter);
-		
-		Texture sheet = Assets.getTexture(AssetType.SPRITESHEET);
-		Texture font = Assets.getTexture(AssetType.FONTSHEET);
 		
 		assetArrays.add(new Font(AssetType.FONT_BLACK, font.getSubTexture(AssetType.FONT_BLACK, 0, 8 * 0, 256, 32)));
 		assetArrays.add(new Font(AssetType.FONT_WHITE, font.getSubTexture(AssetType.FONT_WHITE, 0, 8 * 12, 256, 32)));
 		assetArrays.add(new Font(AssetType.FONT_NOBLE, font.getSubTexture(AssetType.FONT_NOBLE, 0, 8 * 4, 256, 32)));
 		
-		assetArrays.add(new AssetArray(AssetType.RAW_PLAYER_ONE, sheet.getSubTexture(AssetType.RAW_PLAYER_ONE, 0, 0, 16 * 3, 16 * 4).toTextureArray(3, 4)));
+		assetArrays.add(new AssetArray(AssetType.PLAYER_ONE_RAW, Texture.fromResource(AssetType.PLAYER_ONE_RAW, "player1.png").toTextureArray(3, 4)));
 		
-		AssetArray player = Assets.getAssetArray(AssetType.RAW_PLAYER_ONE);
+		AssetArray player = Assets.getAssetArray(AssetType.PLAYER_ONE_RAW);
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_UP, true, 12, (Texture) player.getAsset(9), (Texture) player.getAsset(10), (Texture) player.getAsset(11)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_DOWN, true, 12, (Texture) player.getAsset(0), (Texture) player.getAsset(1), (Texture) player.getAsset(2)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_LEFT, true, 12, (Texture) player.getAsset(3), (Texture) player.getAsset(4), (Texture) player.getAsset(5)));
@@ -37,9 +34,9 @@ public class Assets
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT, true, 0, (Texture) player.getAsset(4)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT, true, 0, (Texture) player.getAsset(7)));
 		
-		assetArrays.add(new AssetArray(AssetType.RAW_PLAYER_TWO, sheet.getSubTexture(AssetType.RAW_PLAYER_TWO, 0, 184, 16 * 3, 16 * 4).toTextureArray(3, 4)));
+		assetArrays.add(new AssetArray(AssetType.PLAYER_TWO_RAW, Texture.fromResource(AssetType.PLAYER_TWO_RAW, "player2.png").toTextureArray(3, 4)));
 		
-		AssetArray player2 = Assets.getAssetArray(AssetType.RAW_PLAYER_TWO);
+		AssetArray player2 = Assets.getAssetArray(AssetType.PLAYER_TWO_RAW);
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_UP, true, 12, (Texture) player2.getAsset(9), (Texture) player2.getAsset(10), (Texture) player2.getAsset(11)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_DOWN, true, 12, (Texture) player2.getAsset(0), (Texture) player2.getAsset(1), (Texture) player2.getAsset(2)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_LEFT, true, 12, (Texture) player2.getAsset(3), (Texture) player2.getAsset(4), (Texture) player2.getAsset(5)));
@@ -69,6 +66,8 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 4, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 4, 16 * 1, 16, 16));
+		
+		assets.add(new SpriteAnimation(AssetType.TILE_AURA, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
 		
 		assets.add(sheet.getSubTexture(AssetType.BUTTON_NORMAL, 0, 120, 72, 16));
 		assets.add(sheet.getSubTexture(AssetType.BUTTON_HOVER, 0, 136, 72, 16));

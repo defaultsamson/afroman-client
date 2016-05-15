@@ -39,6 +39,12 @@ import ca.afroman.thread.DynamicTickRenderThread;
 
 public class ClientGame extends DynamicTickRenderThread // implements Runnable
 {
+	public static final int WIDTH = 240;
+	public static final int HEIGHT = WIDTH / 16 * 9;
+	public static final int SCALE = 3;
+	public static final String NAME = "Cancer: The Adventures of Afro Man";
+	public static final int VERSION = 2;
+	
 	private static ClientGame game;
 	
 	public static ClientGame instance()
@@ -46,11 +52,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return game;
 	}
 	
-	public static final int WIDTH = 240;
-	public static final int HEIGHT = WIDTH / 16 * 9;
-	public static final int SCALE = 3;
-	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final int VERSION = 2;
+	private static long startLoadTime;
 	
 	private JFrame frame;
 	private Canvas canvas;
@@ -145,7 +147,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		frame.setVisible(true);
 		
 		// Loading screen
-		long startTime = System.currentTimeMillis();
 		canvas.repaint();
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "/loading.png");
 		DynamicThread renderLoading = new DynamicThread()
@@ -220,27 +221,14 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		// WHEN FINISHED LOADING
 		
-		long loadTime = System.currentTimeMillis() - startTime;
-		
-		int forcedDisplayTime = 500;
-		
-		// Makes you see the loading screen for at least a half second
-		if (loadTime < forcedDisplayTime)
-		{
-			try
-			{
-				Thread.sleep(forcedDisplayTime - loadTime);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		
 		// End the loading screen
 		renderLoading.stopThread();
 		frame.setResizable(true);
 		canvas.repaint();
+		
+		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
+		
+		System.out.println("Game Loaded. Took " + loadTime + " seconds.");
 	}
 	
 	/**
@@ -570,6 +558,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public static void main(String[] args)
 	{
+		startLoadTime = System.currentTimeMillis();
+		
 		game = new ClientGame();
 		game.start();
 	}
