@@ -1,7 +1,5 @@
 package ca.afroman.gui;
 
-import java.awt.Color;
-
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
@@ -70,7 +68,7 @@ public class GuiChooseRole extends GuiScreen
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.3F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
 		light1 = new FlickeringLight(null, p1X + 8, p2Y + 8, 42, 44, 6);
 		light2 = new FlickeringLight(null, p2X + 8, p1Y + 8, 42, 44, 6);

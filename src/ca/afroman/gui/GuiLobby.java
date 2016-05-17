@@ -1,7 +1,5 @@
 package ca.afroman.gui;
 
-import java.awt.Color;
-
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
@@ -19,17 +17,19 @@ import ca.afroman.server.ServerSocket;
 public class GuiLobby extends GuiScreen
 {
 	private SpriteAnimation player1;
-	private int player1X = 0;
-	private int player1Y = 0;
+	private int player1X = -300;
+	private int player1Y = -300;
 	private SpriteAnimation player2;
-	private int player2X = 0;
-	private int player2Y = 0;
+	private int player2X = -300;
+	private int player2Y = -300;
 	private LightMap lightmap;
 	private FlickeringLight light1;
 	private FlickeringLight light2;
 	
 	private GuiTextButton startButton;
 	private GuiTextButton stopButton;
+	
+	private boolean firstTime;
 	
 	public GuiLobby(GuiScreen parentScreen)
 	{
@@ -42,7 +42,7 @@ public class GuiLobby extends GuiScreen
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
 		light1 = new FlickeringLight(null, 0, 0, 42, 45, 8);
 		light2 = new FlickeringLight(null, 0, 0, 42, 45, 8);
@@ -62,6 +62,9 @@ public class GuiLobby extends GuiScreen
 			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, blackFont, "Disconnect");
 		}
 		buttons.add(stopButton);
+		
+		// Makes sure that the GUI is initialised no matter what
+		firstTime = true;
 	}
 	
 	@Override
@@ -71,8 +74,10 @@ public class GuiLobby extends GuiScreen
 		light2.tick();
 		
 		// Draws all the new buttons if the server list has been updated
-		if (ClientGame.instance().hasServerListBeenUpdated())
+		if (ClientGame.instance().hasServerListBeenUpdated() || firstTime)
 		{
+			firstTime = false;
+			
 			// Removes all buttons except for that at index 0 (The Start Game Button)
 			buttons.clear();
 			buttons.add(startButton);

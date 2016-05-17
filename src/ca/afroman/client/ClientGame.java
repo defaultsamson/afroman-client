@@ -136,6 +136,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		canvas.setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		
+		frame.setIconImage(Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		
@@ -148,7 +149,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		// Loading screen
 		canvas.repaint();
-		final Texture loading = Texture.fromResource(AssetType.INVALID, "/loading.png");
+		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
 		DynamicThread renderLoading = new DynamicThread()
 		{
 			@Override

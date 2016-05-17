@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.ColourUtil;
 
 public class Texture extends Asset
@@ -33,7 +34,7 @@ public class Texture extends Asset
 		BufferedImage inImage = null;
 		try
 		{
-			inImage = ImageIO.read(Texture.class.getResourceAsStream(TEXTURE_PATH + path));
+			inImage = ImageIO.read(ClientGame.class.getResourceAsStream(TEXTURE_PATH + path));
 		}
 		catch (IOException e)
 		{

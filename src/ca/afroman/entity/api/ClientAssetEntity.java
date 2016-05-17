@@ -14,9 +14,14 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	
 	public ClientAssetEntity(int id, ClientLevel level, AssetType assetType, double x, double y, double width, double height, Hitbox... hitboxes)
 	{
-		super(id, level, assetType, x, y, width, height, hitboxes);
+		this(id, level, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), x, y, width, height, hitboxes);
+	}
+	
+	public ClientAssetEntity(int id, ClientLevel level, Asset asset, double x, double y, double width, double height, Hitbox... hitboxes)
+	{
+		super(id, level, (asset != null ? asset.assetType() : AssetType.INVALID), x, y, width, height, hitboxes);
 		
-		this.asset = Assets.getAsset(assetType);
+		this.asset = asset;
 	}
 	
 	@Override
