@@ -2,10 +2,9 @@ package ca.afroman.assets;
 
 import ca.afroman.interfaces.ITickable;
 
-public class SpriteAnimation extends Asset implements ITickable
+public class SpriteAnimation extends AssetArray implements ITickable
 {
 	/** Holds the textures for each frame. */
-	private Texture[] textures;
 	private int currentFrameIndex = 0;
 	private boolean pingPong;
 	private boolean goingUp = true;
@@ -19,10 +18,9 @@ public class SpriteAnimation extends Asset implements ITickable
 	
 	public SpriteAnimation(AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
-		super(type, frames[0].getWidth(), frames[0].getHeight());
+		super(type, frames);
 		
 		this.pingPong = pingPong;
-		textures = frames;
 		this.ticksPerFrame = ticksPerFrame;
 	}
 	
@@ -82,12 +80,12 @@ public class SpriteAnimation extends Asset implements ITickable
 	
 	public Texture getCurrentFrame()
 	{
-		return textures[currentFrameIndex];
+		return ((Texture[]) getAssets())[currentFrameIndex];
 	}
 	
 	public int frameCount()
 	{
-		return textures.length;
+		return ((Texture[]) getAssets()).length;
 	}
 	
 	public void setFrame(int frame)
@@ -104,11 +102,17 @@ public class SpriteAnimation extends Asset implements ITickable
 	@Override
 	public Asset clone()
 	{
-		Texture[] newTextures = new Texture[textures.length];
+		return new SpriteAnimation(type, pingPong, ticksPerFrame, (Texture[]) getAssets());
+	}
+	
+	@Override
+	public AssetArray cloneWithAllSubAssets()
+	{
+		Texture[] newTextures = new Texture[frameCount()];
 		
-		for (int i = 0; i < textures.length; i++)
+		for (int i = 0; i < newTextures.length; i++)
 		{
-			newTextures[i] = textures[i].clone();
+			newTextures[i] = ((Texture[]) getAssets())[i].clone();
 		}
 		
 		return new SpriteAnimation(type, pingPong, ticksPerFrame, newTextures);

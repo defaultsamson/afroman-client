@@ -114,6 +114,8 @@ public class Assets
 	
 	public static AssetArray getAssetArray(AssetType type)
 	{
+		if (type == null) return null;
+		
 		for (AssetArray asset : assetArrays)
 		{
 			if (asset.assetType() == type)
@@ -126,6 +128,8 @@ public class Assets
 	
 	public static Asset getAsset(AssetType type)
 	{
+		if (type == null) return null;
+		
 		for (Asset asset : assets)
 		{
 			if (asset.assetType() == type)

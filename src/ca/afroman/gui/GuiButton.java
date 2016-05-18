@@ -42,12 +42,12 @@ public class GuiButton extends InputType
 	{
 		if (isEnabled)
 		{
-			int mouseX = ClientGame.instance().input.getMouseX();
-			int mouseY = ClientGame.instance().input.getMouseY();
+			int mouseX = ClientGame.instance().input().getMouseX();
+			int mouseY = ClientGame.instance().input().getMouseY();
 			
 			if (hitbox.contains(mouseX, mouseY))
 			{
-				if (ClientGame.instance().input.mouseLeft.isPressed())
+				if (ClientGame.instance().input().mouseLeft.isPressed())
 				{
 					state = 2; // Down
 					
@@ -75,7 +75,7 @@ public class GuiButton extends InputType
 			{
 				onPressed();
 			}
-			else if (this.isReleasedFiltered() && ClientGame.instance().input.mouseLeft.isReleased())
+			else if (this.isReleasedFiltered() && ClientGame.instance().input().mouseLeft.isReleased())
 			{
 				onRelease();
 			}

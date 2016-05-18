@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Key extends InputType
 {
-	private int[] keyEvents;
+	protected int[] keyEvents;
 	
 	public Key(List<Key> container, int... keyEvents)
 	{

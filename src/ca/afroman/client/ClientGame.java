@@ -67,7 +67,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
-	public InputHandler input;
+	private InputHandler input;
 	
 	private List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
@@ -311,7 +311,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		}
 		if (input.saveLevel.isPressedFiltered())
 		{
-			if (currentLevel != null) currentLevel.toSaveFile();
+			if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
 			System.out.println("Copied current level save data to clipboard");
 		}
 		
@@ -325,9 +325,9 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		}
 		
 		// TODO Have it not run the main game code. Leave that to the server
-		if (currentLevel != null)
+		if (getCurrentLevel() != null)
 		{
-			currentLevel.tick();
+			getCurrentLevel().tick();
 		}
 		
 		if (currentScreen != null)
@@ -349,14 +349,14 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		screen.getGraphics().setColor(Color.WHITE);
 		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
 		
-		if (currentLevel != null)
+		if (getCurrentLevel() != null)
 		{
-			currentLevel.render(screen);
+			getCurrentLevel().render(screen);
 		}
 		
-		if (currentScreen != null)
+		if (getCurrentScreen() != null)
 		{
-			currentScreen.render(screen);
+			getCurrentScreen().render(screen);
 		}
 		
 		if (hudDebug)
@@ -538,17 +538,17 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		socketClient.sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
 	}
 	
-	public ClientLevel getCurrentLevel()
+	public synchronized ClientLevel getCurrentLevel()
 	{
 		return currentLevel;
 	}
 	
-	public void setCurrentLevel(ClientLevel newLevel)
+	public synchronized void setCurrentLevel(ClientLevel newLevel)
 	{
 		currentLevel = newLevel;
 	}
 	
-	public ClientLevel getLevelByType(LevelType type)
+	public synchronized ClientLevel getLevelByType(LevelType type)
 	{
 		for (ClientLevel level : getLevels())
 		{
@@ -578,6 +578,11 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public ClientSocket socket()
 	{
 		return socketClient;
+	}
+	
+	public InputHandler input()
+	{
+		return input;
 	}
 	
 	@Override

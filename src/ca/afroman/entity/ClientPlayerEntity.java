@@ -43,19 +43,19 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 			int xa = 0;
 			int ya = 0;
 			
-			if (ClientGame.instance().input.up.isPressed())
+			if (ClientGame.instance().input().up.isPressed())
 			{
 				ya = -1;
 			}
-			if (ClientGame.instance().input.down.isPressed())
+			if (ClientGame.instance().input().down.isPressed())
 			{
 				ya = 1;
 			}
-			if (ClientGame.instance().input.left.isPressed())
+			if (ClientGame.instance().input().left.isPressed())
 			{
 				xa = -1;
 			}
-			if (ClientGame.instance().input.right.isPressed())
+			if (ClientGame.instance().input().right.isPressed())
 			{
 				xa = 1;
 			}

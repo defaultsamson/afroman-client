@@ -53,8 +53,8 @@ public class GuiTextField extends GuiButton
 				drawBlinker = !drawBlinker;
 			}
 			
-			InputHandler input = ClientGame.instance().input;
-			boolean isShifting = input.shift.isPressed();
+			InputHandler input = ClientGame.instance().input();
+			boolean isShifting = input.shift.isPressed() || input.capsLock.isToggled();
 			
 			if (input.backspace.isPressedTyping())
 			{

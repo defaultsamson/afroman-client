@@ -47,17 +47,17 @@ public class Level
 	
 	public synchronized void tick()
 	{
-		for (Entity tile : tiles)
+		for (Entity tile : getTiles())
 		{
 			tile.tick();
 		}
 		
-		for (Entity entity : entities)
+		for (Entity entity : getEntities())
 		{
 			entity.tick();
 		}
 		
-		for (Entity entity : players)
+		for (Entity entity : getPlayers())
 		{
 			entity.tick();
 		}
@@ -175,9 +175,7 @@ public class Level
 			
 			tempFile.delete();
 		}
-		catch (
-		
-		IOException e)
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}

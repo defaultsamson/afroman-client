@@ -52,6 +52,18 @@ public class AssetArray extends Asset
 	@Override
 	public Asset clone()
 	{
+		return new AssetArray(type, assets);
+	}
+	
+	/**
+	 * Clones this AssetArray object, as well as all of the individual assets that it contains.
+	 * Just a heads up that this is quite resource intensive if this AssetArray contains a lot of
+	 * sub-assets, so there'd better be good reason to use this.
+	 * 
+	 * @return the cloned AssetArray.
+	 */
+	public AssetArray cloneWithAllSubAssets()
+	{
 		Asset[] newAssets = new Asset[assets.length];
 		
 		for (int i = 0; i < assets.length; i++)

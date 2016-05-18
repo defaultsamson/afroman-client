@@ -40,6 +40,7 @@ public class GuiHostServer extends GuiScreen
 		username.setText(ClientGame.instance().getUsername());
 		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
+		username.setFocussed();
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90);
 		password.setText(ClientGame.instance().getPassword());
 		password.setMaxLength(11);
@@ -84,7 +85,7 @@ public class GuiHostServer extends GuiScreen
 		afroMan.tick();
 		player2.tick();
 		
-		if (ClientGame.instance().input.tab.isPressedFiltered())
+		if (ClientGame.instance().input().tab.isPressedFiltered())
 		{
 			if (username.isFocussed())
 			{
@@ -95,6 +96,11 @@ public class GuiHostServer extends GuiScreen
 				password.setFocussed(false);
 			}
 		}
+		
+		if (ClientGame.instance().input().enter.isPressedFiltered())
+		{
+			hostServer();
+		}
 	}
 	
 	@Override
@@ -103,19 +109,24 @@ public class GuiHostServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 1: // Host Server
-				ClientGame.instance().setUsername(this.username.getText());
-				
-				// If not already hosting
-				if (!ClientGame.instance().isHostingServer())
-				{
-					new ServerGame(this.password.getText());
-					// Start that server thread
-					ServerGame.instance().start();
-				}
-				
-				ClientGame.instance().joinServer();
+				hostServer();
 				break;
 		}
+	}
+	
+	private void hostServer()
+	{
+		ClientGame.instance().setUsername(this.username.getText());
+		
+		// If not already hosting
+		if (!ClientGame.instance().isHostingServer())
+		{
+			new ServerGame(this.password.getText());
+			// Start that server thread
+			ServerGame.instance().start();
+		}
+		
+		ClientGame.instance().joinServer();
 	}
 	
 	@Override

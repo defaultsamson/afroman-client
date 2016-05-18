@@ -42,6 +42,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
 	
 	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);
+	public Key enter = new Key(keys, KeyEvent.VK_ENTER);
 	public Key tab = new Key(keys, KeyEvent.VK_TAB);
 	public Key delete = new Key(keys, KeyEvent.VK_DELETE);
 	public Key backspace = new Key(keys, KeyEvent.VK_BACK_SPACE);
@@ -53,6 +54,9 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key semicolon = new Key(keys, KeyEvent.VK_SEMICOLON);
 	public Key hyphen = new Key(keys, KeyEvent.VK_MINUS);
 	public Key equals = new Key(keys, KeyEvent.VK_EQUALS);
+	public Key shift = new Key(keys, KeyEvent.VK_SHIFT);
+	public Key control = new Key(keys, KeyEvent.VK_CONTROL);
+	public LockKey capsLock = new LockKey(keys, KeyEvent.VK_CAPS_LOCK);
 	
 	public Key zero = new Key(keys, KeyEvent.VK_0);
 	public Key one = new Key(keys, KeyEvent.VK_1);
@@ -92,9 +96,6 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key y = new Key(keys, KeyEvent.VK_Y);
 	public Key z = new Key(keys, KeyEvent.VK_Z);
 	
-	public Key shift = new Key(keys, KeyEvent.VK_SHIFT);
-	public Key control = new Key(keys, KeyEvent.VK_CONTROL);
-	
 	public InputHandler(ClientGame game)
 	{
 		game.getCanvas().addKeyListener(this);
@@ -114,7 +115,14 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void windowClosed(WindowEvent e)
 	{
 		// Stops the client properly when being closed
-		ClientGame.instance().stopThread();
+		try
+		{
+			ClientGame.instance().stopThread();
+		}
+		catch (Exception er)
+		{
+			er.printStackTrace();
+		}
 	}
 	
 	@Override

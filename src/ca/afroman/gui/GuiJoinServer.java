@@ -39,6 +39,7 @@ public class GuiJoinServer extends GuiScreen
 		username.setText(ClientGame.instance().getUsername());
 		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
+		username.setFocussed();
 		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
 		serverIP.setMaxLength(64);
 		serverIP.setText(ClientGame.instance().getServerIP());
@@ -88,7 +89,7 @@ public class GuiJoinServer extends GuiScreen
 		afroMan.tick();
 		player2.tick();
 		
-		if (ClientGame.instance().input.tab.isPressedFiltered())
+		if (ClientGame.instance().input().tab.isPressedFiltered())
 		{
 			if (username.isFocussed())
 			{
@@ -103,6 +104,11 @@ public class GuiJoinServer extends GuiScreen
 				password.setFocussed(false);
 			}
 		}
+		
+		if (ClientGame.instance().input().enter.isPressedFiltered())
+		{
+			 joinServer();
+		}
 	}
 	
 	@Override
@@ -114,13 +120,18 @@ public class GuiJoinServer extends GuiScreen
 		}
 	}
 	
+	private void joinServer()
+	{
+		ClientGame.instance().joinServer();
+	}
+	
 	@Override
 	public void releaseAction(int buttonID)
 	{
 		switch (buttonID)
 		{
 			case 1: // Join Server
-				ClientGame.instance().joinServer();
+				joinServer();
 				break;
 			case 200:
 				ClientGame.instance().setCurrentScreen(this.parentScreen);

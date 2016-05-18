@@ -39,7 +39,7 @@ public class ClientLevel extends Level
 		yOffset = y - (ClientGame.HEIGHT / 2);
 	}
 	
-	public synchronized void render(Texture renderTo)
+	public void render(Texture renderTo)
 	{
 		// Renders Tiles
 		for (Entity tile : this.getTiles())
@@ -71,7 +71,7 @@ public class ClientLevel extends Level
 			// Draws the light on the cursor if there is one
 			if (ClientGame.instance().isBuildMode() && currentBuildMode == 2)
 			{
-				lightmap.drawLight(ClientGame.instance().input.getMouseX() - currentBuildLightRadius, ClientGame.instance().input.getMouseY() - currentBuildLightRadius, currentBuildLightRadius);
+				lightmap.drawLight(ClientGame.instance().input().getMouseX() - currentBuildLightRadius, ClientGame.instance().input().getMouseY() - currentBuildLightRadius, currentBuildLightRadius);
 			}
 			
 			lightmap.patch();
@@ -133,19 +133,41 @@ public class ClientLevel extends Level
 		{
 			if (currentBuildMode == 1)
 			{
-				if (cursorAsset != null) cursorAsset.render(renderTo, ClientGame.instance().input.getMouseX(), ClientGame.instance().input.getMouseY());
+				if (cursorAsset != null) cursorAsset.render(renderTo, ClientGame.instance().input().getMouseX(), ClientGame.instance().input().getMouseY());
 				
-				// renderTo.draw(Assets.getTexture(AssetType.fromOrdinal(currentBuildTextureOrdinal)), ClientGame.instance().input.getMouseX(), ClientGame.instance().input.getMouseY());
+				// renderTo.draw(Assets.getTexture(AssetType.fromOrdinal(currentBuildTextureOrdinal)), ClientGame.instance().input().getMouseX(), ClientGame.instance().input().getMouseY());
 			}
 			else if (currentBuildMode == 3 && hitboxClickCount == 1)
 			{
 				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
+			}
+			
+			if (timeOnTool < MAX_TOOLTIP_TIME)
+			{
+				String text = "";
+				
+				switch (currentBuildMode)
+				{
+					case 1:
+						text = "Tiles";
+						break;
+					case 2:
+						text = "Lights";
+						break;
+					case 3:
+						text = "Hitboxes";
+						break;
+				}
+				
+				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 40, text);
 			}
 		}
 	}
 	
 	private int currentBuildMode = 1;
 	private int buildModes = 3;
+	private int timeOnTool = 0;
+	private static final int MAX_TOOLTIP_TIME = 120; // Time in tickse
 	
 	// Mode 1, Tiles
 	private int currentBuildTextureOrdinal = 1;
@@ -170,30 +192,32 @@ public class ClientLevel extends Level
 	{
 		if (ClientGame.instance().isBuildMode())
 		{
-			boolean isShifting = ClientGame.instance().input.shift.isPressed();
+			timeOnTool++;
+			boolean isShifting = ClientGame.instance().input().shift.isPressed();
 			
 			int speed = (isShifting ? 5 : 1);
 			
-			if (ClientGame.instance().input.up.isPressed())
+			if (ClientGame.instance().input().up.isPressed())
 			{
 				yOffset -= speed;
 			}
-			if (ClientGame.instance().input.down.isPressed())
+			if (ClientGame.instance().input().down.isPressed())
 			{
 				yOffset += speed;
 			}
-			if (ClientGame.instance().input.left.isPressed())
+			if (ClientGame.instance().input().left.isPressed())
 			{
 				xOffset -= speed;
 			}
-			if (ClientGame.instance().input.right.isPressed())
+			if (ClientGame.instance().input().right.isPressed())
 			{
 				xOffset += speed;
 			}
 			
-			if (ClientGame.instance().input.e.isPressedFiltered())
+			if (ClientGame.instance().input().e.isPressedFiltered())
 			{
 				currentBuildMode++;
+				timeOnTool = 0; // On change, reset tooltips
 				
 				if (currentBuildMode > buildModes)
 				{
@@ -201,9 +225,10 @@ public class ClientLevel extends Level
 				}
 			}
 			
-			if (ClientGame.instance().input.q.isPressedFiltered())
+			if (ClientGame.instance().input().q.isPressedFiltered())
 			{
 				currentBuildMode--;
+				timeOnTool = 0; // On change, reset tooltips
 				
 				if (currentBuildMode < 1)
 				{
@@ -214,18 +239,18 @@ public class ClientLevel extends Level
 			// Placing and removing blocks
 			if (currentBuildMode == 1)
 			{
-				if (ClientGame.instance().input.mouseLeft.isPressedFiltered())
+				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
 					System.out.println(cursorAsset.assetType());
 					
-					Entity tileToAdd = new Entity(-1, this, cursorAsset.assetType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
+					Entity tileToAdd = new Entity(-1, this, cursorAsset.assetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(tileToAdd);
 					ClientGame.instance().socket().sendPacket(pack);
 				}
 				
-				if (ClientGame.instance().input.mouseRight.isPressedFiltered())
+				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
-					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
+					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
 					ClientGame.instance().socket().sendPacket(pack);
 				}
 				
@@ -233,13 +258,13 @@ public class ClientLevel extends Level
 				
 				int ordinalDir = 0;
 				
-				if (ClientGame.instance().input.mouseWheelDown.isPressedFiltered())
+				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 				{
 					ordinalDir -= speed;
 					assetUpdated = true;
 				}
 				
-				if (ClientGame.instance().input.mouseWheelUp.isPressedFiltered())
+				if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
 				{
 					ordinalDir += speed;
 					assetUpdated = true;
@@ -285,26 +310,26 @@ public class ClientLevel extends Level
 			// PointLight mode
 			else if (currentBuildMode == 2)
 			{
-				if (ClientGame.instance().input.mouseLeft.isPressedFiltered())
+				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
 					// TODO add light
-					// PointLight light = new PointLight(screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY()), currentBuildLightRadius);
+					// PointLight light = new PointLight(screenToWorldX(Game.instance().input().getMouseX()), screenToWorldY(Game.instance().input().getMouseY()), currentBuildLightRadius);
 					// light.addToLevel(this);
 				}
 				
-				if (ClientGame.instance().input.mouseRight.isPressedFiltered())
+				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
 					// TODO Remove light
-					// lights.remove(getLight(screenToWorldX(Game.instance().input.getMouseX()), screenToWorldY(Game.instance().input.getMouseY())));
+					// lights.remove(getLight(screenToWorldX(Game.instance().input().getMouseX()), screenToWorldY(Game.instance().input().getMouseY())));
 				}
 				
-				if (ClientGame.instance().input.mouseWheelDown.isPressedFiltered())
+				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 				{
 					currentBuildLightRadius -= speed;
 					if (currentBuildLightRadius < 1) currentBuildLightRadius = 1;
 				}
 				
-				if (ClientGame.instance().input.mouseWheelUp.isPressedFiltered())
+				if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
 				{
 					currentBuildLightRadius += speed;
 				}
@@ -313,12 +338,12 @@ public class ClientLevel extends Level
 			// HitBox mode
 			else if (currentBuildMode == 3)
 			{
-				if (ClientGame.instance().input.mouseLeft.isPressedFiltered())
+				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
 					if (hitboxClickCount == 0)
 					{
-						hitboxX1 = screenToWorldX(ClientGame.instance().input.getMouseX());
-						hitboxY1 = screenToWorldY(ClientGame.instance().input.getMouseY());
+						hitboxX1 = screenToWorldX(ClientGame.instance().input().getMouseX());
+						hitboxY1 = screenToWorldY(ClientGame.instance().input().getMouseY());
 						hitboxClickCount = 1;
 					}
 					else if (hitboxClickCount == 1)
@@ -330,7 +355,7 @@ public class ClientLevel extends Level
 					}
 				}
 				
-				if (ClientGame.instance().input.mouseRight.isPressedFiltered())
+				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
 					if (hitboxClickCount == 1)
 					{
@@ -338,14 +363,14 @@ public class ClientLevel extends Level
 					}
 					else
 					{
-						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input.getMouseX()), screenToWorldY(ClientGame.instance().input.getMouseY()));
+						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
 						ClientGame.instance().socket().sendPacket(pack);
 					}
 				}
 				
 				// Sets the new X and Y ordinates for point 2 to that of the mouse
-				hitboxX2 = screenToWorldX(ClientGame.instance().input.getMouseX());
-				hitboxY2 = screenToWorldY(ClientGame.instance().input.getMouseY());
+				hitboxX2 = screenToWorldX(ClientGame.instance().input().getMouseX());
+				hitboxY2 = screenToWorldY(ClientGame.instance().input().getMouseY());
 				
 				// Finds the x, y, and height depending on which ones are greater than the other.
 				// Have to do this because Java doesn't support rectangles with negative width or height
@@ -371,6 +396,11 @@ public class ClientLevel extends Level
 					hitboxHeight = hitboxY2 - hitboxY1 + 1;
 				}
 			}
+		}
+		else
+		{
+			// If exited from build mode, don't display tooltips
+			timeOnTool = 0;
 		}
 		
 		// Resets the click count if the mode is exited
