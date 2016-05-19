@@ -18,21 +18,37 @@ public class GuiButton extends InputType
 	private boolean canHold = false;
 	private boolean isEnabled = true;
 	private int state = 0;
-	private Texture[] textures;
+	private Texture[][] textures;
 	
-	public GuiButton(GuiScreen screen, int id, int x, int y)
+	public GuiButton(GuiScreen screen, int id, int x, int y, int width)
 	{
-		this(screen, Assets.getTexture(AssetType.BUTTON_NORMAL), Assets.getTexture(AssetType.BUTTON_HOVER), Assets.getTexture(AssetType.BUTTON_PRESSED), id, x, y);
+		this(screen, Assets.getTexture(AssetType.BUTTON_NORMAL), Assets.getTexture(AssetType.BUTTON_HOVER), Assets.getTexture(AssetType.BUTTON_PRESSED), id, x, y, width);
 	}
 	
-	public GuiButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y)
+	public GuiButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y, int width)
 	{
-		hitbox = new Rectangle(x, y, normal.getWidth(), normal.getHeight());
+		if (width < 3) width = 3;
 		
-		textures = new Texture[3];
-		textures[0] = normal;
-		textures[1] = hover;
-		textures[2] = pressed;
+		hitbox = new Rectangle(x, y, width, normal.getHeight());
+		
+		Texture[] temp = new Texture[3];
+		temp[0] = normal;
+		temp[1] = hover;
+		temp[2] = pressed;
+		
+		textures = new Texture[3][3];
+		
+		// Goes through all the textures
+		// Sets textures[i][0] to left side
+		// Sets textures[i][1] to middle
+		// Sets textures[i][2] to right side
+		for (int i = 0; i < 3; i++)
+		{
+			for (int i2 = 0; i2 < 3; i2++)
+			{
+				textures[i][i2] = temp[i].getSubTexture(temp[i].assetType(), i2, 0, 1, normal.getHeight());
+			}
+		}
 		
 		this.screen = screen;
 		this.id = id;
@@ -117,13 +133,26 @@ public class GuiButton extends InputType
 		if (isEnabled && screen != null) screen.releaseAction(id);
 	}
 	
-	public Texture getTexture()
+	/**
+	 * @return the texture set to be using based on the state.
+	 */
+	private Texture[] getTexture()
 	{
 		return (isEnabled ? textures[state] : textures[2]);
 	}
 	
 	public void render(Texture drawTo)
 	{
-		drawTo.draw(getTexture(), hitbox.x, hitbox.y);
+		// Draws the left pixels
+		drawTo.draw(getTexture()[0], hitbox.x, hitbox.y);
+		
+		// Draws the center pixels
+		for (int i = 1; i < hitbox.getWidth() - 1; i++)
+		{
+			drawTo.draw(getTexture()[1], hitbox.x + i, hitbox.y);
+		}
+		
+		// Draws the right pixels
+		drawTo.draw(getTexture()[2], hitbox.x + hitbox.width - 1, hitbox.y);
 	}
 }

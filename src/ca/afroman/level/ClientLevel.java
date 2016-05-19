@@ -1,6 +1,8 @@
 package ca.afroman.level;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
@@ -8,10 +10,10 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.YComparator;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.interfaces.ITickable;
@@ -48,14 +50,17 @@ public class ClientLevel extends Level
 			if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
 		}
 		
-		for (Entity entity : this.getEntities())
-		{
-			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
-		}
-		
+		List<Entity> entities = new ArrayList<Entity>(this.getEntities());
 		for (Entity player : this.getPlayers())
 		{
-			((ClientPlayerEntity) player).render(renderTo);
+			entities.add(player);
+		}
+		
+		entities.sort(new YComparator());
+		
+		for (Entity entity : entities)
+		{
+			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
 		}
 		
 		if (!ClientGame.instance().isLightingDebugging())
@@ -159,7 +164,7 @@ public class ClientLevel extends Level
 						break;
 				}
 				
-				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 40, text);
+				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 20, text);
 			}
 		}
 	}

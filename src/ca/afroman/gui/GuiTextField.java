@@ -15,14 +15,14 @@ public class GuiTextField extends GuiButton
 	private boolean isFocussed = false;
 	private boolean allowPunc = true;
 	
-	public GuiTextField(GuiScreen screen, int x, int y)
+	public GuiTextField(GuiScreen screen, int x, int y, int width)
 	{
-		this(screen, Assets.getTexture(AssetType.TEXT_FIELD), Assets.getFont(AssetType.FONT_WHITE), x, y);
+		this(screen, Assets.getTexture(AssetType.TEXT_FIELD), Assets.getFont(AssetType.FONT_WHITE), x, y, width);
 	}
 	
-	public GuiTextField(GuiScreen screen, Texture field, Font font, int x, int y)
+	public GuiTextField(GuiScreen screen, Texture field, Font font, int x, int y, int width)
 	{
-		super(screen, field, field, field, -1, x, y);
+		super(screen, field, field, field, -1, x, y, width);
 		
 		this.font = font;
 	}

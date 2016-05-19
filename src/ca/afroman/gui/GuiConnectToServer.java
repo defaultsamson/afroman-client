@@ -16,7 +16,7 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void init()
 	{
-		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 110, blackFont, "Cancel"));
+		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 110, 72, blackFont, "Cancel"));
 		
 		startTime = System.currentTimeMillis();
 		millsPassed = 0;

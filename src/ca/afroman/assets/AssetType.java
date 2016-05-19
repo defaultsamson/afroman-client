@@ -57,7 +57,8 @@ public enum AssetType
 	BUTTON_HOVER,
 	BUTTON_NORMAL,
 	
-	TEXT_FIELD;
+	TEXT_FIELD,
+	TEXT_FIELD_CLEAR;
 	
 	public static AssetType fromOrdinal(int ordinal)
 	{

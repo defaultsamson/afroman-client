@@ -8,17 +8,17 @@ public class GuiTextButton extends GuiButton
 	protected Font font;
 	private String text;
 	
-	public GuiTextButton(GuiScreen screen, int id, int x, int y, Font font, String text)
+	public GuiTextButton(GuiScreen screen, int id, int x, int y, int width, Font font, String text)
 	{
-		super(screen, id, x, y);
+		super(screen, id, x, y, width);
 		
 		this.font = font;
 		this.text = text;
 	}
 	
-	public GuiTextButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y, Font font, String text)
+	public GuiTextButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y, int width, Font font, String text)
 	{
-		super(screen, normal, hover, pressed, id, x, y);
+		super(screen, normal, hover, pressed, id, x, y, width);
 		
 		this.font = font;
 		this.text = text;

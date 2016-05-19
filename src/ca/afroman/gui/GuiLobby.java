@@ -47,19 +47,19 @@ public class GuiLobby extends GuiScreen
 		light1 = new FlickeringLight(null, 0, 0, 42, 45, 8);
 		light2 = new FlickeringLight(null, 0, 0, 42, 45, 8);
 		
-		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Start Game");
+		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, 72, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());
 		buttons.add(startButton);
 		
 		// Draw a stop server button
 		if (ClientGame.instance().isHostingServer())
 		{
-			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, blackFont, "Stop Server");
+			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, 72, blackFont, "Stop Server");
 		}
 		// Draw a leave server button
 		else
 		{
-			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, blackFont, "Disconnect");
+			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, 72, blackFont, "Disconnect");
 		}
 		buttons.add(stopButton);
 		
@@ -101,7 +101,7 @@ public class GuiLobby extends GuiScreen
 				int buttonY = 20 + (18 * row);
 				
 				// Add each player in the last as a button. Only lets the host of the server edit
-				GuiTextButton button = new GuiTextButton(this, player.getID(), buttonX, buttonY, (ClientGame.instance().isHostingServer() ? blackFont : whiteFont), player.getUsername());
+				GuiTextButton button = new GuiTextButton(this, player.getID(), buttonX, buttonY, 72, (ClientGame.instance().isHostingServer() ? blackFont : whiteFont), player.getUsername());
 				button.setEnabled(ClientGame.instance().isHostingServer());
 				this.buttons.add(button);
 				

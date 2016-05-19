@@ -55,11 +55,11 @@ public class GuiChooseRole extends GuiScreen
 		
 		Role role = player.getRole();
 		
-		this.buttons.add(new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - (72 / 2), 98, blackFont, "Cancel"));
-		player1b = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) - (72 / 2) - 54, 68, blackFont, "Player 1");
+		this.buttons.add(new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - (72 / 2), 98, 72, blackFont, "Cancel"));
+		player1b = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) - (72 / 2) - 54, 68, 72, blackFont, "Player 1");
 		player1b.setEnabled(role != Role.PLAYER1);
 		
-		player2b = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) - (72 / 2) + 54, 68, blackFont, "Player 2");
+		player2b = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) - (72 / 2) + 54, 68, 72, blackFont, "Player 2");
 		player2b.setEnabled(role != Role.PLAYER2);
 		
 		this.buttons.add(player1b);

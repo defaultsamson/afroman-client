@@ -35,15 +35,15 @@ public class GuiJoinServer extends GuiScreen
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
-		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4);
+		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4, 112);
 		username.setText(ClientGame.instance().getUsername());
 		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
 		username.setFocussed();
-		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6);
+		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
 		serverIP.setMaxLength(64);
 		serverIP.setText(ClientGame.instance().getServerIP());
-		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8);
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 112);
 		password.setText(ClientGame.instance().getPassword());
 		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
@@ -52,13 +52,13 @@ public class GuiJoinServer extends GuiScreen
 		buttons.add(serverIP);
 		buttons.add(password);
 		
-		joinButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(AssetType.FONT_BLACK), "Join Server");
+		joinButton = new GuiTextButton(this, 1, 150, 62, 72, Assets.getFont(AssetType.FONT_BLACK), "Join Server");
 		this.joinButton.setEnabled(!this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty());
 		
 		keyTyped();
 		
 		buttons.add(joinButton);
-		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(AssetType.FONT_BLACK), "Back"));
+		buttons.add(new GuiTextButton(this, 200, 150, 90, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	@Override
@@ -107,7 +107,7 @@ public class GuiJoinServer extends GuiScreen
 		
 		if (ClientGame.instance().input().enter.isPressedFiltered())
 		{
-			 joinServer();
+			joinServer();
 		}
 	}
 	

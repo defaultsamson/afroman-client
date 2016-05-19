@@ -22,19 +22,19 @@ public class GuiSendingLevels extends GuiScreen
 	@Override
 	public void init()
 	{
-		resendButton = new GuiTextButton(this, 2000, 20 + 20, 116, blackFont, "Resend Levels");
+		resendButton = new GuiTextButton(this, 2000, 20 + 20, 116, 72, blackFont, "Resend Levels");
 		resendButton.setEnabled(ClientGame.instance().isHostingServer());
 		buttons.add(resendButton);
 		
 		// Draw a stop server button
 		if (ClientGame.instance().isHostingServer())
 		{
-			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, blackFont, "Stop Server");
+			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, 72, blackFont, "Stop Server");
 		}
 		// Draw a leave server button
 		else
 		{
-			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, blackFont, "Disconnect");
+			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, 72, blackFont, "Disconnect");
 		}
 		buttons.add(stopButton);
 		

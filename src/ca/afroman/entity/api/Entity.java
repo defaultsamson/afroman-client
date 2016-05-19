@@ -288,11 +288,11 @@ public class Entity implements ITickable
 	public void move(int xa, int ya)
 	{
 		// It's it's not set to move anyways
-		if (xa == 0 && ya == 0)
-		{
-			direction = Direction.NONE;
-			return;
-		}
+		// if (xa == 0 && ya == 0)
+		// {
+		// direction = Direction.NONE;
+		// return;
+		// }
 		
 		if (getLevel() == null)
 		{
@@ -304,6 +304,7 @@ public class Entity implements ITickable
 		double deltaY = ya * speed;
 		
 		// Tests if it can move in the x
+		if (xa != 0)
 		{
 			x += deltaX;
 			
@@ -341,6 +342,7 @@ public class Entity implements ITickable
 		}
 		
 		// Tests if it can move in the y
+		if (ya != 0)
 		{
 			y += deltaY;
 			
@@ -377,11 +379,17 @@ public class Entity implements ITickable
 			}
 		}
 		
+		// Used to update the player location after it's stopped moving to stop the animation
+		boolean sendPacket = false;
+		
 		if (direction != Direction.NONE) lastDirection = direction;
 		
-		// If not allowed to move
+		// If hasn't moved (Either isn't allowed to or simply isn't moving)
 		if (deltaX == 0 && deltaY == 0)
 		{
+			// If the direction isn't already none, then send a packet after it has been set to none.
+			if (direction != Direction.NONE) sendPacket = true;
+			
 			direction = Direction.NONE;
 			
 			// Change the last direction so this entity faces in the direction that it tried to move in
@@ -392,6 +400,8 @@ public class Entity implements ITickable
 		}
 		else
 		{
+			sendPacket = true;
+			
 			numSteps++;
 			
 			if (deltaY < 0) direction = Direction.UP;
@@ -400,17 +410,20 @@ public class Entity implements ITickable
 			if (deltaX > 0) direction = Direction.RIGHT;
 		}
 		
-		if (this instanceof ServerPlayerEntity)
+		if (sendPacket)
 		{
-			ServerGame.instance().socket().sendPacketToAllClients(new PacketUpdatePlayerLocation((ServerPlayerEntity) this));
-		}
-		else if (this instanceof ClientPlayerEntity)
-		{
-			ClientGame.instance().socket().sendPacket(new PacketMovePlayer(((ClientPlayerEntity) this).getRole(), xa, ya));
-		}
-		else
-		{
-			ServerGame.instance().socket().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
+			if (this instanceof ServerPlayerEntity)
+			{
+				ServerGame.instance().socket().sendPacketToAllClients(new PacketUpdatePlayerLocation((ServerPlayerEntity) this));
+			}
+			else if (this instanceof ClientPlayerEntity)
+			{
+				ClientGame.instance().socket().sendPacket(new PacketMovePlayer(((ClientPlayerEntity) this).getRole(), xa, ya));
+			}
+			else
+			{
+				ServerGame.instance().socket().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
+			}
 		}
 	}
 	

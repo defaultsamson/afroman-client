@@ -13,6 +13,7 @@ public class Assets
 	{
 		Texture sheet = Texture.fromResource(AssetType.INVALID, "spritesheet.png");
 		Texture font = Texture.fromResource(AssetType.INVALID, "fonts.png");
+		Texture buttons = Texture.fromResource(AssetType.INVALID, "buttons.png");
 		
 		Texture filter = Texture.fromResource(AssetType.FILTER, "filter_opaque.png");
 		filter.setFromGreyscaleToAlphaMask();
@@ -69,11 +70,12 @@ public class Assets
 		
 		assets.add(new SpriteAnimation(AssetType.TILE_AURA, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
 		
-		assets.add(sheet.getSubTexture(AssetType.BUTTON_NORMAL, 0, 120, 72, 16));
-		assets.add(sheet.getSubTexture(AssetType.BUTTON_HOVER, 0, 136, 72, 16));
-		assets.add(sheet.getSubTexture(AssetType.BUTTON_PRESSED, 0, 152, 72, 16));
+		assets.add(buttons.getSubTexture(AssetType.BUTTON_NORMAL, 0, 0, 3, 16));
+		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));
+		assets.add(buttons.getSubTexture(AssetType.BUTTON_PRESSED, 6, 0, 3, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TEXT_FIELD, 0, 168, 112, 16));
+		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
+		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 	}
 	
 	public static Font getFont(AssetType type)

@@ -36,12 +36,12 @@ public class GuiHostServer extends GuiScreen
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
-		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62);
+		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
 		username.setText(ClientGame.instance().getUsername());
 		username.setMaxLength(11);
 		username.setAllowPunctuation(false);
 		username.setFocussed();
-		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90);
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 112);
 		password.setText(ClientGame.instance().getPassword());
 		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
@@ -51,11 +51,11 @@ public class GuiHostServer extends GuiScreen
 		buttons.add(username);
 		buttons.add(password);
 		
-		hostButton = new GuiTextButton(this, 1, 150, 62, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
+		hostButton = new GuiTextButton(this, 1, 150, 62, 72, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
 		hostButton.setEnabled(!this.username.getText().isEmpty());
 		
 		buttons.add(hostButton);
-		buttons.add(new GuiTextButton(this, 200, 150, 90, Assets.getFont(AssetType.FONT_BLACK), "Back"));
+		buttons.add(new GuiTextButton(this, 200, 150, 90, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	@Override

@@ -189,7 +189,7 @@ public class ClientSocket extends DynamicThread
 					}
 					else
 					{
-						// Display the loading level screen
+						// Stop displaying the loading level screen
 						if (ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels)
 						{
 							ClientGame.instance().setCurrentScreen(ClientGame.instance().getCurrentScreen().getParent());
