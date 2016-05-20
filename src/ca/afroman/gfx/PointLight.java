@@ -9,17 +9,16 @@ import ca.afroman.level.Level;
 
 public class PointLight extends Entity
 {
-	protected ClientLevel level;
 	protected Color colour;
 	
-	public PointLight(ClientLevel level, double x, double y, double radius)
+	public PointLight(int id, Level level, double x, double y, double radius)
 	{
-		this(level, x, y, radius, ColourUtil.TRANSPARENT);
+		this(id, level, x, y, radius, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(ClientLevel level, double x, double y, double radius, Color colour)
+	public PointLight(int id, Level level, double x, double y, double radius, Color colour)
 	{
-		super(-1, level, AssetType.INVALID, x, y, radius * 2, radius * 2);
+		super(id, level, AssetType.INVALID, x, y, radius * 2, radius * 2);
 		
 		this.colour = colour;
 	}
@@ -32,7 +31,12 @@ public class PointLight extends Entity
 	
 	public void renderCentered(LightMap renderTo)
 	{
-		renderTo.drawLight(level.worldToScreenX(x) - getRadius(), level.worldToScreenY(y) - getRadius(), getRadius(), colour);
+		if (level instanceof ClientLevel)
+		{
+			ClientLevel cLevel = (ClientLevel) this.level;
+			
+			renderTo.drawLight(cLevel.worldToScreenX(x) - getRadius(), cLevel.worldToScreenY(y) - getRadius(), getRadius(), colour);
+		}
 	}
 	
 	public double getRadius()
@@ -53,26 +57,26 @@ public class PointLight extends Entity
 	@Override
 	public void addToLevel(Level level)
 	{
-		if (this.level == level) return;
+		if (getLevel() == level) return;
 		
-		if (this.level != null)
+		if (getLevel() != null)
 		{
 			// TODO remove from the previous level
 			for (Entity entity : this.level.getLights())
 			{
 				if (entity == this)
 				{
-					this.level.getLights().remove(this);
-					this.level = (ClientLevel) level;
-					this.level.getLights().add(this);
+					getLevel().getLights().remove(this);
+					this.level = level;
+					getLevel().getLights().add(this);
 					return;
 				}
 			}
 		}
 		else
 		{
-			this.level = (ClientLevel) level;
-			this.level.getLights().add(this);
+			this.level = level;
+			getLevel().getLights().add(this);
 		}
 	}
 }

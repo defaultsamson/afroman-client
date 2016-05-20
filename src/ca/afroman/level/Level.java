@@ -15,6 +15,7 @@ import java.util.List;
 import ca.afroman.assets.AssetType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
 
 public class Level
@@ -142,6 +143,13 @@ public class Level
 							case HITBOX:
 								level.getHitboxes().add(new Hitbox(Hitbox.getNextAvailableID(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
 								break;
+							case POINT_LIGHT:
+								double x = Double.parseDouble(parameters[0]);
+								double y = Double.parseDouble(parameters[1]);
+								double radius = Double.parseDouble(parameters[2]);
+								
+								level.getLights().add(new PointLight(Entity.getNextAvailableID(), level, x, y, radius));
+								break;
 						}
 						
 						// switch (type)
@@ -234,13 +242,24 @@ public class Level
 		// toReturn.add("// The lights. PointLight(x, y, radius)");
 		// toReturn.add("");
 		//
-		// for (PointLight light : lights)
-		// {
-		// if (!light.equals(this.playerLight))
-		// {
-		// toReturn.add("PointLight(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
-		// }
-		// }
+		
+		toReturn.add("");
+		toReturn.add("");
+		toReturn.add("// The lights. PointLight(x, y, radius)");
+		toReturn.add("// The lights. FlickeringLight(x, y, radius, radius2, ticksPerFrame)");
+		toReturn.add("");
+		
+		for (PointLight light : getLights())
+		{
+			if (light instanceof FlickeringLight)
+			{
+				// TODO
+			}
+			else
+			{
+				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
+			}
+		}
 		
 		// Copies the level data to the clipboard
 		String toCopy = "";
@@ -457,6 +476,21 @@ public class Level
 	public LevelType getType()
 	{
 		return type;
+	}
+	
+	/**
+	 * Gets a light with the given id.
+	 * 
+	 * @param id the id of the hitbox
+	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
+	 */
+	public PointLight getLight(int id)
+	{
+		for (PointLight light : getLights())
+		{
+			if (light.getID() == id) return light;
+		}
+		return null;
 	}
 	
 	public PointLight getLight(double x, double y)

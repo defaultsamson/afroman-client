@@ -333,6 +333,21 @@ public class Entity implements ITickable
 				}
 			}
 			
+			// if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
+			// {
+			// for (Entity player : getLevel().getPlayers())
+			// {
+			// for (Hitbox hitbox : player.hitboxInLevel())
+			// {
+			// if (this != player && this.isColliding(hitbox))
+			// {
+			// canMove = false;
+			// break;
+			// }
+			// }
+			// }
+			// }
+			
 			// If it it now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
 			{
@@ -370,6 +385,21 @@ public class Entity implements ITickable
 					}
 				}
 			}
+			
+			// if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
+			// {
+			// for (Entity player : getLevel().getPlayers())
+			// {
+			// for (Hitbox hitbox : player.hitboxInLevel())
+			// {
+			// if (this != player && this.isColliding(hitbox))
+			// {
+			// canMove = false;
+			// break;
+			// }
+			// }
+			// }
+			// }
 			
 			// If it is now intersecting another hitbox, move it back in the x direction
 			if (!canMove)

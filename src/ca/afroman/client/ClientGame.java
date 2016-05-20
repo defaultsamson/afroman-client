@@ -225,8 +225,8 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
 		
 		lights = new HashMap<Role, FlickeringLight>();
-		lights.put(Role.PLAYER1, new FlickeringLight(null, 0, 0, 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(null, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
 		
 		socketClient = new ClientSocket();
 		

@@ -233,14 +233,10 @@ HITBOX(96.0, 16.0, 16.0, 8.0)
 HITBOX(112.0, 16.0, 16.0, 16.0)
 
 
+// The lights. PointLight(x, y, radius)
+// The lights. FlickeringLight(x, y, radius, radius2, ticksPerFrame)
 
-
-// The Entities.
-
-
-
-// The lights. POINT_LIGHT(x, y, radius)
-
-POINT_LIGHT(30, 50, 20)
-POINT_LIGHT(56, 168, 59)
-POINT_LIGHT(182, 9, 73)
+POINT_LIGHT(-62.0, 98.0, 39.0)
+POINT_LIGHT(-9.0, 138.0, 39.0)
+POINT_LIGHT(21.0, 184.0, 39.0)
+POINT_LIGHT(131.0, 131.0, 51.0)

@@ -27,7 +27,7 @@ public class GuiMainMenu extends GuiScreen
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
+		light = new FlickeringLight(-1, null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
 		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 60, 72, blackFont, "Join Game"));
 		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 90, 72, blackFont, "Host Game"));

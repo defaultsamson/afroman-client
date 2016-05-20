@@ -6,10 +6,12 @@ import java.util.List;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketAddLevelHitbox;
+import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketInstantiateLevel;
 import ca.afroman.packet.PacketSendLevels;
@@ -65,6 +67,11 @@ public class ServerGame extends DynamicTickThread
 			for (Hitbox box : level.getHitboxes())
 			{
 				socket().sendPacketToAllClients(new PacketAddLevelHitbox(level.getType(), box));
+			}
+			
+			for (PointLight light : level.getLights())
+			{
+				socket().sendPacketToAllClients(new PacketAddLevelLight(light));
 			}
 		}
 		

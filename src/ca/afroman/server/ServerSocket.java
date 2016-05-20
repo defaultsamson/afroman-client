@@ -13,6 +13,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnectedPlayer;
@@ -20,10 +21,12 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketAddLevelHitbox;
+import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketRemoveLevelHitboxID;
+import ca.afroman.packet.PacketRemoveLevelLightID;
 import ca.afroman.packet.PacketRemoveLevelTileID;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.packet.PacketType;
@@ -250,9 +253,9 @@ public class ServerSocket extends DynamicThread
 							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(tile.getLevel().getType(), tile.getID());
 							
 							sendPacketToAllClients(pack);
+							
+							level.getTiles().remove(tile);
 						}
-						
-						level.getTiles().remove(tile);
 					}
 					else
 					{
@@ -303,9 +306,61 @@ public class ServerSocket extends DynamicThread
 							PacketRemoveLevelHitboxID pack = new PacketRemoveLevelHitboxID(level.getType(), box.getID());
 							
 							sendPacketToAllClients(pack);
+							
+							level.getHitboxes().remove(box);
 						}
+					}
+					else
+					{
+						System.out.println("[SERVER] No level with type " + levelType);
+					}
+				}
+					break;
+				case ADD_LEVEL_POINTLIGHT: // TODO
+				{
+					String[] split = Packet.readContent(data).split(",");
+					// int id = Integer.parseInt(split[0]); // Unused because it is assigned by the server
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					Level level = ServerGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						double x = Double.parseDouble(split[2]);
+						double y = Double.parseDouble(split[3]);
+						double radius = Double.parseDouble(split[4]);
 						
-						level.getHitboxes().remove(box);
+						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+						PointLight light = new PointLight(Entity.getNextAvailableID(), level, x, y, radius);
+						level.getLights().add(light);
+						sendPacketToAllClients(new PacketAddLevelLight(light));
+					}
+					else
+					{
+						System.out.println("[SERVER] No level with type " + levelType);
+					}
+				}
+					break;
+				case REMOVE_LEVEL_POINTLIGHT: // TODO
+				{
+					String[] split = Packet.readContent(data).split(",");
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					Level level = ServerGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						double x = Double.parseDouble(split[1]);
+						double y = Double.parseDouble(split[2]);
+						
+						PointLight light = level.getLight(x, y);
+						
+						if (light != null)
+						{
+							PacketRemoveLevelLightID pack = new PacketRemoveLevelLightID(level.getType(), light.getID());
+							
+							sendPacketToAllClients(pack);
+							
+							level.getLights().remove(light);
+						}
 					}
 					else
 					{

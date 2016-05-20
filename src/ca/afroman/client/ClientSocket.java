@@ -15,6 +15,7 @@ import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiJoinServer;
@@ -299,6 +300,40 @@ public class ClientSocket extends DynamicThread
 						if (box != null)
 						{
 							level.getHitboxes().remove(box);
+						}
+					}
+				}
+					break;
+				case ADD_LEVEL_POINTLIGHT:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					
+					ClientLevel level = ClientGame.instance().getLevelByType(LevelType.fromOrdinal(Integer.parseInt(split[0])));
+					
+					if (level != null)
+					{
+						int id = Integer.parseInt(split[1]);
+						double x = Double.parseDouble(split[2]);
+						double y = Double.parseDouble(split[3]);
+						double radius = Double.parseDouble(split[4]);
+						
+						level.getLights().add(new PointLight(id, level, x, y, radius));
+					}
+				}
+					break;
+				case REMOVE_LEVEL_POINTLIGHT: // TODO
+				{
+					String[] split = Packet.readContent(data).split(",");
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					Level level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						PointLight light = level.getLight(Integer.parseInt(split[1]));
+						
+						if (light != null)
+						{
+							level.getLights().remove(light);
 						}
 					}
 				}

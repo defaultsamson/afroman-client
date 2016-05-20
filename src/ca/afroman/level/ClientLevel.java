@@ -18,8 +18,10 @@ import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.packet.PacketAddLevelHitbox;
+import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
+import ca.afroman.packet.PacketRemoveLevelLightLocation;
 import ca.afroman.packet.PacketRemoveLevelTileLocation;
 
 public class ClientLevel extends Level
@@ -317,15 +319,14 @@ public class ClientLevel extends Level
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
-					// TODO add light
-					// PointLight light = new PointLight(screenToWorldX(Game.instance().input().getMouseX()), screenToWorldY(Game.instance().input().getMouseY()), currentBuildLightRadius);
-					// light.addToLevel(this);
+					PointLight light = new PointLight(-1, this, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
+					
+					ClientGame.instance().socket().sendPacket(new PacketAddLevelLight(light));
 				}
 				
 				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
-					// TODO Remove light
-					// lights.remove(getLight(screenToWorldX(Game.instance().input().getMouseX()), screenToWorldY(Game.instance().input().getMouseY())));
+					ClientGame.instance().socket().sendPacket(new PacketRemoveLevelLightLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY())));
 				}
 				
 				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())

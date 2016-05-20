@@ -11,15 +11,15 @@ public class FlickeringLight extends PointLight
 	private int ticksPerFrame;
 	private int tickCounter = 0;
 	
-	public FlickeringLight(ClientLevel level, double x, double y, double radius1, double radius2, int ticksPerFrame)
+	public FlickeringLight(int id, ClientLevel level, double x, double y, double radius1, double radius2, int ticksPerFrame)
 	{
-		this(level, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
+		this(id, level, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
 	}
 	
-	public FlickeringLight(ClientLevel level, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
+	public FlickeringLight(int id, ClientLevel level, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
 	{
 		// Picks the larger of the 2 radi to use for anchoring the draw location
-		super(level, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
+		super(id, level, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
 		
 		// Picks the smaller of the 2 radi
 		this.height = (radius1 <= radius2 ? radius1 : radius2);
@@ -33,10 +33,12 @@ public class FlickeringLight extends PointLight
 		double xOffset = x;
 		double yOffset = y;
 		
-		if (level != null)
+		if (level != null && level instanceof ClientLevel)
 		{
-			xOffset = level.worldToScreenX(x);
-			yOffset = level.worldToScreenY(y);
+			ClientLevel cLevel = (ClientLevel) this.level;
+			
+			xOffset = cLevel.worldToScreenX(x);
+			yOffset = cLevel.worldToScreenY(y);
 		}
 		
 		renderTo.drawLight(xOffset - displayRadius, yOffset - displayRadius, displayRadius, colour);
