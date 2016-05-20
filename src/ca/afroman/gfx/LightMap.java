@@ -17,7 +17,8 @@ import ca.afroman.entity.ClientLightEntity;
 public class LightMap extends Texture
 {
 	public static boolean oldLightMixing = false;
-	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.7F);
+	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.64F);
+	private static final Color CHEAP_AMBIENT = new Color(0F, 0F, 0F, 0.5F); // Must be this for the bit shift to work in the multiply
 	
 	private Color ambientColour;
 	
@@ -71,7 +72,7 @@ public class LightMap extends Texture
 			Rectangle2D shape = new Rectangle2D.Float(0, 0, drawWidth, drawHeight);
 			// Rectangle2D is more efficient than Ellipse2D
 			
-			Color[] gradientColours = new Color[] { rgbColour, ambientColour };
+			Color[] gradientColours = new Color[] { rgbColour, getAmbientColour() };
 			float[] gradientFractions = new float[] { 0.0F, 1.0F };
 			Paint paint = new RadialGradientPaint(new Point2D.Float(drawRadius, drawRadius), drawRadius, gradientFractions, gradientColours);
 			
@@ -116,7 +117,7 @@ public class LightMap extends Texture
 						}
 						else // If it's not a BUFFER, multiply the current value together to get the new pixel
 						{
-							image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, ambientColour));
+							image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
 						}
 					}
 				}
@@ -159,7 +160,7 @@ public class LightMap extends Texture
 					}
 					else // If it's not a BUFFER, multiply the current value together to get the new pixel
 					{
-						image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, ambientColour));
+						image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
 					}
 				}
 			}
@@ -186,7 +187,10 @@ public class LightMap extends Texture
 		{
 			for (int x = 0; x < image.getWidth(); ++x)
 			{
-				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE) image.setRGB(x, y, ambientColour.getRGB());
+				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE)
+				{
+					image.setRGB(x, y, getAmbientColour().getRGB());
+				}
 			}
 		}
 		
@@ -210,13 +214,21 @@ public class LightMap extends Texture
 		
 		int xa = (x >> 24) & 0xFF;
 		int ya = (y >> 24) & 0xFF;
-		int a = (xa * ya) / ambientColour.getAlpha(); // Math.min(255, xa + ya)
+		int a;
+		if (ClientGame.instance().getLightingState() == LightMapState.CHEAP)
+		{
+			a = (xa * ya) >> 7; // Math.min(255, xa + ya)
+		}
+		else
+		{
+			a = (xa * ya) / ambientColour.getAlpha(); // Math.min(255, xa + ya)
+		}
 		
 		return (x & 0x00FFFFFF) | (a << 24); // (b) | (g << 8) | (r << 16) | (a << 24)
 	}
 	
 	public Color getAmbientColour()
 	{
-		return ambientColour;
+		return ClientGame.instance().getLightingState() == LightMapState.CHEAP ? CHEAP_AMBIENT : ambientColour;
 	}
 }

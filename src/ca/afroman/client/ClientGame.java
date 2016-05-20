@@ -25,6 +25,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.gfx.FlickeringLight;
+import ca.afroman.gfx.LightMapState;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
@@ -44,6 +45,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	public static final int VERSION = 2;
+	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	private static ClientGame game;
 	
@@ -61,7 +63,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	private boolean fullscreen = false;
 	private boolean hudDebug = false; // Shows debug information on the hud
 	private boolean hitboxDebug = false; // Shows all hitboxes
-	private boolean lightingDebug = false; // Turns off the lighting engine
+	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
 	
@@ -85,14 +87,15 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	public ClientGame()
 	{
 		super(60);
-		canvas = new Canvas();
-		frame = new JFrame(NAME);
 	}
 	
 	@Override
 	public void onStart()
 	{
 		super.onStart();
+		
+		canvas = new Canvas();
+		frame = new JFrame(NAME);
 		
 		// Makes it so that when the window is resized, this ClientGame will resize the canvas accordingly
 		canvas.addComponentListener(new ComponentListener()
@@ -132,23 +135,32 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			}
 		});
 		
-		canvas.setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		canvas.setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
+		canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
-		frame.setIconImage(Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage());
+		frame.setIconImage(ICON);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		
 		frame.getContentPane().setBackground(Color.black);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.pack();
-		frame.setResizable(false);
-		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
-		// Loading screen
 		canvas.repaint();
+		
+		// Sets the minimum size to that of the JFrame to that of the JFrame while it has the smallest canvas drawn on it
+		frame.setMinimumSize(frame.getSize());
+		
+		// The width and height added by the JFrame that is not included in the Canvas
+		int eccessWidth = frame.getWidth() - WIDTH;
+		int eccessHeight = frame.getHeight() - HEIGHT;
+		
+		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		frame.setSize(new Dimension(eccessWidth + (WIDTH * SCALE), eccessHeight + (HEIGHT * SCALE)));
+		frame.setLocationRelativeTo(null);
+		
+		// Loading screen
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
 		DynamicThread renderLoading = new DynamicThread()
 		{
@@ -287,7 +299,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		if (input.full_screen.isPressedFiltered())
 		{
 			// TODO Fix full-screen from just showing a black screen
-			// setFullScreen(!fullscreen);
+			setFullScreen(!fullscreen);
 		}
 		
 		if (input.hudDebug.isPressedFiltered())
@@ -305,9 +317,19 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		}
 		if (input.lightingDebug.isPressedFiltered())
 		{
-			lightingDebug = !lightingDebug;
+			int currentOrdinal = lightingDebug.ordinal();
 			
-			System.out.println("Show Lighting: " + !lightingDebug);
+			currentOrdinal++;
+			
+			// Roll over
+			if (currentOrdinal >= LightMapState.values().length)
+			{
+				currentOrdinal = 0;
+			}
+			
+			lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
+			
+			System.out.println("Lighting Debug: " + lightingDebug.toString());
 		}
 		if (input.saveLevel.isPressedFiltered())
 		{
@@ -384,6 +406,63 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	{
 		fullscreen = isFullScreen;
 		
+		System.out.println("Setting Fullscreen: " + isFullScreen);
+		
+		frame.setVisible(false);
+		// frame.getContentPane().remove(canvas);
+		JFrame old = frame;
+		
+		frame = new JFrame(NAME);
+		
+		frame.setIconImage(ICON);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLayout(new BorderLayout());
+		frame.setUndecorated(isFullScreen);
+		
+		frame.getContentPane().setBackground(Color.black);
+		frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		frame.pack();
+		frame.setResizable(!isFullScreen);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		
+		/*
+		 * This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
+		 * http://stackoverflow.com/questions/13064607/fullscreen-swing-components-fail-to-receive-keyboard-input-on-java-7-on-mac-os-x
+		 */
+		if (isFullScreen)
+		{
+			try
+			{
+				GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+				
+				gd.setFullScreenWindow(frame);// Makes it full screen
+				
+				// TODO test on Ben's Mac
+				// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
+				// {
+				// this.setVisible(false);
+				// this.setVisible(true);
+				// }
+			}
+			catch (Exception e)
+			{
+				setFullScreen(false);
+				System.err.println("Fullscreen Mode not supported.");
+				e.printStackTrace();
+			}
+		}
+		
+		canvas.requestFocus();
+		
+		old.removeAll();
+		old.getContentPane().removeAll();
+	}
+	
+	public void setFullScreen2(boolean isFullScreen)
+	{
+		fullscreen = isFullScreen;
+		
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		
 		System.out.println("Setting Fullscreen: " + isFullScreen);
@@ -397,9 +476,11 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			frame.dispose();// Restarts the JFrame
 			frame.setResizable(false);// Disables resizing else causes bugs
 			frame.setUndecorated(true);
+			
+			frame.getContentPane().add(canvas, BorderLayout.CENTER);
 			frame.setVisible(true);
-			frame.revalidate();
 			canvas.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+			
 			try
 			{
 				gd.setFullScreenWindow(frame);// Makes it full screen
@@ -449,9 +530,14 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		return hitboxDebug;
 	}
 	
-	public boolean isLightingDebugging()
+	public LightMapState getLightingState()
 	{
 		return lightingDebug;
+	}
+	
+	public boolean isLightingOn()
+	{
+		return lightingDebug != LightMapState.OFF;
 	}
 	
 	public boolean isBuildMode()

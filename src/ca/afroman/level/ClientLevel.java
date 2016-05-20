@@ -63,7 +63,7 @@ public class ClientLevel extends Level
 			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
 		}
 		
-		if (!ClientGame.instance().isLightingDebugging())
+		if (ClientGame.instance().isLightingOn())
 		{
 			// Draws all the lighting over everything else
 			lightmap.clear();
@@ -414,9 +414,12 @@ public class ClientLevel extends Level
 			hitboxClickCount = 0;
 		}
 		
-		for (PointLight light : this.getLights())
+		if (ClientGame.instance().isLightingOn())
 		{
-			light.tick();
+			for (PointLight light : this.getLights())
+			{
+				light.tick();
+			}
 		}
 		
 		// playerLight.setX(Game.instance().player.getX() + 8);

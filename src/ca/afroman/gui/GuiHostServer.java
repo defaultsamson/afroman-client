@@ -64,11 +64,14 @@ public class GuiHostServer extends GuiScreen
 		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
 		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
 		
-		lightmap.clear();
-		light.renderCentered(lightmap);
-		lightmap.patch();
-		
-		renderTo.draw(lightmap, 0, 0);
+		if (ClientGame.instance().isLightingOn())
+		{
+			lightmap.clear();
+			light.renderCentered(lightmap);
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, 0, 0);
+		}
 		
 		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Host A Server");
 		
@@ -81,9 +84,12 @@ public class GuiHostServer extends GuiScreen
 	{
 		super.tick();
 		
-		light.tick();
-		afroMan.tick();
-		player2.tick();
+		if (ClientGame.instance().isLightingOn())
+		{
+			light.tick();
+			afroMan.tick();
+			player2.tick();
+		}
 		
 		if (ClientGame.instance().input().tab.isPressedFiltered())
 		{

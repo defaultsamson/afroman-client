@@ -79,8 +79,11 @@ public class GuiChooseRole extends GuiScreen
 	{
 		super.tick();
 		
-		light1.tick();
-		light2.tick();
+		if (ClientGame.instance().isLightingOn())
+		{
+			light1.tick();
+			light2.tick();
+		}
 	}
 	
 	@Override
@@ -89,12 +92,15 @@ public class GuiChooseRole extends GuiScreen
 		renderTo.draw(player1.getCurrentFrame(), p1X, p1Y);
 		renderTo.draw(player2.getCurrentFrame(), p2X, p2Y);
 		
-		lightmap.clear();
-		light1.renderCentered(lightmap);
-		light2.renderCentered(lightmap);
-		lightmap.patch();
-		
-		renderTo.draw(lightmap, 0, 0);
+		if (ClientGame.instance().isLightingOn())
+		{
+			lightmap.clear();
+			light1.renderCentered(lightmap);
+			light2.renderCentered(lightmap);
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, 0, 0);
+		}
 		
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Choose a new role for " + player.getUsername());
 	}

@@ -44,22 +44,22 @@ public class GuiLobby extends GuiScreen
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
-		light1 = new FlickeringLight(null, 0, 0, 42, 45, 8);
-		light2 = new FlickeringLight(null, 0, 0, 42, 45, 8);
+		light1 = new FlickeringLight(null, 0, 0, 42, 44, 6);
+		light2 = new FlickeringLight(null, 0, 0, 42, 44, 6);
 		
-		startButton = new GuiTextButton(this, 2000, 20 + 20, 116, 72, blackFont, "Start Game");
+		startButton = new GuiTextButton(this, 2000, (ClientGame.WIDTH / 2) - 84 - 8, 116, 84, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());
 		buttons.add(startButton);
 		
 		// Draw a stop server button
 		if (ClientGame.instance().isHostingServer())
 		{
-			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, 72, blackFont, "Stop Server");
+			stopButton = new GuiTextButton(this, 2001, (ClientGame.WIDTH / 2) + 8, 116, 84, blackFont, "Stop Server");
 		}
 		// Draw a leave server button
 		else
 		{
-			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, 72, blackFont, "Disconnect");
+			stopButton = new GuiTextButton(this, 2002, (ClientGame.WIDTH / 2) + 8, 116, 84, blackFont, "Disconnect");
 		}
 		buttons.add(stopButton);
 		
@@ -70,8 +70,11 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void tick()
 	{
-		light1.tick();
-		light2.tick();
+		if (ClientGame.instance().isLightingOn())
+		{
+			light1.tick();
+			light2.tick();
+		}
 		
 		// Draws all the new buttons if the server list has been updated
 		if (ClientGame.instance().hasServerListBeenUpdated() || firstTime)
@@ -124,9 +127,6 @@ public class GuiLobby extends GuiScreen
 			startButton.setEnabled(ClientGame.instance().isHostingServer() && ClientGame.instance().socket().playerByRole(Role.PLAYER1) != null && ClientGame.instance().socket().playerByRole(Role.PLAYER2) != null);
 		}
 		
-		light1.tick();
-		light2.tick();
-		
 		super.tick();
 	}
 	
@@ -136,18 +136,21 @@ public class GuiLobby extends GuiScreen
 		renderTo.draw(player1.getCurrentFrame(), player1X, player1Y);
 		renderTo.draw(player2.getCurrentFrame(), player2X, player2Y);
 		
-		light1.setX(player1X + 8);
-		light1.setY(player1Y + 8);
-		
-		light2.setX(player2X + 8);
-		light2.setY(player2Y + 8);
-		
-		lightmap.clear();
-		light1.renderCentered(lightmap);
-		light2.renderCentered(lightmap);
-		lightmap.patch();
-		
-		renderTo.draw(lightmap, 0, 0);
+		if (ClientGame.instance().isLightingOn())
+		{
+			light1.setX(player1X + 8);
+			light1.setY(player1Y + 8);
+			
+			light2.setX(player2X + 8);
+			light2.setY(player2Y + 8);
+			
+			lightmap.clear();
+			light1.renderCentered(lightmap);
+			light2.renderCentered(lightmap);
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, 0, 0);
+		}
 		
 		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().socket().getConnectedPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
