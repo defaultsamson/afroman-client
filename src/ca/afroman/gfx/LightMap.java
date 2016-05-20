@@ -17,7 +17,7 @@ import ca.afroman.entity.ClientLightEntity;
 public class LightMap extends Texture
 {
 	public static boolean oldLightMixing = false;
-	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.5F);
+	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.7F);
 	
 	private Color ambientColour;
 	
@@ -116,7 +116,7 @@ public class LightMap extends Texture
 						}
 						else // If it's not a BUFFER, multiply the current value together to get the new pixel
 						{
-							image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel));
+							image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, ambientColour));
 						}
 					}
 				}
@@ -159,7 +159,7 @@ public class LightMap extends Texture
 					}
 					else // If it's not a BUFFER, multiply the current value together to get the new pixel
 					{
-						image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel));
+						image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, ambientColour));
 					}
 				}
 			}
@@ -193,7 +193,7 @@ public class LightMap extends Texture
 		this.draw(Assets.getTexture(AssetType.FILTER), 0, 0);
 	}
 	
-	private static int multiplyPixels(int x, int y)
+	private static int multiplyPixels(int x, int y, Color ambientColour)
 	{
 		// TODO add back RGB for coloured lights?
 		// int xb = (x) & 0xFF;
@@ -210,7 +210,7 @@ public class LightMap extends Texture
 		
 		int xa = (x >> 24) & 0xFF;
 		int ya = (y >> 24) & 0xFF;
-		int a = (xa * ya) >> 7; // Math.min(255, xa + ya)
+		int a = (xa * ya) / ambientColour.getAlpha(); // Math.min(255, xa + ya)
 		
 		return (x & 0x00FFFFFF) | (a << 24); // (b) | (g << 8) | (r << 16) | (a << 24)
 	}

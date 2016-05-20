@@ -32,7 +32,7 @@ public class ClientLevel extends Level
 	{
 		super(type);
 		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 	}
 	
 	public void setCameraCenterInWorld(double x, double y)
