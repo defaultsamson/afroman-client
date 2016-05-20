@@ -167,16 +167,16 @@ public class Entity implements ITickable
 	 */
 	public void addToLevel(Level level)
 	{
-		if (this.level != null)
+		if (getLevel() != null)
 		{
-			this.level.getEntities().remove(this);
+			getLevel().getEntities().remove(this);
 		}
 		
 		this.level = level;
 		
-		if (this.level != null)
+		if (getLevel() != null)
 		{
-			this.level.getEntities().add(this);
+			getLevel().getEntities().add(this);
 		}
 		
 		// TODO Packet add level entity

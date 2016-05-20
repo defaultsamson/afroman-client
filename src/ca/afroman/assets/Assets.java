@@ -26,10 +26,10 @@ public class Assets
 		assetArrays.add(new AssetArray(AssetType.PLAYER_ONE_RAW, Texture.fromResource(AssetType.PLAYER_ONE_RAW, "player1.png").toTextureArray(3, 4)));
 		
 		AssetArray player = Assets.getAssetArray(AssetType.PLAYER_ONE_RAW);
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_UP, true, 12, (Texture) player.getAsset(9), (Texture) player.getAsset(10), (Texture) player.getAsset(11)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_DOWN, true, 12, (Texture) player.getAsset(0), (Texture) player.getAsset(1), (Texture) player.getAsset(2)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_LEFT, true, 12, (Texture) player.getAsset(3), (Texture) player.getAsset(4), (Texture) player.getAsset(5)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_RIGHT, true, 12, (Texture) player.getAsset(6), (Texture) player.getAsset(7), (Texture) player.getAsset(8)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_UP, true, 10, (Texture) player.getAsset(9), (Texture) player.getAsset(10), (Texture) player.getAsset(11)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_DOWN, true, 10, (Texture) player.getAsset(0), (Texture) player.getAsset(1), (Texture) player.getAsset(2)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_LEFT, true, 10, (Texture) player.getAsset(3), (Texture) player.getAsset(4), (Texture) player.getAsset(5)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_RIGHT, true, 10, (Texture) player.getAsset(6), (Texture) player.getAsset(7), (Texture) player.getAsset(8)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP, true, 0, (Texture) player.getAsset(10)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN, true, 0, (Texture) player.getAsset(1)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT, true, 0, (Texture) player.getAsset(4)));
@@ -38,10 +38,10 @@ public class Assets
 		assetArrays.add(new AssetArray(AssetType.PLAYER_TWO_RAW, Texture.fromResource(AssetType.PLAYER_TWO_RAW, "player2.png").toTextureArray(3, 4)));
 		
 		AssetArray player2 = Assets.getAssetArray(AssetType.PLAYER_TWO_RAW);
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_UP, true, 12, (Texture) player2.getAsset(9), (Texture) player2.getAsset(10), (Texture) player2.getAsset(11)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_DOWN, true, 12, (Texture) player2.getAsset(0), (Texture) player2.getAsset(1), (Texture) player2.getAsset(2)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_LEFT, true, 12, (Texture) player2.getAsset(3), (Texture) player2.getAsset(4), (Texture) player2.getAsset(5)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_RIGHT, true, 12, (Texture) player2.getAsset(6), (Texture) player2.getAsset(7), (Texture) player2.getAsset(8)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_UP, true, 10, (Texture) player2.getAsset(9), (Texture) player2.getAsset(10), (Texture) player2.getAsset(11)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_DOWN, true, 10, (Texture) player2.getAsset(0), (Texture) player2.getAsset(1), (Texture) player2.getAsset(2)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_LEFT, true, 10, (Texture) player2.getAsset(3), (Texture) player2.getAsset(4), (Texture) player2.getAsset(5)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_RIGHT, true, 10, (Texture) player2.getAsset(6), (Texture) player2.getAsset(7), (Texture) player2.getAsset(8)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP, true, 0, (Texture) player2.getAsset(10)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN, true, 0, (Texture) player2.getAsset(1)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT, true, 0, (Texture) player2.getAsset(4)));

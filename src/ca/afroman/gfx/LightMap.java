@@ -16,6 +16,7 @@ import ca.afroman.entity.ClientLightEntity;
 
 public class LightMap extends Texture
 {
+	public static boolean oldLightMixing = false;
 	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.5F);
 	
 	private Color ambientColour;
@@ -99,11 +100,24 @@ public class LightMap extends Texture
 					int lightPixel = lightTexture.getRGB(ix, iy);
 					int lightmapPixel = image.getRGB(lightMapX, lightMapY);
 					
-					// Only set the pixel to it if the new colour doesn't go below the ambient colour.
-					
-					if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+					if (oldLightMixing)
 					{
-						image.setRGB(lightMapX, lightMapY, lightPixel);
+						// Only set the pixel to it if the new colour doesn't go below the ambient colour.
+						if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+						{
+							image.setRGB(lightMapX, lightMapY, lightPixel);
+						}
+					}
+					else // New and improved light mixing
+					{
+						if (lightmapPixel == ColourUtil.BUFFER_WASTE)
+						{
+							image.setRGB(lightMapX, lightMapY, lightPixel);
+						}
+						else // If it's not a BUFFER, multiply the current value together to get the new pixel
+						{
+							image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel));
+						}
 					}
 				}
 			}
@@ -129,11 +143,24 @@ public class LightMap extends Texture
 				int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
 				int lightmapPixel = image.getRGB(lightMapX, lightMapY);
 				
-				// Only set the pixel to it if the new colour doesn't go below the ambient colour.
-				
-				if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+				if (oldLightMixing)
 				{
-					image.setRGB(lightMapX, lightMapY, lightPixel);
+					// Only set the pixel to it if the new colour doesn't go below the ambient colour.
+					if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+					{
+						image.setRGB(lightMapX, lightMapY, lightPixel);
+					}
+				}
+				else // New and improved light mixing
+				{
+					if (lightmapPixel == ColourUtil.BUFFER_WASTE)
+					{
+						image.setRGB(lightMapX, lightMapY, lightPixel);
+					}
+					else // If it's not a BUFFER, multiply the current value together to get the new pixel
+					{
+						image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel));
+					}
 				}
 			}
 		}
@@ -164,6 +191,28 @@ public class LightMap extends Texture
 		}
 		
 		this.draw(Assets.getTexture(AssetType.FILTER), 0, 0);
+	}
+	
+	private static int multiplyPixels(int x, int y)
+	{
+		// TODO add back RGB for coloured lights?
+		// int xb = (x) & 0xFF;
+		// int yb = (y) & 0xFF;
+		// int b = (xb * yb) / 255;
+		//
+		// int xg = (x >> 8) & 0xFF;
+		// int yg = (y >> 8) & 0xFF;
+		// int g = (xg * yg) / 255;
+		//
+		// int xr = (x >> 16) & 0xFF;
+		// int yr = (y >> 16) & 0xFF;
+		// int r = (xr * yr) / 255;
+		
+		int xa = (x >> 24) & 0xFF;
+		int ya = (y >> 24) & 0xFF;
+		int a = (xa * ya) >> 7; // Math.min(255, xa + ya)
+		
+		return (x & 0x00FFFFFF) | (a << 24); // (b) | (g << 8) | (r << 16) | (a << 24)
 	}
 	
 	public Color getAmbientColour()

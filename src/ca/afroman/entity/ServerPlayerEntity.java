@@ -35,16 +35,16 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	@Override
 	public void addToLevel(Level level)
 	{
-		if (this.level != null)
+		if (getLevel() != null)
 		{
-			this.level.getPlayers().remove(this);
+			getLevel().getPlayers().remove(this);
 		}
 		
 		this.level = level;
 		
-		if (this.level != null)
+		if (getLevel() != null)
 		{
-			this.level.getPlayers().add(this);
+			getLevel().getPlayers().add(this);
 		}
 		
 		ServerGame.instance().socket().sendPacketToAllClients(new PacketAddPlayer(level.getType(), this));

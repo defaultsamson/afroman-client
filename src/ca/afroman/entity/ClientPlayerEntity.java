@@ -72,16 +72,16 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 	@Override
 	public void addToLevel(Level level)
 	{
-		if (this.level != null)
+		if (getLevel() != null)
 		{
-			this.level.getPlayers().remove(this);
+			getLevel().getPlayers().remove(this);
 		}
 		
 		this.level = level;
 		
-		if (this.level != null)
+		if (getLevel() != null)
 		{
-			this.level.getPlayers().add(this);
+			getLevel().getPlayers().add(this);
 		}
 	}
 	
