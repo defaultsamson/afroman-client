@@ -4,6 +4,7 @@ import ca.afroman.level.LevelType;
 
 public class PacketRemoveLevelHitboxLocation extends Packet
 {
+	private int layer;
 	private LevelType levelType;
 	private double x;
 	private double y;
@@ -16,9 +17,10 @@ public class PacketRemoveLevelHitboxLocation extends Packet
 	 * @param x the x ordinate of the tile location
 	 * @param y the y ordinate of the tile location
 	 */
-	public PacketRemoveLevelHitboxLocation(LevelType levelType, double x, double y)
+	public PacketRemoveLevelHitboxLocation(int layer, LevelType levelType, double x, double y)
 	{
 		super(PacketType.REMOVE_LEVEL_HITBOX);
+		this.layer = layer;
 		this.levelType = levelType;
 		this.x = x;
 		this.y = y;
@@ -27,6 +29,6 @@ public class PacketRemoveLevelHitboxLocation extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + x + "," + y).getBytes();
+		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + layer + "," + x + "," + y).getBytes();
 	}
 }

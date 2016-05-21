@@ -24,6 +24,16 @@ public class GuiTextButton extends GuiButton
 		this.text = text;
 	}
 	
+	public String getText()
+	{
+		return text;
+	}
+	
+	public void setText(String text)
+	{
+		this.text = text;
+	}
+	
 	@Override
 	public void render(Texture drawTo)
 	{

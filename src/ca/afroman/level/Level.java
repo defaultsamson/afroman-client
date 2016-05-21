@@ -26,8 +26,8 @@ public class Level
 	private LevelType type;
 	/** PointLights in this Level. */
 	private List<PointLight> lights;
-	/** Entities that cannot be interacted with, and will always be there. */
-	private List<Entity> tiles;
+	/** Entities that cannot be interacted with, and will always be there (All the different layers). */
+	private List<List<Entity>> tiles;
 	/** Entities that can move, be interacted with, or be removed. */
 	private List<Entity> entities;
 	/** Player objects. */
@@ -40,7 +40,15 @@ public class Level
 		this.type = type;
 		
 		lights = new ArrayList<PointLight>();
-		tiles = new ArrayList<Entity>();
+		tiles = new ArrayList<List<Entity>>();
+		
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		
 		entities = new ArrayList<Entity>();
 		players = new ArrayList<Entity>();
 		hitboxes = new ArrayList<Hitbox>();
@@ -48,9 +56,12 @@ public class Level
 	
 	public synchronized void tick()
 	{
-		for (Entity tile : getTiles())
+		for (List<Entity> tileList : getTiles())
 		{
-			tile.tick();
+			for (Entity tile : tileList)
+			{
+				tile.tick();
+			}
 		}
 		
 		for (Entity entity : getEntities())
@@ -116,27 +127,28 @@ public class Level
 								break;
 							case TILE: // (AssetType, x, y, width, height, hitbox ...)
 							{
-								double x = Double.parseDouble(parameters[0]);
-								double y = Double.parseDouble(parameters[1]);
-								double width = Double.parseDouble(parameters[2]);
-								double height = Double.parseDouble(parameters[3]);
-								AssetType type = AssetType.valueOf(parameters[4]);
+								int layer = Integer.parseInt(parameters[0]);
+								double x = Double.parseDouble(parameters[1]);
+								double y = Double.parseDouble(parameters[2]);
+								double width = Double.parseDouble(parameters[3]);
+								double height = Double.parseDouble(parameters[4]);
+								AssetType type = AssetType.valueOf(parameters[5]);
 								
 								// If it has custom hitboxes defined
-								if (parameters.length > 5)
+								if (parameters.length > 6)
 								{
 									List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
 									
-									for (int i = 4; i < parameters.length; i += 4)
+									for (int i = 6; i < parameters.length; i += 4)
 									{
 										tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
 									}
 									
-									level.getTiles().add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+									level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 								}
 								else
 								{
-									level.getTiles().add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
+									level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
 								}
 							}
 								break;
@@ -199,21 +211,26 @@ public class Level
 		
 		toReturn.add("");
 		toReturn.add("");
-		toReturn.add("// The Tiles. LevelObjectType(AssetType, x, y, width, height, hitboxes[if any])");
+		toReturn.add("// The Tiles. LevelObjectType(layer, AssetType, x, y, width, height, hitboxes[if any])");
 		toReturn.add("");
 		
-		for (Entity tile : getTiles())
+		int i = 0;
+		for (List<Entity> tileList : getTiles())
 		{
-			String tileString = LevelObjectType.TILE + "(" + tile.getX() + ", " + tile.getY() + ", " + tile.getWidth() + ", " + tile.getHeight() + ", " + tile.getAssetType();
-			
-			if (tile.hasHitbox())
+			for (Entity tile : tileList)
 			{
-				tileString += tile.hitboxesAsSaveable();
+				String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getWidth() + ", " + tile.getHeight() + ", " + tile.getAssetType();
+				
+				if (tile.hasHitbox())
+				{
+					tileString += tile.hitboxesAsSaveable();
+				}
+				
+				tileString += ")";
+				
+				toReturn.add(tileString);
 			}
-			
-			tileString += ")";
-			
-			toReturn.add(tileString);
+			i++;
 		}
 		
 		toReturn.add("");
@@ -274,9 +291,14 @@ public class Level
 		return toReturn;
 	}
 	
-	public synchronized List<Entity> getTiles()
+	public synchronized List<List<Entity>> getTiles()
 	{
 		return tiles;
+	}
+	
+	public synchronized List<Entity> getTiles(int layer)
+	{
+		return getTiles().get(layer);
 	}
 	
 	/**
@@ -286,21 +308,21 @@ public class Level
 	 * @param y the y in-level ordinate
 	 * @return the tile. <b>null</b> if there are no tiles at that given location.
 	 */
-	public Entity getTile(double x, double y)
+	public Entity getTile(int layer, double x, double y)
 	{
-		Collections.reverse(getTiles());
+		Collections.reverse(getTiles(layer));
 		
-		for (Entity tile : getTiles())
+		for (Entity tile : getTiles(layer))
 		{
 			Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
 			
 			if (surrounding.contains(x, y))
 			{
-				Collections.reverse(getTiles());
+				Collections.reverse(getTiles(layer));
 				return tile;
 			}
 		}
-		Collections.reverse(getTiles());
+		Collections.reverse(getTiles(layer));
 		return null;
 	}
 	
@@ -312,18 +334,14 @@ public class Level
 	 */
 	public Entity getTile(int id)
 	{
-		for (Entity tile : getTiles())
+		for (List<Entity> tileList : getTiles())
 		{
-			if (tile.getID() == id) return tile;
+			for (Entity tile : tileList)
+			{
+				if (tile.getID() == id) return tile;
+			}
 		}
 		return null;
-	}
-	
-	public void addTileBehind(Entity tile)
-	{
-		Collections.reverse(getTiles());
-		getTiles().add(tile);
-		Collections.reverse(getTiles());
 	}
 	
 	public synchronized List<Entity> getEntities()

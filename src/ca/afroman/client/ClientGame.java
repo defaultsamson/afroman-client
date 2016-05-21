@@ -346,15 +346,15 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 			this.getPlayer(this.getRole()).setCameraToFollow(!buildMode);
 		}
 		
+		if (currentScreen != null)
+		{
+			currentScreen.tick();
+		}
+		
 		// TODO Have it not run the main game code. Leave that to the server
 		if (getCurrentLevel() != null)
 		{
 			getCurrentLevel().tick();
-		}
-		
-		if (currentScreen != null)
-		{
-			currentScreen.tick();
 		}
 		
 		if (hasStartedUpdateList)

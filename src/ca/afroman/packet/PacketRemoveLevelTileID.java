@@ -4,6 +4,7 @@ import ca.afroman.level.LevelType;
 
 public class PacketRemoveLevelTileID extends Packet
 {
+	private int layer;
 	private LevelType levelType;
 	private int id;
 	
@@ -14,9 +15,10 @@ public class PacketRemoveLevelTileID extends Packet
 	 * @param levelType the type of the level to remove the tile from
 	 * @param id the ID of the tile
 	 */
-	public PacketRemoveLevelTileID(LevelType levelType, int id)
+	public PacketRemoveLevelTileID(int layer, LevelType levelType, int id)
 	{
 		super(PacketType.REMOVE_LEVEL_TILE);
+		this.layer = layer;
 		this.levelType = levelType;
 		this.id = id;
 	}
@@ -24,6 +26,6 @@ public class PacketRemoveLevelTileID extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + id).getBytes();
+		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + layer + "," + id).getBytes();
 	}
 }

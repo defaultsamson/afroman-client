@@ -222,15 +222,17 @@ public class ClientSocket extends DynamicThread
 					
 					if (level != null)
 					{
-						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[2]));
+						int layer = Integer.parseInt(split[2]);
 						
-						double x = Double.parseDouble(split[3]);
-						double y = Double.parseDouble(split[4]);
-						double width = Double.parseDouble(split[5]);
-						double height = Double.parseDouble(split[6]);
+						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[3]));
+						
+						double x = Double.parseDouble(split[4]);
+						double y = Double.parseDouble(split[5]);
+						double width = Double.parseDouble(split[6]);
+						double height = Double.parseDouble(split[7]);
 						
 						// If it has custom hitboxes defined
-						if (split.length > 7)
+						if (split.length > 8)
 						{
 							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
 							
@@ -239,11 +241,11 @@ public class ClientSocket extends DynamicThread
 								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
 							}
 							
-							level.getTiles().add(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+							level.getTiles(layer).add(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 						}
 						else
 						{
-							level.getTiles().add(new ClientAssetEntity(id, level, asset, x, y, width, height));
+							level.getTiles(layer).add(new ClientAssetEntity(id, level, asset, x, y, width, height));
 						}
 					}
 					else
@@ -260,11 +262,12 @@ public class ClientSocket extends DynamicThread
 					
 					if (level != null)
 					{
-						Entity tile = level.getTile(Integer.parseInt(split[1]));
+						int layer = Integer.parseInt(split[1]);
+						Entity tile = level.getTile(Integer.parseInt(split[2]));
 						
 						if (tile != null)
 						{
-							level.getTiles().remove(tile);
+							level.getTiles(layer).remove(tile);
 						}
 					}
 				}

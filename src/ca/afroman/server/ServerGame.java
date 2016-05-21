@@ -59,9 +59,15 @@ public class ServerGame extends DynamicTickThread
 			
 			socket().sendPacketToAllClients(levelPack);
 			
-			for (Entity tile : level.getTiles())
+			int layer = 0;
+			for (List<Entity> tileList : level.getTiles())
 			{
-				socket().sendPacketToAllClients(new PacketAddLevelTile(tile));
+				for (Entity tile : tileList)
+				{
+					socket().sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
+				}
+				
+				layer++;
 			}
 			
 			for (Hitbox box : level.getHitboxes())

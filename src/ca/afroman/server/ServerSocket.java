@@ -199,15 +199,17 @@ public class ServerSocket extends DynamicThread
 					
 					if (level != null)
 					{
-						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[2]));
+						int layer = Integer.parseInt(split[2]);
 						
-						double x = Double.parseDouble(split[3]);
-						double y = Double.parseDouble(split[4]);
-						double width = Double.parseDouble(split[5]);
-						double height = Double.parseDouble(split[6]);
+						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[3]));
+						
+						double x = Double.parseDouble(split[4]);
+						double y = Double.parseDouble(split[5]);
+						double width = Double.parseDouble(split[6]);
+						double height = Double.parseDouble(split[7]);
 						
 						// If it has custom hitboxes defined
-						if (split.length > 7)
+						if (split.length > 8)
 						{
 							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
 							
@@ -218,15 +220,15 @@ public class ServerSocket extends DynamicThread
 							
 							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 							Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes));
-							level.getTiles().add(tile); // Adds tile to the server's level
-							sendPacketToAllClients(new PacketAddLevelTile(tile)); // Adds the tile to all the clients' levels
+							level.getTiles(layer).add(tile); // Adds tile to the server's level
+							sendPacketToAllClients(new PacketAddLevelTile(layer, tile)); // Adds the tile to all the clients' levels
 						}
 						else
 						{
 							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 							Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height);
-							level.getTiles().add(tile);
-							sendPacketToAllClients(new PacketAddLevelTile(tile));
+							level.getTiles(layer).add(tile);
+							sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
 						}
 					}
 					else
@@ -243,14 +245,15 @@ public class ServerSocket extends DynamicThread
 					
 					if (level != null)
 					{
-						double x = Double.parseDouble(split[1]);
-						double y = Double.parseDouble(split[2]);
+						int layer = Integer.parseInt(split[1]);
+						double x = Double.parseDouble(split[2]);
+						double y = Double.parseDouble(split[3]);
 						
-						Entity tile = level.getTile(x, y);
+						Entity tile = level.getTile(layer, x, y);
 						
 						if (tile != null)
 						{
-							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(tile.getLevel().getType(), tile.getID());
+							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(layer, tile.getLevel().getType(), tile.getID());
 							
 							sendPacketToAllClients(pack);
 							

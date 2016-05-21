@@ -5,6 +5,7 @@ import ca.afroman.entity.api.Entity;
 
 public class PacketAddLevelTile extends Packet
 {
+	private int layer;
 	private Entity entity;
 	
 	/**
@@ -14,24 +15,16 @@ public class PacketAddLevelTile extends Packet
 	 * 
 	 * @param level the level to add the tile to.
 	 */
-	public PacketAddLevelTile(Entity entity)
+	public PacketAddLevelTile(int layer, Entity entity)
 	{
 		super(PacketType.ADD_LEVEL_TILE);
+		this.layer = layer;
 		this.entity = entity;
 	}
 	
 	@Override
 	public byte[] getData()
-	{ // (type, leveltype, assetType, x, y, width, height, hitboxes)
-		
-		// System.out.println(entity.getID());
-		// System.out.println(entity.getLevel().getType().ordinal());
-		// System.out.println(entity.getAssetType().ordinal());
-		// System.out.println(entity.getX());
-		// System.out.println(entity.getY());
-		// System.out.println(entity.getWidth());
-		// System.out.println(entity.getHeight());
-		
-		return (type.ordinal() + Packet.SEPARATOR + entity.getID() + "," + entity.getLevel().getType().ordinal() + "," + (entity.getAssetType() != null ? entity.getAssetType().ordinal() : AssetType.INVALID.ordinal()) + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
+	{
+		return (type.ordinal() + Packet.SEPARATOR + entity.getID() + "," + entity.getLevel().getType().ordinal() + "," + layer + "," + (entity.getAssetType() != null ? entity.getAssetType().ordinal() : AssetType.INVALID.ordinal()) + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
 	}
 }
