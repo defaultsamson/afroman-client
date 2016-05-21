@@ -16,7 +16,7 @@ public class PacketSendLevels extends Packet
 	 */
 	public PacketSendLevels(boolean isSending)
 	{
-		super(PacketType.SEND_LEVELS);
+		super(PacketType.SEND_LEVELS, true);
 		
 		this.isSending = isSending;
 	}
@@ -24,6 +24,6 @@ public class PacketSendLevels extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + (isSending ? 1 : 0)).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + (isSending ? 1 : 0)).getBytes();
 	}
 }

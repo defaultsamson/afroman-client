@@ -36,4 +36,9 @@ public class IPConnection
 	{
 		return address.getHostAddress() + ":" + port;
 	}
+	
+	public boolean equals(IPConnection connection)
+	{
+		return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
+	}
 }

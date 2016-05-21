@@ -3,6 +3,8 @@ package ca.afroman.packet;
 public enum PacketType
 {
 	INVALID,
+	CONFIRM_RECEIVED,
+	
 	REQUEST_CONNECTION,
 	DENY_JOIN,
 	ASSIDN_CLIENTID,

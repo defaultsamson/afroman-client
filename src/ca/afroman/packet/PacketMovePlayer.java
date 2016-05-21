@@ -16,7 +16,7 @@ public class PacketMovePlayer extends Packet
 	 */
 	public PacketMovePlayer(Role player, int xa, int ya)
 	{
-		super(PacketType.REQUEST_PLAYER_MOVE);
+		super(PacketType.REQUEST_PLAYER_MOVE, false);
 		this.player = player;
 		this.x = xa;
 		this.y = ya;
@@ -25,6 +25,6 @@ public class PacketMovePlayer extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + player.ordinal() + "," + this.x + "," + this.y).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + player.ordinal() + "," + this.x + "," + this.y).getBytes();
 	}
 }

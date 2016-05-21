@@ -60,7 +60,10 @@ public class Level
 		{
 			for (Entity tile : tileList)
 			{
-				tile.tick();
+				synchronized (tile)
+				{
+					tile.tick();
+				}
 			}
 		}
 		

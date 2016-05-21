@@ -29,7 +29,7 @@ public class PacketRequestConnection extends Packet
 	 */
 	public PacketRequestConnection(String username, String password)
 	{
-		super(PacketType.REQUEST_CONNECTION);
+		super(PacketType.REQUEST_CONNECTION, false);
 		this.username = username;
 		this.password = password;
 	}
@@ -37,6 +37,6 @@ public class PacketRequestConnection extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + username + "," + password + "," + ClientGame.VERSION).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + username + "," + password + "," + ClientGame.VERSION).getBytes();
 	}
 }

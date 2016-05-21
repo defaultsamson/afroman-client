@@ -17,7 +17,7 @@ public class PacketUpdatePlayerList extends Packet
 	 */
 	public PacketUpdatePlayerList(List<IPConnectedPlayer> connections)
 	{
-		super(PacketType.UPDATE_PLAYERLIST);
+		super(PacketType.UPDATE_PLAYERLIST, true);
 		
 		for (IPConnectedPlayer connection : connections)
 		{
@@ -31,6 +31,6 @@ public class PacketUpdatePlayerList extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + players).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + players).getBytes();
 	}
 }

@@ -17,7 +17,7 @@ public class PacketAddPlayer extends Packet
 	 */
 	public PacketAddPlayer(LevelType levelType, ServerPlayerEntity player)
 	{
-		super(PacketType.ADD_LEVEL_PLAYER);
+		super(PacketType.ADD_LEVEL_PLAYER, true);
 		this.levelType = levelType;
 		this.player = player;
 	}
@@ -25,6 +25,6 @@ public class PacketAddPlayer extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + player.getRole().ordinal() + "," + player.getX() + "," + player.getY()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + levelType.ordinal() + "," + player.getRole().ordinal() + "," + player.getX() + "," + player.getY()).getBytes();
 	}
 }

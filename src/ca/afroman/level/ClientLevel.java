@@ -69,10 +69,13 @@ public class ClientLevel extends Level
 			
 			if (draw)
 			{
-				for (Entity tile : this.getTiles(i))
+				synchronized (this)
 				{
-					// If it has a texture, render it
-					if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+					for (Entity tile : this.getTiles(i))
+					{
+						// If it has a texture, render it
+						if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+					}
 				}
 			}
 		}
@@ -113,10 +116,13 @@ public class ClientLevel extends Level
 			
 			if (draw)
 			{
-				for (Entity tile : this.getTiles(i))
+				synchronized (this)
 				{
-					// If it has a texture, render it
-					if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+					for (Entity tile : this.getTiles(i))
+					{
+						// If it has a texture, render it
+						if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+					}
 				}
 			}
 		}
@@ -451,7 +457,7 @@ public class ClientLevel extends Level
 					}
 					else
 					{
-						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(editLayer, this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
+						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
 						ClientGame.instance().socket().sendPacket(pack);
 					}
 				}

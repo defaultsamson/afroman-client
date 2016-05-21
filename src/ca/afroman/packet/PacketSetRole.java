@@ -14,7 +14,7 @@ public class PacketSetRole extends Packet
 	 */
 	public PacketSetRole(int playerID, Role role)
 	{
-		super(PacketType.SETROLE);
+		super(PacketType.SETROLE, true);
 		this.playerID = playerID;
 		this.role = role;
 	}
@@ -22,6 +22,6 @@ public class PacketSetRole extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + playerID + "," + role.ordinal()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + playerID + "," + role.ordinal()).getBytes();
 	}
 }

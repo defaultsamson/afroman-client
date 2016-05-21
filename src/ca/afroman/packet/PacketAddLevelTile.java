@@ -17,7 +17,7 @@ public class PacketAddLevelTile extends Packet
 	 */
 	public PacketAddLevelTile(int layer, Entity entity)
 	{
-		super(PacketType.ADD_LEVEL_TILE);
+		super(PacketType.ADD_LEVEL_TILE, true);
 		this.layer = layer;
 		this.entity = entity;
 	}
@@ -25,6 +25,6 @@ public class PacketAddLevelTile extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + entity.getID() + "," + entity.getLevel().getType().ordinal() + "," + layer + "," + (entity.getAssetType() != null ? entity.getAssetType().ordinal() : AssetType.INVALID.ordinal()) + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + entity.getID() + "," + entity.getLevel().getType().ordinal() + "," + layer + "," + (entity.getAssetType() != null ? entity.getAssetType().ordinal() : AssetType.INVALID.ordinal()) + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
 	}
 }

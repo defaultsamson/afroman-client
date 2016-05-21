@@ -15,13 +15,13 @@ public class PacketUpdateEntityLocation extends Packet
 	 */
 	public PacketUpdateEntityLocation(Entity entity)
 	{
-		super(PacketType.SET_ENTITY_LOCATION);
+		super(PacketType.SET_ENTITY_LOCATION, false);
 		this.entity = entity;
 	}
 	
 	@Override
 	public byte[] getData()
 	{ // (type, leveltype, assetType, x, y, width, height, hitboxes)
-		return (type.ordinal() + Packet.SEPARATOR + entity.getLevel().getType().ordinal() + "," + entity.getID() + "," + entity.getX() + "," + entity.getY()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + entity.getLevel().getType().ordinal() + "," + entity.getID() + "," + entity.getX() + "," + entity.getY()).getBytes();
 	}
 }

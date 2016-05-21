@@ -15,13 +15,13 @@ public class PacketUpdatePlayerLocation extends Packet
 	 */
 	public PacketUpdatePlayerLocation(ServerPlayerEntity entity)
 	{
-		super(PacketType.SET_PLAYER_LOCATION);
+		super(PacketType.SET_PLAYER_LOCATION, false);
 		this.entity = entity;
 	}
 	
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + entity.getRole().ordinal() + "," + entity.getDirection().ordinal() + "," + entity.getLastDirection().ordinal() + "," + entity.getX() + "," + entity.getY()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + entity.getRole().ordinal() + "," + entity.getDirection().ordinal() + "," + entity.getLastDirection().ordinal() + "," + entity.getX() + "," + entity.getY()).getBytes();
 	}
 }

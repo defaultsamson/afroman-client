@@ -12,12 +12,12 @@ public class PacketStopServer extends Packet
 	 */
 	public PacketStopServer()
 	{
-		super(PacketType.STOP_SERVER);
+		super(PacketType.STOP_SERVER, true);
 	}
 	
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR).getBytes();
 	}
 }

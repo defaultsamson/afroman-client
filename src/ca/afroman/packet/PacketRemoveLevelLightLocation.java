@@ -18,7 +18,7 @@ public class PacketRemoveLevelLightLocation extends Packet
 	 */
 	public PacketRemoveLevelLightLocation(LevelType levelType, double x, double y)
 	{
-		super(PacketType.REMOVE_LEVEL_POINTLIGHT);
+		super(PacketType.REMOVE_LEVEL_POINTLIGHT, true);
 		this.levelType = levelType;
 		this.x = x;
 		this.y = y;
@@ -27,6 +27,6 @@ public class PacketRemoveLevelLightLocation extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + x + "," + y).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + levelType.ordinal() + "," + x + "," + y).getBytes();
 	}
 }

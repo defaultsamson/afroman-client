@@ -2,14 +2,18 @@ package ca.afroman.packet;
 
 public abstract class Packet
 {
+	private static int nextAvailableID = 0;
+	
 	/** The pattern that separates the PacketType ordinal from a the content. */
 	public static final String SEPARATOR = ":;";
 	
+	protected int id;
 	protected PacketType type;
 	
-	public Packet(PacketType type)
+	public Packet(PacketType type, boolean mustSend)
 	{
 		this.type = type;
+		id = mustSend ? Packet.getNextAvailableID() : -1;
 	}
 	
 	/**
@@ -52,6 +56,11 @@ public abstract class Packet
 		return message;
 	}
 	
+	public boolean mustSend()
+	{
+		return id != -1;
+	}
+	
 	/**
 	 * Gets the packet's PacketType from the raw data.
 	 * 
@@ -66,7 +75,7 @@ public abstract class Packet
 		{
 			String message = new String(data).trim();
 			String[] split = message.split(SEPARATOR);
-			ordinal = Integer.parseInt(split[0]);
+			ordinal = Integer.parseInt(split[0].split(",")[0]);
 		}
 		catch (Exception e)
 		{
@@ -82,5 +91,59 @@ public abstract class Packet
 		{
 			return PacketType.INVALID;
 		}
+	}
+	
+	/**
+	 * Gets the packet's id from the raw data.
+	 * 
+	 * @param data the raw data
+	 * @return the id
+	 */
+	public static int readID(byte[] data)
+	{
+		try
+		{
+			String message = new String(data).trim();
+			String[] split = message.split(SEPARATOR);
+			return Integer.parseInt(split[0].split(",")[1]);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	
+	/**
+	 * @return this player's ID.
+	 */
+	public int getID()
+	{
+		return id;
+	}
+	
+	/**
+	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
+	 */
+	public static synchronized int getNextAvailableID()
+	{
+		int toReturn = nextAvailableID;
+		nextAvailableID++;
+		return toReturn;
+	}
+	
+	public PacketType getType()
+	{
+		return type;
+	}
+	
+	/**
+	 * Resets the nextAvailableID so that it starts counting from 0 again.
+	 * <p>
+	 * <b>WARNING: </b>only intended for use on server shutdowns.
+	 */
+	public static void resetNextAvailableID()
+	{
+		nextAvailableID = 0;
 	}
 }

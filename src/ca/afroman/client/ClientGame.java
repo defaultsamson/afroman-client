@@ -420,7 +420,7 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		frame.setUndecorated(isFullScreen);
 		
 		frame.getContentPane().setBackground(Color.black);
-		frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		frame.getContentPane().add(canvas, BorderLayout.CENTER); // TODO This crashes the game if the window isn't on the primary screen
 		frame.pack();
 		frame.setResizable(!isFullScreen);
 		frame.setLocationRelativeTo(null);

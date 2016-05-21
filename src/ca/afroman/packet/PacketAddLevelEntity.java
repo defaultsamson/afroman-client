@@ -16,13 +16,13 @@ public class PacketAddLevelEntity extends Packet
 	 */
 	public PacketAddLevelEntity(Entity entity)
 	{
-		super(PacketType.ADD_LEVEL_ENTITY);
+		super(PacketType.ADD_LEVEL_ENTITY, true);
 		this.entity = entity;
 	}
 	
 	@Override
 	public byte[] getData()
 	{ // (type, leveltype, assetType, x, y, width, height, hitboxes)
-		return (type.ordinal() + Packet.SEPARATOR + entity.getLevel().getType().ordinal() + "," + entity.getAssetType() + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + entity.getLevel().getType().ordinal() + "," + entity.getAssetType() + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
 	}
 }

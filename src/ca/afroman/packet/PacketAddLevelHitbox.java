@@ -17,7 +17,7 @@ public class PacketAddLevelHitbox extends Packet
 	 */
 	public PacketAddLevelHitbox(LevelType levelType, Hitbox hitbox)
 	{
-		super(PacketType.ADD_LEVEL_HITBOX);
+		super(PacketType.ADD_LEVEL_HITBOX, true);
 		this.levelType = levelType;
 		this.hitbox = hitbox;
 	}
@@ -25,6 +25,6 @@ public class PacketAddLevelHitbox extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + hitbox.getID() + "," + hitbox.getX() + "," + hitbox.getY() + "," + hitbox.getWidth() + "," + hitbox.getHeight()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + levelType.ordinal() + "," + hitbox.getID() + "," + hitbox.getX() + "," + hitbox.getY() + "," + hitbox.getWidth() + "," + hitbox.getHeight()).getBytes();
 	}
 }

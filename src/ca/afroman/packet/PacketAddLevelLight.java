@@ -16,13 +16,13 @@ public class PacketAddLevelLight extends Packet
 	 */
 	public PacketAddLevelLight(PointLight light)
 	{
-		super(PacketType.ADD_LEVEL_POINTLIGHT);
+		super(PacketType.ADD_LEVEL_POINTLIGHT, true);
 		this.light = light;
 	}
 	
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + light.getLevel().getType().ordinal() + "," + light.getID() + "," + light.getX() + "," + light.getY() + "," + light.getRadius()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + light.getLevel().getType().ordinal() + "," + light.getID() + "," + light.getX() + "," + light.getY() + "," + light.getRadius()).getBytes();
 	}
 }

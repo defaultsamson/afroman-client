@@ -8,7 +8,7 @@ public class PacketInstantiateLevel extends Packet
 	
 	public PacketInstantiateLevel(LevelType levelType)
 	{
-		super(PacketType.INSTANTIATE_LEVEL);
+		super(PacketType.INSTANTIATE_LEVEL, true);
 		
 		this.levelType = levelType;
 	}
@@ -16,6 +16,6 @@ public class PacketInstantiateLevel extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + levelType.ordinal()).getBytes();
 	}
 }

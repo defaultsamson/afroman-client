@@ -29,6 +29,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
+import ca.afroman.packet.PacketConfirmReceived;
 import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketType;
 import ca.afroman.player.Role;
@@ -42,10 +43,14 @@ public class ClientSocket extends DynamicThread
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;
 	private List<ConnectedPlayer> playerList;
+	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
+	private List<Packet> sendingPackets; // The packets that are still trying to be sent.
 	
 	public ClientSocket()
 	{
 		playerList = new ArrayList<ConnectedPlayer>();
+		receivedPackets = new ArrayList<Integer>();
+		sendingPackets = new ArrayList<Packet>();
 		
 		try
 		{
@@ -110,6 +115,26 @@ public class ClientSocket extends DynamicThread
 		// If is the server sending the packet
 		if (connection.getIPAddress().getHostAddress().equals(this.serverIP.getHostAddress()) && ServerSocket.PORT == connection.getPort())
 		{
+			int packetID = Packet.readID(data);
+			
+			if (packetID != -1)
+			{
+				for (int packID : receivedPackets)
+				{
+					if (packID == packetID)
+					{
+						// If the packet with this ID has already been received, tell the server to stop sending it, and don't parse it
+						sendPacket(new PacketConfirmReceived(packetID));
+						return;
+					}
+				}
+				
+				// If the packet with the ID has not already been received
+				sendPacket(new PacketConfirmReceived(packetID));
+				// Add it to the list
+				receivedPackets.add(packetID);
+			}
+			
 			if (TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 			
 			switch (type)
@@ -380,6 +405,25 @@ public class ClientSocket extends DynamicThread
 					}
 				}
 					break;
+				case CONFIRM_RECEIVED:
+				{
+					int sentID = Integer.parseInt(Packet.readContent(data));
+					
+					Packet toRemove = null;
+					
+					// Find the packet that the server is saying it recieved.
+					for (Packet pack : sendingPackets)
+					{
+						if (pack.getID() == sentID) toRemove = pack;
+					}
+					
+					// Remove that packet from the queue
+					if (toRemove != null)
+					{
+						sendingPackets.remove(toRemove);
+					}
+				}
+					break;
 			}
 		}
 		else
@@ -405,6 +449,7 @@ public class ClientSocket extends DynamicThread
 	 */
 	public void sendPacket(Packet packet)
 	{
+		if (packet.mustSend()) sendingPackets.add(packet);
 		sendData(packet.getData());
 	}
 	
@@ -416,7 +461,7 @@ public class ClientSocket extends DynamicThread
 	 * @deprecated Still works to send raw data, but sendPacket() is preferred.
 	 */
 	@Deprecated
-	public void sendData(byte[] data)
+	private void sendData(byte[] data)
 	{
 		if (serverIP != null)
 		{
@@ -497,6 +542,9 @@ public class ClientSocket extends DynamicThread
 			this.sendPacket(pack);
 		}
 		socket().close();
+		playerList.clear();
+		sendingPackets.clear();
+		receivedPackets.clear();
 	}
 	
 	private synchronized DatagramSocket socket()

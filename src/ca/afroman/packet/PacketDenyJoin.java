@@ -13,7 +13,7 @@ public class PacketDenyJoin extends Packet
 	 */
 	public PacketDenyJoin(DenyJoinReason reason)
 	{
-		super(PacketType.DENY_JOIN);
+		super(PacketType.DENY_JOIN, false);
 		
 		this.reason = reason;
 	}
@@ -21,6 +21,6 @@ public class PacketDenyJoin extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + reason.ordinal()).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + reason.ordinal()).getBytes();
 	}
 }

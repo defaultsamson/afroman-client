@@ -19,7 +19,7 @@ public class PacketRemoveLevelTileLocation extends Packet
 	 */
 	public PacketRemoveLevelTileLocation(int layer, LevelType levelType, double x, double y)
 	{
-		super(PacketType.REMOVE_LEVEL_TILE);
+		super(PacketType.REMOVE_LEVEL_TILE, true);
 		this.layer = layer;
 		this.levelType = levelType;
 		this.x = x;
@@ -29,6 +29,6 @@ public class PacketRemoveLevelTileLocation extends Packet
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR + levelType.ordinal() + "," + layer + "," + x + "," + y).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + levelType.ordinal() + "," + layer + "," + x + "," + y).getBytes();
 	}
 }

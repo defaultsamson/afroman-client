@@ -12,12 +12,12 @@ public class PacketStartGame extends Packet
 	 */
 	public PacketStartGame()
 	{
-		super(PacketType.START_SERVER);
+		super(PacketType.START_SERVER, true);
 	}
 	
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR).getBytes();
 	}
 }

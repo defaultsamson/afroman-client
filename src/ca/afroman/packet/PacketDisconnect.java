@@ -9,12 +9,12 @@ public class PacketDisconnect extends Packet
 	 */
 	public PacketDisconnect()
 	{
-		super(PacketType.PLAYER_DISCONNECT);
+		super(PacketType.PLAYER_DISCONNECT, false);
 	}
 	
 	@Override
 	public byte[] getData()
 	{
-		return (type.ordinal() + Packet.SEPARATOR).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR).getBytes();
 	}
 }
