@@ -114,6 +114,8 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 	
 	public void addPacketSendingTo(IPConnection connection, Packet packet)
 	{
+		if (!packet.mustSend()) return;
+		
 		List<Packet> packs = getPacketsSendingTo(connection);
 		
 		// Don't add it if it's just looping through and trying to add it again

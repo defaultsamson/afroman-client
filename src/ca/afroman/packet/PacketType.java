@@ -34,6 +34,8 @@ public enum PacketType
 	
 	public static PacketType fromOrdinal(int ordinal)
 	{
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
 		return values()[ordinal];
 	}
 }

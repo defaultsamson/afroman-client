@@ -331,7 +331,7 @@ public class ClientLevel extends Level
 				
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
-					Entity tileToAdd = new Entity(-1, this, cursorAsset.assetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
+					Entity tileToAdd = new Entity(-1, this, cursorAsset.getAssetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(editLayer, tileToAdd);
 					ClientGame.instance().socket().sendPacket(pack);
 				}

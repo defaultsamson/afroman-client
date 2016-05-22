@@ -8,6 +8,8 @@ public enum Role
 	
 	public static Role fromOrdinal(int ordinal)
 	{
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
 		return values()[ordinal];
 	}
 }

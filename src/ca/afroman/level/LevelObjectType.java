@@ -11,6 +11,8 @@ public enum LevelObjectType
 	
 	public static LevelObjectType fromOrdinal(int ordinal)
 	{
-		return LevelObjectType.values()[ordinal];
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
+		return values()[ordinal];
 	}
 }

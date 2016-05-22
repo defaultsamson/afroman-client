@@ -17,8 +17,8 @@ public class Texture extends Asset
 {
 	public static final String TEXTURE_PATH = "/texture/";
 	
-	protected BufferedImage image;
-	protected Graphics2D graphics;
+	private BufferedImage image;
+	private Graphics2D graphics;
 	
 	public Texture(AssetType type, BufferedImage image)
 	{
@@ -96,7 +96,7 @@ public class Texture extends Asset
 		ColorModel cm = image.getColorModel();
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		WritableRaster raster = image.copyData(image.getRaster().createCompatibleWritableRaster());
-		return new Texture(type, new BufferedImage(cm, raster, isAlphaPremultiplied, null));
+		return new Texture(getAssetType(), new BufferedImage(cm, raster, isAlphaPremultiplied, null));
 	}
 	
 	public Graphics2D getGraphics()
@@ -135,6 +135,12 @@ public class Texture extends Asset
 		image = op.filter(image, null);
 	}
 	
+	/**
+	 * Scales this texture.
+	 * 
+	 * @param xScale the horizontal scaling amplitude
+	 * @param yScale the vertical scaling amplitude
+	 */
 	public void scale(double xScale, double yScale)
 	{
 		AffineTransform at = AffineTransform.getScaleInstance(xScale, yScale);
@@ -142,6 +148,9 @@ public class Texture extends Asset
 		image = op.filter(image, null);
 	}
 	
+	/**
+	 * @return the raw BufferedImage in this.
+	 */
 	public BufferedImage getImage()
 	{
 		return image;
@@ -217,7 +226,7 @@ public class Texture extends Asset
 		{
 			for (int x = 0; x < xColumns; x++)
 			{
-				textures[(y * xColumns) + x] = this.getSubTexture(type, x * subTextWidth, y * subTextHeight, subTextWidth, subTextHeight);
+				textures[(y * xColumns) + x] = this.getSubTexture(getAssetType(), x * subTextWidth, y * subTextHeight, subTextWidth, subTextHeight);
 			}
 		}
 		

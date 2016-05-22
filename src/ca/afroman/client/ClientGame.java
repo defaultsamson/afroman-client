@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
@@ -38,13 +37,13 @@ import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
 
-public class ClientGame extends DynamicTickRenderThread // implements Runnable
+public class ClientGame extends DynamicTickRenderThread
 {
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final int VERSION = 2;
+	public static final int VERSION = 23;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	private static ClientGame game;
@@ -298,7 +297,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		if (input.full_screen.isPressedFiltered())
 		{
-			// TODO Fix full-screen from just showing a black screen
 			setFullScreen(!fullscreen);
 		}
 		
@@ -385,8 +383,10 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		{
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
-			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
-			// Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, HEIGHT - 9, "V");
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 9, HEIGHT - 9, "" + VERSION);
+			// TODO Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
+			// TODO Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
 		}
 		
 		// Renders everything that was just drawn
@@ -457,62 +457,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 		
 		old.removeAll();
 		old.getContentPane().removeAll();
-	}
-	
-	public void setFullScreen2(boolean isFullScreen)
-	{
-		fullscreen = isFullScreen;
-		
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		
-		System.out.println("Setting Fullscreen: " + isFullScreen);
-		
-		/*
-		 * This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
-		 * http://stackoverflow.com/questions/13064607/fullscreen-swing-components-fail-to-receive-keyboard-input-on-java-7-on-mac-os-x
-		 */
-		if (isFullScreen)
-		{
-			frame.dispose();// Restarts the JFrame
-			frame.setResizable(false);// Disables resizing else causes bugs
-			frame.setUndecorated(true);
-			
-			frame.getContentPane().add(canvas, BorderLayout.CENTER);
-			frame.setVisible(true);
-			canvas.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-			
-			try
-			{
-				gd.setFullScreenWindow(frame);// Makes it full screen
-				
-				// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
-				// {
-				// this.setVisible(false);
-				// this.setVisible(true);
-				// }
-				
-				canvas.repaint();
-				canvas.revalidate();
-			}
-			catch (Exception e)
-			{
-				setFullScreen(false);
-				System.err.println("Fullscreen Mode not supported.");
-				e.printStackTrace();
-			}
-		}
-		else
-		{
-			frame.dispose();// Restarts the JFrame
-			frame.setVisible(false);
-			frame.setResizable(true);
-			frame.setUndecorated(false);
-			frame.setVisible(true);// Shows restarted JFrame
-			frame.pack();
-			frame.setExtendedState(frame.getExtendedState() | JFrame.NORMAL);// Returns to normal state
-		}
-		
-		canvas.requestFocus();
 	}
 	
 	public boolean isFullScreen()
@@ -594,9 +538,6 @@ public class ClientGame extends DynamicTickRenderThread // implements Runnable
 	
 	public boolean hasServerListBeenUpdated()
 	{
-		// TODO make it only run one tick, but throughout the entirety of the tick/
-		// Currently it just runs throughout a random portion of the tick, so I make it
-		// Run through twice just in case. THIS IS AN ISSUE
 		return updatePlayerList && hasStartedUpdateList;
 	}
 	

@@ -19,7 +19,7 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	
 	public ClientAssetEntity(int id, ClientLevel level, Asset asset, double x, double y, double width, double height, Hitbox... hitboxes)
 	{
-		super(id, level, (asset != null ? asset.assetType() : AssetType.INVALID), x, y, width, height, hitboxes);
+		super(id, level, (asset != null ? asset.getAssetType() : AssetType.INVALID), x, y, width, height, hitboxes);
 		
 		this.asset = asset;
 	}

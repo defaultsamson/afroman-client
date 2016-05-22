@@ -8,7 +8,7 @@ public abstract class Asset implements IRenderable
 	
 	private int width;
 	private int height;
-	protected AssetType type;
+	private AssetType type;
 	
 	public Asset(AssetType type, int width, int height)
 	{
@@ -20,7 +20,7 @@ public abstract class Asset implements IRenderable
 	@Override
 	public abstract Asset clone();
 	
-	public AssetType assetType()
+	public AssetType getAssetType()
 	{
 		return type;
 	}

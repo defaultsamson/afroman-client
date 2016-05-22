@@ -46,7 +46,7 @@ public class GuiButton extends InputType
 		{
 			for (int i2 = 0; i2 < 3; i2++)
 			{
-				textures[i][i2] = temp[i].getSubTexture(temp[i].assetType(), i2, 0, 1, normal.getHeight());
+				textures[i][i2] = temp[i].getSubTexture(temp[i].getAssetType(), i2, 0, 1, normal.getHeight());
 			}
 		}
 		

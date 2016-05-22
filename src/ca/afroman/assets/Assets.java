@@ -5,9 +5,9 @@ import java.util.List;
 
 public class Assets
 {
-	public static List<AssetArray> assetArrays = new ArrayList<AssetArray>();
+	private static List<AssetArray> assetArrays = new ArrayList<AssetArray>();
 	
-	public static List<Asset> assets = new ArrayList<Asset>();
+	private static List<Asset> assets = new ArrayList<Asset>();
 	
 	public static void load()
 	{
@@ -82,7 +82,7 @@ public class Assets
 	{
 		Asset asset = getAssetArray(type);
 		
-		if (asset != null && asset.assetType() == type && asset instanceof Font)
+		if (asset != null && asset.getAssetType() == type && asset instanceof Font)
 		{
 			return (Font) asset;
 		}
@@ -94,7 +94,7 @@ public class Assets
 	{
 		Asset asset = getAsset(type);
 		
-		if (asset != null && asset.assetType() == type && asset instanceof Texture)
+		if (asset != null && asset.getAssetType() == type && asset instanceof Texture)
 		{
 			return (Texture) asset;
 		}
@@ -106,7 +106,7 @@ public class Assets
 	{
 		Asset asset = getAsset(type);
 		
-		if (asset != null && asset.assetType() == type && asset instanceof SpriteAnimation)
+		if (asset != null && asset.getAssetType() == type && asset instanceof SpriteAnimation)
 		{
 			return (SpriteAnimation) asset;
 		}
@@ -120,7 +120,7 @@ public class Assets
 		
 		for (AssetArray asset : assetArrays)
 		{
-			if (asset.assetType() == type)
+			if (asset.getAssetType() == type)
 			{
 				return asset;
 			}
@@ -134,7 +134,7 @@ public class Assets
 		
 		for (Asset asset : assets)
 		{
-			if (asset.assetType() == type)
+			if (asset.getAssetType() == type)
 			{
 				return asset;
 			}

@@ -38,19 +38,19 @@ import ca.afroman.thread.DynamicThread;
 
 public class ClientSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = false;
+	public static final boolean TRACE_PACKETS = true;
 	public static int id = -1;
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;
 	private List<ConnectedPlayer> playerList;
 	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
-	private List<Packet> sendingPackets; // The packets that are still trying to be sent.
+	private ClientSocketPacketPusher pusher; // The packets that are still trying to be sent.
 	
 	public ClientSocket()
 	{
 		playerList = new ArrayList<ConnectedPlayer>();
 		receivedPackets = new ArrayList<Integer>();
-		sendingPackets = new ArrayList<Packet>();
+		pusher = new ClientSocketPacketPusher();
 		
 		try
 		{
@@ -409,19 +409,7 @@ public class ClientSocket extends DynamicThread
 				{
 					int sentID = Integer.parseInt(Packet.readContent(data));
 					
-					Packet toRemove = null;
-					
-					// Find the packet that the server is saying it recieved.
-					for (Packet pack : sendingPackets)
-					{
-						if (pack.getID() == sentID) toRemove = pack;
-					}
-					
-					// Remove that packet from the queue
-					if (toRemove != null)
-					{
-						sendingPackets.remove(toRemove);
-					}
+					pusher().removePacketFromQueue(sentID);
 				}
 					break;
 			}
@@ -442,6 +430,11 @@ public class ClientSocket extends DynamicThread
 		return id;
 	}
 	
+	public ClientSocketPacketPusher pusher()
+	{
+		return pusher;
+	}
+	
 	/**
 	 * Sends a packet to the server.
 	 * 
@@ -449,7 +442,7 @@ public class ClientSocket extends DynamicThread
 	 */
 	public void sendPacket(Packet packet)
 	{
-		if (packet.mustSend()) sendingPackets.add(packet);
+		pusher().addPacket(packet);;
 		sendData(packet.getData());
 	}
 	
@@ -542,8 +535,8 @@ public class ClientSocket extends DynamicThread
 			this.sendPacket(pack);
 		}
 		socket().close();
+		pusher().stopThread();
 		playerList.clear();
-		sendingPackets.clear();
 		receivedPackets.clear();
 	}
 	

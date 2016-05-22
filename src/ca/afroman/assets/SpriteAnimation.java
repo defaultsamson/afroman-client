@@ -102,7 +102,7 @@ public class SpriteAnimation extends AssetArray implements ITickable
 	@Override
 	public Asset clone()
 	{
-		return new SpriteAnimation(type, pingPong, ticksPerFrame, (Texture[]) getAssets());
+		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, (Texture[]) getAssets());
 	}
 	
 	@Override
@@ -115,6 +115,6 @@ public class SpriteAnimation extends AssetArray implements ITickable
 			newTextures[i] = ((Texture[]) getAssets())[i].clone();
 		}
 		
-		return new SpriteAnimation(type, pingPong, ticksPerFrame, newTextures);
+		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, newTextures);
 	}
 }

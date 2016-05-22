@@ -62,6 +62,8 @@ public enum AssetType
 	
 	public static AssetType fromOrdinal(int ordinal)
 	{
-		return AssetType.values()[ordinal];
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
+		return values()[ordinal];
 	}
 }

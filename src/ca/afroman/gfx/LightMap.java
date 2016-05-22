@@ -96,28 +96,28 @@ public class LightMap extends Texture
 					int lightMapY = drawY + iy;
 					
 					// If it's off-screen, don't try to render it.
-					if (lightMapX < 0 || lightMapY < 0 || lightMapX >= image.getWidth() || lightMapY >= image.getHeight()) continue;
+					if (lightMapX < 0 || lightMapY < 0 || lightMapX >= getImage().getWidth() || lightMapY >= getImage().getHeight()) continue;
 					
 					int lightPixel = lightTexture.getRGB(ix, iy);
-					int lightmapPixel = image.getRGB(lightMapX, lightMapY);
+					int lightmapPixel = getImage().getRGB(lightMapX, lightMapY);
 					
 					if (oldLightMixing)
 					{
 						// Only set the pixel to it if the new colour doesn't go below the ambient colour.
 						if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
 						{
-							image.setRGB(lightMapX, lightMapY, lightPixel);
+							getImage().setRGB(lightMapX, lightMapY, lightPixel);
 						}
 					}
 					else // New and improved light mixing
 					{
 						if (lightmapPixel == ColourUtil.BUFFER_WASTE)
 						{
-							image.setRGB(lightMapX, lightMapY, lightPixel);
+							getImage().setRGB(lightMapX, lightMapY, lightPixel);
 						}
 						else // If it's not a BUFFER, multiply the current value together to get the new pixel
 						{
-							image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
+							getImage().setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
 						}
 					}
 				}
@@ -139,28 +139,28 @@ public class LightMap extends Texture
 				int lightMapY = (int) (light.getLevel() != null ? light.getLevel().worldToScreenY(light.getY() - light.getRadius()) : light.getY() - light.getRadius()) + iy;
 				
 				// If it's off-screen, don't try to render it.
-				if (lightMapX < 0 || lightMapY < 0 || lightMapX >= image.getWidth() || lightMapY >= image.getHeight()) continue;
+				if (lightMapX < 0 || lightMapY < 0 || lightMapX >= getImage().getWidth() || lightMapY >= getImage().getHeight()) continue;
 				
 				int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
-				int lightmapPixel = image.getRGB(lightMapX, lightMapY);
+				int lightmapPixel = getImage().getRGB(lightMapX, lightMapY);
 				
 				if (oldLightMixing)
 				{
 					// Only set the pixel to it if the new colour doesn't go below the ambient colour.
 					if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
 					{
-						image.setRGB(lightMapX, lightMapY, lightPixel);
+						getImage().setRGB(lightMapX, lightMapY, lightPixel);
 					}
 				}
 				else // New and improved light mixing
 				{
 					if (lightmapPixel == ColourUtil.BUFFER_WASTE)
 					{
-						image.setRGB(lightMapX, lightMapY, lightPixel);
+						getImage().setRGB(lightMapX, lightMapY, lightPixel);
 					}
 					else // If it's not a BUFFER, multiply the current value together to get the new pixel
 					{
-						image.setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
+						getImage().setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
 					}
 				}
 			}
@@ -169,11 +169,11 @@ public class LightMap extends Texture
 	
 	public void clear()
 	{
-		for (int y = 0; y < image.getHeight(); ++y)
+		for (int y = 0; y < getImage().getHeight(); ++y)
 		{
-			for (int x = 0; x < image.getWidth(); ++x)
+			for (int x = 0; x < getImage().getWidth(); ++x)
 			{
-				image.setRGB(x, y, ColourUtil.BUFFER_WASTE);
+				getImage().setRGB(x, y, ColourUtil.BUFFER_WASTE);
 			}
 		}
 	}
@@ -183,13 +183,13 @@ public class LightMap extends Texture
 	 */
 	public void patch()
 	{
-		for (int y = 0; y < image.getHeight(); ++y)
+		for (int y = 0; y < getImage().getHeight(); ++y)
 		{
-			for (int x = 0; x < image.getWidth(); ++x)
+			for (int x = 0; x < getImage().getWidth(); ++x)
 			{
-				if (image.getRGB(x, y) == ColourUtil.BUFFER_WASTE)
+				if (getImage().getRGB(x, y) == ColourUtil.BUFFER_WASTE)
 				{
-					image.setRGB(x, y, getAmbientColour().getRGB());
+					getImage().setRGB(x, y, getAmbientColour().getRGB());
 				}
 			}
 		}

@@ -52,7 +52,7 @@ public class AssetArray extends Asset
 	@Override
 	public Asset clone()
 	{
-		return new AssetArray(type, assets);
+		return new AssetArray(getAssetType(), assets);
 	}
 	
 	/**
@@ -71,6 +71,6 @@ public class AssetArray extends Asset
 			newAssets[i] = assets[i].clone();
 		}
 		
-		return new AssetArray(type, newAssets);
+		return new AssetArray(getAssetType(), newAssets);
 	}
 }

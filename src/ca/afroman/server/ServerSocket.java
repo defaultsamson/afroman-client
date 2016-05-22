@@ -38,7 +38,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ServerSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = false;
+	public static final boolean TRACE_PACKETS = true;
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
 	public static final int PORT = 2413;
 	public static final int MAX_PLAYERS = 8;
@@ -610,9 +610,8 @@ public class ServerSocket extends DynamicThread
 	 */
 	public void sendPacket(Packet packet, IPConnection connection)
 	{
+		pusher().addPacketSendingTo(connection, packet);
 		sendData(packet.getData(), connection.getIPAddress(), connection.getPort());
-		
-		if (packet.mustSend()) pusher().addPacketSendingTo(connection, packet);
 	}
 	
 	/**
@@ -689,6 +688,6 @@ public class ServerSocket extends DynamicThread
 		socket.close();
 		clientConnections.clear();
 		receivedPackets.clear();
-		packetPusher.stopThread();
+		pusher().stopThread();
 	}
 }
