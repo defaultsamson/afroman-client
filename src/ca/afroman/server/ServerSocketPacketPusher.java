@@ -21,6 +21,8 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 		super(2);
 		
 		sendingPackets = new HashMap<IPConnection, List<Packet>>();
+		
+		this.setName("Server-SocketPusher");
 	}
 	
 	@Override

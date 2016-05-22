@@ -29,8 +29,9 @@ public class GuiMainMenu extends GuiScreen
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		light = new FlickeringLight(-1, null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
-		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 60, 72, blackFont, "Join Game"));
-		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 90, 72, blackFont, "Host Game"));
+		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join Game"));
+		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 1), 72, blackFont, "Host Game"));
+		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 2), 72, blackFont, "Quit Game"));
 	}
 	
 	@Override
@@ -80,6 +81,11 @@ public class GuiMainMenu extends GuiScreen
 				break;
 			case 1: // Join Server
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(this));
+				break;
+			case 0: // Quite game
+				ClientGame.instance().stopThread();
+				System.exit(0);
+				break;
 		}
 	}
 	

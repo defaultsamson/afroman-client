@@ -38,7 +38,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ClientSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = true;
+	public static final boolean TRACE_PACKETS = false;
 	public static int id = -1;
 	private InetAddress serverIP = null;
 	private DatagramSocket socket;
@@ -60,6 +60,8 @@ public class ClientSocket extends DynamicThread
 		{
 			e.printStackTrace();
 		}
+		
+		this.setName("Client-Socket");
 	}
 	
 	public synchronized void setServerIP(String serverIpAddress)
@@ -548,7 +550,7 @@ public class ClientSocket extends DynamicThread
 	@Override
 	public void onStart()
 	{
-		
+		pusher.start();
 	}
 	
 	@Override

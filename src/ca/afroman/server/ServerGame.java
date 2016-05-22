@@ -41,6 +41,8 @@ public class ServerGame extends DynamicTickThread
 		if (game == null) game = this;
 		
 		socketServer = new ServerSocket(password);
+		
+		this.setName("Server-Game");
 	}
 	
 	public void loadGame()

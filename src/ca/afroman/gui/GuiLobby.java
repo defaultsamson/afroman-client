@@ -1,5 +1,8 @@
 package ca.afroman.gui;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
@@ -26,6 +29,8 @@ public class GuiLobby extends GuiScreen
 	private FlickeringLight light1;
 	private FlickeringLight light2;
 	
+	private String lanIP;
+	
 	private GuiTextButton startButton;
 	private GuiTextButton stopButton;
 	
@@ -51,10 +56,26 @@ public class GuiLobby extends GuiScreen
 		startButton.setEnabled(ClientGame.instance().isHostingServer());
 		buttons.add(startButton);
 		
-		// Draw a stop server button
+		lanIP = "Unknown";
+		
+		// If it's the host
 		if (ClientGame.instance().isHostingServer())
 		{
+			// Draw a stop server button
 			stopButton = new GuiTextButton(this, 2001, (ClientGame.WIDTH / 2) + 8, 116, 84, blackFont, "Stop Server");
+			
+			// Get the local IP
+			try
+			{
+				InetAddress ip = InetAddress.getLocalHost();
+				lanIP = ip.toString();
+				
+				System.out.println("IP: " + ip);
+			}
+			catch (UnknownHostException e)
+			{
+				e.printStackTrace();
+			}
 		}
 		// Draw a leave server button
 		else
@@ -63,7 +84,7 @@ public class GuiLobby extends GuiScreen
 		}
 		buttons.add(stopButton);
 		
-		// Makes sure that the GUI is initialised no matter what
+		// Makes sure that the GUI buttons are initialised no matter what
 		firstTime = true;
 	}
 	
@@ -155,11 +176,11 @@ public class GuiLobby extends GuiScreen
 		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().socket().getConnectedPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Click on a name to choose role)");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN IP: " + lanIP);
 		}
 		else
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Only the host can choose roles)");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Waiting for host to start server)");
 		}
 	}
 	

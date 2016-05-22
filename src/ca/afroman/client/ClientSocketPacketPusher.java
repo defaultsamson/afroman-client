@@ -18,6 +18,8 @@ public class ClientSocketPacketPusher extends DynamicTickThread
 		super(2);
 		
 		sendingPackets = new ArrayList<Packet>();
+		
+		this.setName("Client-SocketPusher");
 	}
 	
 	@Override

@@ -118,6 +118,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		try
 		{
 			ClientGame.instance().stopThread();
+			System.exit(0);
 		}
 		catch (Exception er)
 		{
