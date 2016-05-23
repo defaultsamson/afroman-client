@@ -10,10 +10,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.ColourUtil;
 
-public class Texture extends Asset
+public class Texture extends DrawableAsset
 {
 	public static final String TEXTURE_PATH = "/texture/";
 	
@@ -34,7 +33,7 @@ public class Texture extends Asset
 		BufferedImage inImage = null;
 		try
 		{
-			inImage = ImageIO.read(ClientGame.class.getResourceAsStream(TEXTURE_PATH + path));
+			inImage = ImageIO.read(Texture.class.getResourceAsStream(TEXTURE_PATH + path));
 		}
 		catch (IOException e)
 		{
@@ -217,8 +216,8 @@ public class Texture extends Asset
 	 */
 	public Texture[] toTextureArray(int xColumns, int yRows)
 	{
-		int subTextWidth = this.getWidth() / xColumns;
-		int subTextHeight = this.getHeight() / yRows;
+		int subTextWidth = (int) this.getWidth() / xColumns;
+		int subTextHeight = (int) this.getHeight() / yRows;
 		
 		Texture[] textures = new Texture[xColumns * yRows];
 		

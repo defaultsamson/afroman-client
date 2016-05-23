@@ -369,7 +369,7 @@ public class ClientGame extends DynamicTickRenderThread
 	{
 		// Clears the canvas
 		screen.getGraphics().setColor(Color.WHITE);
-		screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
+		screen.getGraphics().fillRect(0, 0, (int) screen.getWidth(), (int) screen.getHeight());
 		
 		if (getCurrentLevel() != null)
 		{

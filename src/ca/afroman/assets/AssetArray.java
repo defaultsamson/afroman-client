@@ -9,7 +9,7 @@ public class AssetArray extends Asset
 	
 	public AssetArray(AssetType type, Asset... assets)
 	{
-		super(type, assets[0].getWidth(), assets[0].getHeight());
+		super(type);
 		
 		this.assets = assets;
 	}
@@ -37,16 +37,6 @@ public class AssetArray extends Asset
 	public Asset getRandomAsset(int xSeed, int ySeed)
 	{
 		return getAsset(new Random(xSeed << 16 + ySeed).nextInt(length()));
-	}
-	
-	@Override
-	@Deprecated
-	/**
-	 * <b>WARNING: </b>do not use this, as this is really an array of assets, and cannot be drawn.
-	 */
-	public void render(Texture renderTo, int x, int y)
-	{
-		getRandomAsset().render(renderTo, x, y);
 	}
 	
 	@Override

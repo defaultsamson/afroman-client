@@ -7,7 +7,6 @@ import java.util.List;
 import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
-import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.ClientAssetEntity;
@@ -17,6 +16,7 @@ import ca.afroman.entity.api.YComparator;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiBuildModeLayer;
+import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelLight;
@@ -206,7 +206,7 @@ public class ClientLevel extends Level
 		{
 			if (currentBuildMode == 1)
 			{
-				if (cursorAsset != null) cursorAsset.render(renderTo, ClientGame.instance().input().getMouseX(), ClientGame.instance().input().getMouseY());
+				if (cursorAsset != null && cursorAsset instanceof IRenderable) ((IRenderable) cursorAsset).render(renderTo, ClientGame.instance().input().getMouseX(), ClientGame.instance().input().getMouseY());
 			}
 			else if (currentBuildMode == 3 && hitboxClickCount == 1)
 			{
@@ -335,7 +335,7 @@ public class ClientLevel extends Level
 				
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
-					Entity tileToAdd = new Entity(-1, this, cursorAsset.getAssetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), cursorAsset.getWidth(), cursorAsset.getHeight());
+					Entity tileToAdd = new Entity(-1, this, cursorAsset.getAssetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), ((IRenderable) cursorAsset).getWidth(), ((IRenderable) cursorAsset).getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(editLayer, tileToAdd);
 					ClientGame.instance().socket().sendPacket(pack);
 				}
@@ -378,7 +378,7 @@ public class ClientLevel extends Level
 					}
 					
 					// Only allow ordinals of assets that are Textures or SpriteAnimations
-					while (!(Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)) instanceof Texture || Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)) instanceof SpriteAnimation))
+					while (!(Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)) instanceof IRenderable))
 					{
 						currentBuildTextureOrdinal += ordinalDir;
 						

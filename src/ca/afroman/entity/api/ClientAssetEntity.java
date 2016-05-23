@@ -36,7 +36,7 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	{
 		if (asset != null && getLevel() != null)
 		{
-			asset.render(renderTo, getLevel().worldToScreenX(x), getLevel().worldToScreenY(y));
+			if (asset instanceof IRenderable) ((IRenderable) asset).render(renderTo, getLevel().worldToScreenX(x), getLevel().worldToScreenY(y));
 		}
 	}
 	
@@ -47,7 +47,7 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	@Deprecated
 	public void render(Texture renderTo, int x, int y)
 	{
-		asset.render(renderTo, x, y);
+		if (asset instanceof IRenderable) ((IRenderable) asset).render(renderTo, x, y);
 	}
 	
 	public Asset getAsset()

@@ -1,8 +1,9 @@
 package ca.afroman.assets;
 
+import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 
-public class SpriteAnimation extends AssetArray implements ITickable
+public class SpriteAnimation extends AssetArray implements ITickable, IRenderable
 {
 	/** Holds the textures for each frame. */
 	private int currentFrameIndex = 0;
@@ -116,5 +117,17 @@ public class SpriteAnimation extends AssetArray implements ITickable
 		}
 		
 		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, newTextures);
+	}
+	
+	@Override
+	public double getWidth()
+	{
+		return getCurrentFrame().getWidth();
+	}
+	
+	@Override
+	public double getHeight()
+	{
+		return getCurrentFrame().getHeight();
 	}
 }

@@ -13,6 +13,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.gfx.ColourUtil;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.interfaces.IRenderable;
 import ca.afroman.level.ClientLevel;
 
 public class ClientLightEntity extends ClientAssetEntity
@@ -35,9 +36,9 @@ public class ClientLightEntity extends ClientAssetEntity
 		{
 			((LightMap) renderTo).putLight(this);
 		}
-		else
+		else if (asset instanceof IRenderable)
 		{
-			asset.render(renderTo, getLevel().worldToScreenX(x) - (int) radius, getLevel().worldToScreenY(y) - (int) radius);
+			((IRenderable) asset).render(renderTo, getLevel().worldToScreenX(x) - (int) radius, getLevel().worldToScreenY(y) - (int) radius);
 		}
 	}
 	

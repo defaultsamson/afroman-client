@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.input.InputType;
@@ -13,6 +14,9 @@ public class GuiButton extends InputType
 	protected GuiScreen screen;
 	
 	protected Rectangle hitbox;
+	
+	private AudioClip pushSound;
+	private AudioClip releaseSound;
 	
 	private int id;
 	private boolean canHold = false;
@@ -29,7 +33,7 @@ public class GuiButton extends InputType
 	{
 		if (width < 3) width = 3;
 		
-		hitbox = new Rectangle(x, y, width, normal.getHeight());
+		hitbox = new Rectangle(x, y, width, (int) normal.getHeight());
 		
 		Texture[] temp = new Texture[3];
 		temp[0] = normal;
@@ -46,12 +50,14 @@ public class GuiButton extends InputType
 		{
 			for (int i2 = 0; i2 < 3; i2++)
 			{
-				textures[i][i2] = temp[i].getSubTexture(temp[i].getAssetType(), i2, 0, 1, normal.getHeight());
+				textures[i][i2] = temp[i].getSubTexture(temp[i].getAssetType(), i2, 0, 1, (int) normal.getHeight());
 			}
 		}
 		
 		this.screen = screen;
 		this.id = id;
+		this.pushSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_PUSH);
+		this.releaseSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_RELEASE);
 	}
 	
 	public void tick()
@@ -90,10 +96,17 @@ public class GuiButton extends InputType
 			else if (this.isPressedFiltered())
 			{
 				onPressed();
+				pushSound.start();
 			}
-			else if (this.isReleasedFiltered() && ClientGame.instance().input().mouseLeft.isReleased())
+			else if (this.isReleasedFiltered())
 			{
-				onRelease();
+				releaseSound.start();
+				
+				// Only invoke the onRelease() method if the mouse was released to cause this being released, and it wasn't just dragged off of this button
+				if (ClientGame.instance().input().mouseLeft.isReleased())
+				{
+					onRelease();
+				}
 			}
 		}
 	}
