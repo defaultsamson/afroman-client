@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +16,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.util.FileIO;
 
 public class Level
 {
@@ -102,8 +102,7 @@ public class Level
 			in.close();
 			out.close();
 			
-			// Loads all the lines from the temp file
-			List<String> lines = Files.readAllLines(tempFile.toPath());
+			List<String> lines = FileIO.readAllLines(tempFile);
 			
 			int lineNum = 1;
 			for (String line : lines)
