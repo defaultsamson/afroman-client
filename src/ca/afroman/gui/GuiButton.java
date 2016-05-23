@@ -15,6 +15,7 @@ public class GuiButton extends InputType
 	
 	protected Rectangle hitbox;
 	
+	private boolean makeSound = true;
 	private AudioClip pushSound;
 	private AudioClip releaseSound;
 	
@@ -96,11 +97,11 @@ public class GuiButton extends InputType
 			else if (this.isPressedFiltered())
 			{
 				onPressed();
-				pushSound.start();
+				if (makeSound) pushSound.start();
 			}
 			else if (this.isReleasedFiltered())
 			{
-				releaseSound.start();
+				if (makeSound) releaseSound.start();
 				
 				// Only invoke the onRelease() method if the mouse was released to cause this being released, and it wasn't just dragged off of this button
 				if (ClientGame.instance().input().mouseLeft.isReleased())
@@ -167,5 +168,10 @@ public class GuiButton extends InputType
 		
 		// Draws the right pixels
 		drawTo.draw(getTexture()[2], hitbox.x + hitbox.width - 1, hitbox.y);
+	}
+	
+	public void setMakeSound(boolean isNoisy)
+	{
+		makeSound = isNoisy;
 	}
 }

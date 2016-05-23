@@ -84,6 +84,7 @@ public class GuiMainMenu extends GuiScreen
 				break;
 			case 0: // Quite game
 				ClientGame.instance().stopThread();
+				Assets.dispose();
 				System.exit(0);
 				break;
 		}

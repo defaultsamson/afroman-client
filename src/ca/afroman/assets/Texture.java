@@ -231,4 +231,11 @@ public class Texture extends DrawableAsset
 		
 		return textures;
 	}
+
+	@Override
+	public void dispose()
+	{
+		graphics.dispose();
+		image.flush();
+	}
 }

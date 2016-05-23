@@ -14,6 +14,8 @@ public abstract class Asset
 	@Override
 	public abstract Asset clone();
 	
+	public abstract void dispose();
+	
 	public AssetType getAssetType()
 	{
 		return type;

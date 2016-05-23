@@ -25,6 +25,7 @@ public class GuiTextField extends GuiButton
 		super(screen, field, field, field, -1, x, y, width);
 		
 		this.font = font;
+		this.setMakeSound(false);
 	}
 	
 	public void setMaxLength(int newMax)

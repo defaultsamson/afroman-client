@@ -49,19 +49,23 @@ public class AudioClip extends Asset
 		return new AudioClip(type, clip);
 	}
 	
+	public void startLoop()
+	{
+		clip.setFramePosition(0);
+		clip.loop(200);
+		clip.start();
+	}
+	
 	public void start()
 	{
-		if (clip != null)
-		{
-			clip.setFramePosition(0);
-			
-			clip.start();
-		}
+		clip.setFramePosition(0);
+		
+		clip.start();
 	}
 	
 	public void stop()
 	{
-		if (clip != null) clip.stop();
+		clip.stop();
 	}
 	
 	@Override
@@ -70,4 +74,13 @@ public class AudioClip extends Asset
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public void dispose()
+	{
+		clip.stop();
+		clip.flush();
+		clip.close();
+	}
 }
+	

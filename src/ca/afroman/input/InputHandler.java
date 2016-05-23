@@ -12,6 +12,7 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.assets.Assets;
 import ca.afroman.client.ClientGame;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener
@@ -118,6 +119,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		try
 		{
 			ClientGame.instance().stopThread();
+			Assets.dispose();
 			System.exit(0);
 		}
 		catch (Exception er)

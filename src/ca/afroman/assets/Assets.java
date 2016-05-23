@@ -79,6 +79,7 @@ public class Assets
 		
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down.wav"));
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up.wav"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu.wav"));
 	}
 	
 	public static Font getFont(AssetType type)
@@ -155,5 +156,18 @@ public class Assets
 			}
 		}
 		return null;
+	}
+	
+	public static void dispose()
+	{
+		for (AssetArray asset : assetArrays)
+		{
+			asset.dispose();
+		}
+		
+		for (Asset asset : assets)
+		{
+			asset.dispose();
+		}
 	}
 }

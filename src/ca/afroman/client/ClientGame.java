@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
 import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.ClientPlayerEntity;
@@ -82,6 +83,8 @@ public class ClientGame extends DynamicTickRenderThread
 	private ClientSocket socketClient = null;
 	
 	private GuiScreen currentScreen = null;
+	
+	private AudioClip music;
 	
 	public ClientGame()
 	{
@@ -243,6 +246,9 @@ public class ClientGame extends DynamicTickRenderThread
 		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
 		
 		System.out.println("Game Loaded. Took " + loadTime + " seconds.");
+		
+		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
+		music.startLoop();
 	}
 	
 	/**
@@ -545,6 +551,7 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public void exitFromGame()
 	{
+		music.startLoop();
 		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
@@ -559,6 +566,7 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public void joinServer()
 	{
+		music.stop();
 		socketClient.start();
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();

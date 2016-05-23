@@ -63,4 +63,13 @@ public class AssetArray extends Asset
 		
 		return new AssetArray(getAssetType(), newAssets);
 	}
+	
+	@Override
+	public void dispose()
+	{
+		for (Asset asset : assets)
+		{
+			asset.dispose();
+		}
+	}
 }

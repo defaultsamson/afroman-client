@@ -61,7 +61,8 @@ public enum AssetType
 	TEXT_FIELD_CLEAR,
 	
 	AUDIO_BUTTON_PUSH,
-	AUDIO_BUTTON_RELEASE;
+	AUDIO_BUTTON_RELEASE,
+	AUDIO_MENU_MUSIC;
 	
 	public static AssetType fromOrdinal(int ordinal)
 	{
