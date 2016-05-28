@@ -13,7 +13,7 @@ public class PacketAssignClientID extends Packet
 	 */
 	public PacketAssignClientID(int clientID)
 	{
-		super(PacketType.ASSIDN_CLIENTID, true);
+		super(PacketType.ASSIGN_CLIENTID, true);
 		this.clientID = clientID;
 	}
 	

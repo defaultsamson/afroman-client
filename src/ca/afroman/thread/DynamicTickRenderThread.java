@@ -22,9 +22,9 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread
 	/**
 	 * Runs every time that the thread loops.
 	 */
-	// MUST BE SYNCHRONIZED or everything else falls TO ABSOLUTE SHIT
+	// TODO is zynchronization starts to bread, make this synchronized
 	@Override
-	public synchronized void onRun()
+	public void onRun()
 	{
 		long now = System.nanoTime();
 		delta += (now - lastTime) / nsPerTick;

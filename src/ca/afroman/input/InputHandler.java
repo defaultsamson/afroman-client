@@ -118,7 +118,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		// Stops the client properly when being closed
 		try
 		{
-			ClientGame.instance().stopThread();
+			ClientGame.instance().stopThis();
 			Assets.dispose();
 			System.exit(0);
 		}

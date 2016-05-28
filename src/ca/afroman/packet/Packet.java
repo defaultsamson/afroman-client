@@ -125,7 +125,7 @@ public abstract class Packet
 	/**
 	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
 	 */
-	public static synchronized int getNextAvailableID()
+	public static int getNextAvailableID()
 	{
 		int toReturn = nextAvailableID;
 		nextAvailableID++;

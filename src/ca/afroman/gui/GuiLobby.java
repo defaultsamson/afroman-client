@@ -115,7 +115,7 @@ public class GuiLobby extends GuiScreen
 			// Draws the player list
 			int counter = 0;
 			int row = 0;
-			for (ConnectedPlayer player : ClientGame.instance().socket().getConnectedPlayers())
+			for (ConnectedPlayer player : ClientGame.instance().sockets().getConnectedPlayers())
 			{
 				boolean isEvenNum = (counter & 1) == 0;
 				
@@ -145,7 +145,7 @@ public class GuiLobby extends GuiScreen
 			}
 			
 			// Only enable the start button if both the player roles are not null
-			startButton.setEnabled(ClientGame.instance().isHostingServer() && ClientGame.instance().socket().playerByRole(Role.PLAYER1) != null && ClientGame.instance().socket().playerByRole(Role.PLAYER2) != null);
+			startButton.setEnabled(ClientGame.instance().isHostingServer() && ClientGame.instance().sockets().playerByRole(Role.PLAYER1) != null && ClientGame.instance().sockets().playerByRole(Role.PLAYER2) != null);
 		}
 		
 		super.tick();
@@ -173,7 +173,7 @@ public class GuiLobby extends GuiScreen
 			renderTo.draw(lightmap, 0, 0);
 		}
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().socket().getConnectedPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN IP: " + lanIP);
@@ -201,15 +201,15 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			ClientGame.instance().socket().sendPacket(new PacketStartGame());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStartGame());
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			ClientGame.instance().socket().sendPacket(new PacketStopServer());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());
 		}
 		else if (buttonID == 2002) // Leave server
 		{
-			ClientGame.instance().socket().sendPacket(new PacketDisconnect());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketDisconnect());
 			ClientGame.instance().exitFromGame();
 		}
 		else

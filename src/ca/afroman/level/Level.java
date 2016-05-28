@@ -54,15 +54,17 @@ public class Level
 		hitboxes = new ArrayList<Hitbox>();
 	}
 	
-	public synchronized void tick()
+	public void tick()
 	{
-		for (List<Entity> tileList : getTiles())
+		List<List<Entity>> tiles = getTiles();
+		
+		synchronized (tiles)
 		{
-			for (Entity tile : tileList)
+			for (List<Entity> tileList : tiles)
 			{
-				synchronized (tile)
+				for (Entity tile : tileList)
 				{
-					tile.tick();
+						tile.tick();
 				}
 			}
 		}
@@ -293,12 +295,12 @@ public class Level
 		return toReturn;
 	}
 	
-	public synchronized List<List<Entity>> getTiles()
+	public List<List<Entity>> getTiles()
 	{
 		return tiles;
 	}
 	
-	public synchronized List<Entity> getTiles(int layer)
+	public List<Entity> getTiles(int layer)
 	{
 		return getTiles().get(layer);
 	}
@@ -346,7 +348,7 @@ public class Level
 		return null;
 	}
 	
-	public synchronized List<Entity> getEntities()
+	public List<Entity> getEntities()
 	{
 		return entities;
 	}
@@ -392,7 +394,7 @@ public class Level
 	// Collections.reverse(entities);
 	// }
 	
-	public synchronized List<Hitbox> getHitboxes()
+	public List<Hitbox> getHitboxes()
 	{
 		return hitboxes;
 	}
@@ -440,7 +442,7 @@ public class Level
 		if (hitbox != null) getHitboxes().remove(hitbox);
 	}
 	
-	public synchronized List<Entity> getPlayers()
+	public List<Entity> getPlayers()
 	{
 		return players;
 	}
@@ -529,7 +531,7 @@ public class Level
 		return null;
 	}
 	
-	public synchronized List<PointLight> getLights()
+	public List<PointLight> getLights()
 	{
 		return lights;
 	}

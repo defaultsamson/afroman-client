@@ -55,7 +55,8 @@ public class GuiSendingLevels extends GuiScreen
 	{
 		if (ClientGame.instance().isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().socket().getConnectedPlayers().size() + ") players");
+			// TODO not just fucking 3 you git
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().sockets().getConnectedPlayers().size() + ") players");
 			
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for client responses");
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
@@ -81,12 +82,12 @@ public class GuiSendingLevels extends GuiScreen
 		switch (buttonID)
 		{
 			case 2000: // TODO Resend Levels
-				ClientGame.instance().socket().sendPacket(new PacketStartGame());
+				ClientGame.instance().sockets().sender().sendPacket(new PacketStartGame());
 				break;
 			case 2001: // Stop Server
-				ClientGame.instance().socket().sendPacket(new PacketStopServer());
+				ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());
 			case 2002: // Leave server
-				ClientGame.instance().socket().sendPacket(new PacketDisconnect());
+				ClientGame.instance().sockets().sender().sendPacket(new PacketDisconnect());
 				ClientGame.instance().exitFromGame();
 		}
 	}

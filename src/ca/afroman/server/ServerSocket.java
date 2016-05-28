@@ -17,6 +17,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
+import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
@@ -198,7 +199,7 @@ public class ServerSocket extends DynamicThread
 				case STOP_SERVER:
 					if (sentByHost)
 					{
-						ServerGame.instance().stopThread();
+						ServerGame.instance().stopThis();
 					}
 					else
 					{
@@ -579,7 +580,7 @@ public class ServerSocket extends DynamicThread
 		// Gives player a default role based on what critical roles are still required
 		Role role = (this.getPlayerByRole(Role.PLAYER1) == null ? Role.PLAYER1 : (this.getPlayerByRole(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
 		
-		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), role, username);
+		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), ConnectedPlayer.getNextAvailableID(), role, username);
 		clientConnections.add(newConnection);
 		
 		receivedPackets.put(newConnection.getConnection(), new ArrayList<Integer>());
@@ -655,7 +656,7 @@ public class ServerSocket extends DynamicThread
 		}
 	}
 	
-	public synchronized ServerSocketPacketPusher pusher()
+	public ServerSocketPacketPusher pusher()
 	{
 		return packetPusher;
 	}
@@ -663,6 +664,7 @@ public class ServerSocket extends DynamicThread
 	@Override
 	public void onStart()
 	{
+		System.out.println("Starting ServerSocket");
 		packetPusher.start();
 	}
 	
@@ -690,6 +692,6 @@ public class ServerSocket extends DynamicThread
 		socket.close();
 		clientConnections.clear();
 		receivedPackets.clear();
-		pusher().stopThread();
+		pusher().stopThis();
 	}
 }

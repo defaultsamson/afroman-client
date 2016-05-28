@@ -2,10 +2,6 @@ package ca.afroman.client;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,64 +26,25 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketConfirmReceived;
-import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketType;
 import ca.afroman.player.Role;
-import ca.afroman.server.ServerSocket;
 import ca.afroman.thread.DynamicThread;
 
-public class ClientSocket extends DynamicThread
+public class ClientSocketReceive extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = false;
-	public static int id = -1;
-	private InetAddress serverIP = null;
-	private DatagramSocket socket;
-	private List<ConnectedPlayer> playerList;
+	private ClientSocketManager manager;
+	
+	// private DatagramSocket socket;
+	
 	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
-	private ClientSocketPacketPusher pusher; // The packets that are still trying to be sent.
 	
-	public ClientSocket()
+	public ClientSocketReceive(ClientSocketManager manager)
 	{
-		playerList = new ArrayList<ConnectedPlayer>();
+		this.manager = manager;
+		
 		receivedPackets = new ArrayList<Integer>();
-		pusher = new ClientSocketPacketPusher();
 		
-		try
-		{
-			this.socket = new DatagramSocket();
-		}
-		catch (SocketException e)
-		{
-			e.printStackTrace();
-		}
-		
-		this.setName("Client-Socket");
-	}
-	
-	public synchronized void setServerIP(String serverIpAddress)
-	{
-		if (serverIpAddress == null)
-		{
-			serverIP = null;
-			return;
-		}
-		
-		InetAddress ip = null;
-		
-		try
-		{
-			ip = InetAddress.getByName(serverIpAddress);
-		}
-		catch (UnknownHostException e)
-		{
-			e.printStackTrace();
-			
-			ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
-			new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "UNKNOWN", "HOST");
-			return;
-		}
-		
-		this.serverIP = ip;
+		this.setName("Client-Socket-Receive");
 	}
 	
 	@Override
@@ -100,7 +57,7 @@ public class ClientSocket extends DynamicThread
 		
 		try
 		{
-			socket().receive(packet);
+			manager.socket().receive(packet);
 		}
 		catch (IOException e)
 		{
@@ -113,9 +70,10 @@ public class ClientSocket extends DynamicThread
 	public void parsePacket(byte[] data, IPConnection connection)
 	{
 		PacketType type = Packet.readType(data);
+		if (ClientSocketManager.TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 		
 		// If is the server sending the packet
-		if (connection.getIPAddress().getHostAddress().equals(this.serverIP.getHostAddress()) && ServerSocket.PORT == connection.getPort())
+		if (ClientGame.instance().sockets().getConnectedPlayer().getConnection().equals(connection))
 		{
 			int packetID = Packet.readID(data);
 			
@@ -126,18 +84,18 @@ public class ClientSocket extends DynamicThread
 					if (packID == packetID)
 					{
 						// If the packet with this ID has already been received, tell the server to stop sending it, and don't parse it
-						sendPacket(new PacketConfirmReceived(packetID));
+						manager.sender().sendPacket(new PacketConfirmReceived(packetID));
 						return;
 					}
 				}
 				
 				// If the packet with the ID has not already been received
-				sendPacket(new PacketConfirmReceived(packetID));
+				manager.sender().sendPacket(new PacketConfirmReceived(packetID));
 				// Add it to the list
 				receivedPackets.add(packetID);
 			}
 			
-			if (TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
+			if (ClientSocketManager.TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 			
 			switch (type)
 			{
@@ -173,8 +131,8 @@ public class ClientSocket extends DynamicThread
 							break;
 					}
 					break;
-				case ASSIDN_CLIENTID:
-					id = Integer.parseInt(Packet.readContent(data));
+				case ASSIGN_CLIENTID:
+					ClientGame.instance().sockets().getConnectedPlayer().setID(Integer.parseInt(Packet.readContent(data)));;
 					break;
 				case UPDATE_PLAYERLIST:
 				{
@@ -188,7 +146,7 @@ public class ClientSocket extends DynamicThread
 						players.add(new ConnectedPlayer(Integer.parseInt(split[i]), Role.fromOrdinal(Integer.parseInt(split[i + 1])), split[i + 2]));
 					}
 					
-					this.playerList = players;
+					ClientGame.instance().sockets().updateConnectedPlayer(players);
 					
 					if (ClientGame.instance().getCurrentScreen() instanceof GuiConnectToServer)
 					{
@@ -385,7 +343,7 @@ public class ClientSocket extends DynamicThread
 							player.addToLevel(level);
 							
 							// If it's adding the player that this player is, center the camera on them
-							if (player.getRole() == this.thisPlayer().getRole())
+							if (player.getRole() == ClientGame.instance().sockets().getConnectedPlayer().getRole())
 							{
 								player.setCameraToFollow(true);
 							}
@@ -411,7 +369,7 @@ public class ClientSocket extends DynamicThread
 				{
 					int sentID = Integer.parseInt(Packet.readContent(data));
 					
-					pusher().removePacketFromQueue(sentID);
+					manager.sender().removePacketFromQueue(sentID);
 				}
 					break;
 			}
@@ -422,135 +380,17 @@ public class ClientSocket extends DynamicThread
 		}
 	}
 	
-	public boolean isConnected()
-	{
-		return this.serverIP != null;
-	}
-	
-	public int getPlayerID()
-	{
-		return id;
-	}
-	
-	public ClientSocketPacketPusher pusher()
-	{
-		return pusher;
-	}
-	
-	/**
-	 * Sends a packet to the server.
-	 * 
-	 * @param packet the packet
-	 */
-	public void sendPacket(Packet packet)
-	{
-		pusher().addPacket(packet);;
-		sendData(packet.getData());
-	}
-	
-	/**
-	 * Sends a byte array of data to the server.
-	 * 
-	 * @param data the data
-	 * 
-	 * @deprecated Still works to send raw data, but sendPacket() is preferred.
-	 */
-	@Deprecated
-	private void sendData(byte[] data)
-	{
-		if (serverIP != null)
-		{
-			DatagramPacket packet = new DatagramPacket(data, data.length, serverIP, ServerSocket.PORT);
-			
-			if (TRACE_PACKETS) System.out.println("[CLIENT] [SEND] [" + this.serverIP + ":" + ServerSocket.PORT + "] " + new String(data));
-			
-			try
-			{
-				socket().send(packet);
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	/**
-	 * @return if this client has a server that it's listening to.
-	 */
-	public boolean isListening()
-	{
-		return this.serverIP != null;
-	}
-	
-	public ConnectedPlayer thisPlayer()
-	{
-		return playerByID(id);
-	}
-	
-	public ConnectedPlayer playerByRole(Role role)
-	{
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getRole() == role) return player;
-		}
-		
-		return null;
-	}
-	
-	public ConnectedPlayer playerByID(int id)
-	{
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getID() == id) return player;
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * @return a list of all the ConnectedPlayers, excluding this current player.
-	 */
-	public List<ConnectedPlayer> otherPlayers()
-	{
-		List<ConnectedPlayer> toReturn = new ArrayList<ConnectedPlayer>();
-		
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getID() != id) toReturn.add(player);
-		}
-		
-		return toReturn;
-	}
-	
-	public synchronized List<ConnectedPlayer> getConnectedPlayers()
-	{
-		return playerList;
-	}
-	
 	@Override
 	public void onStop()
 	{
-		if (this.isConnected())
-		{
-			PacketDisconnect pack = new PacketDisconnect();
-			this.sendPacket(pack);
-		}
-		socket().close();
-		pusher().stopThread();
-		playerList.clear();
+		manager.socket().close();
 		receivedPackets.clear();
-	}
-	
-	private synchronized DatagramSocket socket()
-	{
-		return socket;
 	}
 	
 	@Override
 	public void onStart()
 	{
-		pusher.start();
+		
 	}
 	
 	@Override

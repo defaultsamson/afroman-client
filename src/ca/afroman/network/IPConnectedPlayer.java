@@ -16,9 +16,9 @@ public class IPConnectedPlayer extends ConnectedPlayer
 	 * @param role the role of the player
 	 * @param username the username of the player
 	 */
-	public IPConnectedPlayer(InetAddress address, int port, Role role, String username)
+	public IPConnectedPlayer(InetAddress address, int port, int id, Role role, String username)
 	{
-		super(role, username);
+		super(id, role, username);
 		
 		connection = new IPConnection(address, port);
 	}

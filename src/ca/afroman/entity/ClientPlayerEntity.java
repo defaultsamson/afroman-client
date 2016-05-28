@@ -38,7 +38,7 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 		super.tick();
 		
 		// If it's not in build mode and the role of this is the role of the client, let them move
-		if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().getRole())
+		if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().sockets().getConnectedPlayer().getRole())
 		{
 			int xa = 0;
 			int ya = 0;

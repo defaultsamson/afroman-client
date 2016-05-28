@@ -47,82 +47,81 @@ public class ClientLevel extends Level
 	
 	public void render(Texture renderTo)
 	{
-		// Renders Tiles
-		for (int i = 0; i <= 2; i++)
+		List<List<Entity>> tiles = getTiles();
+		
+		synchronized (tiles)
 		{
-			boolean draw = true;
-			
-			if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+			// Renders Tiles
+			for (int i = 0; i <= 2; i++)
 			{
-				switch (i)
+				boolean draw = true;
+				
+				if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
 				{
-					case 0:
-						draw = showLayer0;
-						break;
-					case 1:
-						draw = showLayer1;
-						break;
-					case 2:
-						draw = showLayer2;
-						break;
+					switch (i)
+					{
+						case 0:
+							draw = showLayer0;
+							break;
+						case 1:
+							draw = showLayer1;
+							break;
+						case 2:
+							draw = showLayer2;
+							break;
+					}
 				}
-			}
-			
-			if (draw)
-			{
-				synchronized (this)
+				
+				if (draw)
 				{
-					for (Entity tile : this.getTiles(i))
+					for (Entity tile : tiles.get(i))
 					{
 						// If it has a texture, render it
 						if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
 					}
 				}
 			}
-		}
-		
-		List<Entity> entities = new ArrayList<Entity>(this.getEntities());
-		for (Entity player : this.getPlayers())
-		{
-			entities.add(player);
-		}
-		
-		// TODO sort()
-		// entities.sort(new YComparator());
-		
-		ListIO.sort(entities, new YComparator());
-		
-		for (Entity entity : entities)
-		{
-			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
-		}
-		
-		// Renders Tiles
-		for (int i = 3; i <= 5; i++)
-		{
-			boolean draw = true;
 			
-			if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+			List<Entity> entities = new ArrayList<Entity>(this.getEntities());
+			for (Entity player : this.getPlayers())
 			{
-				switch (i)
-				{
-					case 3:
-						draw = showLayer3;
-						break;
-					case 4:
-						draw = showLayer4;
-						break;
-					case 5:
-						draw = showLayer5;
-						break;
-				}
+				entities.add(player);
 			}
 			
-			if (draw)
+			// TODO sort()
+			// entities.sort(new YComparator());
+			
+			ListIO.sort(entities, new YComparator());
+			
+			for (Entity entity : entities)
 			{
-				synchronized (this)
+				if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
+			}
+			
+			// Renders Tiles
+			for (int i = 3; i <= 5; i++)
+			{
+				boolean draw = true;
+				
+				if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
 				{
-					for (Entity tile : this.getTiles(i))
+					switch (i)
+					{
+						case 3:
+							draw = showLayer3;
+							break;
+						case 4:
+							draw = showLayer4;
+							break;
+						case 5:
+							draw = showLayer5;
+							break;
+					}
+				}
+				
+				if (draw)
+				{
+					for (Entity tile : tiles.get(i))
 					{
 						// If it has a texture, render it
 						if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
@@ -337,13 +336,13 @@ public class ClientLevel extends Level
 				{
 					Entity tileToAdd = new Entity(-1, this, cursorAsset.getAssetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), ((IRenderable) cursorAsset).getWidth(), ((IRenderable) cursorAsset).getHeight());
 					PacketAddLevelTile pack = new PacketAddLevelTile(editLayer, tileToAdd);
-					ClientGame.instance().socket().sendPacket(pack);
+					ClientGame.instance().sockets().sender().sendPacket(pack);
 				}
 				
 				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
 					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(editLayer, this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
-					ClientGame.instance().socket().sendPacket(pack);
+					ClientGame.instance().sockets().sender().sendPacket(pack);
 				}
 				
 				boolean assetUpdated = false;
@@ -413,12 +412,12 @@ public class ClientLevel extends Level
 				{
 					PointLight light = new PointLight(-1, this, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
 					
-					ClientGame.instance().socket().sendPacket(new PacketAddLevelLight(light));
+					ClientGame.instance().sockets().sender().sendPacket(new PacketAddLevelLight(light));
 				}
 				
 				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
-					ClientGame.instance().socket().sendPacket(new PacketRemoveLevelLightLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY())));
+					ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelLightLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY())));
 				}
 				
 				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
@@ -447,7 +446,7 @@ public class ClientLevel extends Level
 					else if (hitboxClickCount == 1)
 					{
 						PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
-						ClientGame.instance().socket().sendPacket(pack);
+						ClientGame.instance().sockets().sender().sendPacket(pack);
 						
 						hitboxClickCount = 0;
 					}
@@ -462,7 +461,7 @@ public class ClientLevel extends Level
 					else
 					{
 						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
-						ClientGame.instance().socket().sendPacket(pack);
+						ClientGame.instance().sockets().sender().sendPacket(pack);
 					}
 				}
 				
@@ -556,7 +555,7 @@ public class ClientLevel extends Level
 		return yOffset;
 	}
 	
-	public synchronized LightMap getLightMap()
+	public LightMap getLightMap()
 	{
 		return lightmap;
 	}

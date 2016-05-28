@@ -1,6 +1,8 @@
 package ca.afroman.thread;
 
-public abstract class DynamicThread extends Thread
+import ca.afroman.interfaces.IDynamicRunning;
+
+public abstract class DynamicThread extends Thread implements IDynamicRunning
 {
 	private boolean exit = false;
 	protected boolean isRunning = false;
@@ -41,6 +43,16 @@ public abstract class DynamicThread extends Thread
 	public abstract void onRun();
 	
 	@Override
+	public void startThis()
+	{
+		this.start();
+	}
+	
+	/**
+	 * @deprecated Use startThis()
+	 */
+	@Deprecated
+	@Override
 	public void start()
 	{
 		if (exit)
@@ -75,7 +87,8 @@ public abstract class DynamicThread extends Thread
 	 */
 	public abstract void onStart();
 	
-	public void pauseThread()
+	@Override
+	public void pauseThis()
 	{
 		isRunning = false;
 	}
@@ -93,7 +106,8 @@ public abstract class DynamicThread extends Thread
 	/**
 	 * Completely stops this thread from running.
 	 */
-	public void stopThread()
+	@Override
+	public void stopThis()
 	{
 		exit = true;
 		isRunning = false;

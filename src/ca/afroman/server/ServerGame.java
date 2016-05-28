@@ -112,7 +112,7 @@ public class ServerGame extends DynamicTickThread
 	{
 		super.onStart();
 		
-		socket().start();
+		socket().startThis();
 	}
 	
 	@Override
@@ -120,7 +120,7 @@ public class ServerGame extends DynamicTickThread
 	{
 		// TODO save levels?
 		
-		socket().stopThread();
+		socket().stopThis();
 		
 		if (getLevels() != null) getLevels().clear();
 		ConnectedPlayer.resetNextAvailableID();
@@ -177,7 +177,7 @@ public class ServerGame extends DynamicTickThread
 		isInGame = true;
 	}
 	
-	public synchronized ServerSocket socket()
+	public ServerSocket socket()
 	{
 		return socketServer;
 	}
@@ -197,12 +197,12 @@ public class ServerGame extends DynamicTickThread
 		return null;
 	}
 	
-	public synchronized List<Level> getLevels()
+	public List<Level> getLevels()
 	{
 		return levels;
 	}
 	
-	public synchronized List<ServerPlayerEntity> getPlayers()
+	public List<ServerPlayerEntity> getPlayers()
 	{
 		return players;
 	}

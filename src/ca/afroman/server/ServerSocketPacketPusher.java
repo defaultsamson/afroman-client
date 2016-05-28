@@ -28,10 +28,12 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 	@Override
 	public void tick()
 	{
-		// For each connection
-		for (Entry<IPConnection, List<Packet>> entry : getPacketQueue().entrySet())
+		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
+		
+		synchronized (packs)
 		{
-			synchronized (this)
+			// For each connection
+			for (Entry<IPConnection, List<Packet>> entry : packs.entrySet())
 			{
 				// For each packet queued to send to the connection
 				for (Packet pack : entry.getValue())
@@ -127,7 +129,7 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 		}
 	}
 	
-	public synchronized HashMap<IPConnection, List<Packet>> getPacketQueue()
+	public HashMap<IPConnection, List<Packet>> getPacketQueue()
 	{
 		return sendingPackets;
 	}

@@ -448,7 +448,7 @@ public class Entity implements ITickable
 			}
 			else if (this instanceof ClientPlayerEntity)
 			{
-				ClientGame.instance().socket().sendPacket(new PacketMovePlayer(((ClientPlayerEntity) this).getRole(), xa, ya));
+				ClientGame.instance().sockets().sender().sendPacket(new PacketMovePlayer(((ClientPlayerEntity) this).getRole(), xa, ya));
 			}
 			else
 			{

@@ -11,17 +11,6 @@ public class ConnectedPlayer
 	private int id;
 	
 	/**
-	 * A player object with a role, username, and the next available ID number.
-	 * 
-	 * @param role the role of the player
-	 * @param username the username of the player
-	 */
-	public ConnectedPlayer(Role role, String username)
-	{
-		this(getNextAvailableID(), role, username);
-	}
-	
-	/**
 	 * A player object with a role, username, and ID number.
 	 * 
 	 * @param id the ID number
@@ -67,6 +56,11 @@ public class ConnectedPlayer
 	public int getID()
 	{
 		return id;
+	}
+	
+	public void setID(int id)
+	{
+		this.id = id;
 	}
 	
 	/**

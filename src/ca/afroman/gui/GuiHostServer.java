@@ -127,9 +127,9 @@ public class GuiHostServer extends GuiScreen
 		// If not already hosting
 		if (!ClientGame.instance().isHostingServer())
 		{
-			new ServerGame(this.password.getText());
+			if (ServerGame.instance() == null) new ServerGame(this.password.getText());
 			// Start that server thread
-			ServerGame.instance().start();
+			ServerGame.instance().startThis();
 		}
 		
 		ClientGame.instance().joinServer();

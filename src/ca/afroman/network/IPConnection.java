@@ -19,9 +19,19 @@ public class IPConnection
 		this.port = port;
 	}
 	
+	public void setIPAddress(InetAddress address)
+	{
+		this.address = address;
+	}
+	
 	public InetAddress getIPAddress()
 	{
 		return address;
+	}
+	
+	public void setPort(int newPort)
+	{
+		this.port = newPort;
 	}
 	
 	public int getPort()
@@ -39,6 +49,13 @@ public class IPConnection
 	
 	public boolean equals(IPConnection connection)
 	{
-		return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
+		if (address != null && connection != null)
+		{
+			return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

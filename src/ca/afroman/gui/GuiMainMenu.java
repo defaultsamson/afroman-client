@@ -83,7 +83,7 @@ public class GuiMainMenu extends GuiScreen
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(this));
 				break;
 			case 0: // Quite game
-				ClientGame.instance().stopThread();
+				ClientGame.instance().stopThis();
 				Assets.dispose();
 				System.exit(0);
 				break;

@@ -35,6 +35,7 @@ import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.player.Role;
 import ca.afroman.server.ServerGame;
+import ca.afroman.server.ServerSocket;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
 
@@ -44,7 +45,7 @@ public class ClientGame extends DynamicTickRenderThread
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final int VERSION = 26;
+	public static final int VERSION = 27;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	private static ClientGame game;
@@ -80,7 +81,7 @@ public class ClientGame extends DynamicTickRenderThread
 	private String password = "";
 	private String typedIP = "";
 	
-	private ClientSocket socketClient = null;
+	private ClientSocketManager socketManager;
 	
 	private GuiScreen currentScreen = null;
 	
@@ -207,7 +208,7 @@ public class ClientGame extends DynamicTickRenderThread
 				loading.getImage().flush();
 			}
 		};
-		renderLoading.start();
+		renderLoading.startThis();
 		
 		// DO THE LOADING
 		
@@ -232,14 +233,14 @@ public class ClientGame extends DynamicTickRenderThread
 		lights.put(Role.PLAYER1, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
 		lights.put(Role.PLAYER2, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
 		
-		socketClient = new ClientSocket();
+		socketManager = new ClientSocketManager();
 		
 		setCurrentScreen(new GuiMainMenu());
 		
 		// WHEN FINISHED LOADING
 		
 		// End the loading screen
-		renderLoading.stopThread();
+		renderLoading.stopThis();
 		frame.setResizable(true);
 		canvas.repaint();
 		
@@ -349,7 +350,7 @@ public class ClientGame extends DynamicTickRenderThread
 			
 			System.out.println("Build Mode: " + buildMode);
 			
-			this.getPlayer(this.getRole()).setCameraToFollow(!buildMode);
+			this.getPlayer(sockets().getConnectedPlayer().getRole()).setCameraToFollow(!buildMode);
 		}
 		
 		if (currentScreen != null)
@@ -502,12 +503,12 @@ public class ClientGame extends DynamicTickRenderThread
 		return ServerGame.instance() != null;
 	}
 	
-	public synchronized void setCurrentScreen(GuiScreen screen)
+	public void setCurrentScreen(GuiScreen screen)
 	{
 		this.currentScreen = screen;
 	}
 	
-	public synchronized GuiScreen getCurrentScreen()
+	public GuiScreen getCurrentScreen()
 	{
 		return currentScreen;
 	}
@@ -555,37 +556,37 @@ public class ClientGame extends DynamicTickRenderThread
 		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
-		socketClient.pauseThread();
-		socketClient.getConnectedPlayers().clear();
+		socketManager.pauseThis();
+		socketManager.getConnectedPlayers().clear();
 		
 		if (this.isHostingServer())
 		{
-			ServerGame.instance().stopThread();
+			ServerGame.instance().stopThis();
 		}
 	}
 	
 	public void joinServer()
 	{
 		music.stop();
-		socketClient.start();
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
-		socketClient.setServerIP(getServerIP());
-		socketClient.sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
+		socketManager.setServerIP(getServerIP(), ServerSocket.PORT);
+		socketManager.startThis();
+		socketManager.sender().sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
 	}
 	
-	public synchronized ClientLevel getCurrentLevel()
+	public ClientLevel getCurrentLevel()
 	{
 		return currentLevel;
 	}
 	
-	public synchronized void setCurrentLevel(ClientLevel newLevel)
+	public void setCurrentLevel(ClientLevel newLevel)
 	{
 		currentLevel = newLevel;
 	}
 	
-	public synchronized ClientLevel getLevelByType(LevelType type)
+	public ClientLevel getLevelByType(LevelType type)
 	{
 		for (ClientLevel level : getLevels())
 		{
@@ -599,7 +600,7 @@ public class ClientGame extends DynamicTickRenderThread
 		startLoadTime = System.currentTimeMillis();
 		
 		game = new ClientGame();
-		game.start();
+		game.startThis();
 	}
 	
 	public Canvas getCanvas()
@@ -612,9 +613,9 @@ public class ClientGame extends DynamicTickRenderThread
 		return frame;
 	}
 	
-	public ClientSocket socket()
+	public ClientSocketManager sockets()
 	{
-		return socketClient;
+		return socketManager;
 	}
 	
 	public InputHandler input()
@@ -637,8 +638,8 @@ public class ClientGame extends DynamicTickRenderThread
 	@Override
 	public void onStop()
 	{
-		if (this.isHostingServer()) ServerGame.instance().stopThread();
-		socketClient.stopThread();
+		if (this.isHostingServer()) ServerGame.instance().stopThis();
+		sockets().stopThis();
 	}
 	
 	public void updatePlayerList()
@@ -661,19 +662,14 @@ public class ClientGame extends DynamicTickRenderThread
 		return null;
 	}
 	
-	public synchronized List<ClientPlayerEntity> getPlayers()
+	public List<ClientPlayerEntity> getPlayers()
 	{
 		return players;
 	}
 	
-	public synchronized List<ClientLevel> getLevels()
+	public List<ClientLevel> getLevels()
 	{
 		return levels;
-	}
-	
-	public Role getRole()
-	{
-		return this.socketClient.thisPlayer().getRole();
 	}
 	
 	public FlickeringLight getLight(Role role)
