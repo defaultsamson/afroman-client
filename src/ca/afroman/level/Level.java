@@ -64,7 +64,7 @@ public class Level
 			{
 				for (Entity tile : tileList)
 				{
-						tile.tick();
+					tile.tick();
 				}
 			}
 		}
