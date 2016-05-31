@@ -29,6 +29,11 @@ public class ServerGame extends DynamicTickThread
 		return game;
 	}
 	
+	private static ThreadGroup newDefaultThreadGroupInstance()
+	{
+		return new ThreadGroup("Server");
+	}
+	
 	private List<Level> levels;
 	private List<ServerPlayerEntity> players;
 	
@@ -36,13 +41,11 @@ public class ServerGame extends DynamicTickThread
 	
 	public ServerGame(String password)
 	{
-		super(60);
+		super(newDefaultThreadGroupInstance(), "Game", 60);
 		
 		if (game == null) game = this;
 		
 		socketServer = new ServerSocket(password);
-		
-		this.setName("Server-Game");
 	}
 	
 	public void loadGame()

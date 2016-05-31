@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import ca.afroman.log.ALogType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.Packet;
 import ca.afroman.thread.DynamicTickThread;
@@ -18,11 +19,9 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 	 */
 	public ServerSocketPacketPusher()
 	{
-		super(2);
+		super(ServerGame.instance().getThreadGroup(), "Pusher", 2);
 		
 		sendingPackets = new HashMap<IPConnection, List<Packet>>();
-		
-		this.setName("Server-SocketPusher");
 	}
 	
 	@Override
@@ -38,7 +37,6 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 				// For each packet queued to send to the connection
 				for (Packet pack : entry.getValue())
 				{
-					System.out.println("Pushin some sick packets bro " + pack.getID());
 					ServerGame.instance().socket().sendPacket(pack, entry.getKey());
 				}
 			}
@@ -65,22 +63,36 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 	
 	public List<Packet> getPacketsSendingTo(IPConnection connection)
 	{
-		for (Entry<IPConnection, List<Packet>> entry : getPacketQueue().entrySet())
-		{
-			if (entry.getKey().equals(connection)) return entry.getValue();
-		}
+		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
 		
+		synchronized (packs)
+		{
+			for (Entry<IPConnection, List<Packet>> entry : packs.entrySet())
+			{
+				if (entry.getKey().equals(connection)) return entry.getValue();
+			}
+		}
 		return null;
 	}
 	
 	public void addConnection(IPConnection connection)
 	{
-		getPacketQueue().put(connection, new ArrayList<Packet>());
+		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
+		
+		synchronized (packs)
+		{
+			packs.put(connection, new ArrayList<Packet>());
+		}
 	}
 	
 	public void removeConnection(IPConnection connection)
 	{
-		getPacketQueue().remove(connection);
+		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
+		
+		synchronized (packs)
+		{
+			packs.remove(connection);
+		}
 	}
 	
 	/**
@@ -113,7 +125,7 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 		}
 		else
 		{
-			System.out.println("[SERVER] [PUSHER] Cannot find the connection to remove the packet from.");
+			logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from.");
 		}
 	}
 	

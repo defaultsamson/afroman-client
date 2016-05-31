@@ -5,9 +5,9 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread
 	protected int frames;
 	protected int fps;
 	
-	public DynamicTickRenderThread(int ticksPerSecond)
+	public DynamicTickRenderThread(ThreadGroup group, String name, int ticksPerSecond)
 	{
-		super(ticksPerSecond);
+		super(group, name, ticksPerSecond);
 	}
 	
 	@Override

@@ -17,6 +17,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
+import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
@@ -57,14 +58,15 @@ public class ServerSocket extends DynamicThread
 	 */
 	public ServerSocket(String password)
 	{
+		super(ServerGame.instance().getThreadGroup(), "Socket");
+		
 		try
 		{
 			this.socket = new DatagramSocket(PORT);
 		}
 		catch (SocketException e)
 		{
-			e.printStackTrace();
-			System.out.println("[SERVER] [CRITICAL] Server already running on this IP and PORT.");
+			logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT.", e);
 		}
 		
 		packetPusher = new ServerSocketPacketPusher();
@@ -72,8 +74,6 @@ public class ServerSocket extends DynamicThread
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
 		
 		this.password = password;
-		
-		this.setName("Server-Socket");
 	}
 	
 	@Override
@@ -674,7 +674,6 @@ public class ServerSocket extends DynamicThread
 	@Override
 	public void onStart()
 	{
-		System.out.println("Starting ServerSocket");
 		packetPusher.start();
 	}
 	

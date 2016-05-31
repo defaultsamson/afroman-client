@@ -15,8 +15,10 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	protected long lastTimer;
 	protected double delta;
 	
-	public DynamicTickThread(int ticksPerSecond)
+	public DynamicTickThread(ThreadGroup group, String name, int ticksPerSecond)
 	{
+		super(group, name);
+		
 		if (ticksPerSecond < 1) ticksPerSecond = 1;
 		
 		this.ticksPerSecond = ticksPerSecond;
@@ -27,8 +29,6 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	{
 		lastTime = System.nanoTime();
 		nsPerTick = 1000000000 / ticksPerSecond;
-		
-		System.out.println(this.getName() + ": " + 1000000000D + " / " + ticksPerSecond + " = " + nsPerTick);
 		
 		ticks = 0;
 		tickCount = 0;

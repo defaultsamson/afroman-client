@@ -69,8 +69,6 @@ public class GuiLobby extends GuiScreen
 			{
 				InetAddress ip = InetAddress.getLocalHost();
 				lanIP = ip.toString();
-				
-				System.out.println("IP: " + ip);
 			}
 			catch (UnknownHostException e)
 			{

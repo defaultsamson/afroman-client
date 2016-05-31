@@ -18,18 +18,27 @@ import ca.afroman.player.Role;
 
 public class ClientSocketManager implements IDynamicRunning
 {
+	private static ThreadGroup newDefaultThreadGroupInstance()
+	{
+		return new ThreadGroup(ClientGame.instance().getThreadGroup(), "Socket");
+	}
+	
 	public static final boolean TRACE_PACKETS = true;
-	private IPConnectedPlayer serverConnection;
 	
 	private List<ConnectedPlayer> playerList;
 	
+	private IPConnectedPlayer serverConnection;
 	private DatagramSocket socket;
 	
 	private ClientSocketReceive rSocket;
 	private ClientSocketSend sSocket;
 	
+	private ThreadGroup threadGroup;
+	
 	public ClientSocketManager()
 	{
+		threadGroup = newDefaultThreadGroupInstance();
+		
 		serverConnection = new IPConnectedPlayer(null, -1, -1, null, "");
 		
 		playerList = new ArrayList<ConnectedPlayer>();
@@ -133,7 +142,6 @@ public class ClientSocketManager implements IDynamicRunning
 	{
 		rSocket.startThis();
 		sSocket.startThis();
-		System.out.println("Starting ClientSocketManager");
 	}
 	
 	public ClientSocketReceive receiver()
@@ -166,5 +174,10 @@ public class ClientSocketManager implements IDynamicRunning
 	{
 		playerList = players;
 		getConnectedPlayer().setRole(playerByID(serverConnection.getID()).getRole());
+	}
+	
+	public ThreadGroup getThreadGroup()
+	{
+		return threadGroup;
 	}
 }

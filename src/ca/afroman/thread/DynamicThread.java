@@ -1,11 +1,51 @@
 package ca.afroman.thread;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ca.afroman.interfaces.IDynamicRunning;
+import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 
 public abstract class DynamicThread extends Thread implements IDynamicRunning
 {
 	private boolean exit = false;
 	protected boolean isRunning = false;
+	private ALogger logger;
+	
+	private static List<String> excludeNames;
+	static
+	{
+		excludeNames = new ArrayList<String>();
+		excludeNames.add("system");
+		excludeNames.add("main");
+	}
+	
+	private static String getNameWithParents(ThreadGroup group, String name)
+	{
+		String toReturn = group.getName() + "/" + name;
+		
+		while ((group = group.getParent()) != null)
+		{
+			boolean exclude = false;
+			
+			for (String outName : excludeNames)
+			{
+				if (group.getName().equals(outName)) exclude = true;
+			}
+			
+			if (!exclude) toReturn = group.getName() + "/" + toReturn;
+		}
+		
+		return toReturn;
+	}
+	
+	public DynamicThread(ThreadGroup group, String name)
+	{
+		super(group, getNameWithParents(group, name));
+		
+		logger = new ALogger(this.getName());
+	}
 	
 	@Override
 	public void run()
@@ -28,7 +68,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 			
 			try
 			{
-				Thread.sleep(250);
+				Thread.sleep(200);
 			}
 			catch (InterruptedException e)
 			{
@@ -57,7 +97,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 	{
 		if (exit)
 		{
-			System.out.println("[THREAD] [CRITICAL] Thread is trying to be started from a stopped state.");
+			logger().log(ALogType.CRITICAL, "Thread is trying to be started from a stopped state.");
 			return;
 		}
 		
@@ -78,8 +118,13 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		}
 		else
 		{
-			System.out.println("[THREAD] [WARNING] Thread is already running: " + this.toString());
+			logger().log(ALogType.WARNING, "This thread is already running: " + this.toString());
 		}
+	}
+	
+	public ALogger logger()
+	{
+		return logger;
 	}
 	
 	/**

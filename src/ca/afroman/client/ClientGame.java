@@ -32,6 +32,7 @@ import ca.afroman.gui.GuiScreen;
 import ca.afroman.input.InputHandler;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelType;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.player.Role;
 import ca.afroman.server.ServerGame;
@@ -53,6 +54,11 @@ public class ClientGame extends DynamicTickRenderThread
 	public static ClientGame instance()
 	{
 		return game;
+	}
+	
+	private static ThreadGroup newDefaultThreadGroupInstance()
+	{
+		return new ThreadGroup("Client");
 	}
 	
 	private static long startLoadTime;
@@ -89,9 +95,7 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public ClientGame()
 	{
-		super(60);
-		
-		this.setName("Client-Game");
+		super(newDefaultThreadGroupInstance(), "Game", 60);
 	}
 	
 	@Override
@@ -167,7 +171,7 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		// Loading screen
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
-		DynamicThread renderLoading = new DynamicThread()
+		DynamicThread renderLoading = new DynamicThread(this.getThreadGroup(), "Loading-Display")
 		{
 			@Override
 			public void onRun()
@@ -246,7 +250,7 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
 		
-		System.out.println("Game Loaded. Took " + loadTime + " seconds.");
+		logger().log(ALogType.DEBUG, "Game Loaded. Took " + loadTime + " seconds.");
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		music.startLoop();
@@ -301,7 +305,7 @@ public class ClientGame extends DynamicTickRenderThread
 			
 			ConsoleOutput.setGuiVisible(consoleDebug);
 			
-			System.out.println("Show Console: " + consoleDebug);
+			logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
 		}
 		
 		if (input.full_screen.isPressedFiltered())
@@ -313,14 +317,14 @@ public class ClientGame extends DynamicTickRenderThread
 		{
 			hudDebug = !hudDebug;
 			
-			System.out.println("Debug Hud: " + hudDebug);
+			logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
 		}
 		
 		if (input.hitboxDebug.isPressedFiltered())
 		{
 			hitboxDebug = !hitboxDebug;
 			
-			System.out.println("Show Hitboxes: " + hitboxDebug);
+			logger().log(ALogType.DEBUG, "Show Hitboxes: " + hitboxDebug);
 		}
 		if (input.lightingDebug.isPressedFiltered())
 		{
@@ -336,19 +340,19 @@ public class ClientGame extends DynamicTickRenderThread
 			
 			lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
 			
-			System.out.println("Lighting Debug: " + lightingDebug.toString());
+			logger().log(ALogType.DEBUG, "Lighting: " + lightingDebug.toString());
 		}
 		if (input.saveLevel.isPressedFiltered())
 		{
 			if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
-			System.out.println("Copied current level save data to clipboard");
+			logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
 		}
 		
 		if (input.levelBuilder.isPressedFiltered())
 		{
 			buildMode = !buildMode;
 			
-			System.out.println("Build Mode: " + buildMode);
+			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
 			
 			this.getPlayer(sockets().getConnectedPlayer().getRole()).setCameraToFollow(!buildMode);
 		}
@@ -415,7 +419,7 @@ public class ClientGame extends DynamicTickRenderThread
 	{
 		fullscreen = isFullScreen;
 		
-		System.out.println("Setting Fullscreen: " + isFullScreen);
+		logger().log(ALogType.DEBUG, "Setting Fullscreen: " + isFullScreen);
 		
 		frame.setVisible(false);
 		// frame.getContentPane().remove(canvas);
@@ -457,8 +461,7 @@ public class ClientGame extends DynamicTickRenderThread
 			catch (Exception e)
 			{
 				setFullScreen(false);
-				System.err.println("Fullscreen Mode not supported.");
-				e.printStackTrace();
+				logger().log(ALogType.CRITICAL, "Fullscreen Mode not supported.", e);
 			}
 		}
 		

@@ -1,6 +1,7 @@
 package ca.afroman.gui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
@@ -39,8 +40,26 @@ public abstract class GuiScreen
 		buttonToRemove.add(button);
 	}
 	
+	private GuiButton listening = null;
+	
+	public void setListeningButton(GuiButton button)
+	{
+		// Only set the listening button if it is null. This way it will only set the first one it comes across each tick.
+		if (listening == null)
+		{
+			this.listening = button;
+		}
+	}
+	
+	public GuiButton getListeningButton()
+	{
+		return this.listening;
+	}
+	
 	public void tick()
 	{
+		listening = null;
+		
 		// Removes all the buttons pending removal
 		for (GuiButton button : this.buttonToRemove)
 		{
@@ -49,11 +68,14 @@ public abstract class GuiScreen
 		
 		this.buttonToRemove.clear();
 		
+		// Reverses to invoke the top-most button to the buttom-most
+		Collections.reverse(buttons);
 		// Ticks all the buttons
 		for (GuiButton button : this.buttons)
 		{
 			button.tick();
 		}
+		Collections.reverse(buttons);
 	}
 	
 	public void unfocusTextFields()

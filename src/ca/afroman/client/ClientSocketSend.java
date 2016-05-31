@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.Packet;
 import ca.afroman.server.ServerSocket;
 import ca.afroman.thread.DynamicTickThread;
@@ -20,13 +21,11 @@ public class ClientSocketSend extends DynamicTickThread
 	 */
 	public ClientSocketSend(ClientSocketManager manager)
 	{
-		super(2);
+		super(manager.getThreadGroup(), "Send", 2);
 		
 		this.manager = manager;
 		
 		sendingPackets = new ArrayList<Packet>();
-		
-		this.setName("Client-Socket-Send");
 	}
 	
 	@Override
@@ -94,7 +93,7 @@ public class ClientSocketSend extends DynamicTickThread
 			}
 			else
 			{
-				System.out.println("[SERVER] [PUSHER] Cannot find the connection to remove the packet from.");
+				logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from.");
 			}
 		}
 	}
@@ -139,7 +138,7 @@ public class ClientSocketSend extends DynamicTickThread
 		{
 			DatagramPacket packet = new DatagramPacket(data, data.length, address, ServerSocket.PORT);
 			
-			if (ClientSocketManager.TRACE_PACKETS) System.out.println("[CLIENT] [SEND] [" + address + ":" + ServerSocket.PORT + "] " + new String(data));
+			if (ClientSocketManager.TRACE_PACKETS) logger().log(ALogType.DEBUG, "[" + address + ":" + ServerSocket.PORT + "] " + new String(data));
 			
 			try
 			{
@@ -149,6 +148,10 @@ public class ClientSocketSend extends DynamicTickThread
 			{
 				e.printStackTrace();
 			}
+		}
+		else
+		{
+			logger().log(ALogType.WARNING, "Server address is null");
 		}
 	}
 	

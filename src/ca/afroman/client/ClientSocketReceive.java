@@ -22,6 +22,7 @@ import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
+import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
@@ -35,17 +36,15 @@ public class ClientSocketReceive extends DynamicThread
 {
 	private ClientSocketManager manager;
 	
-	// private DatagramSocket socket;
-	
 	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
 	
 	public ClientSocketReceive(ClientSocketManager manager)
 	{
+		super(manager.getThreadGroup(), "Receive");
+		
 		this.manager = manager;
 		
 		receivedPackets = new ArrayList<Integer>();
-		
-		this.setName("Client-Socket-Receive");
 	}
 	
 	@Override
@@ -75,7 +74,7 @@ public class ClientSocketReceive extends DynamicThread
 	public void parsePacket(byte[] data, IPConnection connection)
 	{
 		PacketType type = Packet.readType(data);
-		if (ClientSocketManager.TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
+		if (ClientSocketManager.TRACE_PACKETS) logger().log(ALogType.DEBUG, "[" + connection.asReadable() + "] " + type.toString());
 		
 		// If is the server sending the packet
 		if (ClientGame.instance().sockets().getConnectedPlayer().getConnection().equals(connection))
@@ -88,7 +87,7 @@ public class ClientSocketReceive extends DynamicThread
 				{
 					if (packID == packetID)
 					{
-						System.out.println("Received packet already: " + packID);
+						logger().log(ALogType.DEBUG, "Received packet already: " + packID);
 						
 						// If the packet with this ID has already been received, tell the server to stop sending it, and don't parse it
 						manager.sender().sendPacket(new PacketConfirmReceived(packetID));
@@ -106,10 +105,10 @@ public class ClientSocketReceive extends DynamicThread
 			{
 				default:
 				case INVALID:
-					System.out.println("[CLIENT] INVALID PACKET");
+					logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
 					break;
 				case DENY_JOIN:
-					// Game.instance().setPassword("INVALID PASSWORD");
+				{
 					ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 					
 					DenyJoinReason reason = DenyJoinReason.fromOrdinal(Integer.parseInt(Packet.readContent(data)));
@@ -135,6 +134,7 @@ public class ClientSocketReceive extends DynamicThread
 							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "OUTDATED");
 							break;
 					}
+				}
 					break;
 				case ASSIGN_CLIENTID:
 					ClientGame.instance().sockets().getConnectedPlayer().setID(Integer.parseInt(Packet.readContent(data)));;
@@ -199,7 +199,7 @@ public class ClientSocketReceive extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[CLIENT] Level with type " + levelType + " already exists.");
+						logger().log(ALogType.WARNING, "[CLIENT] Level with type " + levelType + " already exists.");
 					}
 				}
 					break;
@@ -245,7 +245,7 @@ public class ClientSocketReceive extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[CLIENT] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "[CLIENT] No level with type " + levelType);
 					}
 				}
 					break;
@@ -391,7 +391,7 @@ public class ClientSocketReceive extends DynamicThread
 		}
 		else
 		{
-			System.out.println("[CLIENT] [CRITICAL] A server (" + connection.asReadable() + ") is tring to send a packet to this unlistening client." + type.toString());
+			logger().log(ALogType.WARNING, "A server (" + connection.asReadable() + ") is tring to send a packet to this unlistening client." + type.toString());
 		}
 	}
 	

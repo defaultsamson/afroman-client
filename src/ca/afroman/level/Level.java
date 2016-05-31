@@ -420,54 +420,6 @@ public class Level
 	{
 		return players;
 	}
-	//
-	// /**
-	// * Gets the player at the given coordinates.
-	// *
-	// * @param x the x in-level ordinate
-	// * @param y the y in-level ordinate
-	// * @return the player. <b>null</b> if there are no players at that given location.
-	// */
-	// public Entity getPlayer(double x, double y)
-	// {
-	// for (Entity entity : players)
-	// {
-	// if (entity instanceof ServerPlayerEntity)
-	// {
-	// for (Hitbox hitbox : entity.hitboxInLevel())
-	// {
-	// if (hitbox.contains(x, y)) return entity;
-	// }
-	// }
-	// else
-	// {
-	// System.out.println("[LEVEL] Non-PlayerEntity in the player list of level " + this.type);
-	// }
-	// }
-	// return null;
-	// }
-	//
-	// /**
-	// * Gets the player with the given role.
-	// *
-	// * @param role whether it's player 1 or 2
-	// * @return the player.
-	// */
-	// public Entity getPlayer(Role role)
-	// {
-	// for (Entity entity : getPlayers())
-	// {
-	// if (entity instanceof ServerPlayerEntity)
-	// {
-	// if (((ServerPlayerEntity) entity).getRole() == role) return entity;
-	// }
-	// else
-	// {
-	// System.out.println("[LEVEL] Non-PlayerEntity in the player list of level " + this.type);
-	// }
-	// }
-	// return null;
-	// }
 	
 	public LevelType getType()
 	{

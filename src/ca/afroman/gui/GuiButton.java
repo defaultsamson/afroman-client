@@ -68,8 +68,11 @@ public class GuiButton extends InputType
 			int mouseX = ClientGame.instance().input().getMouseX();
 			int mouseY = ClientGame.instance().input().getMouseY();
 			
-			if (hitbox.contains(mouseX, mouseY))
+			// Only listen for action on this button if the screen isn't already listening to another button overtop this one
+			if (hitbox.contains(mouseX, mouseY) && screen.getListeningButton() == null)
 			{
+				screen.setListeningButton(this);
+				
 				if (ClientGame.instance().input().mouseLeft.isPressed())
 				{
 					state = 2; // Down
@@ -145,6 +148,11 @@ public class GuiButton extends InputType
 	protected void onRelease()
 	{
 		if (isEnabled && screen != null) screen.releaseAction(id);
+	}
+	
+	public int getID()
+	{
+		return id;
 	}
 	
 	/**
