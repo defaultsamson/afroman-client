@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.packet.Packet;
 import ca.afroman.server.ServerSocket;
 import ca.afroman.thread.DynamicTickThread;
@@ -138,7 +139,7 @@ public class ClientSocketSend extends DynamicTickThread
 		{
 			DatagramPacket packet = new DatagramPacket(data, data.length, address, ServerSocket.PORT);
 			
-			if (ClientSocketManager.TRACE_PACKETS) logger().log(ALogType.DEBUG, "[" + address + ":" + ServerSocket.PORT + "] " + new String(data));
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + address + ":" + ServerSocket.PORT + "] " + new String(data));
 			
 			try
 			{

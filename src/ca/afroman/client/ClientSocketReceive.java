@@ -23,6 +23,7 @@ import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.DenyJoinReason;
@@ -74,7 +75,7 @@ public class ClientSocketReceive extends DynamicThread
 	public void parsePacket(byte[] data, IPConnection connection)
 	{
 		PacketType type = Packet.readType(data);
-		if (ClientSocketManager.TRACE_PACKETS) logger().log(ALogType.DEBUG, "[" + connection.asReadable() + "] " + type.toString());
+		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + connection.asReadable() + "] " + type.toString());
 		
 		// If is the server sending the packet
 		if (ClientGame.instance().sockets().getConnectedPlayer().getConnection().equals(connection))

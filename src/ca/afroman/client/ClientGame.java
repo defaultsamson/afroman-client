@@ -237,8 +237,6 @@ public class ClientGame extends DynamicTickRenderThread
 		lights.put(Role.PLAYER1, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
 		lights.put(Role.PLAYER2, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
 		
-		socketManager = new ClientSocketManager();
-		
 		setCurrentScreen(new GuiMainMenu());
 		
 		// WHEN FINISHED LOADING
@@ -559,8 +557,7 @@ public class ClientGame extends DynamicTickRenderThread
 		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
-		socketManager.pauseThis();
-		socketManager.getConnectedPlayers().clear();
+		socketManager.stopThis();
 		
 		if (this.isHostingServer())
 		{
@@ -574,6 +571,7 @@ public class ClientGame extends DynamicTickRenderThread
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
+		socketManager = new ClientSocketManager();
 		socketManager.setServerIP(getServerIP(), ServerSocket.PORT);
 		socketManager.startThis();
 		socketManager.sender().sendPacket(new PacketRequestConnection(getUsername(), getPassword()));

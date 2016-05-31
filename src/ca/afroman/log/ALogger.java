@@ -4,6 +4,8 @@ import java.util.logging.Logger;
 
 public class ALogger extends Logger
 {
+	public static boolean tracePackets = false;
+	
 	public ALogger(String name)
 	{
 		this(name, null);

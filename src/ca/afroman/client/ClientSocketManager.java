@@ -23,8 +23,6 @@ public class ClientSocketManager implements IDynamicRunning
 		return new ThreadGroup(ClientGame.instance().getThreadGroup(), "Socket");
 	}
 	
-	public static final boolean TRACE_PACKETS = true;
-	
 	private List<ConnectedPlayer> playerList;
 	
 	private IPConnectedPlayer serverConnection;

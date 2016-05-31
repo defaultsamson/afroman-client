@@ -18,6 +18,7 @@ import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
@@ -40,7 +41,6 @@ import ca.afroman.thread.DynamicThread;
 
 public class ServerSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = true;
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
 	public static final int PORT = 2413;
 	public static final int MAX_PLAYERS = 8;
@@ -112,7 +112,7 @@ public class ServerSocket extends DynamicThread
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 		
-		if (TRACE_PACKETS) System.out.println("[SERVER] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
+		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + connection.asReadable() + "] " + type.toString());
 		if (sentByConnected)
 		{
 			int packetID = Packet.readID(data);
@@ -140,7 +140,7 @@ public class ServerSocket extends DynamicThread
 			{
 				default:
 				case INVALID:
-					System.out.println("[SERVER] [CRITICAL] INVALID PACKET");
+					logger().log(ALogType.CRITICAL, "INVALID PACKET");
 					break;
 				case SETROLE:
 				{
@@ -184,7 +184,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.print("[SERVER] [CRITICAL] A non-host user was trying to change the roles: " + connection.asReadable());
+						logger().log(ALogType.CRITICAL, "A non-host user was trying to change the roles: " + connection.asReadable());
 					}
 				}
 					break;
@@ -203,7 +203,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.print("[SERVER] [CRITICAL] A non-host user was trying to stop the server: " + connection.asReadable());
+						logger().log(ALogType.CRITICAL, "A non-host user was trying to stop the server: " + connection.asReadable());
 					}
 					break;
 				case START_SERVER:
@@ -214,7 +214,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.print("[SERVER] [CRITICAL] A non-host user was trying to start the server: " + connection.asReadable());
+						logger().log(ALogType.CRITICAL, "A non-host user was trying to start the server: " + connection.asReadable());
 					}
 					break;
 				case ADD_LEVEL_TILE:
@@ -265,7 +265,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[SERVER] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
 					break;
@@ -299,7 +299,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[SERVER] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
 					break;
@@ -324,7 +324,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[SERVER] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
 					break;
@@ -352,7 +352,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[SERVER] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
 					break;
@@ -376,7 +376,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[SERVER] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
 					break;
@@ -404,7 +404,7 @@ public class ServerSocket extends DynamicThread
 					}
 					else
 					{
-						System.out.println("[SERVER] No level with type " + levelType);
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
 					break;
@@ -641,7 +641,7 @@ public class ServerSocket extends DynamicThread
 	{
 		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, port);
 		
-		if (TRACE_PACKETS) System.out.println("[SERVER] [SEND] [" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
+		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
 		
 		try
 		{
@@ -674,7 +674,7 @@ public class ServerSocket extends DynamicThread
 	@Override
 	public void onStart()
 	{
-		packetPusher.start();
+		packetPusher.startThis();
 	}
 	
 	@Override
