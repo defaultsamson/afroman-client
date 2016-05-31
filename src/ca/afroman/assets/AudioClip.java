@@ -51,16 +51,16 @@ public class AudioClip extends Asset
 	
 	public void startLoop()
 	{
-		clip.setFramePosition(0);
-		clip.loop(200);
-		clip.start();
+		// clip.setFramePosition(0);
+		// clip.loop(200);
+		// clip.start();
 	}
 	
 	public void start()
 	{
-		clip.setFramePosition(0);
-		
-		clip.start();
+		// clip.setFramePosition(0);
+		//
+		// clip.start();
 	}
 	
 	public void stop()

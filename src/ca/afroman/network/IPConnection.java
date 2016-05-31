@@ -49,7 +49,7 @@ public class IPConnection
 	
 	public boolean equals(IPConnection connection)
 	{
-		if (address != null && connection != null)
+		if (address != null && connection != null && connection.getIPAddress() != null)
 		{
 			return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
 		}

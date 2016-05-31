@@ -3,10 +3,6 @@ package ca.afroman.level;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,7 +12,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
-import ca.afroman.util.FileIO;
+import ca.afroman.util.FileUtil;
 
 public class Level
 {
@@ -84,124 +80,97 @@ public class Level
 	{
 		Level level = null;
 		
-		try
+		List<String> lines = FileUtil.readAllLines(FileUtil.fileFromResource(LEVEL_DIR + levelType.getFileName()));
+		
+		int lineNum = 1;
+		for (String line : lines)
 		{
-			// Loads the file
-			InputStream in = Level.class.getResourceAsStream(LEVEL_DIR + levelType.getFileName());
-			
-			// Puts the file's contents into a temp file
-			File tempFile = File.createTempFile(levelType.getFileName(), ".tmplv");
-			FileOutputStream out = new FileOutputStream(tempFile);
-			
-			byte[] buffer = new byte[1024];
-			
-			int size = 0;
-			while ((size = in.read(buffer)) > -1)
+			if (line != null && !line.isEmpty() && !line.equals(" ") && !line.startsWith("//"))
 			{
-				out.write(buffer, 0, size);
-			}
-			
-			in.close();
-			out.close();
-			
-			List<String> lines = FileIO.readAllLines(tempFile);
-			
-			int lineNum = 1;
-			for (String line : lines)
-			{
-				if (line != null && !line.isEmpty() && !line.equals(" ") && !line.startsWith("//"))
+				try
 				{
-					try
+					String[] split1 = line.split("\\(");
+					LevelObjectType objectType = LevelObjectType.valueOf(split1[0]);
+					String[] split2 = split1[1].split("\\)");
+					String[] parameters = split2.length > 0 ? split2[0].split(", ") : null;
+					
+					switch (objectType)
 					{
-						String[] split1 = line.split("\\(");
-						LevelObjectType objectType = LevelObjectType.valueOf(split1[0]);
-						String[] split2 = split1[1].split("\\)");
-						String[] parameters = split2.length > 0 ? split2[0].split(", ") : null;
-						
-						switch (objectType)
+						default:
+							System.err.println("[LEVEL] [ERROR] Invalid LevelObjectType at line " + lineNum + ": " + line);
+							break;
+						case LEVEL: // ()
+							// int x = Integer.parseInt(parameters[0]); TODO add spawn points
+							// int y = Integer.parseInt(parameters[1]);
+							
+							level = new Level(levelType);
+							break;
+						case TILE: // (AssetType, x, y, width, height, hitbox ...)
 						{
-							default:
-								System.err.println("[LEVEL] [ERROR] Invalid LevelObjectType at line " + lineNum + ": " + line);
-								break;
-							case LEVEL: // ()
-								// int x = Integer.parseInt(parameters[0]); TODO add spawn points
-								// int y = Integer.parseInt(parameters[1]);
-								
-								level = new Level(levelType);
-								break;
-							case TILE: // (AssetType, x, y, width, height, hitbox ...)
+							int layer = Integer.parseInt(parameters[0]);
+							double x = Double.parseDouble(parameters[1]);
+							double y = Double.parseDouble(parameters[2]);
+							double width = Double.parseDouble(parameters[3]);
+							double height = Double.parseDouble(parameters[4]);
+							AssetType type = AssetType.valueOf(parameters[5]);
+							
+							// If it has custom hitboxes defined
+							if (parameters.length > 6)
 							{
-								int layer = Integer.parseInt(parameters[0]);
-								double x = Double.parseDouble(parameters[1]);
-								double y = Double.parseDouble(parameters[2]);
-								double width = Double.parseDouble(parameters[3]);
-								double height = Double.parseDouble(parameters[4]);
-								AssetType type = AssetType.valueOf(parameters[5]);
+								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
 								
-								// If it has custom hitboxes defined
-								if (parameters.length > 6)
+								for (int i = 6; i < parameters.length; i += 4)
 								{
-									List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-									
-									for (int i = 6; i < parameters.length; i += 4)
-									{
-										tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
-									}
-									
-									level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+									tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
 								}
-								else
-								{
-									level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
-								}
+								
+								level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 							}
-								break;
-							case HITBOX:
-								level.getHitboxes().add(new Hitbox(Hitbox.getNextAvailableID(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
-								break;
-							case POINT_LIGHT:
-								double x = Double.parseDouble(parameters[0]);
-								double y = Double.parseDouble(parameters[1]);
-								double radius = Double.parseDouble(parameters[2]);
-								
-								level.getLights().add(new PointLight(Entity.getNextAvailableID(), level, x, y, radius));
-								break;
+							else
+							{
+								level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
+							}
 						}
-						
-						// switch (type)
-						// {
-						// case "PointLight": TODO
-						// {
-						// int x = Integer.parseInt(parameters[0]);
-						// int y = Integer.parseInt(parameters[1]);
-						// int radius = Integer.parseInt(parameters[2]);
-						//
-						// PointLight light = new PointLight(x, y, radius);
-						// light.addToLevel(level);
-						// }
-						// break;
-						// case "HitBox":
-						// {
-						// level.levelHitboxes.add(new Rectangle(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]), Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3])));
-						// }
-						// break;
-						// }
+							break;
+						case HITBOX:
+							level.getHitboxes().add(new Hitbox(Hitbox.getNextAvailableID(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
+							break;
+						case POINT_LIGHT:
+							double x = Double.parseDouble(parameters[0]);
+							double y = Double.parseDouble(parameters[1]);
+							double radius = Double.parseDouble(parameters[2]);
+							
+							level.getLights().add(new PointLight(Entity.getNextAvailableID(), level, x, y, radius));
+							break;
 					}
-					catch (Exception e)
-					{
-						System.err.println("Level failed to load line " + lineNum + ": " + line);
-						e.printStackTrace();
-					}
+					
+					// switch (type)
+					// {
+					// case "PointLight": TODO
+					// {
+					// int x = Integer.parseInt(parameters[0]);
+					// int y = Integer.parseInt(parameters[1]);
+					// int radius = Integer.parseInt(parameters[2]);
+					//
+					// PointLight light = new PointLight(x, y, radius);
+					// light.addToLevel(level);
+					// }
+					// break;
+					// case "HitBox":
+					// {
+					// level.levelHitboxes.add(new Rectangle(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]), Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3])));
+					// }
+					// break;
+					// }
 				}
-				
-				lineNum++;
+				catch (Exception e)
+				{
+					System.err.println("Level failed to load line " + lineNum + ": " + line);
+					e.printStackTrace();
+				}
 			}
 			
-			tempFile.delete();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
+			lineNum++;
 		}
 		
 		return level;
@@ -314,20 +283,25 @@ public class Level
 	 */
 	public Entity getTile(int layer, double x, double y)
 	{
-		Collections.reverse(getTiles(layer));
+		List<Entity> tiles = getTiles(layer);
 		
-		for (Entity tile : getTiles(layer))
+		synchronized (tiles)
 		{
-			Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
+			Collections.reverse(tiles);
 			
-			if (surrounding.contains(x, y))
+			for (Entity tile : tiles)
 			{
-				Collections.reverse(getTiles(layer));
-				return tile;
+				Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
+				
+				if (surrounding.contains(x, y))
+				{
+					Collections.reverse(tiles);
+					return tile;
+				}
 			}
+			Collections.reverse(tiles);
+			return null;
 		}
-		Collections.reverse(getTiles(layer));
-		return null;
 	}
 	
 	/**

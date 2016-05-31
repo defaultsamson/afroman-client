@@ -24,7 +24,7 @@ import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
 import ca.afroman.packet.PacketRemoveLevelLightLocation;
 import ca.afroman.packet.PacketRemoveLevelTileLocation;
-import ca.afroman.util.ListIO;
+import ca.afroman.util.ListUtil;
 
 public class ClientLevel extends Level
 {
@@ -91,7 +91,7 @@ public class ClientLevel extends Level
 			// TODO sort()
 			// entities.sort(new YComparator());
 			
-			ListIO.sort(entities, new YComparator());
+			ListUtil.sort(entities, new YComparator());
 			
 			for (Entity entity : entities)
 			{

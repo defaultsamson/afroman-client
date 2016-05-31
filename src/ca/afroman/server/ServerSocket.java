@@ -39,7 +39,7 @@ import ca.afroman.thread.DynamicThread;
 
 public class ServerSocket extends DynamicThread
 {
-	public static final boolean TRACE_PACKETS = false;
+	public static final boolean TRACE_PACKETS = true;
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
 	public static final int PORT = 2413;
 	public static final int MAX_PLAYERS = 8;
@@ -87,13 +87,13 @@ public class ServerSocket extends DynamicThread
 		try
 		{
 			socket.receive(packet);
+			
+			this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
-		this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 	}
 	
 	/**
@@ -235,27 +235,32 @@ public class ServerSocket extends DynamicThread
 						double width = Double.parseDouble(split[6]);
 						double height = Double.parseDouble(split[7]);
 						
-						// If it has custom hitboxes defined
-						if (split.length > 8)
+						List<Entity> tiles = level.getTiles(layer);
+						
+						synchronized (tiles)
 						{
-							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-							
-							for (int i = 8; i < split.length; i += 4)
+							// If it has custom hitboxes defined
+							if (split.length > 8)
 							{
-								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
+								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
+								
+								for (int i = 8; i < split.length; i += 4)
+								{
+									tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
+								}
+								
+								// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+								Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes));
+								tiles.add(tile); // Adds tile to the server's level
+								sendPacketToAllClients(new PacketAddLevelTile(layer, tile)); // Adds the tile to all the clients' levels
 							}
-							
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes));
-							level.getTiles(layer).add(tile); // Adds tile to the server's level
-							sendPacketToAllClients(new PacketAddLevelTile(layer, tile)); // Adds the tile to all the clients' levels
-						}
-						else
-						{
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height);
-							level.getTiles(layer).add(tile);
-							sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
+							else
+							{
+								// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+								Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height);
+								tiles.add(tile);
+								sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
+							}
 						}
 					}
 					else
@@ -284,7 +289,12 @@ public class ServerSocket extends DynamicThread
 							
 							sendPacketToAllClients(pack);
 							
-							level.getTiles(layer).remove(tile);
+							List<Entity> tiles = level.getTiles(layer);
+							
+							synchronized (tiles)
+							{
+								tiles.remove(tile);
+							}
 						}
 					}
 					else

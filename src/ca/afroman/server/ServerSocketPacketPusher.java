@@ -38,6 +38,7 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 				// For each packet queued to send to the connection
 				for (Packet pack : entry.getValue())
 				{
+					System.out.println("Pushin some sick packets bro " + pack.getID());
 					ServerGame.instance().socket().sendPacket(pack, entry.getKey());
 				}
 			}

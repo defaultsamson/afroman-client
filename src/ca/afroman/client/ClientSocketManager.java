@@ -18,7 +18,7 @@ import ca.afroman.player.Role;
 
 public class ClientSocketManager implements IDynamicRunning
 {
-	public static final boolean TRACE_PACKETS = false;
+	public static final boolean TRACE_PACKETS = true;
 	private IPConnectedPlayer serverConnection;
 	
 	private List<ConnectedPlayer> playerList;

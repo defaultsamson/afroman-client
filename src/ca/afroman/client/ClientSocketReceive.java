@@ -2,6 +2,7 @@ package ca.afroman.client;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.PortUnreachableException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,13 +59,17 @@ public class ClientSocketReceive extends DynamicThread
 		try
 		{
 			manager.socket().receive(packet);
+			
+			this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
+		}
+		catch (PortUnreachableException e)
+		{
+			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
-		this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 	}
 	
 	public void parsePacket(byte[] data, IPConnection connection)
@@ -83,6 +88,8 @@ public class ClientSocketReceive extends DynamicThread
 				{
 					if (packID == packetID)
 					{
+						System.out.println("Received packet already: " + packID);
+						
 						// If the packet with this ID has already been received, tell the server to stop sending it, and don't parse it
 						manager.sender().sendPacket(new PacketConfirmReceived(packetID));
 						return;
@@ -94,8 +101,6 @@ public class ClientSocketReceive extends DynamicThread
 				// Add it to the list
 				receivedPackets.add(packetID);
 			}
-			
-			if (ClientSocketManager.TRACE_PACKETS) System.out.println("[CLIENT] [RECIEVE] [" + connection.asReadable() + "] " + type.toString());
 			
 			switch (type)
 			{
@@ -216,21 +221,26 @@ public class ClientSocketReceive extends DynamicThread
 						double width = Double.parseDouble(split[6]);
 						double height = Double.parseDouble(split[7]);
 						
-						// If it has custom hitboxes defined
-						if (split.length > 8)
+						List<Entity> tiles = level.getTiles(layer);
+						
+						synchronized (tiles)
 						{
-							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-							
-							for (int i = 8; i < split.length; i += 4)
+							// If it has custom hitboxes defined
+							if (split.length > 8)
 							{
-								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
+								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
+								
+								for (int i = 8; i < split.length; i += 4)
+								{
+									tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
+								}
+								
+								tiles.add(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
 							}
-							
-							level.getTiles(layer).add(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
-						}
-						else
-						{
-							level.getTiles(layer).add(new ClientAssetEntity(id, level, asset, x, y, width, height));
+							else
+							{
+								tiles.add(new ClientAssetEntity(id, level, asset, x, y, width, height));
+							}
 						}
 					}
 					else
@@ -252,7 +262,12 @@ public class ClientSocketReceive extends DynamicThread
 						
 						if (tile != null)
 						{
-							level.getTiles(layer).remove(tile);
+							List<Entity> tiles = level.getTiles(layer);
+							
+							synchronized (tiles)
+							{
+								tiles.remove(tile);
+							}
 						}
 					}
 				}

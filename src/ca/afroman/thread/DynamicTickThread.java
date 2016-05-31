@@ -26,7 +26,9 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	public void onStart()
 	{
 		lastTime = System.nanoTime();
-		nsPerTick = 1000000000D / ticksPerSecond;
+		nsPerTick = 1000000000 / ticksPerSecond;
+		
+		System.out.println(this.getName() + ": " + 1000000000D + " / " + ticksPerSecond + " = " + nsPerTick);
 		
 		ticks = 0;
 		tickCount = 0;
@@ -40,7 +42,7 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	 * Runs every time that the thread loops.
 	 */
 	@Override
-	public void onRun()
+	public synchronized void onRun()
 	{
 		long now = System.nanoTime();
 		delta += (now - lastTime) / nsPerTick;
@@ -52,17 +54,6 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 			tickCount++;
 			tick();
 			delta--;
-		}
-		
-		// Stops system from overloading the CPU. Gives other threads a chance to run.
-		try
-		{
-			// If the ticks per second is less than desired, allow this thread to run with less sleep-time
-			Thread.sleep((tps < ticksPerSecond ? 1 : 3));
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
 		}
 		
 		// If current time - the last time we updated is >= 1 second

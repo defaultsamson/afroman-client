@@ -3,7 +3,7 @@ package ca.afroman.util;
 import java.util.Comparator;
 import java.util.List;
 
-public class ListIO
+public class ListUtil
 {
 	public static <T> void sort(List<T> list, Comparator<T> compare)
 	{
@@ -32,11 +32,10 @@ public class ListIO
 			
 			if (iMin != j)
 			{
+				// swap(a[j], a[iMin]);
 				T temp = list.get(j);
 				list.set(j, list.get(iMin));
 				list.set(iMin, temp);
-				
-				// swap(a[j], a[iMin]);
 			}
 		}
 	}

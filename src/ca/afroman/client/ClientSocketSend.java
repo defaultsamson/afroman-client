@@ -13,17 +13,17 @@ import ca.afroman.thread.DynamicTickThread;
 public class ClientSocketSend extends DynamicTickThread
 {
 	private ClientSocketManager manager;
-	
-	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
 	private List<Packet> sendingPackets; // The packets that are still trying to be sent.
 	
+	/**
+	 * Constantly sends required packets to any client until they confirm that they've received them.
+	 */
 	public ClientSocketSend(ClientSocketManager manager)
 	{
 		super(2);
 		
 		this.manager = manager;
 		
-		receivedPackets = new ArrayList<Integer>();
 		sendingPackets = new ArrayList<Packet>();
 		
 		this.setName("Client-Socket-Send");
@@ -36,10 +36,79 @@ public class ClientSocketSend extends DynamicTickThread
 		
 		synchronized (packs)
 		{
+			// For each packet queued to send to the connection
 			for (Packet pack : packs)
 			{
-				sendPacket(pack);
+				ClientGame.instance().sockets().sender().sendPacket(pack);
 			}
+		}
+	}
+	
+	@Override
+	public void onPause()
+	{
+		
+	}
+	
+	@Override
+	public void onUnpause()
+	{
+		
+	}
+	
+	@Override
+	public void onStop()
+	{
+		sendingPackets.clear();
+	}
+	
+	/**
+	 * @param connection the connection that this was sending the packet to
+	 * @param id the ID of the packet being sent
+	 */
+	public void removePacketFromQueue(int id)
+	{
+		Packet toRemove = null;
+		
+		List<Packet> sent = getPacketQueue();
+		
+		synchronized (sent)
+		{
+			if (sent != null)
+			{
+				// Find the packet that the server is saying it recieved.
+				for (Packet pack : sent)
+				{
+					if (pack.getID() == id)
+					{
+						toRemove = pack;
+						break;
+					}
+				}
+				
+				// Remove that packet from the queue
+				if (toRemove != null)
+				{
+					sent.remove(toRemove);
+				}
+			}
+			else
+			{
+				System.out.println("[SERVER] [PUSHER] Cannot find the connection to remove the packet from.");
+			}
+		}
+	}
+	
+	public void addPacketToQueue(Packet packet)
+	{
+		if (!packet.mustSend()) return;
+		
+		List<Packet> packs = getPacketQueue();
+		
+		// Don't add it if it's just looping through and trying to add it again
+		if (!packs.contains(packet))
+		{
+			packs.add(packet);
 		}
 	}
 	
@@ -83,82 +152,8 @@ public class ClientSocketSend extends DynamicTickThread
 		}
 	}
 	
-	/**
-	 * @param connection the connection that this was sending the packet to
-	 * @param id the ID of the packet being sent
-	 */
-	public void removePacketFromQueue(int id)
-	{
-		Packet toRemove = null;
-		
-		List<Packet> sent = getPacketQueue();
-		
-		if (sent != null)
-		{
-			synchronized (sent)
-			{
-				// Find the packet that the server is saying it recieved.
-				for (Packet pack : sent)
-				{
-					if (pack.getID() == id)
-					{
-						toRemove = pack;
-						break;
-					}
-				}
-				
-				// Remove that packet from the queue
-				if (toRemove != null)
-				{
-					sent.remove(toRemove);
-				}
-			}
-		}
-	}
-	
-	public void addPacketToQueue(Packet packet)
-	{
-		if (!packet.mustSend()) return;
-		
-		List<Packet> packs = getPacketQueue();
-		
-		synchronized (packs)
-		{
-			// Don't add it if it's just looping through and trying to add it again
-			if (!packs.contains(packet))
-			{
-				packs.add(packet);
-			}
-		}
-	}
-	
 	public List<Packet> getPacketQueue()
 	{
 		return sendingPackets;
-	}
-	
-	@Override
-	public void onStop()
-	{
-		receivedPackets.clear();
-		sendingPackets.clear();
-	}
-	
-	@Override
-	public void onPause()
-	{
-		
-	}
-	
-	@Override
-	public void onUnpause()
-	{
-		
-	}
-	
-	@Override
-	public void onStart()
-	{
-		
 	}
 }
