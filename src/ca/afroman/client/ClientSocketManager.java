@@ -11,6 +11,7 @@ import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.interfaces.IDynamicRunning;
+import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
@@ -47,7 +48,7 @@ public class ClientSocketManager implements IDynamicRunning
 		}
 		catch (SocketException e)
 		{
-			e.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
 		}
 		
 		rSocket = new ClientSocketReceive(this);
@@ -72,7 +73,7 @@ public class ClientSocketManager implements IDynamicRunning
 		}
 		catch (UnknownHostException e)
 		{
-			e.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Couldn't resolve hostname.", e);
 			
 			ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 			new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "UNKNOWN", "HOST");

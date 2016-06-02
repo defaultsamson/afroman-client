@@ -14,6 +14,7 @@ import java.util.List;
 
 import ca.afroman.assets.Assets;
 import ca.afroman.client.ClientGame;
+import ca.afroman.log.ALogType;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener
 {
@@ -124,7 +125,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		}
 		catch (Exception er)
 		{
-			er.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly.", er);
+			System.exit(1);
 		}
 	}
 	

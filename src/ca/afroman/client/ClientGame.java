@@ -22,7 +22,6 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
-import ca.afroman.console.ConsoleOutput;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMapState;
@@ -33,6 +32,7 @@ import ca.afroman.input.InputHandler;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.packet.PacketRequestConnection;
 import ca.afroman.player.Role;
 import ca.afroman.server.ServerGame;
@@ -184,7 +184,7 @@ public class ClientGame extends DynamicTickRenderThread
 				}
 				catch (InterruptedException e)
 				{
-					e.printStackTrace();
+					logger().log(ALogType.CRITICAL, "Thread failed to sleep.", e);
 				}
 			}
 			
@@ -219,9 +219,9 @@ public class ClientGame extends DynamicTickRenderThread
 		// Allows key listens for TAB and such
 		canvas.setFocusTraversalKeysEnabled(false);
 		
-		ConsoleOutput.createGui();
-		ConsoleOutput.showGui();
-		ConsoleOutput.hideGui();
+		// Initialises the console output.
+		ConsoleOutput.instance();
+		ALogger.initStreams(); // Initialises the console and log output etc
 		
 		Assets.load();
 		
@@ -301,7 +301,7 @@ public class ClientGame extends DynamicTickRenderThread
 		{
 			consoleDebug = !consoleDebug;
 			
-			ConsoleOutput.setGuiVisible(consoleDebug);
+			ConsoleOutput.instance().setGuiVisible(consoleDebug);
 			
 			logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
 		}
@@ -640,7 +640,7 @@ public class ClientGame extends DynamicTickRenderThread
 	public void onStop()
 	{
 		if (this.isHostingServer()) ServerGame.instance().stopThis();
-		sockets().stopThis();
+		if (sockets() != null) sockets().stopThis();
 	}
 	
 	public void updatePlayerList()

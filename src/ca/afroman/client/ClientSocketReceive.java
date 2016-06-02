@@ -64,11 +64,11 @@ public class ClientSocketReceive extends DynamicThread
 		}
 		catch (PortUnreachableException e)
 		{
-			e.printStackTrace();
+			logger().log(ALogType.CRITICAL, "Port is unreachable.", e);
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			logger().log(ALogType.CRITICAL, "I/O error while reading packet.", e);
 		}
 	}
 	

@@ -9,6 +9,9 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import ca.afroman.client.ClientGame;
+import ca.afroman.log.ALogType;
+
 public class AudioClip extends Asset
 {
 	private static final String AUDIO_DIR = "/audio/";
@@ -35,15 +38,15 @@ public class AudioClip extends Asset
 		}
 		catch (UnsupportedAudioFileException e)
 		{
-			e.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio file is an unsupported type", e);
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
 		}
 		catch (LineUnavailableException e)
 		{
-			e.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
 		}
 		
 		return new AudioClip(type, clip);

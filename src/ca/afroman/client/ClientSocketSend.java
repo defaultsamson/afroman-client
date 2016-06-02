@@ -147,7 +147,7 @@ public class ClientSocketSend extends DynamicTickThread
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				logger().log(ALogType.CRITICAL, "I/O error while sending packet.", e);
 			}
 		}
 		else

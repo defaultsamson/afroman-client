@@ -92,7 +92,7 @@ public class ServerSocket extends DynamicThread
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			logger().log(ALogType.CRITICAL, "I/O error while receiving.", e);
 		}
 	}
 	
@@ -649,7 +649,7 @@ public class ServerSocket extends DynamicThread
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			logger().log(ALogType.CRITICAL, "I/O error while sending packet.", e);
 		}
 	}
 	

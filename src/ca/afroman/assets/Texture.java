@@ -10,7 +10,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.ColourUtil;
+import ca.afroman.log.ALogType;
 
 public class Texture extends DrawableAsset
 {
@@ -37,7 +39,7 @@ public class Texture extends DrawableAsset
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not read texture from class resource stream.", e);
 		}
 		
 		// Puts the loaded image into a BufferedImage capable of transparency

@@ -10,6 +10,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketStartGame;
@@ -72,7 +73,7 @@ public class GuiLobby extends GuiScreen
 			}
 			catch (UnknownHostException e)
 			{
-				e.printStackTrace();
+				ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not resolve local host address.", e);
 			}
 		}
 		// Draw a leave server button

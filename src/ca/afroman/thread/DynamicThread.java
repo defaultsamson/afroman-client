@@ -58,11 +58,11 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 				
 				try
 				{
-					Thread.sleep(2);
+					Thread.sleep(3);
 				}
 				catch (InterruptedException e)
 				{
-					e.printStackTrace();
+					logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread during runtime.", e);
 				}
 			}
 			
@@ -72,7 +72,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 			}
 			catch (InterruptedException e)
 			{
-				e.printStackTrace();
+				logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread while paused.", e);
 			}
 		}
 	}

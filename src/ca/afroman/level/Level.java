@@ -12,6 +12,8 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.log.ALogType;
+import ca.afroman.server.ServerGame;
 import ca.afroman.util.FileUtil;
 
 public class Level
@@ -97,7 +99,7 @@ public class Level
 					switch (objectType)
 					{
 						default:
-							System.err.println("[LEVEL] [ERROR] Invalid LevelObjectType at line " + lineNum + ": " + line);
+							ServerGame.instance().logger().log(ALogType.WARNING, "[LEVEL] [ERROR] Invalid LevelObjectType at line " + lineNum + ": " + line);
 							break;
 						case LEVEL: // ()
 							// int x = Integer.parseInt(parameters[0]); TODO add spawn points
@@ -165,8 +167,7 @@ public class Level
 				}
 				catch (Exception e)
 				{
-					System.err.println("Level failed to load line " + lineNum + ": " + line);
-					e.printStackTrace();
+					ServerGame.instance().logger().log(ALogType.CRITICAL, "Level failed to load line " + lineNum + ": " + line, e);
 				}
 			}
 			
@@ -187,23 +188,28 @@ public class Level
 		toReturn.add("// The Tiles. LevelObjectType(layer, AssetType, x, y, width, height, hitboxes[if any])");
 		toReturn.add("");
 		
-		int i = 0;
-		for (List<Entity> tileList : getTiles())
+		List<List<Entity>> tiles = getTiles();
+		
+		synchronized (tiles)
 		{
-			for (Entity tile : tileList)
+			int i = 0;
+			for (List<Entity> tileList : getTiles())
 			{
-				String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getWidth() + ", " + tile.getHeight() + ", " + tile.getAssetType();
-				
-				if (tile.hasHitbox())
+				for (Entity tile : tileList)
 				{
-					tileString += tile.hitboxesAsSaveable();
+					String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getWidth() + ", " + tile.getHeight() + ", " + tile.getAssetType();
+					
+					if (tile.hasHitbox())
+					{
+						tileString += tile.hitboxesAsSaveable();
+					}
+					
+					tileString += ")";
+					
+					toReturn.add(tileString);
 				}
-				
-				tileString += ")";
-				
-				toReturn.add(tileString);
+				i++;
 			}
-			i++;
 		}
 		
 		toReturn.add("");
@@ -271,7 +277,11 @@ public class Level
 	
 	public List<Entity> getTiles(int layer)
 	{
-		return getTiles().get(layer);
+		List<List<Entity>> tiles = getTiles();
+		synchronized (tiles)
+		{
+			return tiles.get(layer);
+		}
 	}
 	
 	/**
@@ -312,14 +322,19 @@ public class Level
 	 */
 	public Entity getTile(int id)
 	{
-		for (List<Entity> tileList : getTiles())
+		List<List<Entity>> tiles = getTiles();
+		
+		synchronized (tiles)
 		{
-			for (Entity tile : tileList)
+			for (List<Entity> tileList : tiles)
 			{
-				if (tile.getID() == id) return tile;
+				for (Entity tile : tileList)
+				{
+					if (tile.getID() == id) return tile;
+				}
 			}
+			return null;
 		}
-		return null;
 	}
 	
 	public List<Entity> getEntities()
