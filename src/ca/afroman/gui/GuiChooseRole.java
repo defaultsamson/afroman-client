@@ -5,11 +5,11 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.Role;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketSetRole;
-import ca.afroman.player.Role;
 
 public class GuiChooseRole extends GuiScreen
 {

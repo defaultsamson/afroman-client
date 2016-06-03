@@ -4,12 +4,12 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.Role;
 import ca.afroman.entity.api.ClientAssetEntityDirectional;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.level.Level;
-import ca.afroman.player.Role;
 
 public class ClientPlayerEntity extends ClientAssetEntityDirectional implements IRoleEntity
 {

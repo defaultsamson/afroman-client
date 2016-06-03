@@ -2,7 +2,7 @@ package ca.afroman.gui;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.server.ServerSocket;
+import ca.afroman.server.ServerSocketManager;
 
 public class GuiConnectToServer extends GuiScreen
 {
@@ -56,7 +56,7 @@ public class GuiConnectToServer extends GuiScreen
 		{
 			case 0:
 				ClientGame.instance().setCurrentScreen(this.parentScreen);
-				ClientGame.instance().sockets().setServerIP(null, ServerSocket.PORT);
+				ClientGame.instance().sockets().setServerIP(null, ServerSocketManager.PORT); // TODO selectable port
 				break;
 		}
 	}

@@ -1,25 +1,33 @@
 package ca.afroman.server;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
+import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.Packet;
 import ca.afroman.thread.DynamicTickThread;
 
-public class ServerSocketPacketPusher extends DynamicTickThread
+public class ServerSocketSend extends DynamicTickThread
 {
 	private HashMap<IPConnection, List<Packet>> sendingPackets; // The packets that are still trying to be sent.
+	private ServerSocketManager manager;
 	
 	/**
 	 * Constantly sends required packets to any client until they confirm that they've received them.
 	 */
-	public ServerSocketPacketPusher()
+	public ServerSocketSend(ServerSocketManager manager)
 	{
-		super(ServerGame.instance().getThreadGroup(), "Pusher", 2);
+		super(ServerGame.instance().getThreadGroup(), "Send", 2);
+		
+		this.manager = manager;
 		
 		sendingPackets = new HashMap<IPConnection, List<Packet>>();
 	}
@@ -37,7 +45,7 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 				// For each packet queued to send to the connection
 				for (Packet pack : entry.getValue())
 				{
-					ServerGame.instance().socket().sendPacket(pack, entry.getKey());
+					sendPacket(pack, entry.getKey());
 				}
 			}
 		}
@@ -145,5 +153,56 @@ public class ServerSocketPacketPusher extends DynamicTickThread
 	public HashMap<IPConnection, List<Packet>> getPacketQueue()
 	{
 		return sendingPackets;
+	}
+	
+	/**
+	 * Sends data to a Client.
+	 * 
+	 * @param packet the packet to send
+	 * @param connection the Connection of the Client to send to
+	 */
+	public void sendPacket(Packet packet, IPConnection connection)
+	{
+		addPacketSendingTo(connection, packet);
+		sendData(packet.getData(), connection.getIPAddress(), connection.getPort());
+	}
+	
+	/**
+	 * Sends data to a Client.
+	 * 
+	 * @param data the data to send
+	 * @param ipAddress the Client's IP address
+	 * @param port the Client's port
+	 * 
+	 * @deprecated Still works to send raw data, but sendPacket() is preferred.
+	 */
+	@Deprecated
+	private void sendData(byte[] data, InetAddress ipAddress, int port)
+	{
+		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, port);
+		
+		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
+		
+		try
+		{
+			manager.socket().send(packet);
+		}
+		catch (IOException e)
+		{
+			logger().log(ALogType.CRITICAL, "I/O error while sending packet.", e);
+		}
+	}
+	
+	/**
+	 * Sends a packet to all the connected clients.
+	 * 
+	 * @param packet the packet to send
+	 */
+	public void sendPacketToAllClients(Packet packet)
+	{
+		for (IPConnectedPlayer connection : manager.getConnectedPlayers())
+		{
+			sendPacket(packet, connection.getConnection());
+		}
 	}
 }

@@ -444,7 +444,7 @@ public class Entity implements ITickable
 		{
 			if (this instanceof ServerPlayerEntity)
 			{
-				ServerGame.instance().socket().sendPacketToAllClients(new PacketUpdatePlayerLocation((ServerPlayerEntity) this));
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdatePlayerLocation((ServerPlayerEntity) this));
 			}
 			else if (this instanceof ClientPlayerEntity)
 			{
@@ -452,7 +452,7 @@ public class Entity implements ITickable
 			}
 			else
 			{
-				ServerGame.instance().socket().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
 			}
 		}
 	}

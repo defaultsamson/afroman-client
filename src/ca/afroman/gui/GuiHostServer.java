@@ -8,7 +8,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.server.ServerGame;
-import ca.afroman.server.ServerSocket;
+import ca.afroman.server.ServerSocketManager;
 
 public class GuiHostServer extends GuiScreen
 {
@@ -46,7 +46,7 @@ public class GuiHostServer extends GuiScreen
 		password.setMaxLength(11);
 		password.setAllowPunctuation(false);
 		
-		ClientGame.instance().setServerIP(ServerSocket.IPv4_LOCALHOST);
+		ClientGame.instance().setServerIP(ServerSocketManager.IPv4_LOCALHOST);
 		
 		buttons.add(username);
 		buttons.add(password);

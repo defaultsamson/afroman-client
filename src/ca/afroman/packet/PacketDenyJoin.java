@@ -1,5 +1,7 @@
 package ca.afroman.packet;
 
+import ca.afroman.server.DenyJoinReason;
+
 public class PacketDenyJoin extends Packet
 {
 	private DenyJoinReason reason;

@@ -2,6 +2,7 @@ package ca.afroman.gui;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.ExitGameReason;
 import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketStartGame;
 import ca.afroman.packet.PacketStopServer;
@@ -88,7 +89,7 @@ public class GuiSendingLevels extends GuiScreen
 				ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());
 			case 2002: // Leave server
 				ClientGame.instance().sockets().sender().sendPacket(new PacketDisconnect());
-				ClientGame.instance().exitFromGame();
+				ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
 	}
 	

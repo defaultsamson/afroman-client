@@ -25,6 +25,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMapState;
+import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
@@ -34,9 +35,8 @@ import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.packet.PacketRequestConnection;
-import ca.afroman.player.Role;
 import ca.afroman.server.ServerGame;
-import ca.afroman.server.ServerSocket;
+import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
 
@@ -506,6 +506,7 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public void setCurrentScreen(GuiScreen screen)
 	{
+		logger().log(ALogType.DEBUG, "Setting screen: " + screen.getClass().getName());
 		this.currentScreen = screen;
 	}
 	
@@ -551,12 +552,22 @@ public class ClientGame extends DynamicTickRenderThread
 		return updatePlayerList && hasStartedUpdateList;
 	}
 	
-	public void exitFromGame()
+	public void exitFromGame(ExitGameReason reason)
 	{
 		music.startLoop();
 		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(new GuiMainMenu());
+		
+		switch (reason)
+		{
+			default:
+				break;
+			case SERVER_CLOSED:
+				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
+				break;
+		}
+		
 		socketManager.stopThis();
 		
 		if (this.isHostingServer())
@@ -572,7 +583,7 @@ public class ClientGame extends DynamicTickRenderThread
 		render();
 		
 		socketManager = new ClientSocketManager();
-		socketManager.setServerIP(getServerIP(), ServerSocket.PORT);
+		socketManager.setServerIP(getServerIP(), ServerSocketManager.PORT); // TODO allow selectable port
 		socketManager.startThis();
 		socketManager.sender().sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
 	}

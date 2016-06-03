@@ -26,11 +26,10 @@ import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketConfirmReceived;
 import ca.afroman.packet.PacketType;
-import ca.afroman.player.Role;
+import ca.afroman.server.DenyJoinReason;
 import ca.afroman.thread.DynamicThread;
 
 public class ClientSocketReceive extends DynamicThread
@@ -41,7 +40,7 @@ public class ClientSocketReceive extends DynamicThread
 	
 	public ClientSocketReceive(ClientSocketManager manager)
 	{
-		super(manager.getThreadGroup(), "Receive");
+		super(ClientSocketManager.threadGroupInstance(), "Receive");
 		
 		this.manager = manager;
 		
@@ -161,8 +160,9 @@ public class ClientSocketReceive extends DynamicThread
 				}
 					break;
 				case STOP_SERVER:
-					ClientGame.instance().exitFromGame();
-					new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
+				{
+					ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
+				}
 					break;
 				case SEND_LEVELS:
 				{

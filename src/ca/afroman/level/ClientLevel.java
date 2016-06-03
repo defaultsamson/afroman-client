@@ -2,6 +2,7 @@ package ca.afroman.level;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import ca.afroman.assets.Asset;
@@ -18,6 +19,7 @@ import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiBuildModeLayer;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
@@ -49,85 +51,92 @@ public class ClientLevel extends Level
 	{
 		List<List<Entity>> tiles = getTiles();
 		
-		synchronized (tiles)
+		try
 		{
-			// Renders Tiles
-			for (int i = 0; i <= 2; i++)
+			synchronized (tiles)
 			{
-				boolean draw = true;
-				
-				if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+				// Renders Tiles
+				for (int i = 0; i <= 2; i++)
 				{
-					switch (i)
+					boolean draw = true;
+					
+					if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
 					{
-						case 0:
-							draw = showLayer0;
-							break;
-						case 1:
-							draw = showLayer1;
-							break;
-						case 2:
-							draw = showLayer2;
-							break;
+						switch (i)
+						{
+							case 0:
+								draw = showLayer0;
+								break;
+							case 1:
+								draw = showLayer1;
+								break;
+							case 2:
+								draw = showLayer2;
+								break;
+						}
+					}
+					
+					if (draw)
+					{
+						for (Entity tile : tiles.get(i))
+						{
+							// If it has a texture, render it
+							if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+						}
 					}
 				}
 				
-				if (draw)
+				List<Entity> entities = new ArrayList<Entity>(this.getEntities());
+				for (Entity player : this.getPlayers())
 				{
-					for (Entity tile : tiles.get(i))
-					{
-						// If it has a texture, render it
-						if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
-					}
-				}
-			}
-			
-			List<Entity> entities = new ArrayList<Entity>(this.getEntities());
-			for (Entity player : this.getPlayers())
-			{
-				entities.add(player);
-			}
-			
-			// TODO sort()
-			// entities.sort(new YComparator());
-			
-			ListUtil.sort(entities, new YComparator());
-			
-			for (Entity entity : entities)
-			{
-				if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
-			}
-			
-			// Renders Tiles
-			for (int i = 3; i <= 5; i++)
-			{
-				boolean draw = true;
-				
-				if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
-				{
-					switch (i)
-					{
-						case 3:
-							draw = showLayer3;
-							break;
-						case 4:
-							draw = showLayer4;
-							break;
-						case 5:
-							draw = showLayer5;
-							break;
-					}
+					entities.add(player);
 				}
 				
-				if (draw)
+				// TODO sort()
+				// entities.sort(new YComparator());
+				
+				ListUtil.sort(entities, new YComparator());
+				
+				for (Entity entity : entities)
 				{
-					for (Entity tile : tiles.get(i))
+					if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
+				}
+				
+				// Renders Tiles
+				for (int i = 3; i <= 5; i++)
+				{
+					boolean draw = true;
+					
+					if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
 					{
-						// If it has a texture, render it
-						if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+						switch (i)
+						{
+							case 3:
+								draw = showLayer3;
+								break;
+							case 4:
+								draw = showLayer4;
+								break;
+							case 5:
+								draw = showLayer5;
+								break;
+						}
+					}
+					
+					if (draw)
+					{
+						for (Entity tile : tiles.get(i))
+						{
+							// If it has a texture, render it
+							if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+						}
 					}
 				}
 			}
+		}
+		catch (ConcurrentModificationException e)
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Fuck my ass, Jim");
 		}
 		
 		if (ClientGame.instance().isLightingOn())

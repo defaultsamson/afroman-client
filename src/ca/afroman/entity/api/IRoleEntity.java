@@ -1,6 +1,6 @@
 package ca.afroman.entity.api;
 
-import ca.afroman.player.Role;
+import ca.afroman.client.Role;
 
 public abstract interface IRoleEntity
 {

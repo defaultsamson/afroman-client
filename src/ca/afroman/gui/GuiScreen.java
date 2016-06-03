@@ -105,9 +105,12 @@ public abstract class GuiScreen
 	{
 		drawScreen(renderTo);
 		
-		for (GuiButton button : this.buttons)
+		synchronized (buttons)
 		{
-			button.render(renderTo);
+			for (GuiButton button : buttons)
+			{
+				button.render(renderTo);
+			}
 		}
 	}
 	

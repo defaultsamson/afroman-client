@@ -2,15 +2,13 @@ package ca.afroman.server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
@@ -19,58 +17,38 @@ import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
-import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.packet.DenyJoinReason;
 import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
-import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketConfirmReceived;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketRemoveLevelHitboxID;
 import ca.afroman.packet.PacketRemoveLevelLightID;
 import ca.afroman.packet.PacketRemoveLevelTileID;
-import ca.afroman.packet.PacketStopServer;
 import ca.afroman.packet.PacketType;
-import ca.afroman.packet.PacketUpdatePlayerList;
-import ca.afroman.player.Role;
 import ca.afroman.thread.DynamicThread;
 
-public class ServerSocket extends DynamicThread
+public class ServerSocketReceive extends DynamicThread
 {
-	public static final String IPv4_LOCALHOST = "127.0.0.1";
-	public static final int PORT = 2413;
-	public static final int MAX_PLAYERS = 8;
-	
-	private DatagramSocket socket;
 	private String password;
-	private ServerSocketPacketPusher packetPusher;
-	private List<IPConnectedPlayer> clientConnections;
 	private HashMap<IPConnection, List<Integer>> receivedPackets; // The ID's of all the packets that have been received
+	
+	private ServerSocketManager manager;
 	
 	/**
 	 * A new server instance.
 	 * 
 	 * @param password the password for the server. Enter "" for no password.
 	 */
-	public ServerSocket(String password)
+	public ServerSocketReceive(ServerSocketManager manager, String password)
 	{
-		super(ServerGame.instance().getThreadGroup(), "Socket");
+		super(ServerGame.instance().getThreadGroup(), "Receive");
 		
-		try
-		{
-			this.socket = new DatagramSocket(PORT);
-		}
-		catch (SocketException e)
-		{
-			logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT.", e);
-		}
+		this.manager = manager;
 		
-		packetPusher = new ServerSocketPacketPusher();
-		clientConnections = new ArrayList<IPConnectedPlayer>();
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
 		
 		this.password = password;
@@ -86,7 +64,7 @@ public class ServerSocket extends DynamicThread
 		
 		try
 		{
-			socket.receive(packet);
+			manager.socket().receive(packet);
 			
 			this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 		}
@@ -108,7 +86,7 @@ public class ServerSocket extends DynamicThread
 		// String message = Packet.readContent(data);
 		
 		// Finds if this packet was send by a connected player and.or the host
-		IPConnectedPlayer sender = getPlayerByConnection(connection);
+		IPConnectedPlayer sender = manager.getPlayerByConnection(connection);
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 		
@@ -127,12 +105,12 @@ public class ServerSocket extends DynamicThread
 					if (packID == packetID)
 					{
 						// If the packet with this ID has already been received, tell the client to stop sending it, and don't parse it
-						sendPacket(new PacketConfirmReceived(packetID), sender.getConnection());
+						manager.sender().sendPacket(new PacketConfirmReceived(packetID), sender.getConnection());
 						return;
 					}
 				}
 				
-				sendPacket(new PacketConfirmReceived(packetID), sender.getConnection());
+				manager.sender().sendPacket(new PacketConfirmReceived(packetID), sender.getConnection());
 				receivedBySender.add(packetID);
 			}
 			
@@ -147,11 +125,11 @@ public class ServerSocket extends DynamicThread
 					if (sentByHost)
 					{
 						String[] split = Packet.readContent(data).split(",");
-						IPConnectedPlayer player = getPlayerByID(Integer.parseInt(split[0]));
+						IPConnectedPlayer player = manager.getPlayerByID(Integer.parseInt(split[0]));
 						Role newRole = Role.fromOrdinal(Integer.parseInt(split[1]));
 						
 						// The player who is currently holding that role
-						IPConnectedPlayer currentPlayerWithRole = getPlayerByRole(newRole);
+						IPConnectedPlayer currentPlayerWithRole = manager.getPlayerByRole(newRole);
 						
 						if (currentPlayerWithRole != null)
 						{
@@ -169,17 +147,17 @@ public class ServerSocket extends DynamicThread
 									break;
 								case PLAYER1:
 									// If the player already had a critical role, set it to the next spectator
-									IPConnectedPlayer newForRole1 = getPlayerByRole(Role.SPECTATOR);
+									IPConnectedPlayer newForRole1 = manager.getPlayerByRole(Role.SPECTATOR);
 									if (newForRole1 != null) newForRole1.setRole(Role.PLAYER1);
 									break;
 								case PLAYER2:
-									IPConnectedPlayer newForRole2 = getPlayerByRole(Role.SPECTATOR);
+									IPConnectedPlayer newForRole2 = manager.getPlayerByRole(Role.SPECTATOR);
 									if (newForRole2 != null) newForRole2.setRole(Role.PLAYER2);
 									break;
 							}
 							
 							player.setRole(newRole);
-							updateClientsPlayerList();
+							manager.updateClientsPlayerList();
 						}
 					}
 					else
@@ -192,14 +170,21 @@ public class ServerSocket extends DynamicThread
 				{
 					if (sender != null)
 					{
-						this.removeConnection(sender);
+						manager.removeConnection(sender);
 					}
 				}
 					break;
 				case STOP_SERVER:
 					if (sentByHost)
 					{
-						ServerGame.instance().stopThis();
+						if (ServerGame.instance() != null)
+						{
+							ServerGame.instance().stopThis();
+						}
+						else
+						{
+							logger().log(ALogType.IMPORTANT, "Tries to stop a null instance of a ServerGame: " + connection.asReadable());
+						}
 					}
 					else
 					{
@@ -252,14 +237,14 @@ public class ServerSocket extends DynamicThread
 								// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 								Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes));
 								tiles.add(tile); // Adds tile to the server's level
-								sendPacketToAllClients(new PacketAddLevelTile(layer, tile)); // Adds the tile to all the clients' levels
+								manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, tile)); // Adds the tile to all the clients' levels
 							}
 							else
 							{
 								// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 								Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height);
 								tiles.add(tile);
-								sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
+								manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
 							}
 						}
 					}
@@ -287,7 +272,7 @@ public class ServerSocket extends DynamicThread
 						{
 							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(layer, tile.getLevel().getType(), tile.getID());
 							
-							sendPacketToAllClients(pack);
+							manager.sender().sendPacketToAllClients(pack);
 							
 							List<Entity> tiles = level.getTiles(layer);
 							
@@ -320,7 +305,7 @@ public class ServerSocket extends DynamicThread
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						Hitbox box = new Hitbox(Hitbox.getNextAvailableID(), x, y, width, height);
 						level.getHitboxes().add(box);
-						sendPacketToAllClients(new PacketAddLevelHitbox(levelType, box));
+						manager.sender().sendPacketToAllClients(new PacketAddLevelHitbox(levelType, box));
 					}
 					else
 					{
@@ -345,7 +330,7 @@ public class ServerSocket extends DynamicThread
 						{
 							PacketRemoveLevelHitboxID pack = new PacketRemoveLevelHitboxID(level.getType(), box.getID());
 							
-							sendPacketToAllClients(pack);
+							manager.sender().sendPacketToAllClients(pack);
 							
 							level.getHitboxes().remove(box);
 						}
@@ -372,7 +357,7 @@ public class ServerSocket extends DynamicThread
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						PointLight light = new PointLight(Entity.getNextAvailableID(), level, x, y, radius);
 						level.getLights().add(light);
-						sendPacketToAllClients(new PacketAddLevelLight(light));
+						manager.sender().sendPacketToAllClients(new PacketAddLevelLight(light));
 					}
 					else
 					{
@@ -397,7 +382,7 @@ public class ServerSocket extends DynamicThread
 						{
 							PacketRemoveLevelLightID pack = new PacketRemoveLevelLightID(level.getType(), light.getID());
 							
-							sendPacketToAllClients(pack);
+							manager.sender().sendPacketToAllClients(pack);
 							
 							level.getLights().remove(light);
 						}
@@ -427,7 +412,7 @@ public class ServerSocket extends DynamicThread
 				{
 					int sentID = Integer.parseInt(Packet.readContent(data));
 					
-					pusher().removePacketFromQueue(connection, sentID);
+					manager.sender().removePacketFromQueue(connection, sentID);
 				}
 					break;
 			}
@@ -439,10 +424,10 @@ public class ServerSocket extends DynamicThread
 			String sentUsername = sent[0];
 			
 			// Checks if there's space for the user on the server
-			if (this.clientConnections.size() >= MAX_PLAYERS)
+			if (manager.clientConnections().size() >= ServerSocketManager.MAX_PLAYERS)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER);
-				this.sendPacket(passPacket, connection);
+				manager.sender().sendPacket(passPacket, connection);
 				return;
 			}
 			
@@ -452,22 +437,22 @@ public class ServerSocket extends DynamicThread
 			if (sentGameVersion > ClientGame.VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER);
-				this.sendPacket(passPacket, connection);
+				manager.sender().sendPacket(passPacket, connection);
 				return;
 			}
 			
 			if (sentGameVersion < ClientGame.VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT);
-				this.sendPacket(passPacket, connection);
+				manager.sender().sendPacket(passPacket, connection);
 				return;
 			}
 			
 			// Checks that there's no duplicated usernames
-			if (this.getPlayerByUsername(sentUsername) != null)
+			if (manager.getPlayerByUsername(sentUsername) != null)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.DUPLICATE_USERNAME);
-				this.sendPacket(passPacket, connection);
+				manager.sender().sendPacket(passPacket, connection);
 				return;
 			}
 			
@@ -480,201 +465,26 @@ public class ServerSocket extends DynamicThread
 				// If got the correct password, allow the player to join
 				if (sentPassword.equals(password))
 				{
-					this.addConnection(connection, sentUsername);
+					manager.addConnection(connection, sentUsername);
 				}
 				// If got the wrong person, let the client know
 				else
 				{
 					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD);
-					this.sendPacket(passPacket, connection);
+					manager.sender().sendPacket(passPacket, connection);
 				}
 			}
 			else // Allow the player to join
 			{
-				this.addConnection(connection, sentUsername);
+				manager.addConnection(connection, sentUsername);
 			}
 		}
-	}
-	
-	/**
-	 * Gets a player by their connection (which contains their IP address and port).
-	 * 
-	 * @param connection the connection
-	 * @return the connected player.
-	 */
-	public IPConnectedPlayer getPlayerByConnection(IPConnection connection)
-	{
-		for (IPConnectedPlayer player : clientConnections)
-		{
-			// If the IP and port equal those that were specified, return the player
-			if (player.getConnection().equals(connection)) return player;
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets the first player with the given role.
-	 * 
-	 * @param role the role
-	 * @return the player.
-	 */
-	public IPConnectedPlayer getPlayerByRole(Role role)
-	{
-		for (IPConnectedPlayer player : clientConnections)
-		{
-			if (player.getRole() == role) return player;
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets a player by their username.
-	 * 
-	 * @param username the username
-	 * @return the player.
-	 */
-	public IPConnectedPlayer getPlayerByUsername(String username)
-	{
-		for (IPConnectedPlayer player : clientConnections)
-		{
-			if (player.getUsername().equals(username)) return player;
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets a player by their ID number.
-	 * 
-	 * @param id the ID number
-	 * @return the player.
-	 */
-	public IPConnectedPlayer getPlayerByID(int id)
-	{
-		for (IPConnectedPlayer player : clientConnections)
-		{
-			if (player.getID() == id) return player;
-		}
-		return null;
-	}
-	
-	/**
-	 * @return all the client connections.
-	 */
-	public List<IPConnectedPlayer> clientConnections()
-	{
-		return clientConnections;
-	}
-	
-	/**
-	 * Removes a player's IPConnectedPlayer for a leaving connection. Makes the player disconnect from the server.
-	 * 
-	 * @param connection the connection to remove.
-	 */
-	public void removeConnection(IPConnectedPlayer connection)
-	{
-		this.clientConnections.remove(connection);
-		receivedPackets.remove(connection.getConnection());
-		pusher().removeConnection(connection.getConnection());
-		
-		updateClientsPlayerList();
-	}
-	
-	/**
-	 * Sets up a IPConnectedPlayer for a new connection. Makes the player join the server.
-	 * 
-	 * @param connection the connection to set up for
-	 * @param username the desired username
-	 */
-	public void addConnection(IPConnection connection, String username)
-	{
-		// Gives player a default role based on what critical roles are still required
-		Role role = (this.getPlayerByRole(Role.PLAYER1) == null ? Role.PLAYER1 : (this.getPlayerByRole(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
-		
-		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), ConnectedPlayer.getNextAvailableID(), role, username);
-		clientConnections.add(newConnection);
-		
-		receivedPackets.put(newConnection.getConnection(), new ArrayList<Integer>());
-		pusher().addConnection(newConnection.getConnection());
-		
-		// Tells the newly added connection their ID
-		sendPacket(new PacketAssignClientID(newConnection.getID()), newConnection.getConnection());
-		
-		updateClientsPlayerList();
-	}
-	
-	/**
-	 * Updates the player list for all the connected clients.
-	 */
-	public void updateClientsPlayerList()
-	{
-		// Sends all the connections the updated list
-		PacketUpdatePlayerList updateList = new PacketUpdatePlayerList(clientConnections);
-		for (IPConnectedPlayer con : clientConnections)
-		{
-			sendPacket(updateList, con.getConnection());
-		}
-	}
-	
-	/**
-	 * Sends data to a Client.
-	 * 
-	 * @param packet the packet to send
-	 * @param connection the Connection of the Client to send to
-	 */
-	public void sendPacket(Packet packet, IPConnection connection)
-	{
-		pusher().addPacketSendingTo(connection, packet);
-		sendData(packet.getData(), connection.getIPAddress(), connection.getPort());
-	}
-	
-	/**
-	 * Sends data to a Client.
-	 * 
-	 * @param data the data to send
-	 * @param ipAddress the Client's IP address
-	 * @param port the Client's port
-	 * 
-	 * @deprecated Still works to send raw data, but sendPacket() is preferred.
-	 */
-	@Deprecated
-	private void sendData(byte[] data, InetAddress ipAddress, int port)
-	{
-		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, port);
-		
-		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
-		
-		try
-		{
-			socket.send(packet);
-		}
-		catch (IOException e)
-		{
-			logger().log(ALogType.CRITICAL, "I/O error while sending packet.", e);
-		}
-	}
-	
-	/**
-	 * Sends a packet to all the connected clients.
-	 * 
-	 * @param packet the packet to send
-	 */
-	public void sendPacketToAllClients(Packet packet)
-	{
-		for (IPConnectedPlayer connection : clientConnections)
-		{
-			sendPacket(packet, connection.getConnection());
-		}
-	}
-	
-	public ServerSocketPacketPusher pusher()
-	{
-		return packetPusher;
 	}
 	
 	@Override
 	public void onStart()
 	{
-		packetPusher.startThis();
+		
 	}
 	
 	@Override
@@ -689,18 +499,32 @@ public class ServerSocket extends DynamicThread
 		
 	}
 	
+	public void addConnection(IPConnection connection)
+	{
+		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
+		
+		synchronized (packs)
+		{
+			packs.put(connection, new ArrayList<Integer>());
+		}
+	}
+	
+	public void removeConnection(IPConnection connection)
+	{
+		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
+		
+		synchronized (packs)
+		{
+			packs.remove(connection);
+		}
+	}
+	
 	/**
 	 * Safely closes the server.
 	 */
 	@Override
 	public void onStop()
 	{
-		// Tell all clients that the server stopped
-		sendPacketToAllClients(new PacketStopServer());
-		
-		socket.close();
-		clientConnections.clear();
 		receivedPackets.clear();
-		pusher().stopThis();
 	}
 }

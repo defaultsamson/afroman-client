@@ -9,7 +9,7 @@ import java.util.List;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.packet.Packet;
-import ca.afroman.server.ServerSocket;
+import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicTickThread;
 
 public class ClientSocketSend extends DynamicTickThread
@@ -22,7 +22,7 @@ public class ClientSocketSend extends DynamicTickThread
 	 */
 	public ClientSocketSend(ClientSocketManager manager)
 	{
-		super(manager.getThreadGroup(), "Send", 2);
+		super(ClientSocketManager.threadGroupInstance(), "Send", 2);
 		
 		this.manager = manager;
 		
@@ -137,9 +137,9 @@ public class ClientSocketSend extends DynamicTickThread
 		
 		if (address != null)
 		{
-			DatagramPacket packet = new DatagramPacket(data, data.length, address, ServerSocket.PORT);
+			DatagramPacket packet = new DatagramPacket(data, data.length, address, ServerSocketManager.PORT);
 			
-			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + address + ":" + ServerSocket.PORT + "] " + new String(data));
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + address + ":" + ServerSocketManager.PORT + "] " + new String(data));
 			
 			try
 			{

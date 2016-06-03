@@ -1,6 +1,6 @@
 package ca.afroman.packet;
 
-import ca.afroman.player.Role;
+import ca.afroman.client.Role;
 
 public class PacketMovePlayer extends Packet
 {

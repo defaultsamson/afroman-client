@@ -8,6 +8,8 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.ExitGameReason;
+import ca.afroman.client.Role;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.log.ALogType;
@@ -15,8 +17,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketDisconnect;
 import ca.afroman.packet.PacketStartGame;
 import ca.afroman.packet.PacketStopServer;
-import ca.afroman.player.Role;
-import ca.afroman.server.ServerSocket;
+import ca.afroman.server.ServerSocketManager;
 
 public class GuiLobby extends GuiScreen
 {
@@ -172,7 +173,7 @@ public class GuiLobby extends GuiScreen
 			renderTo.draw(lightmap, 0, 0);
 		}
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocket.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN IP: " + lanIP);
@@ -209,7 +210,7 @@ public class GuiLobby extends GuiScreen
 		else if (buttonID == 2002) // Leave server
 		{
 			ClientGame.instance().sockets().sender().sendPacket(new PacketDisconnect());
-			ClientGame.instance().exitFromGame();
+			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
 		else
 		{

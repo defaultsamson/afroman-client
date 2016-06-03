@@ -1,4 +1,4 @@
-package ca.afroman.player;
+package ca.afroman.client;
 
 public enum Role
 {

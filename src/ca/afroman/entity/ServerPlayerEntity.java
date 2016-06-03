@@ -1,11 +1,11 @@
 package ca.afroman.entity;
 
+import ca.afroman.client.Role;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketAddPlayer;
-import ca.afroman.player.Role;
 import ca.afroman.server.ServerGame;
 
 public class ServerPlayerEntity extends Entity implements IRoleEntity
@@ -47,7 +47,7 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 			getLevel().getPlayers().add(this);
 		}
 		
-		ServerGame.instance().socket().sendPacketToAllClients(new PacketAddPlayer(level.getType(), this));
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketAddPlayer(level.getType(), this));
 	}
 	
 	@Override
