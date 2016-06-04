@@ -152,13 +152,35 @@ public class ClientLevel extends Level
 				for (PointLight light : lights)
 				{
 					light.renderCentered(lightmap);
+					
+					if (ClientGame.instance().isHitboxDebugging())
+					{
+						int x = this.worldToScreenX(light.getX());
+						int y = this.worldToScreenY(light.getY());
+						int radius = (int) light.getRadius();
+						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
+						renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
+						renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+					}
 				}
 			}
 			
 			// Draws the light on the cursor if there is one
 			if (ClientGame.instance().isBuildMode() && currentBuildMode == 2)
 			{
-				lightmap.drawLight(ClientGame.instance().input().getMouseX() - currentBuildLightRadius, ClientGame.instance().input().getMouseY() - currentBuildLightRadius, currentBuildLightRadius);
+				int radius = currentBuildLightRadius;
+				int x = ClientGame.instance().input().getMouseX() - radius;
+				int y = ClientGame.instance().input().getMouseY() - radius;
+				lightmap.drawLight(x, y, radius);
+				
+				if (ClientGame.instance().isHitboxDebugging())
+				{
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
+					renderTo.getGraphics().fillRect(x, y, (radius * 2) - 1, (radius * 2) - 1);
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
+					renderTo.getGraphics().drawRect(x, y, (radius * 2) - 1, (radius * 2) - 1);
+				}
 			}
 			
 			lightmap.patch();
@@ -168,6 +190,7 @@ public class ClientLevel extends Level
 		
 		// Draws out the hitboxes
 		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == 3 && ClientGame.instance().isBuildMode()))
+		
 		{
 			for (Hitbox box : this.getHitboxes())
 			{
@@ -232,7 +255,7 @@ public class ClientLevel extends Level
 					
 					Paint oldPaint = renderTo.getGraphics().getPaint();
 					
-					renderTo.getGraphics().setPaint(new Color(1.0F, 1.0F, 1.0F, 0.5F));
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.1F));
 					
 					// Vertical lines
 					for (int i = 0; i < Math.ceil(ClientGame.WIDTH / grid) + bleed; i++)

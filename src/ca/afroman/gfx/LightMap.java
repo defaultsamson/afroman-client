@@ -78,10 +78,10 @@ public class LightMap extends Texture
 			// Fills the circle with the gradient
 			Graphics2D graphics = lightTexture.createGraphics();
 			
-			if (ClientGame.instance().isHitboxDebugging())
-			{
-				graphics.drawRect((int) shape.getX(), (int) shape.getY(), (int) shape.getWidth() - 1, (int) shape.getHeight() - 1);;
-			}
+			// if (ClientGame.instance().isHitboxDebugging())
+			// {
+			// graphics.drawRect((int) shape.getX(), (int) shape.getY(), (int) shape.getWidth() - 1, (int) shape.getHeight() - 1);;
+			// }
 			
 			graphics.setPaint(paint);
 			graphics.fill(shape);

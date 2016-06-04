@@ -453,9 +453,9 @@ public class Level
 		{
 			for (PointLight light : lights)
 			{
-				double radius = light.getRadius() * 2;
+				double radius = light.getRadius();
 				
-				if (new Hitbox(light.getX() - radius, light.getY() - radius, radius, radius).contains(x, y))
+				if (new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
 				{
 					return light;
 				}
