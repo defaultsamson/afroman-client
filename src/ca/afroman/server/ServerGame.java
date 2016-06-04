@@ -64,20 +64,15 @@ public class ServerGame extends DynamicTickThread
 			
 			sockets().sender().sendPacketToAllClients(levelPack);
 			
-			List<List<Entity>> tiles = level.getTiles();
-			
-			synchronized (tiles)
+			int layer = 0;
+			for (List<Entity> tileList : level.getTiles())
 			{
-				int layer = 0;
-				for (List<Entity> tileList : tiles)
+				for (Entity tile : tileList)
 				{
-					for (Entity tile : tileList)
-					{
-						sockets().sender().sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
-					}
-					
-					layer++;
+					sockets().sender().sendPacketToAllClients(new PacketAddLevelTile(layer, level.getType(), tile));
 				}
+				
+				layer++;
 			}
 			
 			for (Hitbox box : level.getHitboxes())
@@ -87,7 +82,7 @@ public class ServerGame extends DynamicTickThread
 			
 			for (PointLight light : level.getLights())
 			{
-				sockets().sender().sendPacketToAllClients(new PacketAddLevelLight(light));
+				sockets().sender().sendPacketToAllClients(new PacketAddLevelLight(level.getType(), light));
 			}
 		}
 		

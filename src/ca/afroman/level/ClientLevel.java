@@ -1,6 +1,7 @@
 package ca.afroman.level;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -144,9 +145,14 @@ public class ClientLevel extends Level
 			// Draws all the lighting over everything else
 			lightmap.clear();
 			
-			for (PointLight light : this.getLights())
+			List<PointLight> lights = this.getLights();
+			
+			synchronized (lights)
 			{
-				light.renderCentered(lightmap);
+				for (PointLight light : lights)
+				{
+					light.renderCentered(lightmap);
+				}
 			}
 			
 			// Draws the light on the cursor if there is one
@@ -161,7 +167,7 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out the hitboxes
-		if (ClientGame.instance().isHitboxDebugging())
+		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == 3 && ClientGame.instance().isBuildMode()))
 		{
 			for (Hitbox box : this.getHitboxes())
 			{
@@ -209,12 +215,41 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		// Draws the hitbox that's currently being drawn if there is one
+		// Draws the building hitbox, cursor asset, the grid, and the tooltips
 		if (ClientGame.instance().isBuildMode())
 		{
 			if (currentBuildMode == 1)
 			{
 				if (cursorAsset != null && cursorAsset instanceof IRenderable) ((IRenderable) cursorAsset).render(renderTo, ClientGame.instance().input().getMouseX(), ClientGame.instance().input().getMouseY());
+				
+				// Draws the grid
+				if (grid > 0)
+				{
+					// The amount of extra lines to draw off the bottom and right sides of the screen to prevent any drawing loss
+					int bleed = 2;
+					int xOffset = (int) this.getCameraXOffset() % grid; // Gets the grid offsets so the grid draws to the screen with the world position in mind
+					int yOffset = (int) this.getCameraYOffset() % grid;
+					
+					Paint oldPaint = renderTo.getGraphics().getPaint();
+					
+					renderTo.getGraphics().setPaint(new Color(1.0F, 1.0F, 1.0F, 0.5F));
+					
+					// Vertical lines
+					for (int i = 0; i < Math.ceil(ClientGame.WIDTH / grid) + bleed; i++)
+					{
+						int x = (i * grid) - xOffset;
+						renderTo.getGraphics().drawLine(x, 0, x, ClientGame.HEIGHT);
+					}
+					
+					// Horizontal lines
+					for (int i = 0; i < Math.ceil(ClientGame.HEIGHT / grid) + bleed; i++)
+					{
+						int y = (i * grid) - yOffset;
+						renderTo.getGraphics().drawLine(0, y, ClientGame.WIDTH, y);
+					}
+					
+					renderTo.getGraphics().setPaint(oldPaint);
+				}
 			}
 			else if (currentBuildMode == 3 && hitboxClickCount == 1)
 			{
@@ -267,6 +302,7 @@ public class ClientLevel extends Level
 	public boolean showLayer3 = true;
 	public boolean showLayer4 = true;
 	public boolean showLayer5 = true;
+	public int grid = 16;
 	
 	public int editLayer = 0;
 	
@@ -343,8 +379,37 @@ public class ClientLevel extends Level
 				
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
-					Entity tileToAdd = new Entity(-1, this, cursorAsset.getAssetType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), ((IRenderable) cursorAsset).getWidth(), ((IRenderable) cursorAsset).getHeight());
-					PacketAddLevelTile pack = new PacketAddLevelTile(editLayer, tileToAdd);
+					double x = screenToWorldX(ClientGame.instance().input().getMouseX());
+					double y = screenToWorldY(ClientGame.instance().input().getMouseY());
+					
+					// If the grid is on, link to it
+					if (grid > 0)
+					{
+						// Offsets the clicked position to fall to the nearest grid position
+						if (x < 0 && y < 0)
+						{
+							x = -(Math.abs(x) - (Math.abs(x) % grid)) - grid;
+							y = -(Math.abs(y) - (Math.abs(y) % grid)) - grid;
+						}
+						else if (x < 0)
+						{
+							x = -(Math.abs(x) - (Math.abs(x) % grid)) - grid;
+							y = (y - (y % grid));
+						}
+						else if (y < 0)
+						{
+							x = (x - (x % grid));
+							y = -(Math.abs(y) - (Math.abs(y) % grid)) - grid;
+						}
+						else
+						{
+							x = (x - (x % grid));
+							y = (y - (y % grid));
+						}
+					}
+					
+					Entity tileToAdd = new Entity(-1, cursorAsset.getAssetType(), x, y);
+					PacketAddLevelTile pack = new PacketAddLevelTile(editLayer, this.getType(), tileToAdd);
 					ClientGame.instance().sockets().sender().sendPacket(pack);
 				}
 				
@@ -419,9 +484,9 @@ public class ClientLevel extends Level
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
-					PointLight light = new PointLight(-1, this, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
+					PointLight light = new PointLight(-1, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
 					
-					ClientGame.instance().sockets().sender().sendPacket(new PacketAddLevelLight(light));
+					ClientGame.instance().sockets().sender().sendPacket(new PacketAddLevelLight(this.getType(), light));
 				}
 				
 				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
@@ -521,9 +586,14 @@ public class ClientLevel extends Level
 		
 		if (ClientGame.instance().isLightingOn())
 		{
-			for (PointLight light : this.getLights())
+			List<PointLight> lights = this.getLights();
+			
+			synchronized (lights)
 			{
-				light.tick();
+				for (PointLight light : lights)
+				{
+					light.tick();
+				}
 			}
 		}
 		

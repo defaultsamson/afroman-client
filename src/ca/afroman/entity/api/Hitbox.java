@@ -50,5 +50,4 @@ public class Hitbox extends Rectangle2D.Double
 	{
 		nextAvailableID = 0;
 	}
-	
 }

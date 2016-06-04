@@ -7,9 +7,9 @@ public class ClientEntity extends Entity
 {
 	protected boolean cameraFollow;
 	
-	public ClientEntity(int id, ClientLevel level, AssetType assetType, double x, double y, double width, double height, Hitbox... hitboxes)
+	public ClientEntity(int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
 	{
-		super(id, level, assetType, x, y, width, height, hitboxes);
+		super(id, assetType, x, y, hitboxes);
 		
 		cameraFollow = false;
 	}
@@ -31,7 +31,7 @@ public class ClientEntity extends Entity
 		
 		if (cameraFollow)
 		{
-			getLevel().setCameraCenterInWorld(x + (width / 2), y + (height / 2));
+			getLevel().setCameraCenterInWorld(x + (16 / 2), y + (16 / 2));
 		}
 	}
 	

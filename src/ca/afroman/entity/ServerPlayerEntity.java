@@ -22,7 +22,7 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	 */
 	public ServerPlayerEntity(Role role, double x, double y)
 	{
-		super(-1, null, (role == Role.PLAYER1 ? ClientPlayerEntity.PLAYER1_ASSET : ClientPlayerEntity.PLAYER2_ASSET), x, y, 16, 16, new Hitbox(3, 5, 10, 11));
+		super(-1, (role == Role.PLAYER1 ? ClientPlayerEntity.PLAYER1_ASSET : ClientPlayerEntity.PLAYER2_ASSET), x, y, new Hitbox(3, 5, 10, 11));
 		
 		this.role = role;
 	}
@@ -54,11 +54,5 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	public Role getRole()
 	{
 		return role;
-	}
-	
-	@Override
-	public Entity getEntity()
-	{
-		return this;
 	}
 }

@@ -217,35 +217,28 @@ public class ServerSocketReceive extends DynamicThread
 						
 						double x = Double.parseDouble(split[4]);
 						double y = Double.parseDouble(split[5]);
-						double width = Double.parseDouble(split[6]);
-						double height = Double.parseDouble(split[7]);
 						
-						List<Entity> tiles = level.getTiles(layer);
-						
-						synchronized (tiles)
+						// If it has custom hitboxes defined
+						if (split.length > 6)
 						{
-							// If it has custom hitboxes defined
-							if (split.length > 8)
+							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
+							
+							for (int i = 6; i < split.length; i += 4)
 							{
-								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-								
-								for (int i = 8; i < split.length; i += 4)
-								{
-									tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
-								}
-								
-								// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-								Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes));
-								tiles.add(tile); // Adds tile to the server's level
-								manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, tile)); // Adds the tile to all the clients' levels
+								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
 							}
-							else
-							{
-								// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-								Entity tile = new Entity(Entity.getNextAvailableID(), level, asset, x, y, width, height);
-								tiles.add(tile);
-								manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, tile));
-							}
+							
+							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+							Entity tile = new Entity(Entity.getNextAvailableID(), asset, x, y, Entity.hitBoxListToArray(tileHitboxes));
+							tile.addTileToLevel(level, layer); // Adds tile to the server's level
+							manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, level.getType(), tile)); // Adds the tile to all the clients' levels
+						}
+						else
+						{
+							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+							Entity tile = new Entity(Entity.getNextAvailableID(), asset, x, y);
+							tile.addTileToLevel(level, layer);
+							manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, level.getType(), tile));
 						}
 					}
 					else
@@ -270,16 +263,11 @@ public class ServerSocketReceive extends DynamicThread
 						
 						if (tile != null)
 						{
-							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(layer, tile.getLevel().getType(), tile.getID());
+							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(tile.getLevel().getType(), tile.getID());
 							
 							manager.sender().sendPacketToAllClients(pack);
 							
-							List<Entity> tiles = level.getTiles(layer);
-							
-							synchronized (tiles)
-							{
-								tiles.remove(tile);
-							}
+							tile.removeTileFromLevel();
 						}
 					}
 					else
@@ -355,9 +343,9 @@ public class ServerSocketReceive extends DynamicThread
 						double radius = Double.parseDouble(split[4]);
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						PointLight light = new PointLight(Entity.getNextAvailableID(), level, x, y, radius);
-						level.getLights().add(light);
-						manager.sender().sendPacketToAllClients(new PacketAddLevelLight(light));
+						PointLight light = new PointLight(Entity.getNextAvailableID(), x, y, radius);
+						light.addToLevel(level);
+						manager.sender().sendPacketToAllClients(new PacketAddLevelLight(level.getType(), light));
 					}
 					else
 					{
@@ -384,7 +372,7 @@ public class ServerSocketReceive extends DynamicThread
 							
 							manager.sender().sendPacketToAllClients(pack);
 							
-							level.getLights().remove(light);
+							light.removeFromLevel();
 						}
 					}
 					else

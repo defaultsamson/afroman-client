@@ -12,7 +12,6 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.ClientLightEntity;
 
 public class LightMap extends Texture
 {
@@ -127,45 +126,45 @@ public class LightMap extends Texture
 		}
 	}
 	
-	public void putLight(ClientLightEntity light)
-	{
-		// Loop over pixels within light radius
-		for (int iy = 0; iy < light.getHeight(); iy++)
-		{
-			for (int ix = 0; ix < light.getWidth(); ix++)
-			{
-				// If it has a level, use the level's worldToScreen() coordinates, otherwise just draw it to the screen with its current coordinates
-				int lightMapX = (int) (light.getLevel() != null ? light.getLevel().worldToScreenX(light.getX() - light.getRadius()) : light.getX() - light.getRadius()) + ix;
-				int lightMapY = (int) (light.getLevel() != null ? light.getLevel().worldToScreenY(light.getY() - light.getRadius()) : light.getY() - light.getRadius()) + iy;
-				
-				// If it's off-screen, don't try to render it.
-				if (lightMapX < 0 || lightMapY < 0 || lightMapX >= getImage().getWidth() || lightMapY >= getImage().getHeight()) continue;
-				
-				int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
-				int lightmapPixel = getImage().getRGB(lightMapX, lightMapY);
-				
-				if (oldLightMixing)
-				{
-					// Only set the pixel to it if the new colour doesn't go below the ambient colour.
-					if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
-					{
-						getImage().setRGB(lightMapX, lightMapY, lightPixel);
-					}
-				}
-				else // New and improved light mixing
-				{
-					if (lightmapPixel == ColourUtil.BUFFER_WASTE)
-					{
-						getImage().setRGB(lightMapX, lightMapY, lightPixel);
-					}
-					else // If it's not a BUFFER, multiply the current value together to get the new pixel
-					{
-						getImage().setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
-					}
-				}
-			}
-		}
-	}
+	// public void putLight(ClientLightEntity light)
+	// {
+	// // Loop over pixels within light radius
+	// for (int iy = 0; iy < light.getRadius() * 2; iy++)
+	// {
+	// for (int ix = 0; ix < light.getRadius() * 2; ix++)
+	// {
+	// // If it has a level, use the level's worldToScreen() coordinates, otherwise just draw it to the screen with its current coordinates
+	// int lightMapX = (int) (light.getLevel() != null ? light.getLevel().worldToScreenX(light.getX() - light.getRadius()) : light.getX() - light.getRadius()) + ix;
+	// int lightMapY = (int) (light.getLevel() != null ? light.getLevel().worldToScreenY(light.getY() - light.getRadius()) : light.getY() - light.getRadius()) + iy;
+	//
+	// // If it's off-screen, don't try to render it.
+	// if (lightMapX < 0 || lightMapY < 0 || lightMapX >= getImage().getWidth() || lightMapY >= getImage().getHeight()) continue;
+	//
+	// int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
+	// int lightmapPixel = getImage().getRGB(lightMapX, lightMapY);
+	//
+	// if (oldLightMixing)
+	// {
+	// // Only set the pixel to it if the new colour doesn't go below the ambient colour.
+	// if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+	// {
+	// getImage().setRGB(lightMapX, lightMapY, lightPixel);
+	// }
+	// }
+	// else // New and improved light mixing
+	// {
+	// if (lightmapPixel == ColourUtil.BUFFER_WASTE)
+	// {
+	// getImage().setRGB(lightMapX, lightMapY, lightPixel);
+	// }
+	// else // If it's not a BUFFER, multiply the current value together to get the new pixel
+	// {
+	// getImage().setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
+	// }
+	// }
+	// }
+	// }
+	// }
 	
 	public void clear()
 	{

@@ -219,29 +219,22 @@ public class ClientSocketReceive extends DynamicThread
 						
 						double x = Double.parseDouble(split[4]);
 						double y = Double.parseDouble(split[5]);
-						double width = Double.parseDouble(split[6]);
-						double height = Double.parseDouble(split[7]);
 						
-						List<Entity> tiles = level.getTiles(layer);
-						
-						synchronized (tiles)
+						// If it has custom hitboxes defined
+						if (split.length > 6)
 						{
-							// If it has custom hitboxes defined
-							if (split.length > 8)
+							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
+							
+							for (int i = 6; i < split.length; i += 4)
 							{
-								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-								
-								for (int i = 8; i < split.length; i += 4)
-								{
-									tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
-								}
-								
-								tiles.add(new ClientAssetEntity(id, level, asset, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
 							}
-							else
-							{
-								tiles.add(new ClientAssetEntity(id, level, asset, x, y, width, height));
-							}
+							
+							new ClientAssetEntity(id, asset, x, y, Entity.hitBoxListToArray(tileHitboxes)).addTileToLevel(level, layer);
+						}
+						else
+						{
+							new ClientAssetEntity(id, asset, x, y).addTileToLevel(level, layer);
 						}
 					}
 					else
@@ -258,17 +251,11 @@ public class ClientSocketReceive extends DynamicThread
 					
 					if (level != null)
 					{
-						int layer = Integer.parseInt(split[1]);
-						Entity tile = level.getTile(Integer.parseInt(split[2]));
+						Entity tile = level.getTile(Integer.parseInt(split[1]));
 						
 						if (tile != null)
 						{
-							List<Entity> tiles = level.getTiles(layer);
-							
-							synchronized (tiles)
-							{
-								tiles.remove(tile);
-							}
+							tile.removeTileFromLevel();
 						}
 					}
 				}
@@ -321,7 +308,7 @@ public class ClientSocketReceive extends DynamicThread
 						double y = Double.parseDouble(split[3]);
 						double radius = Double.parseDouble(split[4]);
 						
-						level.getLights().add(new PointLight(id, level, x, y, radius));
+						new PointLight(id, x, y, radius).addToLevel(level);
 					}
 				}
 					break;
@@ -337,7 +324,7 @@ public class ClientSocketReceive extends DynamicThread
 						
 						if (light != null)
 						{
-							level.getLights().remove(light);
+							light.removeFromLevel();
 						}
 					}
 				}

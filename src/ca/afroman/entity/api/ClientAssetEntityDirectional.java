@@ -2,7 +2,6 @@ package ca.afroman.entity.api;
 
 import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
-import ca.afroman.level.ClientLevel;
 
 public class ClientAssetEntityDirectional extends ClientAssetEntity
 {
@@ -15,9 +14,9 @@ public class ClientAssetEntityDirectional extends ClientAssetEntity
 	protected Asset idleLeft;
 	protected Asset idleRight;
 	
-	public ClientAssetEntityDirectional(int id, ClientLevel level, AssetType assetType, Asset up, Asset down, Asset left, Asset right, Asset idleUp, Asset idleDown, Asset idleLeft, Asset idleRight, double x, double y, double width, double height, Hitbox... hitboxes)
+	public ClientAssetEntityDirectional(int id, AssetType assetType, Asset up, Asset down, Asset left, Asset right, Asset idleUp, Asset idleDown, Asset idleLeft, Asset idleRight, double x, double y, Hitbox... hitboxes)
 	{
-		super(id, level, assetType, x, y, width, height, hitboxes);
+		super(id, assetType, x, y, hitboxes);
 		
 		this.up = up;
 		this.down = down;

@@ -119,13 +119,11 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, newTextures);
 	}
 	
-	@Override
 	public double getWidth()
 	{
 		return getCurrentFrame().getWidth();
 	}
 	
-	@Override
 	public double getHeight()
 	{
 		return getCurrentFrame().getHeight();

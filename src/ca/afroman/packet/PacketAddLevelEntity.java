@@ -23,6 +23,6 @@ public class PacketAddLevelEntity extends Packet
 	@Override
 	public byte[] getData()
 	{ // (type, leveltype, assetType, x, y, width, height, hitboxes)
-		return (type.ordinal() + "," + id + Packet.SEPARATOR + entity.getLevel().getType().ordinal() + "," + entity.getAssetType() + "," + entity.getX() + "," + entity.getY() + "," + entity.getWidth() + "," + entity.getHeight() + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
+		return (type.ordinal() + "," + id + Packet.SEPARATOR + entity.getLevel().getType().ordinal() + "," + entity.getAssetType() + "," + entity.getX() + "," + entity.getY() + "," + (entity.hasHitbox() ? "," + entity.hitboxesAsSaveable() : "")).getBytes();
 	}
 }

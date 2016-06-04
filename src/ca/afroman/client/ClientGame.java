@@ -46,7 +46,7 @@ public class ClientGame extends DynamicTickRenderThread
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final int VERSION = 27;
+	public static final int VERSION = 28;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	private static ClientGame game;
@@ -234,8 +234,8 @@ public class ClientGame extends DynamicTickRenderThread
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
 		
 		lights = new HashMap<Role, FlickeringLight>();
-		lights.put(Role.PLAYER1, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(-1, null, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(-1, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(-1, 0, 0, 50, 47, 4));
 		
 		setCurrentScreen(new GuiMainMenu());
 		
@@ -293,8 +293,8 @@ public class ClientGame extends DynamicTickRenderThread
 			ClientPlayerEntity player = getPlayer(light.getKey());
 			
 			light.getValue().addToLevel(player.getLevel());
-			light.getValue().setX(player.getX() + (player.getWidth() / 2));
-			light.getValue().setY(player.getY() + (player.getHeight() / 2));
+			light.getValue().setX(player.getX() + (16 / 2));
+			light.getValue().setY(player.getY() + (16 / 2));
 		}
 		
 		if (input.consoleDebug.isReleasedFiltered())
@@ -506,7 +506,6 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public void setCurrentScreen(GuiScreen screen)
 	{
-		logger().log(ALogType.DEBUG, "Setting screen: " + screen.getClass().getName());
 		this.currentScreen = screen;
 	}
 	
@@ -682,10 +681,5 @@ public class ClientGame extends DynamicTickRenderThread
 	public List<ClientLevel> getLevels()
 	{
 		return levels;
-	}
-	
-	public FlickeringLight getLight(Role role)
-	{
-		return lights.get(role);
 	}
 }

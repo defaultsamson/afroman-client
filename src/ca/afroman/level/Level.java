@@ -109,28 +109,25 @@ public class Level
 							break;
 						case TILE: // (AssetType, x, y, width, height, hitbox ...)
 						{
-							int layer = Integer.parseInt(parameters[0]);
+							int layer = Integer.parseInt(parameters[0]); // TODO add to level with layer
 							double x = Double.parseDouble(parameters[1]);
 							double y = Double.parseDouble(parameters[2]);
-							double width = Double.parseDouble(parameters[3]);
-							double height = Double.parseDouble(parameters[4]);
-							AssetType type = AssetType.valueOf(parameters[5]);
+							AssetType type = AssetType.valueOf(parameters[3]);
 							
 							// If it has custom hitboxes defined
-							if (parameters.length > 6)
+							if (parameters.length > 4)
 							{
 								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
 								
-								for (int i = 6; i < parameters.length; i += 4)
+								for (int i = 4; i < parameters.length; i += 4)
 								{
 									tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
 								}
-								
-								level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height, Entity.hitBoxListToArray(tileHitboxes)));
+								new Entity(Entity.getNextAvailableID(), type, x, y, Entity.hitBoxListToArray(tileHitboxes)).addTileToLevel(level, layer);
 							}
 							else
 							{
-								level.getTiles(layer).add(new Entity(Entity.getNextAvailableID(), level, type, x, y, width, height));
+								new Entity(Entity.getNextAvailableID(), type, x, y).addTileToLevel(level, layer);
 							}
 						}
 							break;
@@ -142,28 +139,9 @@ public class Level
 							double y = Double.parseDouble(parameters[1]);
 							double radius = Double.parseDouble(parameters[2]);
 							
-							level.getLights().add(new PointLight(Entity.getNextAvailableID(), level, x, y, radius));
+							new PointLight(Entity.getNextAvailableID(), x, y, radius).addToLevel(level);
 							break;
 					}
-					
-					// switch (type)
-					// {
-					// case "PointLight": TODO
-					// {
-					// int x = Integer.parseInt(parameters[0]);
-					// int y = Integer.parseInt(parameters[1]);
-					// int radius = Integer.parseInt(parameters[2]);
-					//
-					// PointLight light = new PointLight(x, y, radius);
-					// light.addToLevel(level);
-					// }
-					// break;
-					// case "HitBox":
-					// {
-					// level.levelHitboxes.add(new Rectangle(Integer.parseInt(parameters[0]), Integer.parseInt(parameters[1]), Integer.parseInt(parameters[2]), Integer.parseInt(parameters[3])));
-					// }
-					// break;
-					// }
 				}
 				catch (Exception e)
 				{
@@ -197,7 +175,7 @@ public class Level
 			{
 				for (Entity tile : tileList)
 				{
-					String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getWidth() + ", " + tile.getHeight() + ", " + tile.getAssetType();
+					String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getAssetType();
 					
 					if (tile.hasHitbox())
 					{
@@ -245,15 +223,20 @@ public class Level
 		toReturn.add("// The lights. FlickeringLight(x, y, radius, radius2, ticksPerFrame)");
 		toReturn.add("");
 		
-		for (PointLight light : getLights())
+		List<PointLight> lights = getLights();
+		
+		synchronized (lights)
 		{
-			if (light instanceof FlickeringLight)
+			for (PointLight light : lights)
 			{
-				// TODO
-			}
-			else
-			{
-				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
+				if (light instanceof FlickeringLight)
+				{
+					// TODO
+				}
+				else
+				{
+					toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
+				}
 			}
 		}
 		
@@ -301,7 +284,8 @@ public class Level
 			
 			for (Entity tile : tiles)
 			{
-				Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
+				// TODO generate removable hitboxes for tiles based on asset
+				Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), 16, 16);
 				
 				if (surrounding.contains(x, y))
 				{
@@ -449,27 +433,36 @@ public class Level
 	 */
 	public PointLight getLight(int id)
 	{
-		for (PointLight light : getLights())
+		List<PointLight> lights = getLights();
+		
+		synchronized (lights)
 		{
-			if (light.getID() == id) return light;
+			for (PointLight light : lights)
+			{
+				if (light.getID() == id) return light;
+			}
+			return null;
 		}
-		return null;
 	}
 	
 	public PointLight getLight(double x, double y)
 	{
-		for (PointLight light : getLights())
-		{
-			double width = light.getWidth();
-			double height = light.getHeight();
-			
-			if (new Hitbox(light.getX() - light.getRadius(), light.getY() - light.getRadius(), width, height).contains(x, y))
-			{
-				return light;
-			}
-		}
+		List<PointLight> lights = getLights();
 		
-		return null;
+		synchronized (lights)
+		{
+			for (PointLight light : lights)
+			{
+				double radius = light.getRadius() * 2;
+				
+				if (new Hitbox(light.getX() - radius, light.getY() - radius, radius, radius).contains(x, y))
+				{
+					return light;
+				}
+			}
+			
+			return null;
+		}
 	}
 	
 	public List<PointLight> getLights()

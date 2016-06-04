@@ -23,8 +23,6 @@ public class Entity implements ITickable
 	protected AssetType assetType;
 	protected double x;
 	protected double y;
-	protected double width;
-	protected double height;
 	protected boolean hasHitbox;
 	protected Hitbox[] hitbox;
 	
@@ -44,9 +42,9 @@ public class Entity implements ITickable
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Entity(int id, Level level, AssetType assetType, double x, double y, double width, double height)
+	public Entity(int id, AssetType assetType, double x, double y)
 	{
-		this(id, level, assetType, x, y, width, height, false, new Hitbox[] { null });
+		this(id, assetType, x, y, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -59,9 +57,9 @@ public class Entity implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(int id, Level level, AssetType assetType, double x, double y, double width, double height, Hitbox... hitboxes)
+	public Entity(int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
 	{
-		this(id, level, assetType, x, y, width, height, true, hitboxes);
+		this(id, assetType, x, y, true, hitboxes);
 	}
 	
 	/**
@@ -73,15 +71,13 @@ public class Entity implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(int id, Level level, AssetType assetType, double x, double y, double width, double height, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(int id, AssetType assetType, double x, double y, boolean hasHitbox, Hitbox... hitboxes)
 	{
 		this.id = id; // -1 if this is not an object in a level
-		this.level = level;
+		this.level = null;
 		this.assetType = assetType;
 		this.x = x;
 		this.y = y;
-		this.width = width;
-		this.height = height;
 		this.hasHitbox = hasHitbox;
 		hitbox = (hasHitbox ? hitboxes : null);
 		
@@ -137,22 +133,6 @@ public class Entity implements ITickable
 	}
 	
 	/**
-	 * @return the width of this Entity.
-	 */
-	public double getWidth()
-	{
-		return width;
-	}
-	
-	/**
-	 * @return the height of this Entity.
-	 */
-	public double getHeight()
-	{
-		return height;
-	}
-	
-	/**
 	 * @return the asset type associated with this Entity.
 	 */
 	public AssetType getAssetType()
@@ -161,25 +141,93 @@ public class Entity implements ITickable
 	}
 	
 	/**
+	 * Removes an entity from their current level.
+	 * <p>
+	 * <b>WARNING:</b> If adding a tile, use removeTileFromLevel().
+	 */
+	public void removeFromLevel()
+	{
+		addToLevel(null);
+	}
+	
+	/**
+	 * Removes a tile from their current level.
+	 * <p>
+	 * <b>WARNING:</b> This method will remove this entity from the level. Otherwise, for standard entities, use removeFromLevel()
+	 */
+	public void removeTileFromLevel()
+	{
+		addTileToLevel(null, 1);
+	}
+	
+	/**
 	 * Removes an entity from their current level and puts them in another level.
+	 * <p>
+	 * <b>WARNING:</b> If adding a tile, use addTileToLevel().
 	 * 
 	 * @param level the new level.
 	 */
-	public void addToLevel(Level level)
+	public void addToLevel(Level newLevel)
 	{
-		if (getLevel() != null)
+		if (level == newLevel) return;
+		
+		if (level != null)
 		{
-			getLevel().getEntities().remove(this);
+			synchronized (level.getEntities())
+			{
+				level.getEntities().remove(this);
+			}
 		}
 		
-		this.level = level;
+		// Sets the new level
+		level = newLevel;
 		
-		if (getLevel() != null)
+		if (level != null)
 		{
-			getLevel().getEntities().add(this);
+			synchronized (level.getEntities())
+			{
+				level.getEntities().add(this);
+			}
+		}
+	}
+	
+	/**
+	 * Removes a tile from their current level and puts them in another level.
+	 * <p>
+	 * <b>WARNING:</b> This method will add this entity to the tile layers in the level. Otherwise, for standard entities, use addToLevel()
+	 * 
+	 * @param level the new level
+	 * @param layer the new layer
+	 */
+	public void addTileToLevel(Level newLevel, int layer)
+	{
+		if (level == newLevel) return;
+		
+		if (level != null)
+		{
+			synchronized (level.getTiles())
+			{
+				// Searches all the old layers in case the old tile isn't on the same layer as the new one being specified
+				for (List<Entity> tiles : level.getTiles())
+				{
+					if (tiles.contains(this))
+					{
+						tiles.remove(this);
+					}
+				}
+			}
 		}
 		
-		// TODO Packet add level entity
+		// Sets the new level
+		level = newLevel;
+		
+		if (level != null)
+		{
+			synchronized (level.getTiles(layer))
+			{
+				level.getTiles(layer).add(this);
+			}
+		}
 	}
 	
 	public Level getLevel()
@@ -250,6 +298,11 @@ public class Entity implements ITickable
 	public boolean hasHitbox()
 	{
 		return hasHitbox;
+	}
+	
+	public void onInteract()
+	{
+		
 	}
 	
 	/**

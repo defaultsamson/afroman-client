@@ -10,19 +10,20 @@ public class FlickeringLight extends PointLight
 	private boolean goingUp = false;
 	private int ticksPerFrame;
 	private int tickCounter = 0;
+	private double radius2;
 	
-	public FlickeringLight(int id, ClientLevel level, double x, double y, double radius1, double radius2, int ticksPerFrame)
+	public FlickeringLight(int id, double x, double y, double radius1, double radius2, int ticksPerFrame)
 	{
-		this(id, level, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
+		this(id, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
 	}
 	
-	public FlickeringLight(int id, ClientLevel level, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
+	public FlickeringLight(int id, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
 	{
 		// Picks the larger of the 2 radi to use for anchoring the draw location
-		super(id, level, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
+		super(id, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
 		
 		// Picks the smaller of the 2 radi
-		this.height = (radius1 <= radius2 ? radius1 : radius2);
+		this.radius2 = (radius1 <= radius2 ? radius1 : radius2);
 		this.displayRadius = getRadius(); // Starts at the larger radius
 		this.ticksPerFrame = ticksPerFrame;
 	}
@@ -74,7 +75,7 @@ public class FlickeringLight extends PointLight
 					displayRadius -= 2;
 				}
 				
-				if (displayRadius < height) // height is used as the secondary radius
+				if (displayRadius < radius2) // height is used as the secondary radius
 				{
 					// Makes animation play the other way.
 					goingUp = !goingUp;

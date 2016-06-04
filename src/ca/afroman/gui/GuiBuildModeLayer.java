@@ -20,6 +20,8 @@ public class GuiBuildModeLayer extends GuiScreen
 	private GuiTextButton layer4show;
 	private GuiTextButton layer5show;
 	
+	private GuiTextButton grid;
+	
 	public GuiBuildModeLayer()
 	{
 		super(null);
@@ -55,6 +57,10 @@ public class GuiBuildModeLayer extends GuiScreen
 		buttons.add(layer3edit);
 		buttons.add(layer4edit);
 		buttons.add(layer5edit);
+		
+		grid = new GuiTextButton(this, 500, 200 - 4 - 12, 3, 41 + 12, blackFont, "Grid 0");
+		
+		buttons.add(grid);
 		
 		updateButtons();
 	}
@@ -101,6 +107,8 @@ public class GuiBuildModeLayer extends GuiScreen
 					layer5edit.setEnabled(false);
 					break;
 			}
+			
+			grid.setText("Grid " + level.grid);
 		}
 	}
 	
@@ -157,6 +165,9 @@ public class GuiBuildModeLayer extends GuiScreen
 					break;
 				case 51:
 					level.editLayer = 5;
+					break;
+				case 500:
+					level.grid = (level.grid == 0 ? 8 : (level.grid == 8 ? 16 : (level.grid == 16 ? 32 : 0)));
 					break;
 			}
 			

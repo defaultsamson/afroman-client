@@ -6,20 +6,19 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
-import ca.afroman.level.ClientLevel;
 
 public class ClientAssetEntity extends ClientEntity implements IRenderable
 {
 	protected Asset asset;
 	
-	public ClientAssetEntity(int id, ClientLevel level, AssetType assetType, double x, double y, double width, double height, Hitbox... hitboxes)
+	public ClientAssetEntity(int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
 	{
-		this(id, level, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), x, y, width, height, hitboxes);
+		this(id, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), x, y, hitboxes);
 	}
 	
-	public ClientAssetEntity(int id, ClientLevel level, Asset asset, double x, double y, double width, double height, Hitbox... hitboxes)
+	public ClientAssetEntity(int id, Asset asset, double x, double y, Hitbox... hitboxes)
 	{
-		super(id, level, (asset != null ? asset.getAssetType() : AssetType.INVALID), x, y, width, height, hitboxes);
+		super(id, (asset != null ? asset.getAssetType() : AssetType.INVALID), x, y, hitboxes);
 		
 		this.asset = asset;
 	}

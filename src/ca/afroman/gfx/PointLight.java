@@ -10,17 +10,19 @@ import ca.afroman.level.Level;
 public class PointLight extends Entity
 {
 	protected Color colour;
+	private double radius;
 	
-	public PointLight(int id, Level level, double x, double y, double radius)
+	public PointLight(int id, double x, double y, double radius)
 	{
-		this(id, level, x, y, radius, ColourUtil.TRANSPARENT);
+		this(id, x, y, radius, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(int id, Level level, double x, double y, double radius, Color colour)
+	public PointLight(int id, double x, double y, double radius, Color colour)
 	{
-		super(id, level, AssetType.INVALID, x, y, radius * 2, radius * 2);
+		super(id, AssetType.INVALID, x, y);
 		
 		this.colour = colour;
+		this.radius = radius;
 	}
 	
 	@Override
@@ -41,7 +43,7 @@ public class PointLight extends Entity
 	
 	public double getRadius()
 	{
-		return width / 2;
+		return radius;
 	}
 	
 	public Color getColour()
@@ -55,28 +57,27 @@ public class PointLight extends Entity
 	 * @param level the new level.
 	 */
 	@Override
-	public void addToLevel(Level level)
+	public void addToLevel(Level newLevel)
 	{
-		if (getLevel() == level) return;
+		if (level == newLevel) return;
 		
-		if (getLevel() != null)
+		if (level != null)
 		{
-			// TODO remove from the previous level
-			for (Entity entity : this.level.getLights())
+			synchronized (level.getLights())
 			{
-				if (entity == this)
-				{
-					getLevel().getLights().remove(this);
-					this.level = level;
-					getLevel().getLights().add(this);
-					return;
-				}
+				level.getLights().remove(this);
 			}
 		}
-		else
+		
+		// Sets the new level
+		level = newLevel;
+		
+		if (level != null)
 		{
-			this.level = level;
-			getLevel().getLights().add(this);
+			synchronized (level.getLights())
+			{
+				level.getLights().add(this);
+			}
 		}
 	}
 }

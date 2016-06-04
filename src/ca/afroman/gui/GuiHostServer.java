@@ -34,7 +34,7 @@ public class GuiHostServer extends GuiScreen
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(-1, null, ClientGame.WIDTH / 2, 38, 60, 62, 5);
+		light = new FlickeringLight(-1, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
 		username.setText(ClientGame.instance().getUsername());
