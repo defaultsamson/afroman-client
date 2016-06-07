@@ -48,7 +48,7 @@ public class ServerSocketManager implements IDynamicRunning
 		}
 		catch (SocketException e)
 		{
-			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT.", e);
+			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT", e);
 		}
 		
 		rSocket = new ServerSocketReceive(this, password);

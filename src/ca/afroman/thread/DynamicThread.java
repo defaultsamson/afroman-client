@@ -62,7 +62,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 				}
 				catch (InterruptedException e)
 				{
-					logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread during runtime.", e);
+					logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread during runtime", e);
 				}
 			}
 			
@@ -72,7 +72,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 			}
 			catch (InterruptedException e)
 			{
-				logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread while paused.", e);
+				logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread while paused", e);
 			}
 		}
 	}
@@ -97,7 +97,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 	{
 		if (exit)
 		{
-			logger().log(ALogType.CRITICAL, "Thread is trying to be started from a stopped state.");
+			logger().log(ALogType.CRITICAL, "Thread is trying to be started from a stopped state");
 			return;
 		}
 		

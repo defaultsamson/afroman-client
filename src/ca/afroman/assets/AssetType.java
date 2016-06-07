@@ -53,6 +53,8 @@ public enum AssetType
 	
 	TILE_AURA,
 	
+	TILE_ROCK,
+	
 	BUTTON_PRESSED,
 	BUTTON_HOVER,
 	BUTTON_NORMAL,

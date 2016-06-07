@@ -6,6 +6,9 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.TriggerType;
+import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.IEvent;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketMovePlayer;
@@ -15,6 +18,10 @@ import ca.afroman.server.ServerGame;
 
 public class Entity implements ITickable
 {
+	private static final boolean PLAYER_COLLISION = false;
+	private static final boolean HITBOX_COLLISION = true;
+	private static final boolean ENTITY_COLLISION = true;
+	
 	private static int nextAvailableID = 0;
 	
 	// All the required variables needed to create an Entity
@@ -338,6 +345,7 @@ public class Entity implements ITickable
 		return direction;
 	}
 	
+	@SuppressWarnings("unused")
 	public void move(int xa, int ya)
 	{
 		// It's it's not set to move anyways
@@ -364,17 +372,20 @@ public class Entity implements ITickable
 			// Tests if it's allowed to move or not
 			boolean canMove = true;
 			
-			for (Entity other : getLevel().getEntities())
+			if (ENTITY_COLLISION)
 			{
-				// Don't let it collide with itself
-				if (other != this && this.isColliding(other))
+				for (Entity other : getLevel().getEntities())
 				{
-					canMove = false;
-					break;
+					// Don't let it collide with itself
+					if (other != this && this.isColliding(other))
+					{
+						canMove = false;
+						break;
+					}
 				}
 			}
 			
-			if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
+			if (canMove && HITBOX_COLLISION) // Only do the next calculations if it has not yet determined that this Entity can't move
 			{
 				for (Hitbox hitbox : getLevel().getHitboxes())
 				{
@@ -386,20 +397,20 @@ public class Entity implements ITickable
 				}
 			}
 			
-			// if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
-			// {
-			// for (Entity player : getLevel().getPlayers())
-			// {
-			// for (Hitbox hitbox : player.hitboxInLevel())
-			// {
-			// if (this != player && this.isColliding(hitbox))
-			// {
-			// canMove = false;
-			// break;
-			// }
-			// }
-			// }
-			// }
+			if (canMove && PLAYER_COLLISION) // Only do the next calculations if it has not yet determined that this Entity can't move
+			{
+				for (Entity player : getLevel().getPlayers())
+				{
+					for (Hitbox hitbox : player.hitboxInLevel())
+					{
+						if (this != player && this.isColliding(hitbox))
+						{
+							canMove = false;
+							break;
+						}
+					}
+				}
+			}
 			
 			// If it it now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
@@ -417,17 +428,20 @@ public class Entity implements ITickable
 			// Tests if it's allowed to move or not
 			boolean canMove = true;
 			
-			for (Entity other : getLevel().getEntities())
+			if (ENTITY_COLLISION)
 			{
-				// Don't let it collide with itself
-				if (other != this && this.isColliding(other))
+				for (Entity other : getLevel().getEntities())
 				{
-					canMove = false;
-					break;
+					// Don't let it collide with itself
+					if (other != this && this.isColliding(other))
+					{
+						canMove = false;
+						break;
+					}
 				}
 			}
 			
-			if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
+			if (canMove && HITBOX_COLLISION) // Only do the next calculations if it has not yet determined that this Entity can't move
 			{
 				for (Hitbox hitbox : getLevel().getHitboxes())
 				{
@@ -439,20 +453,20 @@ public class Entity implements ITickable
 				}
 			}
 			
-			// if (canMove) // Only do the next calculations if it has not yet determined that this Entity can't move
-			// {
-			// for (Entity player : getLevel().getPlayers())
-			// {
-			// for (Hitbox hitbox : player.hitboxInLevel())
-			// {
-			// if (this != player && this.isColliding(hitbox))
-			// {
-			// canMove = false;
-			// break;
-			// }
-			// }
-			// }
-			// }
+			if (canMove && PLAYER_COLLISION) // Only do the next calculations if it has not yet determined that this Entity can't move
+			{
+				for (Entity player : getLevel().getPlayers())
+				{
+					for (Hitbox hitbox : player.hitboxInLevel())
+					{
+						if (this != player && this.isColliding(hitbox))
+						{
+							canMove = false;
+							break;
+						}
+					}
+				}
+			}
 			
 			// If it is now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
@@ -462,7 +476,29 @@ public class Entity implements ITickable
 			}
 		}
 		
-		// Used to update the player location after it's stopped moving to stop the animation
+		for (IEvent event : level.getScriptedEvents())
+		{
+			if (event instanceof HitboxTrigger)
+			{
+				HitboxTrigger hEvent = (HitboxTrigger) event;
+				
+				if (this.isColliding(hEvent.getHitbox()))
+				{
+					// TODO separate server-side entity checks
+					if (this instanceof ServerPlayerEntity || this instanceof ClientPlayerEntity)
+					{
+						
+						hEvent.attemptTrigger(TriggerType.PLAYER_COLLIDE);
+					}
+					else
+					{
+						hEvent.attemptTrigger(TriggerType.ENTITY_COLLIDE);
+					}
+				}
+			}
+		}
+		
+		// Used to send packets from the server to the client to update the player direction after it's stopped moving to stop the animation
 		boolean sendPacket = false;
 		
 		if (direction != Direction.NONE) lastDirection = direction;
@@ -495,6 +531,7 @@ public class Entity implements ITickable
 		
 		if (sendPacket)
 		{
+			// TODO separate server-side entity checks
 			if (this instanceof ServerPlayerEntity)
 			{
 				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdatePlayerLocation((ServerPlayerEntity) this));

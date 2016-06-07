@@ -74,7 +74,7 @@ public class ClientSocketManager implements IDynamicRunning
 		}
 		catch (UnknownHostException e)
 		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Couldn't resolve hostname.", e);
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Couldn't resolve hostname", e);
 			
 			ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 			new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "UNKNOWN", "HOST");

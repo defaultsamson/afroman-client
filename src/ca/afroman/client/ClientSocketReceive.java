@@ -63,11 +63,11 @@ public class ClientSocketReceive extends DynamicThread
 		}
 		catch (PortUnreachableException e)
 		{
-			logger().log(ALogType.CRITICAL, "Port is unreachable.", e);
+			logger().log(ALogType.CRITICAL, "Port is unreachable", e);
 		}
 		catch (IOException e)
 		{
-			logger().log(ALogType.CRITICAL, "I/O error while reading packet.", e);
+			logger().log(ALogType.CRITICAL, "I/O error while reading packet", e);
 		}
 	}
 	
@@ -200,7 +200,7 @@ public class ClientSocketReceive extends DynamicThread
 					}
 					else
 					{
-						logger().log(ALogType.WARNING, "[CLIENT] Level with type " + levelType + " already exists.");
+						logger().log(ALogType.WARNING, "[CLIENT] Level with type " + levelType + " already exists");
 					}
 				}
 					break;
@@ -379,7 +379,7 @@ public class ClientSocketReceive extends DynamicThread
 		}
 		else
 		{
-			logger().log(ALogType.WARNING, "A server (" + connection.asReadable() + ") is tring to send a packet to this unlistening client." + type.toString());
+			logger().log(ALogType.WARNING, "A server (" + connection.asReadable() + ") is tring to send a packet " + type.toString() + " to this unlistening client");
 		}
 	}
 	

@@ -3,6 +3,7 @@ package ca.afroman.level;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 import ca.afroman.assets.AssetType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.IEvent;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.log.ALogType;
@@ -32,6 +34,8 @@ public class Level
 	private List<Entity> players;
 	/** Hitbox in this Level. */
 	private List<Hitbox> hitboxes;
+	/** Scripted Events in this level. */
+	private List<IEvent> events;
 	
 	public Level(LevelType type)
 	{
@@ -50,6 +54,7 @@ public class Level
 		entities = new ArrayList<Entity>();
 		players = new ArrayList<Entity>();
 		hitboxes = new ArrayList<Hitbox>();
+		events = new ArrayList<IEvent>();
 	}
 	
 	public void tick()
@@ -253,6 +258,66 @@ public class Level
 		return toReturn;
 	}
 	
+	public List<IEvent> getScriptedEvents()
+	{
+		return events;
+	}
+	
+	/**
+	 * Gets a hitbox at the given coordinates.
+	 * 
+	 * @param x the x in-level ordinate
+	 * @param y the y in-level ordinate
+	 * @return the entity. <b>null</b> if there are no entities at that given location.
+	 */
+	public IEvent getScriptedEvent(double x, double y)
+	{
+		for (IEvent event : getScriptedEvents())
+		{
+			if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(x, y)) return event;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a hitbox with the given id.
+	 * 
+	 * @param id the id of the hitbox
+	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
+	 */
+	public IEvent getScriptedEvent(int id)
+	{
+		for (IEvent box : getScriptedEvents())
+		{
+			if (box.getID() == id) return box;
+		}
+		return null;
+	}
+	
+	public void chainScriptedEvents(int inTrigger)
+	{
+		// TODO detect infinite loops?
+		for (IEvent event : getScriptedEvents())
+		{
+			for (int eventTrigger : event.getTriggers())
+			{
+				// If the event has the specified eventID
+				if (eventTrigger == inTrigger)
+				{
+					// Trigger it
+					event.onTrigger();
+					
+					// Pass trigger to the event's chain triggers
+					for (int eventChainTrigger : event.getChainTriggers())
+					{
+						chainScriptedEvents(eventChainTrigger);
+					}
+					return;
+				}
+			}
+		}
+	}
+	
 	public List<List<Entity>> getTiles()
 	{
 		return tiles;
@@ -401,18 +466,6 @@ public class Level
 			if (box.getID() == id) return box;
 		}
 		return null;
-	}
-	
-	/**
-	 * Removes a hitbox at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 */
-	public void removeHitbox(double x, double y)
-	{
-		Hitbox hitbox = getHitbox(x, y);
-		if (hitbox != null) getHitboxes().remove(hitbox);
 	}
 	
 	public List<Entity> getPlayers()

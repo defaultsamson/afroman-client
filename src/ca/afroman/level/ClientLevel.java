@@ -11,10 +11,12 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.YComparator;
+import ca.afroman.events.HitboxTrigger;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiBuildModeLayer;
@@ -22,6 +24,7 @@ import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketAddLevelHitbox;
+import ca.afroman.packet.PacketAddLevelHitboxTrigger;
 import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
 import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
@@ -92,9 +95,6 @@ public class ClientLevel extends Level
 				{
 					entities.add(player);
 				}
-				
-				// TODO sort()
-				// entities.sort(new YComparator());
 				
 				ListUtil.sort(entities, new YComparator());
 				
@@ -278,6 +278,16 @@ public class ClientLevel extends Level
 			{
 				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
 			}
+			else if (currentBuildMode == 4 && hitboxClickCount == 1)
+			{
+				Paint oldPaint = renderTo.getGraphics().getPaint();
+				renderTo.getGraphics().setPaint(new Color(0.3F, 0.3F, 1F, 1F)); // Blue
+				//renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
+				
+				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
+				
+				renderTo.getGraphics().setPaint(oldPaint);
+			}
 			
 			if (timeOnTool < MAX_TOOLTIP_TIME)
 			{
@@ -301,6 +311,12 @@ public class ClientLevel extends Level
 						text3 = "Click to place both corners";
 						text4 = "Right click to cancel corner";
 						break;
+					case 4:
+						text1 = "Scripted Events";
+						text2 = "Click to place both corners";
+						text3 = "Right click to cancel corner";
+						text4 = "Then follow GUI instructions";
+						break;
 				}
 				
 				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46, text1);
@@ -312,7 +328,7 @@ public class ClientLevel extends Level
 	}
 	
 	private int currentBuildMode = 1;
-	private int buildModes = 3;
+	private int buildModes = 4;
 	private int timeOnTool = 0;
 	private static final int MAX_TOOLTIP_TIME = (60 * 3); // Time in ticks
 	
@@ -530,7 +546,7 @@ public class ClientLevel extends Level
 			}
 			
 			// HitBox mode
-			if (currentBuildMode == 3)
+			if (currentBuildMode == 3 || currentBuildMode == 4)
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
@@ -542,8 +558,23 @@ public class ClientLevel extends Level
 					}
 					else if (hitboxClickCount == 1)
 					{
-						PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
-						ClientGame.instance().sockets().sender().sendPacket(pack);
+						if (currentBuildMode == 3)
+						{
+							PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
+							ClientGame.instance().sockets().sender().sendPacket(pack);
+						}
+						else if (currentBuildMode == 4)
+						{
+							List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
+							List<Integer> triggers = new ArrayList<Integer>();
+							List<Integer> chainedTriggers = new ArrayList<Integer>();
+							
+							triggerTypes.add(TriggerType.PLAYER_COLLIDE);
+							
+							PacketAddLevelHitboxTrigger pack = new PacketAddLevelHitboxTrigger(this.getType(), new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, triggers, chainedTriggers));
+							ClientGame.instance().sockets().sender().sendPacket(pack);
+							// TODO
+						}
 						
 						hitboxClickCount = 0;
 					}
@@ -557,8 +588,15 @@ public class ClientLevel extends Level
 					}
 					else
 					{
-						PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
-						ClientGame.instance().sockets().sender().sendPacket(pack);
+						if (currentBuildMode == 3)
+						{
+							PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
+							ClientGame.instance().sockets().sender().sendPacket(pack);
+						}
+						else if (currentBuildMode == 4)
+						{
+							// TODO
+						}
 					}
 				}
 				

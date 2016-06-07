@@ -39,7 +39,7 @@ public class Texture extends DrawableAsset
 		}
 		catch (IOException e)
 		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not read texture from class resource stream.", e);
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not read texture from class resource stream", e);
 		}
 		
 		// Puts the loaded image into a BufferedImage capable of transparency

@@ -184,7 +184,7 @@ public class ClientGame extends DynamicTickRenderThread
 				}
 				catch (InterruptedException e)
 				{
-					logger().log(ALogType.CRITICAL, "Thread failed to sleep.", e);
+					logger().log(ALogType.CRITICAL, "Thread failed to sleep", e);
 				}
 			}
 			
@@ -248,7 +248,7 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
 		
-		logger().log(ALogType.DEBUG, "Game Loaded. Took " + loadTime + " seconds.");
+		logger().log(ALogType.DEBUG, "Game Loaded. Took " + loadTime + " seconds");
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		music.startLoop();
@@ -459,7 +459,7 @@ public class ClientGame extends DynamicTickRenderThread
 			catch (Exception e)
 			{
 				setFullScreen(false);
-				logger().log(ALogType.CRITICAL, "Fullscreen Mode not supported.", e);
+				logger().log(ALogType.CRITICAL, "Fullscreen Mode not supported", e);
 			}
 		}
 		
@@ -606,14 +606,6 @@ public class ClientGame extends DynamicTickRenderThread
 		return null;
 	}
 	
-	public static void main(String[] args)
-	{
-		startLoadTime = System.currentTimeMillis();
-		
-		game = new ClientGame();
-		game.startThis();
-	}
-	
 	public Canvas getCanvas()
 	{
 		return canvas;
@@ -681,5 +673,13 @@ public class ClientGame extends DynamicTickRenderThread
 	public List<ClientLevel> getLevels()
 	{
 		return levels;
+	}
+	
+	public static void main(String[] args)
+	{
+		startLoadTime = System.currentTimeMillis();
+		
+		game = new ClientGame();
+		game.startThis();
 	}
 }

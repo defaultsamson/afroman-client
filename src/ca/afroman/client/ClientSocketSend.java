@@ -72,9 +72,9 @@ public class ClientSocketSend extends DynamicTickThread
 		
 		List<Packet> sent = getPacketQueue();
 		
-		synchronized (sent)
+		if (sent != null)
 		{
-			if (sent != null)
+			synchronized (sent)
 			{
 				// Find the packet that the server is saying it recieved.
 				for (Packet pack : sent)
@@ -92,10 +92,10 @@ public class ClientSocketSend extends DynamicTickThread
 					sent.remove(toRemove);
 				}
 			}
-			else
-			{
-				logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from.");
-			}
+		}
+		else
+		{
+			logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from");
 		}
 	}
 	
@@ -147,7 +147,7 @@ public class ClientSocketSend extends DynamicTickThread
 			}
 			catch (IOException e)
 			{
-				logger().log(ALogType.CRITICAL, "I/O error while sending packet.", e);
+				logger().log(ALogType.CRITICAL, "I/O error while sending packet", e);
 			}
 		}
 		else

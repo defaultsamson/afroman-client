@@ -37,6 +37,19 @@ public class ServerSocketSend extends DynamicTickThread
 	{
 		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
 		
+		// If there's over 100 required packets pending sending, just cool off man, give the clients a chance to respond
+		if (packs.size() > 20)
+		{
+			try
+			{
+				Thread.sleep(5000);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
 		synchronized (packs)
 		{
 			// For each connection
@@ -133,7 +146,7 @@ public class ServerSocketSend extends DynamicTickThread
 		}
 		else
 		{
-			logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from.");
+			logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from");
 		}
 	}
 	
@@ -189,7 +202,7 @@ public class ServerSocketSend extends DynamicTickThread
 		}
 		catch (IOException e)
 		{
-			logger().log(ALogType.CRITICAL, "I/O error while sending packet.", e);
+			logger().log(ALogType.CRITICAL, "I/O error while sending packet", e);
 		}
 	}
 	

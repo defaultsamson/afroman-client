@@ -74,7 +74,7 @@ public class GuiLobby extends GuiScreen
 			}
 			catch (UnknownHostException e)
 			{
-				ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not resolve local host address.", e);
+				ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not resolve local host address", e);
 			}
 		}
 		// Draw a leave server button

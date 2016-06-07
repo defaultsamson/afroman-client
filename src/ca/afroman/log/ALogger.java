@@ -11,7 +11,7 @@ import ca.afroman.stream.MultiOutputStream;
 
 public class ALogger extends Logger
 {
-	public static boolean tracePackets = true;
+	public static boolean tracePackets = false;
 	
 	private static MultiOutputStream out = null;
 	private static MultiOutputStream err = null;

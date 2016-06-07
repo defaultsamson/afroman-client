@@ -125,7 +125,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		}
 		catch (Exception er)
 		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly.", er);
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly", er);
 			System.exit(1);
 		}
 	}

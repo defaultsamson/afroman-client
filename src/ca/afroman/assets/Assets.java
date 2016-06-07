@@ -47,7 +47,7 @@ public class Assets
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT, true, 0, (Texture) player2.getAsset(4)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT, true, 0, (Texture) player2.getAsset(7)));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS, 16 * 3, 16 * 0, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS, 16 * 0, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_INNER_TOPLEFT, 16 * 3, 16 * 3, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_OUTER_BOTTOM, 16 * 4, 16 * 3, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_INNER_TOPRIGHT, 16 * 5, 16 * 3, 16, 16));
@@ -61,14 +61,16 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_OUTER_BOTTOMLEFT, 16 * 6, 16 * 4, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_OUTER_BOTTOMRIGHT, 16 * 7, 16 * 4, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_DIRT, 16 * 3, 16 * 1, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_DIRT, 16 * 0, 16 * 1, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_WATER, 16 * 5, 16 * 0, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WATER, 16 * 2, 16 * 0, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 4, 16 * 0, 16, 16));
-		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 4, 16 * 1, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 1, 16 * 0, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16));
 		
 		assets.add(new SpriteAnimation(AssetType.TILE_AURA, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
+		
+		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
 		
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_NORMAL, 0, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));

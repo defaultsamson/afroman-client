@@ -14,6 +14,7 @@ import ca.afroman.log.ALogType;
 
 public class AudioClip extends Asset
 {
+	private static final boolean ENABLE_AUDIO = false;
 	private static final String AUDIO_DIR = "/audio/";
 	
 	private Clip clip;
@@ -42,7 +43,7 @@ public class AudioClip extends Asset
 		}
 		catch (IOException e)
 		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "I/O Error while loading a clip", e);
 		}
 		catch (LineUnavailableException e)
 		{
@@ -54,16 +55,22 @@ public class AudioClip extends Asset
 	
 	public void startLoop()
 	{
-		clip.setFramePosition(0);
-		clip.loop(200);
-		clip.start();
+		if (ENABLE_AUDIO)
+		{
+			clip.setFramePosition(0);
+			clip.loop(200);
+			clip.start();
+		}
 	}
 	
 	public void start()
 	{
-		clip.setFramePosition(0);
-		
-		clip.start();
+		if (ENABLE_AUDIO)
+		{
+			clip.setFramePosition(0);
+			
+			clip.start();
+		}
 	}
 	
 	public void stop()
@@ -74,7 +81,7 @@ public class AudioClip extends Asset
 	@Override
 	public Asset clone()
 	{
-		// TODO Auto-generated method stub
+		// TODO Maybe? hHHHHHHH
 		return null;
 	}
 	

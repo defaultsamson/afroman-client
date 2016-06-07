@@ -7,10 +7,12 @@ import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.packet.Packet;
 import ca.afroman.packet.PacketAddLevelHitbox;
 import ca.afroman.packet.PacketAddLevelLight;
 import ca.afroman.packet.PacketAddLevelTile;
@@ -129,6 +131,8 @@ public class ServerGame extends DynamicTickThread
 		ConnectedPlayer.resetNextAvailableID();
 		Hitbox.resetNextAvailableID();
 		Entity.resetNextAvailableID();
+		Packet.resetNextAvailableID();
+		IEventCounter.resetNextAvailableID();
 		
 		game = null;
 	}

@@ -10,8 +10,11 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
@@ -70,7 +73,7 @@ public class ServerSocketReceive extends DynamicThread
 		}
 		catch (IOException e)
 		{
-			logger().log(ALogType.CRITICAL, "I/O error while receiving.", e);
+			logger().log(ALogType.CRITICAL, "I/O error while receiving", e);
 		}
 	}
 	
@@ -401,6 +404,74 @@ public class ServerSocketReceive extends DynamicThread
 					int sentID = Integer.parseInt(Packet.readContent(data));
 					
 					manager.sender().removePacketFromQueue(connection, sentID);
+				}
+					break;
+				case ADD_EVENT_HITBOX_TRIGGER:
+				{
+					String[] split = Packet.readContent(data).split(",");
+					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					Level level = ServerGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						logger().log(ALogType.WARNING, "Hell yeah I received that shit");
+						int id = IEventCounter.getNextAvailableID();
+						
+						double x = Double.parseDouble(split[2]);
+						double y = Double.parseDouble(split[3]);
+						double width = Double.parseDouble(split[4]);
+						double height = Double.parseDouble(split[5]);
+						
+						List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
+						List<Integer> triggers = new ArrayList<Integer>();
+						List<Integer> chainedTriggers = new ArrayList<Integer>();
+						
+						int mode = 0;
+						
+						
+						// If there's further arguments
+						for (int i = 6; i < split.length; i++)
+						{
+							if (split[i].equals("a")) // triggerTypesAsSendable
+							{
+								mode = 1;
+							}
+							else if (split[i].equals("b")) // triggersAsSendable
+							{
+								mode = 2;
+							}
+							else if (split[i].equals("c")) // chainTriggersAsSendable
+							{
+								mode = 3;
+							}
+							else if (mode != 0)
+							{
+								switch (mode)
+								{
+									case 1:
+										triggerTypes.add(TriggerType.fromOrdinal(Integer.parseInt(split[i])));
+										break;
+									case 2:
+										triggers.add(Integer.parseInt(split[i]));
+										break;
+									case 3:
+										chainedTriggers.add(Integer.parseInt(split[i]));
+										break;
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No mode selected during ADD_EVENT_HITBOX_TRIGGER");
+							}
+						}
+						HitboxTrigger hitbox = new HitboxTrigger(id, x, y, width, height, triggerTypes, triggers, chainedTriggers);
+						
+						hitbox.addToLevel(level);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
 				}
 					break;
 			}
