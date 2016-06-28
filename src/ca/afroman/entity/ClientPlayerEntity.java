@@ -37,10 +37,10 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 		super.tick();
 		
 		// If it's not in build mode and the role of this is the role of the client, let them move
-		if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().sockets().getConnectedPlayer().getRole())
+		if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().sockets().getServerConnection().getRole())
 		{
-			int xa = 0;
-			int ya = 0;
+			byte xa = 0;
+			byte ya = 0;
 			
 			if (ClientGame.instance().input().up.isPressed())
 			{
@@ -75,10 +75,7 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 		
 		if (level != null)
 		{
-			synchronized (level.getPlayers())
-			{
-				level.getPlayers().remove(this);
-			}
+			level.getPlayers().remove(this);
 		}
 		
 		// Sets the new level
@@ -86,10 +83,7 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 		
 		if (level != null)
 		{
-			synchronized (level.getPlayers())
-			{
-				level.getPlayers().add(this);
-			}
+			level.getPlayers().add(this);
 		}
 	}
 	

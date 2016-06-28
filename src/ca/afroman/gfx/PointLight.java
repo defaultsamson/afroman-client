@@ -63,10 +63,7 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			synchronized (level.getLights())
-			{
-				level.getLights().remove(this);
-			}
+			level.getLights().remove(this);
 		}
 		
 		// Sets the new level
@@ -74,10 +71,7 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			synchronized (level.getLights())
-			{
-				level.getLights().add(this);
-			}
+			level.getLights().add(this);
 		}
 	}
 }

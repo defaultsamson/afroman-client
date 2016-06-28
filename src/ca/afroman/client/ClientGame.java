@@ -12,6 +12,7 @@ import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -23,22 +24,37 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.ClientPlayerEntity;
+import ca.afroman.entity.api.ClientAssetEntity;
+import ca.afroman.entity.api.Direction;
+import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMapState;
+import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
+import ca.afroman.gui.GuiJoinServer;
+import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
+import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.input.InputHandler;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
-import ca.afroman.packet.PacketRequestConnection;
+import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.network.IPConnection;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketConfirmReceive;
+import ca.afroman.packet.PacketLogin;
+import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
+import ca.afroman.util.ByteUtil;
+import ca.afroman.util.IDCounter;
 
 public class ClientGame extends DynamicTickRenderThread
 {
@@ -46,7 +62,7 @@ public class ClientGame extends DynamicTickRenderThread
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final int VERSION = 28;
+	public static final short VERSION = 28;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	private static ClientGame game;
@@ -228,6 +244,8 @@ public class ClientGame extends DynamicTickRenderThread
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
+		receivedPackets = new ArrayList<Integer>();
+		packets = new ArrayList<BytePacket>();
 		
 		players = new ArrayList<ClientPlayerEntity>();
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
@@ -252,6 +270,30 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		music.startLoop();
+		
+		// short test1 = -5383;
+		// System.out.println("Test: " + test1);
+		// byte[] converted = ByteUtil.shortAsBytes(test1);
+		// System.out.print("Conv: ");
+		// for (byte hn : converted)
+		// System.out.print(", " + hn);
+		// System.out.println();
+		// short back = ByteUtil.shortFromBytes(converted);
+		// System.out.println("Back: " + back);
+		
+		// double test = -53245432.2423;
+		// System.out.println("Test: " + test);
+		// byte[] converted = ByteUtil.doubleAsBytes(test);
+		// System.out.print("Conv: ");
+		// for (byte hn : converted)
+		// System.out.print(", " + hn);
+		// System.out.println();
+		// System.out.print("Strn: ");
+		// for (byte hn : ("" + test).getBytes())
+		// System.out.print(", " + hn);
+		// System.out.println();
+		// double back = ByteUtil.doubleFromBytes(converted);
+		// System.out.println("Back: " + back);
 	}
 	
 	/**
@@ -281,10 +323,21 @@ public class ClientGame extends DynamicTickRenderThread
 		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void tick()
 	{
 		tickCount++;
+		
+		synchronized (packets)
+		{
+			for (BytePacket pack : packets)
+			{
+				parsePacket(pack);
+			}
+			
+			packets.clear();
+		}
 		
 		if (updatePlayerList) hasStartedUpdateList = true;
 		
@@ -352,7 +405,7 @@ public class ClientGame extends DynamicTickRenderThread
 			
 			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
 			
-			this.getPlayer(sockets().getConnectedPlayer().getRole()).setCameraToFollow(!buildMode);
+			this.getPlayer(sockets().getServerConnection().getRole()).setCameraToFollow(!buildMode);
 		}
 		
 		if (currentScreen != null)
@@ -413,6 +466,354 @@ public class ClientGame extends DynamicTickRenderThread
 		bs.show();
 	}
 	
+	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
+	private List<BytePacket> packets;
+	
+	@SuppressWarnings("deprecation")
+	public void parsePacket(BytePacket packet)
+	{
+		IPConnection sender = packet.getConnections().get(0);
+		
+		// If is the server sending the packet
+		if (sockets().getServerConnection().getConnection().equals(sender))
+		{
+			if (packet.getID() != -1)
+			{
+				for (int packID : receivedPackets)
+				{
+					if (packID == packet.getID())
+					{
+						logger().log(ALogType.DEBUG, "Received packet already: " + packID);
+						
+						// If the packet with this ID has already been received, tell the server to stop sending it, and don't parse it
+						sockets().sender().sendPacket(new PacketConfirmReceive(packet.getID()));
+						return;
+					}
+				}
+				
+				// If the packet with the ID has not already been received
+				sockets().sender().sendPacket(new PacketConfirmReceive(packet.getID()));
+				// Add it to the list
+				receivedPackets.add(packet.getID());
+			}
+			
+			switch (packet.getType())
+			{
+				default:
+				case INVALID:
+					logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
+					break;
+				case DENY_JOIN:
+				{
+					ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+					
+					DenyJoinReason reason = DenyJoinReason.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
+					
+					switch (reason)
+					{
+						default:
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
+							break;
+						case DUPLICATE_USERNAME:
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
+							break;
+						case FULL_SERVER:
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "FULL");
+							break;
+						case NEED_PASSWORD:
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "INVALID", "PASSWORD");
+							break;
+						case OLD_CLIENT:
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
+							break;
+						case OLD_SERVER:
+							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "OUTDATED");
+							break;
+					}
+				}
+					break;
+				case ASSIGN_CLIENTID:
+					ClientGame.instance().sockets().getServerConnection().setID(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
+					break;
+				case UPDATE_PLAYERLIST:
+				{
+					ClientGame.instance().updatePlayerList();
+					
+					List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
+					
+					for (int i = 0; i < packet.getContent().length;)
+					{
+						// Signal to tell that it's at the end of the packet. @see PacketUpdatePlayerList
+						if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE && packet.getContent()[i + 2] == Byte.MAX_VALUE && packet.getContent()[i + 3] == Byte.MIN_VALUE)
+						{
+							break;
+						}
+						
+						short id = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), i, i + 2));
+						Role role = Role.fromOrdinal(packet.getContent()[i + 2]);
+						
+						int change = 3;
+						for (int j = i + 3; j < packet.getContent().length - 1; j++)
+						{
+							// The signal. @see PacketUpdatePlayerList
+							if (packet.getContent()[j] == Byte.MIN_VALUE && packet.getContent()[j + 1] == Byte.MAX_VALUE)
+							{
+								String name = new String(Arrays.copyOfRange(packet.getContent(), i + 3, j)).trim();
+								
+								i += 2 + change; // Adds the amount of bytes read for the name, plus 2 for the end name signal
+								
+								players.add(new ConnectedPlayer(id, role, name));
+								break;
+							}
+							
+							change++;
+						}
+					}
+					
+					ClientGame.instance().sockets().updateConnectedPlayer(players);
+					
+					if (ClientGame.instance().getCurrentScreen() instanceof GuiConnectToServer)
+					{
+						ClientGame.instance().setCurrentScreen(new GuiLobby(null));
+					}
+				}
+					break;
+				case STOP_SERVER:
+				{
+					ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
+				}
+					break;
+				case SEND_LEVELS:
+				{
+					boolean sendingLevels = (packet.getContent()[0] == 1);
+					
+					if (sendingLevels)
+					{
+						// Prepare the level storage for new levels to be sent
+						ClientGame.instance().getLevels().clear();
+						
+						// Display the loading level screen
+						if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
+						{
+							ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
+						}
+					}
+					else
+					{
+						// Stop displaying the loading level screen
+						if (ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels)
+						{
+							ClientGame.instance().setCurrentScreen(ClientGame.instance().getCurrentScreen().getParent());
+						}
+					}
+				}
+					break;
+				case INSTANTIATE_LEVEL:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
+					
+					if (ClientGame.instance().getLevelByType(levelType) == null)
+					{
+						ClientGame.instance().getLevels().add(new ClientLevel(levelType));
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "[CLIENT] Level with type " + levelType + " already exists");
+					}
+				}
+					break;
+				case ADD_LEVEL_TILE:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						byte[] test = Arrays.copyOfRange(packet.getContent(), 3, 3 + 5);
+						int id = ByteUtil.intFromBytes(test);
+						byte layer = packet.getContent()[0];
+						
+						AssetType asset = AssetType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 8, 8 + 5)));
+						
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						
+						ClientAssetEntity tile = new ClientAssetEntity(id, asset, x, y);
+						tile.addTileToLevel(level, layer);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case REMOVE_LEVEL_TILE:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						
+						Entity entity = level.getTile(id);
+						
+						if (entity != null)
+						{
+							entity.removeTileFromLevel();
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case ADD_LEVEL_HITBOX:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
+						double width = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						double height = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 25, 25 + 6));
+						
+						Hitbox box = new Hitbox(id, x, y, width, height);
+						box.addToLevel(level);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case REMOVE_LEVEL_HITBOX:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						
+						Hitbox box = level.getHitbox(id);
+						
+						if (box != null)
+						{
+							box.removeFromLevel();
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case ADD_LEVEL_POINTLIGHT:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
+						double radius = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						
+						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+						PointLight light = new PointLight(id, x, y, radius);
+						light.addToLevel(level);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case REMOVE_LEVEL_POINTLIGHT:
+				{
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						
+						PointLight light = level.getLight(id);
+						
+						if (light != null)
+						{
+							light.removeFromLevel();
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case ADD_LEVEL_PLAYER:
+				{
+					Role role = Role.fromOrdinal(packet.getContent()[0]);
+					
+					ClientPlayerEntity player = ClientGame.instance().getPlayer(role);
+					
+					if (player != null)
+					{
+						LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
+						ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+						
+						player.addToLevel(level);
+						
+						// If it's adding the player that this player is, center the camera on them
+						if (player.getRole() == ClientGame.instance().sockets().getServerConnection().getRole())
+						{
+							ClientGame.instance().setCurrentLevel(level);
+							player.setCameraToFollow(true);
+						}
+					}
+				}
+					break;
+				case SET_PLAYER_LOCATION:
+				{
+					Role role = Role.fromOrdinal(packet.getContent()[0]);
+					
+					ClientPlayerEntity player = ClientGame.instance().getPlayer(role);
+					
+					if (player != null)
+					{
+						Direction dir = Direction.fromOrdinal(packet.getContent()[1]);
+						Direction lastDir = Direction.fromOrdinal(packet.getContent()[2]);
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 3, 9));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 9, 15));
+						
+						player.setDirection(dir);
+						player.setLastDirection(lastDir);
+						player.setX(x);
+						player.setY(y);
+					}
+				}
+					break;
+				case CONFIRM_RECEIVED:
+				{
+					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3], packet.getContent()[4] });
+					
+					sockets().sender().removePacket(sentID);
+				}
+					break;
+			}
+		}
+		else
+		{
+			logger().log(ALogType.WARNING, "A server (" + sender.asReadable() + ") is tring to send a packet " + packet.getType().toString() + " to this unlistening client");
+		}
+	}
+	
 	public void setFullScreen(boolean isFullScreen)
 	{
 		fullscreen = isFullScreen;
@@ -431,7 +832,7 @@ public class ClientGame extends DynamicTickRenderThread
 		frame.setUndecorated(isFullScreen);
 		
 		frame.getContentPane().setBackground(Color.black);
-		frame.getContentPane().add(canvas, BorderLayout.CENTER); // TODO This crashes the game if the window isn't on the primary screen
+		frame.getContentPane().add(canvas, BorderLayout.CENTER); // TODO This crashes the game if the window isn't on the primary screen (Maybe? Maybe not? test this)
 		frame.pack();
 		frame.setResizable(!isFullScreen);
 		frame.setLocationRelativeTo(null);
@@ -569,6 +970,18 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		socketManager.stopThis();
 		
+		synchronized (receivedPackets)
+		{
+			receivedPackets.clear();
+		}
+		
+		synchronized (packets)
+		{
+			packets.clear();
+		}
+		
+		IDCounter.resetAll();
+		
 		if (this.isHostingServer())
 		{
 			ServerGame.instance().stopThis();
@@ -584,7 +997,7 @@ public class ClientGame extends DynamicTickRenderThread
 		socketManager = new ClientSocketManager();
 		socketManager.setServerIP(getServerIP(), ServerSocketManager.PORT); // TODO allow selectable port
 		socketManager.startThis();
-		socketManager.sender().sendPacket(new PacketRequestConnection(getUsername(), getPassword()));
+		socketManager.sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
 	}
 	
 	public ClientLevel getCurrentLevel()
@@ -594,6 +1007,7 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public void setCurrentLevel(ClientLevel newLevel)
 	{
+		// System.out.println("Setting Current Level: " + (newLevel == null ? "null" : newLevel.getType()));
 		currentLevel = newLevel;
 	}
 	
@@ -643,6 +1057,8 @@ public class ClientGame extends DynamicTickRenderThread
 	{
 		if (this.isHostingServer()) ServerGame.instance().stopThis();
 		if (sockets() != null) sockets().stopThis();
+		
+		receivedPackets.clear();
 	}
 	
 	public void updatePlayerList()
@@ -681,5 +1097,13 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		game = new ClientGame();
 		game.startThis();
+	}
+	
+	public void addPacket(BytePacket pack)
+	{
+		synchronized (packets)
+		{
+			packets.add(pack);
+		}
 	}
 }

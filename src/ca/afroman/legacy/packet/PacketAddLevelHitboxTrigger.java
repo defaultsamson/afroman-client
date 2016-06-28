@@ -1,4 +1,4 @@
-package ca.afroman.packet;
+package ca.afroman.legacy.packet;
 
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.level.LevelType;

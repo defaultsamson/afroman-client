@@ -3,6 +3,7 @@ package ca.afroman.server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,23 +17,25 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.legacy.packet.Packet;
+import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.packet.Packet;
-import ca.afroman.packet.PacketAddLevelHitbox;
-import ca.afroman.packet.PacketAddLevelLight;
-import ca.afroman.packet.PacketAddLevelTile;
-import ca.afroman.packet.PacketConfirmReceived;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketAddHitbox;
+import ca.afroman.packet.PacketAddPointLight;
+import ca.afroman.packet.PacketAddTile;
+import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketDenyJoin;
-import ca.afroman.packet.PacketRemoveLevelHitboxID;
-import ca.afroman.packet.PacketRemoveLevelLightID;
-import ca.afroman.packet.PacketRemoveLevelTileID;
-import ca.afroman.packet.PacketType;
+import ca.afroman.packet.PacketRemoveHitbox;
+import ca.afroman.packet.PacketRemovePointLight;
+import ca.afroman.packet.PacketRemoveTile;
 import ca.afroman.thread.DynamicThread;
+import ca.afroman.util.ByteUtil;
 
 public class ServerSocketReceive extends DynamicThread
 {
@@ -69,7 +72,9 @@ public class ServerSocketReceive extends DynamicThread
 		{
 			manager.socket().receive(packet);
 			
-			this.parsePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
+			BytePacket pack = new BytePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + pack.getConnections().get(0).asReadable() + "] " + pack.getType());
+			this.parsePacket(pack);
 		}
 		catch (IOException e)
 		{
@@ -83,20 +88,20 @@ public class ServerSocketReceive extends DynamicThread
 	 * @param data the of the packet to parse
 	 * @param connection the connection that the packet is being sent from
 	 */
-	public void parsePacket(byte[] data, IPConnection connection)
+	public void parsePacket(BytePacket packet)
 	{
-		PacketType type = Packet.readType(data);
-		// String message = Packet.readContent(data);
+		PacketType type = packet.getType();
 		
 		// Finds if this packet was send by a connected player and.or the host
-		IPConnectedPlayer sender = manager.getPlayerByConnection(connection);
+		IPConnectedPlayer sender = manager.getPlayerByConnection(packet.getConnections().get(0));
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 		
-		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + connection.asReadable() + "] " + type.toString());
+		// System.out.println("SentByConnected: " + sentByConnected);
+		
 		if (sentByConnected)
 		{
-			int packetID = Packet.readID(data);
+			int packetID = packet.getID();
 			
 			if (packetID != -1)
 			{
@@ -108,12 +113,12 @@ public class ServerSocketReceive extends DynamicThread
 					if (packID == packetID)
 					{
 						// If the packet with this ID has already been received, tell the client to stop sending it, and don't parse it
-						manager.sender().sendPacket(new PacketConfirmReceived(packetID), sender.getConnection());
+						manager.sender().sendPacket(new PacketConfirmReceive(packetID, sender.getConnection()));
 						return;
 					}
 				}
 				
-				manager.sender().sendPacket(new PacketConfirmReceived(packetID), sender.getConnection());
+				manager.sender().sendPacket(new PacketConfirmReceive(packetID, sender.getConnection()));
 				receivedBySender.add(packetID);
 			}
 			
@@ -127,10 +132,10 @@ public class ServerSocketReceive extends DynamicThread
 				{
 					if (sentByHost)
 					{
-						String[] split = Packet.readContent(data).split(",");
-						IPConnectedPlayer player = manager.getPlayerByID(Integer.parseInt(split[0]));
-						Role newRole = Role.fromOrdinal(Integer.parseInt(split[1]));
+						short id = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2));
+						Role newRole = Role.fromOrdinal(packet.getContent()[2]);
 						
+						IPConnectedPlayer player = manager.getPlayerByID(id);
 						// The player who is currently holding that role
 						IPConnectedPlayer currentPlayerWithRole = manager.getPlayerByRole(newRole);
 						
@@ -165,7 +170,7 @@ public class ServerSocketReceive extends DynamicThread
 					}
 					else
 					{
-						logger().log(ALogType.CRITICAL, "A non-host user was trying to change the roles: " + connection.asReadable());
+						logger().log(ALogType.CRITICAL, "A non-host user was trying to change the roles: " + sender.getConnection().asReadable());
 					}
 				}
 					break;
@@ -186,63 +191,43 @@ public class ServerSocketReceive extends DynamicThread
 						}
 						else
 						{
-							logger().log(ALogType.IMPORTANT, "Tries to stop a null instance of a ServerGame: " + connection.asReadable());
+							logger().log(ALogType.IMPORTANT, "Tried to stop a null instance of a ServerGame: " + sender.getConnection().asReadable());
 						}
 					}
 					else
 					{
-						logger().log(ALogType.CRITICAL, "A non-host user was trying to stop the server: " + connection.asReadable());
+						logger().log(ALogType.CRITICAL, "A non-host user was trying to stop the server: " + sender.getConnection().asReadable());
 					}
 					break;
 				case START_SERVER:
-				case SEND_LEVELS:
 					if (sentByHost)
 					{
 						ServerGame.instance().loadGame();
 					}
 					else
 					{
-						logger().log(ALogType.CRITICAL, "A non-host user was trying to start the server: " + connection.asReadable());
+						logger().log(ALogType.CRITICAL, "A non-host user was trying to start the server: " + sender.getConnection().asReadable());
 					}
 					break;
 				case ADD_LEVEL_TILE:
 				{
-					String[] split = Packet.readContent(data).split(",");
 					// int id = Integer.parseInt(split[0]); // Unused because it is assigned by the server
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[1]));
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int layer = Integer.parseInt(split[2]);
+						byte layer = packet.getContent()[0];
 						
-						AssetType asset = AssetType.fromOrdinal(Integer.parseInt(split[3]));
+						AssetType asset = AssetType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 8, 8 + 5)));
 						
-						double x = Double.parseDouble(split[4]);
-						double y = Double.parseDouble(split[5]);
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
 						
-						// If it has custom hitboxes defined
-						if (split.length > 6)
-						{
-							List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-							
-							for (int i = 6; i < split.length; i += 4)
-							{
-								tileHitboxes.add(new Hitbox(Double.parseDouble(split[i]), Double.parseDouble(split[i + 1]), Double.parseDouble(split[i + 2]), Double.parseDouble(split[i + 3])));
-							}
-							
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							Entity tile = new Entity(Entity.getNextAvailableID(), asset, x, y, Entity.hitBoxListToArray(tileHitboxes));
-							tile.addTileToLevel(level, layer); // Adds tile to the server's level
-							manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, level.getType(), tile)); // Adds the tile to all the clients' levels
-						}
-						else
-						{
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							Entity tile = new Entity(Entity.getNextAvailableID(), asset, x, y);
-							tile.addTileToLevel(level, layer);
-							manager.sender().sendPacketToAllClients(new PacketAddLevelTile(layer, level.getType(), tile));
-						}
+						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
+						Entity tile = new Entity(Entity.getIDCounter().getNext(), asset, x, y);
+						tile.addTileToLevel(level, layer);
+						manager.sender().sendPacketToAllClients(new PacketAddTile(layer, level.getType(), tile));
 					}
 					else
 					{
@@ -252,24 +237,19 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case REMOVE_LEVEL_TILE:
 				{
-					String[] split = Packet.readContent(data).split(",");
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int layer = Integer.parseInt(split[1]);
-						double x = Double.parseDouble(split[2]);
-						double y = Double.parseDouble(split[3]);
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
 						
-						Entity tile = level.getTile(layer, x, y);
+						Entity tile = level.getTile(id);
 						
 						if (tile != null)
 						{
-							PacketRemoveLevelTileID pack = new PacketRemoveLevelTileID(tile.getLevel().getType(), tile.getID());
-							
+							PacketRemoveTile pack = new PacketRemoveTile(tile.getID(), levelType);
 							manager.sender().sendPacketToAllClients(pack);
-							
 							tile.removeTileFromLevel();
 						}
 					}
@@ -281,22 +261,21 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case ADD_LEVEL_HITBOX:
 				{
-					String[] split = Packet.readContent(data).split(",");
-					// int id = Integer.parseInt(split[0]); // Unused because it is assigned by the server
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						double x = Double.parseDouble(split[2]);
-						double y = Double.parseDouble(split[3]);
-						double width = Double.parseDouble(split[4]);
-						double height = Double.parseDouble(split[5]);
+						// int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
+						double width = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						double height = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 25, 25 + 6));
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						Hitbox box = new Hitbox(Hitbox.getNextAvailableID(), x, y, width, height);
-						level.getHitboxes().add(box);
-						manager.sender().sendPacketToAllClients(new PacketAddLevelHitbox(levelType, box));
+						Hitbox box = new Hitbox(Hitbox.getIDCounter().getNext(), x, y, width, height);
+						box.addToLevel(level);
+						manager.sender().sendPacketToAllClients(new PacketAddHitbox(levelType, box));
 					}
 					else
 					{
@@ -306,24 +285,20 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case REMOVE_LEVEL_HITBOX:
 				{
-					String[] split = Packet.readContent(data).split(",");
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						double x = Double.parseDouble(split[1]);
-						double y = Double.parseDouble(split[2]);
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
 						
-						Hitbox box = level.getHitbox(x, y);
+						Hitbox box = level.getHitbox(id);
 						
 						if (box != null)
 						{
-							PacketRemoveLevelHitboxID pack = new PacketRemoveLevelHitboxID(level.getType(), box.getID());
-							
+							PacketRemoveHitbox pack = new PacketRemoveHitbox(box.getID(), levelType);
 							manager.sender().sendPacketToAllClients(pack);
-							
-							level.getHitboxes().remove(box);
+							box.removeFromLevel();
 						}
 					}
 					else
@@ -332,23 +307,22 @@ public class ServerSocketReceive extends DynamicThread
 					}
 				}
 					break;
-				case ADD_LEVEL_POINTLIGHT: // TODO
+				case ADD_LEVEL_POINTLIGHT:
 				{
-					String[] split = Packet.readContent(data).split(",");
-					// int id = Integer.parseInt(split[0]); // Unused because it is assigned by the server
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						double x = Double.parseDouble(split[2]);
-						double y = Double.parseDouble(split[3]);
-						double radius = Double.parseDouble(split[4]);
+						// int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
+						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
+						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
+						double radius = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						PointLight light = new PointLight(Entity.getNextAvailableID(), x, y, radius);
+						PointLight light = new PointLight(Entity.getIDCounter().getNext(), x, y, radius);
 						light.addToLevel(level);
-						manager.sender().sendPacketToAllClients(new PacketAddLevelLight(level.getType(), light));
+						manager.sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 					}
 					else
 					{
@@ -358,23 +332,19 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case REMOVE_LEVEL_POINTLIGHT: // TODO
 				{
-					String[] split = Packet.readContent(data).split(",");
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						double x = Double.parseDouble(split[1]);
-						double y = Double.parseDouble(split[2]);
+						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
 						
-						PointLight light = level.getLight(x, y);
+						PointLight light = level.getLight(id);
 						
 						if (light != null)
 						{
-							PacketRemoveLevelLightID pack = new PacketRemoveLevelLightID(level.getType(), light.getID());
-							
+							PacketRemovePointLight pack = new PacketRemovePointLight(light.getID(), levelType);
 							manager.sender().sendPacketToAllClients(pack);
-							
 							light.removeFromLevel();
 						}
 					}
@@ -386,36 +356,37 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case REQUEST_PLAYER_MOVE:
 				{
-					String[] split = Packet.readContent(data).split(",");
-					Role role = Role.fromOrdinal(Integer.parseInt(split[0]));
-					
-					if (role == sender.getRole())
+					Role role = sender.getRole();
+					if (role != Role.SPECTATOR)
 					{
 						ServerPlayerEntity player = ServerGame.instance().getPlayer(role);
 						if (player != null)
 						{
-							player.move(Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+							byte x = packet.getContent()[0];
+							byte y = packet.getContent()[1];
+							
+							player.move(x, y);
 						}
 					}
 				}
 					break;
 				case CONFIRM_RECEIVED:
 				{
-					int sentID = Integer.parseInt(Packet.readContent(data));
+					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3], packet.getContent()[4] });
 					
-					manager.sender().removePacketFromQueue(connection, sentID);
+					manager.sender().removePacket(sender.getConnection(), sentID);
 				}
 					break;
 				case ADD_EVENT_HITBOX_TRIGGER:
 				{
-					String[] split = Packet.readContent(data).split(",");
+					String[] split = Packet.readContent(new byte[] {}).split(",");
 					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
 						logger().log(ALogType.WARNING, "Hell yeah I received that shit");
-						int id = IEventCounter.getNextAvailableID();
+						int id = IEventCounter.getIDCounter().getNext();
 						
 						double x = Double.parseDouble(split[2]);
 						double y = Double.parseDouble(split[3]);
@@ -427,7 +398,6 @@ public class ServerSocketReceive extends DynamicThread
 						List<Integer> chainedTriggers = new ArrayList<Integer>();
 						
 						int mode = 0;
-						
 						
 						// If there's further arguments
 						for (int i = 6; i < split.length; i++)
@@ -478,64 +448,87 @@ public class ServerSocketReceive extends DynamicThread
 		}
 		else if (type == PacketType.REQUEST_CONNECTION)
 		{
-			String[] sent = Packet.readContent(data).trim().split(",");
+			IPConnection connection = packet.getConnections().get(0);
 			
-			String sentUsername = sent[0];
+			short version = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2));
+			
+			String name = "";
+			int passIndex = 0;
+			
+			for (int i = 2; i < packet.getContent().length - 1; i++)
+			{
+				// The signal. @see PacketLogin
+				if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+				{
+					name = new String(Arrays.copyOfRange(packet.getContent(), 2, i)).trim();
+					passIndex = i + 2;
+					break;
+				}
+			}
+			
+			int width = 0;
+			
+			for (int i = passIndex; i < packet.getContent().length - 1; i++)
+			{
+				// The signal. @see PacketLogin
+				if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+				{
+					break;
+				}
+				width += 1;
+			}
+			
+			String pass = new String(Arrays.copyOfRange(packet.getContent(), passIndex, passIndex + width)).trim();
 			
 			// Checks if there's space for the user on the server
 			if (manager.clientConnections().size() >= ServerSocketManager.MAX_PLAYERS)
 			{
-				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER);
-				manager.sender().sendPacket(passPacket, connection);
+				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER, connection);
+				manager.sender().sendPacket(passPacket);
 				return;
 			}
-			
-			int sentGameVersion = Integer.parseInt(sent[2]);
 			
 			// Checks that the client's game version is not above or below this version
-			if (sentGameVersion > ClientGame.VERSION)
+			if (version > ClientGame.VERSION)
 			{
-				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER);
-				manager.sender().sendPacket(passPacket, connection);
+				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER, connection);
+				manager.sender().sendPacket(passPacket);
 				return;
 			}
 			
-			if (sentGameVersion < ClientGame.VERSION)
+			if (version < ClientGame.VERSION)
 			{
-				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT);
-				manager.sender().sendPacket(passPacket, connection);
+				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT, connection);
+				manager.sender().sendPacket(passPacket);
 				return;
 			}
 			
 			// Checks that there's no duplicated usernames
-			if (manager.getPlayerByUsername(sentUsername) != null)
+			if (manager.getPlayerByUsername(name) != null)
 			{
-				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.DUPLICATE_USERNAME);
-				manager.sender().sendPacket(passPacket, connection);
+				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.DUPLICATE_USERNAME, connection);
+				manager.sender().sendPacket(passPacket);
 				return;
 			}
-			
-			String sentPassword = "";
-			if (sent.length > 1) sentPassword = sent[1];
 			
 			// If there's a password
 			if (!password.equals(""))
 			{
 				// If got the correct password, allow the player to join
-				if (sentPassword.equals(password))
+				if (pass.equals(password))
 				{
-					manager.addConnection(connection, sentUsername);
+					manager.addConnection(connection, name);
 				}
 				// If got the wrong person, let the client know
 				else
 				{
-					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD);
-					manager.sender().sendPacket(passPacket, connection);
+					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD, connection);
+					manager.sender().sendPacket(passPacket);
 				}
 			}
 			else // Allow the player to join
 			{
-				manager.addConnection(connection, sentUsername);
+				manager.addConnection(connection, name);
 			}
 		}
 	}

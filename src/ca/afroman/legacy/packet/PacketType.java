@@ -1,4 +1,4 @@
-package ca.afroman.packet;
+package ca.afroman.legacy.packet;
 
 public enum PacketType
 {

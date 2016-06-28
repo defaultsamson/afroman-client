@@ -13,7 +13,7 @@ import ca.afroman.packet.PacketSetRole;
 
 public class GuiChooseRole extends GuiScreen
 {
-	private int playerID;
+	private short playerID;
 	private ConnectedPlayer player;
 	
 	private SpriteAnimation player1;
@@ -30,7 +30,7 @@ public class GuiChooseRole extends GuiScreen
 	private FlickeringLight light1;
 	private FlickeringLight light2;
 	
-	public GuiChooseRole(GuiScreen parentScreen, int playerID)
+	public GuiChooseRole(GuiScreen parentScreen, short playerID)
 	{
 		super(parentScreen);
 		

@@ -39,7 +39,7 @@ public class ClientSocketManager implements IDynamicRunning
 	
 	public ClientSocketManager()
 	{
-		serverConnection = new IPConnectedPlayer(null, -1, -1, null, "");
+		serverConnection = new IPConnectedPlayer(null, -1, (short) -1, null, "");
 		
 		playerList = new ArrayList<ConnectedPlayer>();
 		
@@ -92,7 +92,7 @@ public class ClientSocketManager implements IDynamicRunning
 		return socket;
 	}
 	
-	public IPConnectedPlayer getConnectedPlayer()
+	public IPConnectedPlayer getServerConnection()
 	{
 		return serverConnection;
 	}
@@ -126,7 +126,7 @@ public class ClientSocketManager implements IDynamicRunning
 		
 		for (ConnectedPlayer player : getConnectedPlayers())
 		{
-			if (player.getID() != getConnectedPlayer().getID()) toReturn.add(player);
+			if (player.getID() != getServerConnection().getID()) toReturn.add(player);
 		}
 		
 		return toReturn;
@@ -173,6 +173,6 @@ public class ClientSocketManager implements IDynamicRunning
 	public void updateConnectedPlayer(List<ConnectedPlayer> players)
 	{
 		playerList = players;
-		getConnectedPlayer().setRole(playerByID(serverConnection.getID()).getRole());
+		getServerConnection().setRole(playerByID(serverConnection.getID()).getRole());
 	}
 }

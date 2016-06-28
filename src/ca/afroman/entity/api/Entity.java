@@ -11,18 +11,29 @@ import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
-import ca.afroman.packet.PacketMovePlayer;
-import ca.afroman.packet.PacketUpdateEntityLocation;
-import ca.afroman.packet.PacketUpdatePlayerLocation;
+import ca.afroman.packet.PacketPlayerMove;
+import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.server.ServerGame;
+import ca.afroman.util.IDCounter;
 
 public class Entity implements ITickable
 {
+	
 	private static final boolean PLAYER_COLLISION = false;
 	private static final boolean HITBOX_COLLISION = true;
 	private static final boolean ENTITY_COLLISION = true;
 	
-	private static int nextAvailableID = 0;
+	private static IDCounter idCounter;
+	
+	public static IDCounter getIDCounter()
+	{
+		if (idCounter == null)
+		{
+			idCounter = new IDCounter();
+		}
+		
+		return idCounter;
+	}
 	
 	// All the required variables needed to create an Entity
 	private int id;
@@ -107,9 +118,24 @@ public class Entity implements ITickable
 		return toReturn;
 	}
 	
+	public void setLocation(double newX, double newY)
+	{
+		this.x = newX;
+		this.y = newY;
+		
+		// TODO separate server-side entity checks
+		if (this instanceof ServerPlayerEntity)
+		{
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation((ServerPlayerEntity) this));
+		}
+	}
+	
 	/**
 	 * Sets the level x ordinate of this Entity.
+	 * 
+	 * @deprecated Use setLocation() for overriding a player's location, as this doesn't communicate with the server.
 	 */
+	@Deprecated
 	public void setX(double newX)
 	{
 		this.x = newX;
@@ -117,7 +143,10 @@ public class Entity implements ITickable
 	
 	/**
 	 * Sets the level y ordinate of this Entity.
+	 * 
+	 * @deprecated Use setLocation() for overriding a player's location, as this doesn't communicate with the server.
 	 */
+	@Deprecated
 	public void setY(double newY)
 	{
 		this.y = newY;
@@ -164,7 +193,7 @@ public class Entity implements ITickable
 	 */
 	public void removeTileFromLevel()
 	{
-		addTileToLevel(null, 1);
+		addTileToLevel(null, (byte) 0);
 	}
 	
 	/**
@@ -180,10 +209,7 @@ public class Entity implements ITickable
 		
 		if (level != null)
 		{
-			synchronized (level.getEntities())
-			{
-				level.getEntities().remove(this);
-			}
+			level.getEntities().remove(this);
 		}
 		
 		// Sets the new level
@@ -191,10 +217,7 @@ public class Entity implements ITickable
 		
 		if (level != null)
 		{
-			synchronized (level.getEntities())
-			{
-				level.getEntities().add(this);
-			}
+			level.getEntities().add(this);
 		}
 	}
 	
@@ -206,7 +229,7 @@ public class Entity implements ITickable
 	 * @param level the new level
 	 * @param layer the new layer
 	 */
-	public void addTileToLevel(Level newLevel, int layer)
+	public void addTileToLevel(Level newLevel, byte layer)
 	{
 		if (level == newLevel) return;
 		
@@ -346,7 +369,7 @@ public class Entity implements ITickable
 	}
 	
 	@SuppressWarnings("unused")
-	public void move(int xa, int ya)
+	public void move(byte xa, byte ya)
 	{
 		// It's it's not set to move anyways
 		// if (xa == 0 && ya == 0)
@@ -534,15 +557,16 @@ public class Entity implements ITickable
 			// TODO separate server-side entity checks
 			if (this instanceof ServerPlayerEntity)
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdatePlayerLocation((ServerPlayerEntity) this));
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation((ServerPlayerEntity) this));
 			}
 			else if (this instanceof ClientPlayerEntity)
 			{
-				ClientGame.instance().sockets().sender().sendPacket(new PacketMovePlayer(((ClientPlayerEntity) this).getRole(), xa, ya));
+				ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(xa, ya));
 			}
 			else
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
+				// TODO
+				// ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
 			}
 		}
 	}
@@ -599,25 +623,5 @@ public class Entity implements ITickable
 	public int getID()
 	{
 		return id;
-	}
-	
-	/**
-	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
-	 */
-	public static int getNextAvailableID()
-	{
-		int toReturn = nextAvailableID;
-		nextAvailableID++;
-		return toReturn;
-	}
-	
-	/**
-	 * Resets the nextAvailableID so that it starts counting from 0 again.
-	 * <p>
-	 * <b>WARNING: </b>only intended for use on server shutdowns.
-	 */
-	public static void resetNextAvailableID()
-	{
-		nextAvailableID = 0;
 	}
 }

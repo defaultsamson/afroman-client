@@ -5,7 +5,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.level.Level;
-import ca.afroman.packet.PacketAddPlayer;
+import ca.afroman.packet.PacketSetPlayerLevel;
 import ca.afroman.server.ServerGame;
 
 public class ServerPlayerEntity extends Entity implements IRoleEntity
@@ -56,8 +56,8 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 			}
 		}
 		
-		// TODO this will throw an error when level is null
-		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketAddPlayer(level.getType(), this));
+		// TODO this will throw an error when level is null (Maybe? idk, test this?)
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level.getType()));
 	}
 	
 	@Override

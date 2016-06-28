@@ -7,24 +7,23 @@ import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
-import ca.afroman.network.ConnectedPlayer;
-import ca.afroman.packet.Packet;
-import ca.afroman.packet.PacketAddLevelHitbox;
-import ca.afroman.packet.PacketAddLevelLight;
-import ca.afroman.packet.PacketAddLevelTile;
-import ca.afroman.packet.PacketInstantiateLevel;
+import ca.afroman.packet.PacketAddHitbox;
+import ca.afroman.packet.PacketAddLevel;
+import ca.afroman.packet.PacketAddPointLight;
+import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.thread.DynamicTickThread;
+import ca.afroman.util.IDCounter;
 
 public class ServerGame extends DynamicTickThread
 {
 	private static ServerGame game = null;
 	
 	private boolean isInGame = false;
+	private boolean isSendingLevels = false;
 	
 	public static ServerGame instance()
 	{
@@ -52,26 +51,32 @@ public class ServerGame extends DynamicTickThread
 	
 	public void loadGame()
 	{
+		isSendingLevels = true;
+		
 		sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
 		
 		levels = new ArrayList<Level>();
-		getLevels().add(Level.fromFile(LevelType.MAIN));
+		
+		for (LevelType type : LevelType.values())
+		{
+			if (type != LevelType.NULL) getLevels().add(Level.fromFile(type));
+		}
 		
 		players = new ArrayList<ServerPlayerEntity>();
 		
 		// Sends the levels to everyone else
 		for (Level level : getLevels())
 		{
-			PacketInstantiateLevel levelPack = new PacketInstantiateLevel(level.getType());
+			PacketAddLevel levelPack = new PacketAddLevel(level.getType());
 			
 			sockets().sender().sendPacketToAllClients(levelPack);
 			
-			int layer = 0;
+			byte layer = 0;
 			for (List<Entity> tileList : level.getTiles())
 			{
 				for (Entity tile : tileList)
 				{
-					sockets().sender().sendPacketToAllClients(new PacketAddLevelTile(layer, level.getType(), tile));
+					sockets().sender().sendPacketToAllClients(new PacketAddTile(layer, level.getType(), tile));
 				}
 				
 				layer++;
@@ -79,12 +84,12 @@ public class ServerGame extends DynamicTickThread
 			
 			for (Hitbox box : level.getHitboxes())
 			{
-				sockets().sender().sendPacketToAllClients(new PacketAddLevelHitbox(level.getType(), box));
+				sockets().sender().sendPacketToAllClients(new PacketAddHitbox(level.getType(), box));
 			}
 			
 			for (PointLight light : level.getLights())
 			{
-				sockets().sender().sendPacketToAllClients(new PacketAddLevelLight(level.getType(), light));
+				sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 			}
 		}
 		
@@ -92,9 +97,11 @@ public class ServerGame extends DynamicTickThread
 		getPlayers().add(new ServerPlayerEntity(Role.PLAYER1, 80, 50));
 		getPlayers().add(new ServerPlayerEntity(Role.PLAYER2, 20, 20));
 		
-		for (ServerPlayerEntity player : getPlayers())
+		for (int i = 0; i < getPlayers().size(); i++)
 		{
-			player.addToLevel(getLevels().get(0));
+			ServerPlayerEntity player = getPlayers().get(i);
+			player.addToLevel(this.getLevelByType(LevelType.MAIN));
+			player.setLocation(10 + (i * 18), 20);
 		}
 		
 		/*
@@ -107,7 +114,8 @@ public class ServerGame extends DynamicTickThread
 		 */
 		
 		// TODO only start ticking once the game has loaded for all clients
-		// isInGame = true;
+		isInGame = true;
+		isSendingLevels = false;
 		
 		sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
 	}
@@ -128,11 +136,7 @@ public class ServerGame extends DynamicTickThread
 		sockets().stopThis();
 		
 		if (getLevels() != null) getLevels().clear();
-		ConnectedPlayer.resetNextAvailableID();
-		Hitbox.resetNextAvailableID();
-		Entity.resetNextAvailableID();
-		Packet.resetNextAvailableID();
-		IEventCounter.resetNextAvailableID();
+		IDCounter.resetAll();
 		
 		game = null;
 	}
@@ -187,6 +191,16 @@ public class ServerGame extends DynamicTickThread
 	public ServerSocketManager sockets()
 	{
 		return socketManager;
+	}
+	
+	public boolean isInGame()
+	{
+		return isInGame;
+	}
+	
+	public boolean isSendingLevels()
+	{
+		return isSendingLevels;
 	}
 	
 	/**

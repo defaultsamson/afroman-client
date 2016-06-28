@@ -1,9 +1,9 @@
-package ca.afroman.packet;
+package ca.afroman.legacy.packet;
+
+import ca.afroman.packet.BytePacket;
 
 public abstract class Packet
 {
-	private static int nextAvailableID = 0;
-	
 	/** The pattern that separates the PacketType ordinal from a the content. */
 	public static final String SEPARATOR = ":;";
 	
@@ -13,7 +13,7 @@ public abstract class Packet
 	public Packet(PacketType type, boolean mustSend)
 	{
 		this.type = type;
-		id = mustSend ? Packet.getNextAvailableID() : -1;
+		id = mustSend ? BytePacket.getIDCounter().getNext() : -1;
 	}
 	
 	/**
@@ -122,28 +122,8 @@ public abstract class Packet
 		return id;
 	}
 	
-	/**
-	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
-	 */
-	public static int getNextAvailableID()
-	{
-		int toReturn = nextAvailableID;
-		nextAvailableID++;
-		return toReturn;
-	}
-	
 	public PacketType getType()
 	{
 		return type;
-	}
-	
-	/**
-	 * Resets the nextAvailableID so that it starts counting from 0 again.
-	 * <p>
-	 * <b>WARNING: </b>only intended for use on server shutdowns.
-	 */
-	public static void resetNextAvailableID()
-	{
-		nextAvailableID = 0;
 	}
 }

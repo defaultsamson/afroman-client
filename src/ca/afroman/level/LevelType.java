@@ -2,6 +2,7 @@ package ca.afroman.level;
 
 public enum LevelType
 {
+	NULL(null),
 	MAIN("level1.txt");
 	
 	LevelType(String fileName)

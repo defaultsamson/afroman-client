@@ -1,23 +1,12 @@
 package ca.afroman.packet;
 
-public class PacketStopServer extends Packet
+import ca.afroman.legacy.packet.PacketType;
+import ca.afroman.network.IPConnection;
+
+public class PacketStopServer extends BytePacket
 {
-	/**
-	 * Designed to be sent from...
-	 * <p>
-	 * the host's <b>client</b> to the <b>server</b> to requests that the server shuts down.
-	 * <p>
-	 * the <b>server</b> to the <b>client</b> to inform that the server has stopped.
-	 * <p>
-	 */
-	public PacketStopServer()
+	public PacketStopServer(IPConnection... connection)
 	{
-		super(PacketType.STOP_SERVER, true);
-	}
-	
-	@Override
-	public byte[] getData()
-	{
-		return (type.ordinal() + "," + id + Packet.SEPARATOR).getBytes();
+		super(PacketType.STOP_SERVER, true, connection);
 	}
 }

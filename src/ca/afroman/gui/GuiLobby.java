@@ -14,8 +14,8 @@ import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
-import ca.afroman.packet.PacketDisconnect;
-import ca.afroman.packet.PacketStartGame;
+import ca.afroman.packet.PacketBeginGame;
+import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.server.ServerSocketManager;
 
@@ -201,20 +201,20 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStartGame());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketBeginGame());
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer(ClientGame.instance().sockets().getServerConnection().getConnection()));
 		}
 		else if (buttonID == 2002) // Leave server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketDisconnect());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerDisconnect());
 			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
 		else
 		{
-			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, buttonID));
+			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, (short) buttonID));
 		}
 	}
 }

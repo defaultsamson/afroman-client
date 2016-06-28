@@ -1,36 +1,60 @@
 package ca.afroman.packet;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.network.IPConnectedPlayer;
+import ca.afroman.network.IPConnection;
+import ca.afroman.util.ByteUtil;
 
-public class PacketUpdatePlayerList extends Packet
+public class PacketUpdatePlayerList extends BytePacket
 {
-	private String players = "";
+	private byte[] toSend;
 	
-	/**
-	 * Designed to be sent from the <b>server</b> to the <b>client</b>.
-	 * <p>
-	 * Sends the client a list of all the connected player.
-	 * 
-	 * @param connections all the connected players' connections
-	 */
-	public PacketUpdatePlayerList(List<IPConnectedPlayer> connections)
+	public PacketUpdatePlayerList(List<IPConnectedPlayer> connections, IPConnection... connection)
 	{
-		super(PacketType.UPDATE_PLAYERLIST, true);
+		super(PacketType.UPDATE_PLAYERLIST, true, connection);
 		
-		for (IPConnectedPlayer connection : connections)
+		List<Byte> send = new ArrayList<Byte>();
+		
+		for (IPConnectedPlayer con : connections)
 		{
-			players += connection.getID() + "," + connection.getRole().ordinal() + "," + connection.getUsername() + ",";
+			for (byte e : ByteUtil.shortAsBytes(con.getID()))
+			{
+				send.add(e);
+			}
+			
+			send.add((byte) con.getRole().ordinal());
+			
+			for (byte e : con.getUsername().getBytes())
+			{
+				send.add(e);
+			}
+			
+			// The signal that a new player is being declared after the username is finished sending
+			send.add(Byte.MIN_VALUE);
+			send.add(Byte.MAX_VALUE);
 		}
 		
-		// Removes the extra comma
-		players = players.substring(0, players.length() - 1);
+		send.add(Byte.MIN_VALUE);
+		send.add(Byte.MAX_VALUE);
+		send.add(Byte.MAX_VALUE);
+		send.add(Byte.MIN_VALUE);
+		
+		toSend = new byte[send.size()];
+		
+		int i = 0;
+		for (byte e : send)
+		{
+			toSend[i] = e;
+			i++;
+		}
 	}
 	
 	@Override
-	public byte[] getData()
+	public byte[] getUniqueData()
 	{
-		return (type.ordinal() + "," + id + Packet.SEPARATOR + players).getBytes();
+		return toSend;
 	}
 }

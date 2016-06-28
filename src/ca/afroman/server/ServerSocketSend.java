@@ -4,20 +4,18 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.packet.Packet;
+import ca.afroman.packet.BytePacket;
 import ca.afroman.thread.DynamicTickThread;
 
 public class ServerSocketSend extends DynamicTickThread
 {
-	private HashMap<IPConnection, List<Packet>> sendingPackets; // The packets that are still trying to be sent.
+	private List<BytePacket> sendingPackets; // The packets that are still trying to be sent.
 	private ServerSocketManager manager;
 	
 	/**
@@ -25,40 +23,25 @@ public class ServerSocketSend extends DynamicTickThread
 	 */
 	public ServerSocketSend(ServerSocketManager manager)
 	{
-		super(ServerGame.instance().getThreadGroup(), "Send", 2);
+		super(ServerGame.instance().getThreadGroup(), "Send", 1 / 5);
 		
 		this.manager = manager;
 		
-		sendingPackets = new HashMap<IPConnection, List<Packet>>();
+		sendingPackets = new ArrayList<BytePacket>();
 	}
 	
 	@Override
 	public void tick()
 	{
-		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
-		
-		// If there's over 100 required packets pending sending, just cool off man, give the clients a chance to respond
-		if (packs.size() > 20)
+		// TODO Don't try to force other packets if it's still pushing out crazy amounts of level packets to everyone
+		if (!ServerGame.instance().isSendingLevels())
 		{
-			try
-			{
-				Thread.sleep(5000);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		
-		synchronized (packs)
-		{
-			// For each connection
-			for (Entry<IPConnection, List<Packet>> entry : packs.entrySet())
+			synchronized (sendingPackets)
 			{
 				// For each packet queued to send to the connection
-				for (Packet pack : entry.getValue())
+				for (BytePacket pack : sendingPackets)
 				{
-					sendPacket(pack, entry.getKey());
+					sendPacket(pack);
 				}
 			}
 		}
@@ -82,88 +65,54 @@ public class ServerSocketSend extends DynamicTickThread
 		sendingPackets.clear();
 	}
 	
-	public List<Packet> getPacketsSendingTo(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
-		
-		synchronized (packs)
-		{
-			for (Entry<IPConnection, List<Packet>> entry : packs.entrySet())
-			{
-				if (entry.getKey().equals(connection)) return entry.getValue();
-			}
-		}
-		return null;
-	}
-	
-	public void addConnection(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
-		
-		synchronized (packs)
-		{
-			packs.put(connection, new ArrayList<Packet>());
-		}
-	}
-	
-	public void removeConnection(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Packet>> packs = getPacketQueue();
-		
-		synchronized (packs)
-		{
-			packs.remove(connection);
-		}
-	}
-	
 	/**
 	 * @param connection the connection that this was sending the packet to
 	 * @param id the ID of the packet being sent
 	 */
-	public void removePacketFromQueue(IPConnection connection, int id)
+	public void removePacket(IPConnection connection, int id)
 	{
-		Packet toRemove = null;
+		BytePacket toRemove = null;
 		
-		List<Packet> sent = getPacketsSendingTo(connection);
-		
-		if (sent != null)
+		synchronized (sendingPackets)
 		{
-			// Find the packet that the server is saying it recieved.
-			for (Packet pack : sent)
+			// Find the packet that the connection is saying it received
+			for (BytePacket pack : sendingPackets)
 			{
 				if (pack.getID() == id)
 				{
+					if (pack.getConnections().contains(connection))
+					{
+						pack.getConnections().remove(connection);
+					}
+					
 					toRemove = pack;
 					break;
 				}
 			}
 			
 			// Remove that packet from the queue
-			if (toRemove != null)
+			if (toRemove != null && toRemove.getConnections().isEmpty())
 			{
-				sent.remove(toRemove);
+				sendingPackets.remove(toRemove);
 			}
-		}
-		else
-		{
-			logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from");
 		}
 	}
 	
-	public void addPacketSendingTo(IPConnection connection, Packet packet)
+	private void addPacket(BytePacket packet)
 	{
 		if (!packet.mustSend()) return;
 		
-		List<Packet> packs = getPacketsSendingTo(connection);
-		
-		// Don't add it if it's just looping through and trying to add it again
-		if (!packs.contains(packet))
+		synchronized (sendingPackets)
 		{
-			packs.add(packet);
+			// Don't add it if it's just looping through and trying to add it again
+			if (!sendingPackets.contains(packet))
+			{
+				sendingPackets.add(packet);
+			}
 		}
 	}
 	
-	public HashMap<IPConnection, List<Packet>> getPacketQueue()
+	public List<BytePacket> getPacketQueue()
 	{
 		return sendingPackets;
 	}
@@ -174,10 +123,15 @@ public class ServerSocketSend extends DynamicTickThread
 	 * @param packet the packet to send
 	 * @param connection the Connection of the Client to send to
 	 */
-	public void sendPacket(Packet packet, IPConnection connection)
+	public void sendPacket(BytePacket packet)
 	{
-		addPacketSendingTo(connection, packet);
-		sendData(packet.getData(), connection.getIPAddress(), connection.getPort());
+		addPacket(packet);
+		
+		for (IPConnection con : packet.getConnections())
+		{
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+			sendData(packet.getData(), con.getIPAddress(), con.getPort());
+		}
 	}
 	
 	/**
@@ -194,8 +148,6 @@ public class ServerSocketSend extends DynamicTickThread
 	{
 		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, port);
 		
-		if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + ipAddress.getHostAddress() + ":" + port + "] " + new String(data));
-		
 		try
 		{
 			manager.socket().send(packet);
@@ -211,11 +163,15 @@ public class ServerSocketSend extends DynamicTickThread
 	 * 
 	 * @param packet the packet to send
 	 */
-	public void sendPacketToAllClients(Packet packet)
+	public void sendPacketToAllClients(BytePacket packet)
 	{
+		packet.getConnections().clear();
+		
 		for (IPConnectedPlayer connection : manager.getConnectedPlayers())
 		{
-			sendPacket(packet, connection.getConnection());
+			packet.getConnections().add(connection.getConnection());
 		}
+		
+		sendPacket(packet);
 	}
 }

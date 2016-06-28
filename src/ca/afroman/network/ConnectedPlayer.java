@@ -1,14 +1,25 @@
 package ca.afroman.network;
 
 import ca.afroman.client.Role;
+import ca.afroman.util.IDCounter;
 
 public class ConnectedPlayer
 {
-	private static int nextAvailableID = 0;
+	private static IDCounter idCounter;
+	
+	public static IDCounter getIDCounter()
+	{
+		if (idCounter == null)
+		{
+			idCounter = new IDCounter();
+		}
+		
+		return idCounter;
+	}
 	
 	private Role role;
 	private String username;
-	private int id;
+	private short id;
 	
 	/**
 	 * A player object with a role, username, and ID number.
@@ -17,7 +28,7 @@ public class ConnectedPlayer
 	 * @param role the role of the player
 	 * @param username the username of the player
 	 */
-	public ConnectedPlayer(int id, Role role, String username)
+	public ConnectedPlayer(short id, Role role, String username)
 	{
 		this.id = id;
 		this.role = role;
@@ -53,33 +64,13 @@ public class ConnectedPlayer
 	/**
 	 * @return this player's ID.
 	 */
-	public int getID()
+	public short getID()
 	{
 		return id;
 	}
 	
-	public void setID(int id)
+	public void setID(short id)
 	{
 		this.id = id;
-	}
-	
-	/**
-	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
-	 */
-	public static int getNextAvailableID()
-	{
-		int toReturn = nextAvailableID;
-		nextAvailableID++;
-		return toReturn;
-	}
-	
-	/**
-	 * Resets the nextAvailableID so that it starts counting from 0 again.
-	 * <p>
-	 * <b>WARNING: </b>only intended for use on server shutdowns.
-	 */
-	public static void resetNextAvailableID()
-	{
-		nextAvailableID = 0;
 	}
 }

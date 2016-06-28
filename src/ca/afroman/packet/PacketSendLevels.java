@@ -1,29 +1,22 @@
 package ca.afroman.packet;
 
-public class PacketSendLevels extends Packet
+import ca.afroman.legacy.packet.PacketType;
+import ca.afroman.network.IPConnection;
+
+public class PacketSendLevels extends BytePacket
 {
 	private boolean isSending;
 	
-	/**
-	 * Designed to be sent from...
-	 * <p>
-	 * the host's <b>client</b> to the <b>server</b> to requests that the server sends all the levels to the players.
-	 * <p>
-	 * the <b>server</b> to the <b>client</b> to inform that the server is going to be sending all the levels.
-	 * <p>
-	 * 
-	 * @param isSending whether the server is sending levels, or is stopping sending levels
-	 */
-	public PacketSendLevels(boolean isSending)
+	public PacketSendLevels(boolean isSending, IPConnection... connection)
 	{
-		super(PacketType.SEND_LEVELS, true);
+		super(PacketType.SEND_LEVELS, true, connection);
 		
 		this.isSending = isSending;
 	}
 	
 	@Override
-	public byte[] getData()
+	public byte[] getUniqueData()
 	{
-		return (type.ordinal() + "," + id + Packet.SEPARATOR + (isSending ? 1 : 0)).getBytes();
+		return new byte[] { (byte) (isSending ? 1 : 0) };
 	}
 }

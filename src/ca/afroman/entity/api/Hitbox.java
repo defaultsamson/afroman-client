@@ -3,10 +3,21 @@ package ca.afroman.entity.api;
 import java.awt.geom.Rectangle2D;
 
 import ca.afroman.level.Level;
+import ca.afroman.util.IDCounter;
 
 public class Hitbox extends Rectangle2D.Double
 {
-	private static int nextAvailableID = 0;
+	private static IDCounter idCounter;
+	
+	public static IDCounter getIDCounter()
+	{
+		if (idCounter == null)
+		{
+			idCounter = new IDCounter();
+		}
+		
+		return idCounter;
+	}
 	
 	// All the required variables needed to create an Entity
 	private int id;
@@ -33,26 +44,6 @@ public class Hitbox extends Rectangle2D.Double
 	public int getID()
 	{
 		return id;
-	}
-	
-	/**
-	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
-	 */
-	public static int getNextAvailableID()
-	{
-		int toReturn = nextAvailableID;
-		nextAvailableID++;
-		return toReturn;
-	}
-	
-	/**
-	 * Resets the nextAvailableID so that it starts counting from 0 again.
-	 * <p>
-	 * <b>WARNING: </b>only intended for use on server shutdowns.
-	 */
-	public static void resetNextAvailableID()
-	{
-		nextAvailableID = 0;
 	}
 	
 	/**
@@ -98,7 +89,7 @@ public class Hitbox extends Rectangle2D.Double
 	}
 	
 	/**
-	 * <b>WARNING:</b> Used when adding a hitbox bound object to a level. 
+	 * <b>WARNING:</b> Used when adding a hitbox bound object to a level.
 	 * ONLY USE THIS IF YOU KNOW WHAT YOU'RE DOING.
 	 * 
 	 * @param level the new level

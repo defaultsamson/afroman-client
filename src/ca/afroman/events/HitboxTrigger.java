@@ -162,7 +162,7 @@ public class HitboxTrigger extends InputType implements IEvent
 	{
 		return outChainedTriggers;
 	}
-
+	
 	@Override
 	public void onTrigger()
 	{
@@ -170,31 +170,31 @@ public class HitboxTrigger extends InputType implements IEvent
 		
 		if (this.isPressedFiltered()) ServerGame.instance().logger().log(ALogType.DEBUG, "#Triggered1");
 	}
-
+	
 	@Override
 	public int getID()
 	{
 		return hitbox.getID();
 	}
-
+	
 	@Override
 	public double getX()
 	{
 		return hitbox.getX();
 	}
-
+	
 	@Override
 	public double getY()
 	{
 		return hitbox.getY();
 	}
-
+	
 	@Override
 	public double getWidth()
 	{
 		return hitbox.getWidth();
 	}
-
+	
 	@Override
 	public double getHeight()
 	{

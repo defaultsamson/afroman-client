@@ -3,7 +3,6 @@ package ca.afroman.level;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import ca.afroman.assets.Asset;
@@ -22,14 +21,13 @@ import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiBuildModeLayer;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
-import ca.afroman.log.ALogType;
-import ca.afroman.packet.PacketAddLevelHitbox;
-import ca.afroman.packet.PacketAddLevelHitboxTrigger;
-import ca.afroman.packet.PacketAddLevelLight;
-import ca.afroman.packet.PacketAddLevelTile;
-import ca.afroman.packet.PacketRemoveLevelHitboxLocation;
-import ca.afroman.packet.PacketRemoveLevelLightLocation;
-import ca.afroman.packet.PacketRemoveLevelTileLocation;
+import ca.afroman.legacy.packet.PacketAddLevelHitboxTrigger;
+import ca.afroman.packet.PacketAddHitbox;
+import ca.afroman.packet.PacketAddPointLight;
+import ca.afroman.packet.PacketAddTile;
+import ca.afroman.packet.PacketRemoveHitbox;
+import ca.afroman.packet.PacketRemovePointLight;
+import ca.afroman.packet.PacketRemoveTile;
 import ca.afroman.util.ListUtil;
 
 public class ClientLevel extends Level
@@ -55,89 +53,82 @@ public class ClientLevel extends Level
 	{
 		List<List<Entity>> tiles = getTiles();
 		
-		try
+		// Renders Tiles
+		for (int i = 0; i <= 2; i++)
 		{
-			synchronized (tiles)
+			boolean draw = true;
+			
+			if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
 			{
-				// Renders Tiles
-				for (int i = 0; i <= 2; i++)
+				switch (i)
 				{
-					boolean draw = true;
-					
-					if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
-					{
-						switch (i)
-						{
-							case 0:
-								draw = showLayer0;
-								break;
-							case 1:
-								draw = showLayer1;
-								break;
-							case 2:
-								draw = showLayer2;
-								break;
-						}
-					}
-					
-					if (draw)
-					{
-						for (Entity tile : tiles.get(i))
-						{
-							// If it has a texture, render it
-							if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
-						}
-					}
+					case 0:
+						draw = showLayer0;
+						break;
+					case 1:
+						draw = showLayer1;
+						break;
+					case 2:
+						draw = showLayer2;
+						break;
 				}
-				
-				List<Entity> entities = new ArrayList<Entity>(this.getEntities());
-				for (Entity player : this.getPlayers())
+			}
+			
+			if (draw)
+			{
+				for (Entity tile : tiles.get(i))
 				{
-					entities.add(player);
-				}
-				
-				ListUtil.sort(entities, new YComparator());
-				
-				for (Entity entity : entities)
-				{
-					if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
-				}
-				
-				// Renders Tiles
-				for (int i = 3; i <= 5; i++)
-				{
-					boolean draw = true;
-					
-					if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+					// If it has a texture, render it
+					if (tile instanceof ClientAssetEntity)
 					{
-						switch (i)
-						{
-							case 3:
-								draw = showLayer3;
-								break;
-							case 4:
-								draw = showLayer4;
-								break;
-							case 5:
-								draw = showLayer5;
-								break;
-						}
-					}
-					
-					if (draw)
-					{
-						for (Entity tile : tiles.get(i))
-						{
-							// If it has a texture, render it
-							if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
-						}
+						((ClientAssetEntity) tile).render(renderTo);
 					}
 				}
 			}
 		}
-		catch (ConcurrentModificationException e)
+		
+		List<Entity> entities = new ArrayList<Entity>(this.getEntities());
+		for (Entity player : this.getPlayers())
 		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Fuck my ass, Jim");
+			entities.add(player);
+		}
+		
+		ListUtil.sort(entities, new YComparator());
+		
+		for (Entity entity : entities)
+		{
+			if (entity instanceof ClientAssetEntity) ((ClientAssetEntity) entity).render(renderTo);
+		}
+		
+		// Renders Tiles
+		for (int i = 3; i <= 5; i++)
+		{
+			boolean draw = true;
+			
+			if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+			{
+				switch (i)
+				{
+					case 3:
+						draw = showLayer3;
+						break;
+					case 4:
+						draw = showLayer4;
+						break;
+					case 5:
+						draw = showLayer5;
+						break;
+				}
+			}
+			
+			if (draw)
+			{
+				for (Entity tile : tiles.get(i))
+				{
+					// If it has a texture, render it
+					if (tile instanceof ClientAssetEntity) ((ClientAssetEntity) tile).render(renderTo);
+				}
+			}
 		}
 		
 		if (ClientGame.instance().isLightingOn())
@@ -147,22 +138,19 @@ public class ClientLevel extends Level
 			
 			List<PointLight> lights = this.getLights();
 			
-			synchronized (lights)
+			for (PointLight light : lights)
 			{
-				for (PointLight light : lights)
+				light.renderCentered(lightmap);
+				
+				if (ClientGame.instance().isHitboxDebugging())
 				{
-					light.renderCentered(lightmap);
-					
-					if (ClientGame.instance().isHitboxDebugging())
-					{
-						int x = this.worldToScreenX(light.getX());
-						int y = this.worldToScreenY(light.getY());
-						int radius = (int) light.getRadius();
-						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
-						renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
-						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
-						renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
-					}
+					int x = this.worldToScreenX(light.getX());
+					int y = this.worldToScreenY(light.getY());
+					int radius = (int) light.getRadius();
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
+					renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
+					renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
 				}
 			}
 			
@@ -282,7 +270,7 @@ public class ClientLevel extends Level
 			{
 				Paint oldPaint = renderTo.getGraphics().getPaint();
 				renderTo.getGraphics().setPaint(new Color(0.3F, 0.3F, 1F, 1F)); // Blue
-				//renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
+				// renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
 				
 				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
 				
@@ -343,7 +331,7 @@ public class ClientLevel extends Level
 	public boolean showLayer5 = true;
 	public int grid = 16;
 	
-	public int editLayer = 0;
+	public byte editLayer = 0;
 	
 	// Mode 2, PointLights
 	private int currentBuildLightRadius = 10;
@@ -448,14 +436,19 @@ public class ClientLevel extends Level
 					}
 					
 					Entity tileToAdd = new Entity(-1, cursorAsset.getAssetType(), x, y);
-					PacketAddLevelTile pack = new PacketAddLevelTile(editLayer, this.getType(), tileToAdd);
+					PacketAddTile pack = new PacketAddTile(editLayer, this.getType(), tileToAdd);
 					ClientGame.instance().sockets().sender().sendPacket(pack);
 				}
 				
 				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
-					PacketRemoveLevelTileLocation pack = new PacketRemoveLevelTileLocation(editLayer, this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
-					ClientGame.instance().sockets().sender().sendPacket(pack);
+					Entity tile = getTile(editLayer, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
+					
+					if (tile != null)
+					{
+						PacketRemoveTile pack = new PacketRemoveTile(tile.getID(), this.getType());
+						ClientGame.instance().sockets().sender().sendPacket(pack);
+					}
 				}
 				
 				boolean assetUpdated = false;
@@ -525,12 +518,17 @@ public class ClientLevel extends Level
 				{
 					PointLight light = new PointLight(-1, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
 					
-					ClientGame.instance().sockets().sender().sendPacket(new PacketAddLevelLight(this.getType(), light));
+					ClientGame.instance().sockets().sender().sendPacket(new PacketAddPointLight(this.getType(), light));
 				}
 				
 				if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 				{
-					ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelLightLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY())));
+					PointLight light = getLight(screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
+					
+					if (light != null)
+					{
+						ClientGame.instance().sockets().sender().sendPacket(new PacketRemovePointLight(light.getID(), this.getType()));
+					}
 				}
 				
 				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
@@ -560,7 +558,7 @@ public class ClientLevel extends Level
 					{
 						if (currentBuildMode == 3)
 						{
-							PacketAddLevelHitbox pack = new PacketAddLevelHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
+							PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
 							ClientGame.instance().sockets().sender().sendPacket(pack);
 						}
 						else if (currentBuildMode == 4)
@@ -572,8 +570,7 @@ public class ClientLevel extends Level
 							triggerTypes.add(TriggerType.PLAYER_COLLIDE);
 							
 							PacketAddLevelHitboxTrigger pack = new PacketAddLevelHitboxTrigger(this.getType(), new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, triggers, chainedTriggers));
-							ClientGame.instance().sockets().sender().sendPacket(pack);
-							// TODO
+							// TODO pack ClientGame.instance().sockets().sender().sendPacket(pack);
 						}
 						
 						hitboxClickCount = 0;
@@ -590,8 +587,13 @@ public class ClientLevel extends Level
 					{
 						if (currentBuildMode == 3)
 						{
-							PacketRemoveLevelHitboxLocation pack = new PacketRemoveLevelHitboxLocation(this.getType(), screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
-							ClientGame.instance().sockets().sender().sendPacket(pack);
+							Hitbox box = this.getHitbox(screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
+							
+							if (box != null)
+							{
+								PacketRemoveHitbox pack = new PacketRemoveHitbox(box.getID(), this.getType());
+								ClientGame.instance().sockets().sender().sendPacket(pack);
+							}
 						}
 						else if (currentBuildMode == 4)
 						{
@@ -649,12 +651,9 @@ public class ClientLevel extends Level
 		{
 			List<PointLight> lights = this.getLights();
 			
-			synchronized (lights)
+			for (PointLight light : lights)
 			{
-				for (PointLight light : lights)
-				{
-					light.tick();
-				}
+				light.tick();
 			}
 		}
 		

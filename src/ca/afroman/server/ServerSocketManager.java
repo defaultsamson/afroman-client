@@ -125,7 +125,7 @@ public class ServerSocketManager implements IDynamicRunning
 	 * @param id the ID number
 	 * @return the player.
 	 */
-	public IPConnectedPlayer getPlayerByID(int id)
+	public IPConnectedPlayer getPlayerByID(short id)
 	{
 		for (IPConnectedPlayer player : playerList)
 		{
@@ -143,7 +143,6 @@ public class ServerSocketManager implements IDynamicRunning
 	{
 		playerList.remove(connection);
 		receiver().removeConnection(connection.getConnection());
-		sender().removeConnection(connection.getConnection());
 		
 		updateClientsPlayerList();
 	}
@@ -159,14 +158,13 @@ public class ServerSocketManager implements IDynamicRunning
 		// Gives player a default role based on what critical roles are still required
 		Role role = (this.getPlayerByRole(Role.PLAYER1) == null ? Role.PLAYER1 : (this.getPlayerByRole(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
 		
-		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), ConnectedPlayer.getNextAvailableID(), role, username);
+		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
 		playerList.add(newConnection);
 		
 		receiver().addConnection(newConnection.getConnection());
-		sender().addConnection(newConnection.getConnection());
 		
 		// Tells the newly added connection their ID
-		sender().sendPacket(new PacketAssignClientID(newConnection.getID()), newConnection.getConnection());
+		sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));
 		
 		updateClientsPlayerList();
 	}
@@ -176,12 +174,7 @@ public class ServerSocketManager implements IDynamicRunning
 	 */
 	public void updateClientsPlayerList()
 	{
-		// Sends all the connections the updated list
-		PacketUpdatePlayerList updateList = new PacketUpdatePlayerList(playerList);
-		for (IPConnectedPlayer con : playerList)
-		{
-			sender().sendPacket(updateList, con.getConnection());
-		}
+		sender().sendPacketToAllClients(new PacketUpdatePlayerList(playerList));
 	}
 	
 	@Override

@@ -1,25 +1,23 @@
 package ca.afroman.packet;
 
-public class PacketAssignClientID extends Packet
+import ca.afroman.legacy.packet.PacketType;
+import ca.afroman.network.IPConnection;
+import ca.afroman.util.ByteUtil;
+
+public class PacketAssignClientID extends BytePacket
 {
-	private int clientID;
+	private short receivedID;
 	
-	/**
-	 * Designed to be sent from the <b>server</b> to the <b>client</b>.
-	 * <p>
-	 * Tells the client what their ID is.
-	 * 
-	 * @param id the ID being given
-	 */
-	public PacketAssignClientID(int clientID)
+	public PacketAssignClientID(short receivedID, IPConnection... connection)
 	{
-		super(PacketType.ASSIGN_CLIENTID, true);
-		this.clientID = clientID;
+		super(PacketType.ASSIGN_CLIENTID, true, connection);
+		
+		this.receivedID = receivedID;
 	}
 	
 	@Override
-	public byte[] getData()
+	public byte[] getUniqueData()
 	{
-		return (type.ordinal() + "," + id + Packet.SEPARATOR + clientID).getBytes();
+		return ByteUtil.shortAsBytes(receivedID);
 	}
 }

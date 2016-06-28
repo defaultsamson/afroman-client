@@ -1,27 +1,25 @@
 package ca.afroman.packet;
 
 import ca.afroman.client.Role;
+import ca.afroman.legacy.packet.PacketType;
+import ca.afroman.network.IPConnection;
+import ca.afroman.util.ByteUtil;
 
-public class PacketSetRole extends Packet
+public class PacketSetRole extends BytePacket
 {
-	private int playerID;
-	private Role role;
+	private byte[] toSend;
 	
-	/**
-	 * Designed to be sent from the host's <b>client</b> to the <b>server</b>.
-	 * <p>
-	 * Requests that the player with the given ID be assigned the provided role.
-	 */
-	public PacketSetRole(int playerID, Role role)
+	public PacketSetRole(short playerID, Role newRole, IPConnection... connection)
 	{
-		super(PacketType.SETROLE, true);
-		this.playerID = playerID;
-		this.role = role;
+		super(PacketType.SETROLE, true, connection);
+		
+		byte[] id = ByteUtil.shortAsBytes(playerID);
+		toSend = new byte[] { id[0], id[1], (byte) newRole.ordinal() };
 	}
 	
 	@Override
-	public byte[] getData()
+	public byte[] getUniqueData()
 	{
-		return (type.ordinal() + "," + id + Packet.SEPARATOR + playerID + "," + role.ordinal()).getBytes();
+		return toSend;
 	}
 }

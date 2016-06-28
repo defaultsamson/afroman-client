@@ -8,36 +8,37 @@ import java.util.List;
 
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
-import ca.afroman.packet.Packet;
+import ca.afroman.network.IPConnection;
+import ca.afroman.packet.BytePacket;
 import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicTickThread;
 
 public class ClientSocketSend extends DynamicTickThread
 {
 	private ClientSocketManager manager;
-	private List<Packet> sendingPackets; // The packets that are still trying to be sent.
+	private List<BytePacket> sendingPackets; // The packets that are still trying to be sent.
 	
 	/**
 	 * Constantly sends required packets to any client until they confirm that they've received them.
 	 */
 	public ClientSocketSend(ClientSocketManager manager)
 	{
-		super(ClientSocketManager.threadGroupInstance(), "Send", 2);
+		super(ClientSocketManager.threadGroupInstance(), "Send", 1 / 2);
 		
 		this.manager = manager;
 		
-		sendingPackets = new ArrayList<Packet>();
+		sendingPackets = new ArrayList<BytePacket>();
 	}
 	
 	@Override
 	public void tick()
 	{
-		List<Packet> packs = getPacketQueue();
+		List<BytePacket> packs = getPacketQueue();
 		
 		synchronized (packs)
 		{
 			// For each packet queued to send to the connection
-			for (Packet pack : packs)
+			for (BytePacket pack : packs)
 			{
 				ClientGame.instance().sockets().sender().sendPacket(pack);
 			}
@@ -66,49 +67,43 @@ public class ClientSocketSend extends DynamicTickThread
 	 * @param connection the connection that this was sending the packet to
 	 * @param id the ID of the packet being sent
 	 */
-	public void removePacketFromQueue(int id)
+	public void removePacket(int id)
 	{
-		Packet toRemove = null;
+		BytePacket toRemove = null;
 		
-		List<Packet> sent = getPacketQueue();
+		List<BytePacket> sent = getPacketQueue();
 		
-		if (sent != null)
+		synchronized (sent)
 		{
-			synchronized (sent)
+			// Find the packet that the server is saying it recieved.
+			for (BytePacket pack : sent)
 			{
-				// Find the packet that the server is saying it recieved.
-				for (Packet pack : sent)
+				if (pack.getID() == id)
 				{
-					if (pack.getID() == id)
-					{
-						toRemove = pack;
-						break;
-					}
-				}
-				
-				// Remove that packet from the queue
-				if (toRemove != null)
-				{
-					sent.remove(toRemove);
+					toRemove = pack;
+					break;
 				}
 			}
-		}
-		else
-		{
-			logger().log(ALogType.WARNING, "Cannot find the connection to remove the packet from");
+			
+			// Remove that packet from the queue
+			if (toRemove != null)
+			{
+				sent.remove(toRemove);
+			}
 		}
 	}
 	
-	public void addPacketToQueue(Packet packet)
+	public void addPacket(BytePacket packet)
 	{
 		if (!packet.mustSend()) return;
 		
-		List<Packet> packs = getPacketQueue();
-		
-		// Don't add it if it's just looping through and trying to add it again
-		if (!packs.contains(packet))
+		synchronized (sendingPackets)
 		{
-			packs.add(packet);
+			// Don't add it if it's just looping through and trying to add it again
+			if (!sendingPackets.contains(packet))
+			{
+				sendingPackets.add(packet);
+			}
 		}
 	}
 	
@@ -117,29 +112,35 @@ public class ClientSocketSend extends DynamicTickThread
 	 * 
 	 * @param packet the packet
 	 */
-	public void sendPacket(Packet packet)
+	public void sendPacket(BytePacket packet)
 	{
-		addPacketToQueue(packet);
-		sendData(packet.getData());
+		packet.setConnections(manager.getServerConnection().getConnection());
+		addPacket(packet);
+		
+		for (IPConnection con : packet.getConnections())
+		{
+			if (con != null && con.getIPAddress() != null)
+			{
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+				sendData(packet.getData(), con.getIPAddress());
+			}
+		}
 	}
 	
 	/**
 	 * Sends a byte array of data to the server.
 	 * 
 	 * @param data the data
+	 * @param con the server connection
 	 * 
 	 * @deprecated Still works to send raw data, but sendPacket() is preferred.
 	 */
 	@Deprecated
-	private void sendData(byte[] data)
+	private void sendData(byte[] data, InetAddress address)
 	{
-		InetAddress address = manager.getConnectedPlayer().getConnection().getIPAddress();
-		
 		if (address != null)
 		{
 			DatagramPacket packet = new DatagramPacket(data, data.length, address, ServerSocketManager.PORT);
-			
-			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + address + ":" + ServerSocketManager.PORT + "] " + new String(data));
 			
 			try
 			{
@@ -156,7 +157,7 @@ public class ClientSocketSend extends DynamicTickThread
 		}
 	}
 	
-	public List<Packet> getPacketQueue()
+	public List<BytePacket> getPacketQueue()
 	{
 		return sendingPackets;
 	}

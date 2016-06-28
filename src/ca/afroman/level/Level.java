@@ -61,14 +61,11 @@ public class Level
 	{
 		List<List<Entity>> tiles = getTiles();
 		
-		synchronized (tiles)
+		for (List<Entity> tileList : tiles)
 		{
-			for (List<Entity> tileList : tiles)
+			for (Entity tile : tileList)
 			{
-				for (Entity tile : tileList)
-				{
-					tile.tick();
-				}
+				tile.tick();
 			}
 		}
 		
@@ -107,44 +104,46 @@ public class Level
 							ServerGame.instance().logger().log(ALogType.WARNING, "[LEVEL] [ERROR] Invalid LevelObjectType at line " + lineNum + ": " + line);
 							break;
 						case LEVEL: // ()
-							// int x = Integer.parseInt(parameters[0]); TODO add spawn points
+							// int x = Integer.parseInt(parameters[0]); TODO add spawn points for each level where the players will respawn at if they die. If they saved after they passed a checkpoint (spawnpoint) then put them back to the save point
 							// int y = Integer.parseInt(parameters[1]);
 							
 							level = new Level(levelType);
 							break;
 						case TILE: // (AssetType, x, y, width, height, hitbox ...)
 						{
-							int layer = Integer.parseInt(parameters[0]); // TODO add to level with layer
+							byte layer = Byte.parseByte(parameters[0]);
 							double x = Double.parseDouble(parameters[1]);
 							double y = Double.parseDouble(parameters[2]);
 							AssetType type = AssetType.valueOf(parameters[3]);
 							
+							new Entity(Entity.getIDCounter().getNext(), type, x, y).addTileToLevel(level, layer);
+							
 							// If it has custom hitboxes defined
-							if (parameters.length > 4)
-							{
-								List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
-								
-								for (int i = 4; i < parameters.length; i += 4)
-								{
-									tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
-								}
-								new Entity(Entity.getNextAvailableID(), type, x, y, Entity.hitBoxListToArray(tileHitboxes)).addTileToLevel(level, layer);
-							}
-							else
-							{
-								new Entity(Entity.getNextAvailableID(), type, x, y).addTileToLevel(level, layer);
-							}
+							// if (parameters.length > 4)
+							// {
+							// List<Hitbox> tileHitboxes = new ArrayList<Hitbox>();
+							//
+							// for (int i = 4; i < parameters.length; i += 4)
+							// {
+							// tileHitboxes.add(new Hitbox(Double.parseDouble(parameters[i]), Double.parseDouble(parameters[i + 1]), Double.parseDouble(parameters[i + 2]), Double.parseDouble(parameters[i + 3])));
+							// }
+							// // TODO pack new Entity(Entity.getNextAvailableID(), type, x, y, Entity.hitBoxListToArray(tileHitboxes)).addTileToLevel(level, layer);
+							// }
+							// else
+							// {
+							// // TODO pack new Entity(Entity.getNextAvailableID(), type, x, y).addTileToLevel(level, layer);
+							// }
 						}
 							break;
 						case HITBOX:
-							level.getHitboxes().add(new Hitbox(Hitbox.getNextAvailableID(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
+							level.getHitboxes().add(new Hitbox(Hitbox.getIDCounter().getNext(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
 							break;
 						case POINT_LIGHT:
 							double x = Double.parseDouble(parameters[0]);
 							double y = Double.parseDouble(parameters[1]);
 							double radius = Double.parseDouble(parameters[2]);
 							
-							new PointLight(Entity.getNextAvailableID(), x, y, radius).addToLevel(level);
+							new PointLight(Entity.getIDCounter().getNext(), x, y, radius).addToLevel(level);
 							break;
 					}
 				}
@@ -171,28 +170,23 @@ public class Level
 		toReturn.add("// The Tiles. LevelObjectType(layer, AssetType, x, y, width, height, hitboxes[if any])");
 		toReturn.add("");
 		
-		List<List<Entity>> tiles = getTiles();
-		
-		synchronized (tiles)
+		int i = 0;
+		for (List<Entity> tileList : getTiles())
 		{
-			int i = 0;
-			for (List<Entity> tileList : getTiles())
+			for (Entity tile : tileList)
 			{
-				for (Entity tile : tileList)
+				String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getAssetType();
+				
+				if (tile.hasHitbox())
 				{
-					String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getAssetType();
-					
-					if (tile.hasHitbox())
-					{
-						tileString += tile.hitboxesAsSaveable();
-					}
-					
-					tileString += ")";
-					
-					toReturn.add(tileString);
+					tileString += tile.hitboxesAsSaveable();
 				}
-				i++;
+				
+				tileString += ")";
+				
+				toReturn.add(tileString);
 			}
+			i++;
 		}
 		
 		toReturn.add("");
@@ -230,18 +224,15 @@ public class Level
 		
 		List<PointLight> lights = getLights();
 		
-		synchronized (lights)
+		for (PointLight light : lights)
 		{
-			for (PointLight light : lights)
+			if (light instanceof FlickeringLight)
 			{
-				if (light instanceof FlickeringLight)
-				{
-					// TODO
-				}
-				else
-				{
-					toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
-				}
+				// TODO
+			}
+			else
+			{
+				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
 			}
 		}
 		
@@ -323,13 +314,9 @@ public class Level
 		return tiles;
 	}
 	
-	public List<Entity> getTiles(int layer)
+	public List<Entity> getTiles(byte layer)
 	{
-		List<List<Entity>> tiles = getTiles();
-		synchronized (tiles)
-		{
-			return tiles.get(layer);
-		}
+		return tiles.get(layer);
 	}
 	
 	/**
@@ -339,28 +326,25 @@ public class Level
 	 * @param y the y in-level ordinate
 	 * @return the tile. <b>null</b> if there are no tiles at that given location.
 	 */
-	public Entity getTile(int layer, double x, double y)
+	public Entity getTile(byte layer, double x, double y)
 	{
 		List<Entity> tiles = getTiles(layer);
 		
-		synchronized (tiles)
+		Collections.reverse(tiles);
+		
+		for (Entity tile : tiles)
 		{
-			Collections.reverse(tiles);
+			// TODO generate removable hitboxes for tiles based on asset
+			Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), 16, 16);
 			
-			for (Entity tile : tiles)
+			if (surrounding.contains(x, y))
 			{
-				// TODO generate removable hitboxes for tiles based on asset
-				Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), 16, 16);
-				
-				if (surrounding.contains(x, y))
-				{
-					Collections.reverse(tiles);
-					return tile;
-				}
+				Collections.reverse(tiles);
+				return tile;
 			}
-			Collections.reverse(tiles);
-			return null;
 		}
+		Collections.reverse(tiles);
+		return null;
 	}
 	
 	/**
@@ -371,19 +355,14 @@ public class Level
 	 */
 	public Entity getTile(int id)
 	{
-		List<List<Entity>> tiles = getTiles();
-		
-		synchronized (tiles)
+		for (List<Entity> tileList : tiles)
 		{
-			for (List<Entity> tileList : tiles)
+			for (Entity tile : tileList)
 			{
-				for (Entity tile : tileList)
-				{
-					if (tile.getID() == id) return tile;
-				}
+				if (tile.getID() == id) return tile;
 			}
-			return null;
 		}
+		return null;
 	}
 	
 	public List<Entity> getEntities()
@@ -486,36 +465,26 @@ public class Level
 	 */
 	public PointLight getLight(int id)
 	{
-		List<PointLight> lights = getLights();
-		
-		synchronized (lights)
+		for (PointLight light : lights)
 		{
-			for (PointLight light : lights)
-			{
-				if (light.getID() == id) return light;
-			}
-			return null;
+			if (light.getID() == id) return light;
 		}
+		return null;
 	}
 	
 	public PointLight getLight(double x, double y)
 	{
-		List<PointLight> lights = getLights();
-		
-		synchronized (lights)
+		for (PointLight light : lights)
 		{
-			for (PointLight light : lights)
-			{
-				double radius = light.getRadius();
-				
-				if (new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
-				{
-					return light;
-				}
-			}
+			double radius = light.getRadius();
 			
-			return null;
+			if (new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+			{
+				return light;
+			}
 		}
+		
+		return null;
 	}
 	
 	public List<PointLight> getLights()
