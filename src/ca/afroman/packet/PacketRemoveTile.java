@@ -1,9 +1,10 @@
 package ca.afroman.packet;
 
+import java.nio.ByteBuffer;
+
 import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnection;
-import ca.afroman.util.ArrayUtil;
 import ca.afroman.util.ByteUtil;
 
 public class PacketRemoveTile extends BytePacket
@@ -14,7 +15,11 @@ public class PacketRemoveTile extends BytePacket
 	{
 		super(PacketType.REMOVE_LEVEL_TILE, true, connection);
 		
-		toSend = ArrayUtil.concatByteArrays(ByteUtil.intAsBytes(type.ordinal()), ByteUtil.intAsBytes(id));
+		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.INT_BYTE_COUNT + ByteUtil.SHORT_BYTE_COUNT);
+		buf.putShort((short) type.ordinal());
+		buf.putInt(id);
+		
+		toSend = buf.array();
 	}
 	
 	@Override

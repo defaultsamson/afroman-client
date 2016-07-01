@@ -7,18 +7,18 @@ import ca.afroman.util.ByteUtil;
 
 public class PacketAddLevel extends BytePacket
 {
-	private LevelType lType;
+	private byte[] toSend;
 	
 	public PacketAddLevel(LevelType lType, IPConnection... connection)
 	{
 		super(PacketType.INSTANTIATE_LEVEL, true, connection);
 		
-		this.lType = lType;
+		toSend = ByteUtil.shortAsBytes((short) lType.ordinal());
 	}
 	
 	@Override
 	public byte[] getUniqueData()
 	{
-		return ByteUtil.shortAsBytes((short) lType.ordinal());
+		return toSend;
 	}
 }

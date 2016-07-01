@@ -2,6 +2,7 @@ package ca.afroman.server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.legacy.packet.Packet;
 import ca.afroman.legacy.packet.PacketType;
+import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
@@ -63,7 +65,7 @@ public class ServerSocketReceive extends DynamicThread
 	@Override
 	public void onRun()
 	{
-		byte[] buffer = new byte[1024];
+		byte[] buffer = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
 		
 		// Loads up the buffer with incoming data
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -132,11 +134,12 @@ public class ServerSocketReceive extends DynamicThread
 				{
 					if (sentByHost)
 					{
-						short id = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2));
-						Role newRole = Role.fromOrdinal(packet.getContent()[2]);
+						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 						
-						IPConnectedPlayer player = manager.getPlayerByID(id);
+						IPConnectedPlayer player = manager.getPlayerByID(buf.getShort());
+						
 						// The player who is currently holding that role
+						Role newRole = Role.fromOrdinal(buf.get());
 						IPConnectedPlayer currentPlayerWithRole = manager.getPlayerByRole(newRole);
 						
 						if (currentPlayerWithRole != null)
@@ -211,18 +214,20 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case ADD_LEVEL_TILE:
 				{
-					// int id = Integer.parseInt(split[0]); // Unused because it is assigned by the server
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						byte layer = packet.getContent()[0];
+						byte layer = buf.get();
 						
-						AssetType asset = AssetType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 8, 8 + 5)));
-						
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
+						// int id = buf.getInt();
+						AssetType asset = AssetType.fromOrdinal(buf.getInt());
+						double x = buf.getInt();
+						double y = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						Entity tile = new Entity(Entity.getIDCounter().getNext(), asset, x, y);
@@ -237,12 +242,14 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case REMOVE_LEVEL_TILE:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						int id = buf.getInt();
 						
 						Entity tile = level.getTile(id);
 						
@@ -261,16 +268,19 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case ADD_LEVEL_HITBOX:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						// int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
-						double width = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
-						double height = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 25, 25 + 6));
+						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
+						// int id = buf.getInt();
+						double x = buf.getInt();
+						double y = buf.getInt();
+						double width = buf.getInt();
+						double height = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						Hitbox box = new Hitbox(Hitbox.getIDCounter().getNext(), x, y, width, height);
@@ -285,12 +295,14 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case REMOVE_LEVEL_HITBOX:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						int id = buf.getInt();
 						
 						Hitbox box = level.getHitbox(id);
 						
@@ -309,15 +321,18 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case ADD_LEVEL_POINTLIGHT:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						// int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
-						double radius = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
+						// int id = buf.getInt();
+						double x = buf.getInt();
+						double y = buf.getInt();
+						double radius = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						PointLight light = new PointLight(Entity.getIDCounter().getNext(), x, y, radius);
@@ -330,14 +345,16 @@ public class ServerSocketReceive extends DynamicThread
 					}
 				}
 					break;
-				case REMOVE_LEVEL_POINTLIGHT: // TODO
+				case REMOVE_LEVEL_POINTLIGHT:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						int id = buf.getInt();
 						
 						PointLight light = level.getLight(id);
 						
@@ -372,7 +389,7 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case CONFIRM_RECEIVED:
 				{
-					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3], packet.getContent()[4] });
+					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
 					
 					manager.sender().removePacket(sender.getConnection(), sentID);
 				}

@@ -24,7 +24,7 @@ public class ClientSocketReceive extends DynamicThread
 	@Override
 	public void onRun()
 	{
-		byte[] buffer = new byte[1024];
+		byte[] buffer = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
 		
 		// Loads up the buffer with incoming data
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

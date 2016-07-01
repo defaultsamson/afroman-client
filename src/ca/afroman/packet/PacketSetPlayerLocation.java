@@ -1,7 +1,6 @@
 package ca.afroman.packet;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.ByteBuffer;
 
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.legacy.packet.PacketType;
@@ -16,30 +15,16 @@ public class PacketSetPlayerLocation extends BytePacket
 	{
 		super(PacketType.SET_PLAYER_LOCATION, false, connection);
 		
-		List<Byte> send = new ArrayList<Byte>();
+		ByteBuffer buf = ByteBuffer.allocate(3 + (2 * ByteUtil.DOUBLE_BYTE_COUNT));
 		
-		send.add((byte) player.getRole().ordinal());
-		send.add((byte) player.getDirection().ordinal());
-		send.add((byte) player.getLastDirection().ordinal());
+		buf.put((byte) player.getRole().ordinal());
+		buf.put((byte) player.getDirection().ordinal());
+		buf.put((byte) player.getLastDirection().ordinal());
 		
-		for (byte e : ByteUtil.doubleAsBytes(player.getX()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) player.getX());
+		buf.putInt((int) player.getY());
 		
-		for (byte e : ByteUtil.doubleAsBytes(player.getY()))
-		{
-			send.add(e);
-		}
-		
-		toSend = new byte[send.size()];
-		
-		int i = 0;
-		for (byte e : send)
-		{
-			toSend[i] = e;
-			i++;
-		}
+		toSend = buf.array();
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package ca.afroman.packet;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,9 +61,11 @@ public class BytePacket
 	 */
 	public BytePacket(byte[] rawData, IPConnection sender)
 	{
-		type = PacketType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(rawData, 0, 2)));
-		id = ByteUtil.intFromBytes(Arrays.copyOfRange(rawData, 2, 7));
-		content = Arrays.copyOfRange(rawData, 7, rawData.length);
+		ByteBuffer buf = ByteBuffer.wrap(rawData);
+		
+		type = PacketType.fromOrdinal(buf.getShort(0));
+		id = buf.getInt(2);
+		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT, rawData.length);
 		connections = new ArrayList<IPConnection>();
 		connections.add(sender);
 	}
@@ -80,36 +83,9 @@ public class BytePacket
 	{
 		byte[] type = ByteUtil.shortAsBytes((short) getType().ordinal());
 		byte[] id = ByteUtil.intAsBytes(this.id);
-		byte[] toConcat = getUniqueData();
-		// byte[] toRet = new byte[7 + toConcat.length];
-		//
-		// for (int i = 0; i < type.length; i++)
-		// toRet[i] = type[i];
-		//
-		// for (int i = 0; i < id.length; i++)
-		// toRet[i + type.length] = id[i];
-		//
-		// for (int i = 0; i < toConcat.length; i++)
-		// toRet[i + type.length + id.length] = toConcat[i];
+		byte[] content = getUniqueData();
 		
-		// for (byte e : type)
-		// {
-		// System.out.println("type: " + e);
-		// }
-		//
-		// for (byte e : id)
-		// {
-		// System.out.println(" id: " + e);
-		// }
-		//
-		// for (byte e : toConcat)
-		// {
-		// System.out.println("cnct: " + e);
-		// }
-		
-		byte[] ret = ArrayUtil.concatByteArrays(type, id, toConcat);
-		
-		return ret;
+		return ArrayUtil.concatByteArrays(type, id, content);
 	}
 	
 	/**

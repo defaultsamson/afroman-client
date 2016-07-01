@@ -1,7 +1,6 @@
 package ca.afroman.packet;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.ByteBuffer;
 
 import ca.afroman.gfx.PointLight;
 import ca.afroman.legacy.packet.PacketType;
@@ -17,46 +16,24 @@ public class PacketAddPointLight extends BytePacket
 	{
 		super(PacketType.ADD_LEVEL_POINTLIGHT, true, connection);
 		
-		List<Byte> send = new ArrayList<Byte>();
+		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + (5 * ByteUtil.INT_BYTE_COUNT));
 		
 		// Level Type
-		for (byte e : ByteUtil.shortAsBytes((short) level.ordinal()))
-		{
-			send.add(e);
-		}
+		buf.putShort((short) level.ordinal());
 		
 		// ID
-		for (byte e : ByteUtil.intAsBytes(light.getID()))
-		{
-			send.add(e);
-		}
+		buf.putInt(light.getID());
 		
 		// x
-		for (byte e : ByteUtil.doubleAsBytes(light.getX()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) light.getX());
 		
 		// y
-		for (byte e : ByteUtil.doubleAsBytes(light.getY()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) light.getY());
 		
 		// radius
-		for (byte e : ByteUtil.doubleAsBytes(light.getRadius()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) light.getRadius());
 		
-		toSend = new byte[send.size()];
-		
-		int i = 0;
-		for (byte e : send)
-		{
-			toSend[i] = e;
-			i++;
-		}
+		toSend = buf.array();
 	}
 	
 	@Override

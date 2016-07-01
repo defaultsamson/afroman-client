@@ -7,18 +7,18 @@ import ca.afroman.util.ByteUtil;
 
 public class PacketDenyJoin extends BytePacket
 {
-	private DenyJoinReason reason;
+	private byte[] toSend;
 	
 	public PacketDenyJoin(DenyJoinReason reason, IPConnection... connection)
 	{
 		super(PacketType.DENY_JOIN, false, connection);
 		
-		this.reason = reason;
+		toSend = ByteUtil.shortAsBytes((short) reason.ordinal());
 	}
 	
 	@Override
 	public byte[] getUniqueData()
 	{
-		return ByteUtil.shortAsBytes((short) reason.ordinal());
+		return toSend;
 	}
 }

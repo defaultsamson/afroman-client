@@ -11,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,6 +65,8 @@ public class ClientGame extends DynamicTickRenderThread
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
 	public static final short VERSION = 28;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
+	
+	public static final int RECEIVE_PACKET_BUFFER_LIMIT = 128;
 	
 	private static ClientGame game;
 	
@@ -339,6 +342,11 @@ public class ClientGame extends DynamicTickRenderThread
 			packets.clear();
 		}
 		
+		if (exitGame)
+		{
+			ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
+		}
+		
 		if (updatePlayerList) hasStartedUpdateList = true;
 		
 		for (Entry<Role, FlickeringLight> light : lights.entrySet())
@@ -469,6 +477,8 @@ public class ClientGame extends DynamicTickRenderThread
 	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
 	private List<BytePacket> packets;
 	
+	private boolean exitGame = false;
+	
 	@SuppressWarnings("deprecation")
 	public void parsePacket(BytePacket packet)
 	{
@@ -549,8 +559,8 @@ public class ClientGame extends DynamicTickRenderThread
 							break;
 						}
 						
-						short id = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), i, i + 2));
-						Role role = Role.fromOrdinal(packet.getContent()[i + 2]);
+						short id = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), i, i + ByteUtil.SHORT_BYTE_COUNT));
+						Role role = Role.fromOrdinal(packet.getContent()[i + ByteUtil.SHORT_BYTE_COUNT]);
 						
 						int change = 3;
 						for (int j = i + 3; j < packet.getContent().length - 1; j++)
@@ -580,7 +590,7 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case STOP_SERVER:
 				{
-					ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
+					exitGame = true;
 				}
 					break;
 				case SEND_LEVELS:
@@ -624,19 +634,19 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case ADD_LEVEL_TILE:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						byte[] test = Arrays.copyOfRange(packet.getContent(), 3, 3 + 5);
-						int id = ByteUtil.intFromBytes(test);
-						byte layer = packet.getContent()[0];
+						byte layer = buf.get();
+						int id = buf.getInt();
+						AssetType asset = AssetType.fromOrdinal(buf.getInt());
 						
-						AssetType asset = AssetType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 8, 8 + 5)));
-						
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						double x = buf.getInt();
+						double y = buf.getInt();
 						
 						ClientAssetEntity tile = new ClientAssetEntity(id, asset, x, y);
 						tile.addTileToLevel(level, layer);
@@ -649,12 +659,14 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case REMOVE_LEVEL_TILE:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						int id = buf.getInt();
 						
 						Entity entity = level.getTile(id);
 						
@@ -671,16 +683,18 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case ADD_LEVEL_HITBOX:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
-						double width = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
-						double height = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 25, 25 + 6));
+						int id = buf.getInt();
+						double x = buf.getInt();
+						double y = buf.getInt();
+						double width = buf.getInt();
+						double height = buf.getInt();
 						
 						Hitbox box = new Hitbox(id, x, y, width, height);
 						box.addToLevel(level);
@@ -693,12 +707,14 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case REMOVE_LEVEL_HITBOX:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						int id = buf.getInt();
 						
 						Hitbox box = level.getHitbox(id);
 						
@@ -715,17 +731,18 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case ADD_LEVEL_POINTLIGHT:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 2, 2 + 5));
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 7, 7 + 6));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 13, 13 + 6));
-						double radius = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 19, 19 + 6));
+						int id = buf.getInt();
+						double x = buf.getInt();
+						double y = buf.getInt();
+						double radius = buf.getInt();
 						
-						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						PointLight light = new PointLight(id, x, y, radius);
 						light.addToLevel(level);
 					}
@@ -737,12 +754,14 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case REMOVE_LEVEL_POINTLIGHT:
 				{
-					LevelType levelType = LevelType.fromOrdinal(ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 5)));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						int id = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 5, 10));
+						int id = buf.getInt();
 						
 						PointLight light = level.getLight(id);
 						
@@ -781,27 +800,22 @@ public class ClientGame extends DynamicTickRenderThread
 					break;
 				case SET_PLAYER_LOCATION:
 				{
-					Role role = Role.fromOrdinal(packet.getContent()[0]);
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
-					ClientPlayerEntity player = ClientGame.instance().getPlayer(role);
+					ClientPlayerEntity player = ClientGame.instance().getPlayer(Role.fromOrdinal(buf.get()));
 					
 					if (player != null)
 					{
-						Direction dir = Direction.fromOrdinal(packet.getContent()[1]);
-						Direction lastDir = Direction.fromOrdinal(packet.getContent()[2]);
-						double x = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 3, 9));
-						double y = ByteUtil.doubleFromBytes(Arrays.copyOfRange(packet.getContent(), 9, 15));
-						
-						player.setDirection(dir);
-						player.setLastDirection(lastDir);
-						player.setX(x);
-						player.setY(y);
+						player.setDirection(Direction.fromOrdinal(buf.get()));
+						player.setLastDirection(Direction.fromOrdinal(buf.get()));
+						player.setX(buf.getInt());
+						player.setY(buf.getInt());
 					}
 				}
 					break;
 				case CONFIRM_RECEIVED:
 				{
-					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3], packet.getContent()[4] });
+					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
 					
 					sockets().sender().removePacket(sentID);
 				}

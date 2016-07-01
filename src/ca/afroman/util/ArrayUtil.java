@@ -33,6 +33,7 @@ public class ArrayUtil
 		
 		total = 0;
 		
+		// TODO optimise with System.arraycopy
 		for (int i = 0; i < arrays.length; i++)
 		{
 			for (int j = 0; j < arrays[i].length; j++)

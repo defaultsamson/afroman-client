@@ -6,18 +6,18 @@ import ca.afroman.util.ByteUtil;
 
 public class PacketConfirmReceive extends BytePacket
 {
-	private int receivedID;
+	private byte[] toSend;
 	
 	public PacketConfirmReceive(int receivedID, IPConnection... connection)
 	{
 		super(PacketType.CONFIRM_RECEIVED, false, connection);
 		
-		this.receivedID = receivedID;
+		toSend = ByteUtil.intAsBytes(receivedID);
 	}
 	
 	@Override
 	public byte[] getUniqueData()
 	{
-		return ByteUtil.intAsBytes(receivedID);
+		return toSend;
 	}
 }

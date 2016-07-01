@@ -1,7 +1,6 @@
 package ca.afroman.packet;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.ByteBuffer;
 
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.legacy.packet.PacketType;
@@ -17,52 +16,27 @@ public class PacketAddHitbox extends BytePacket
 	{
 		super(PacketType.ADD_LEVEL_HITBOX, true, connection);
 		
-		List<Byte> send = new ArrayList<Byte>();
+		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + (5 * ByteUtil.INT_BYTE_COUNT));
 		
 		// Level Type
-		for (byte e : ByteUtil.shortAsBytes((short) level.ordinal()))
-		{
-			send.add(e);
-		}
+		buf.putShort((short) level.ordinal());
 		
 		// ID
-		for (byte e : ByteUtil.intAsBytes(hitbox.getID()))
-		{
-			send.add(e);
-		}
+		buf.putInt(hitbox.getID());
 		
 		// x
-		for (byte e : ByteUtil.doubleAsBytes(hitbox.getX()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) hitbox.getX());
 		
 		// y
-		for (byte e : ByteUtil.doubleAsBytes(hitbox.getY()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) hitbox.getY());
 		
 		// width
-		for (byte e : ByteUtil.doubleAsBytes(hitbox.getWidth()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) hitbox.getWidth());
 		
 		// height
-		for (byte e : ByteUtil.doubleAsBytes(hitbox.getHeight()))
-		{
-			send.add(e);
-		}
+		buf.putInt((int) hitbox.getHeight());
 		
-		toSend = new byte[send.size()];
-		
-		int i = 0;
-		for (byte e : send)
-		{
-			toSend[i] = e;
-			i++;
-		}
+		toSend = buf.array();
 	}
 	
 	@Override
