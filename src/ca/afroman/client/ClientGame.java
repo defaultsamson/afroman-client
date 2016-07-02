@@ -56,6 +56,7 @@ import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.IDCounter;
+import samson.stream.Console;
 
 public class ClientGame extends DynamicTickRenderThread
 {
@@ -239,9 +240,8 @@ public class ClientGame extends DynamicTickRenderThread
 		canvas.setFocusTraversalKeysEnabled(false);
 		
 		// Initialises the console output.
-		ConsoleOutput.instance();
-		ALogger.initStreams(); // Initialises the console and log output etc
-		
+		Console.initialize();
+		ALogger.initStreams();
 		Assets.load();
 		
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
@@ -362,7 +362,7 @@ public class ClientGame extends DynamicTickRenderThread
 		{
 			consoleDebug = !consoleDebug;
 			
-			ConsoleOutput.instance().setGuiVisible(consoleDebug);
+			Console.setVisible(consoleDebug);
 			
 			logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
 		}

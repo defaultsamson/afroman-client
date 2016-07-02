@@ -2,45 +2,32 @@ package ca.afroman.log;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.logging.Logger;
 
-import ca.afroman.stream.ConsoleOutputStream;
-import ca.afroman.stream.MultiOutputStream;
+import samson.stream.Console;
 
 public class ALogger extends Logger
 {
 	public static boolean tracePackets = false;
 	
-	private static MultiOutputStream out = null;
-	private static MultiOutputStream err = null;
-	
 	/**
-	 * Initialised the out and err streams.
+	 * Initialises the file log streams.
 	 */
 	public static void initStreams()
 	{
-		if (out == null)
+		FileOutputStream fil = null;
+		try
 		{
-			ConsoleOutputStream con = new ConsoleOutputStream();
-			
-			FileOutputStream fil = null;
-			try
-			{
-				fil = new FileOutputStream("C:\\Users\\qwertysam\\Desktop\\log.txt");
-			}
-			catch (FileNotFoundException e)
-			{
-				e.printStackTrace();
-			}
-			
-			out = new MultiOutputStream(con, fil, System.out);
-			err = new MultiOutputStream(con, fil, System.err);
-			
-			System.setOut(new PrintStream(out));
-			System.setErr(new PrintStream(err));
+			fil = new FileOutputStream("log.txt");
 		}
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+		}
+		
+		Console.getOutputStream().addStream(fil);
+		Console.getErrorStream().addStream(fil);
 	}
 	
 	public ALogger(String name)
