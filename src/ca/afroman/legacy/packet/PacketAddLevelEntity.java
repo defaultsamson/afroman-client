@@ -1,7 +1,9 @@
 package ca.afroman.legacy.packet;
 
 import ca.afroman.entity.api.Entity;
+import ca.afroman.packet.PacketType;
 
+@Deprecated
 public class PacketAddLevelEntity extends Packet
 {
 	private Entity entity;

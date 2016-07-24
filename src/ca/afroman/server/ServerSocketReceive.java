@@ -19,8 +19,6 @@ import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.legacy.packet.Packet;
-import ca.afroman.legacy.packet.PacketType;
-import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
@@ -36,6 +34,7 @@ import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketRemoveHitbox;
 import ca.afroman.packet.PacketRemovePointLight;
 import ca.afroman.packet.PacketRemoveTile;
+import ca.afroman.packet.PacketType;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
 
@@ -98,8 +97,6 @@ public class ServerSocketReceive extends DynamicThread
 		IPConnectedPlayer sender = manager.getPlayerByConnection(packet.getConnections().get(0));
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
-		
-		// System.out.println("SentByConnected: " + sentByConnected);
 		
 		if (sentByConnected)
 		{
@@ -324,7 +321,7 @@ public class ServerSocketReceive extends DynamicThread
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
@@ -335,7 +332,8 @@ public class ServerSocketReceive extends DynamicThread
 						double radius = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						PointLight light = new PointLight(Entity.getIDCounter().getNext(), x, y, radius);
+						PointLight light = new PointLight(PointLight.getIDCounter().getNext(), x, y, radius);
+						System.out.println("Creating Server-Side Light: (" + level.getType() + ", " + light.getID() + ")");
 						light.addToLevel(level);
 						manager.sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 					}
@@ -356,6 +354,8 @@ public class ServerSocketReceive extends DynamicThread
 					{
 						int id = buf.getInt();
 						
+						System.out.println("Removing Server-Side Light: (" + level.getType() + ", " + id + ")");
+						
 						PointLight light = level.getLight(id);
 						
 						if (light != null)
@@ -363,6 +363,10 @@ public class ServerSocketReceive extends DynamicThread
 							PacketRemovePointLight pack = new PacketRemovePointLight(light.getID(), levelType);
 							manager.sender().sendPacketToAllClients(pack);
 							light.removeFromLevel();
+						}
+						else
+						{
+							System.out.println("Could not find Server-Side Light");
 						}
 					}
 					else

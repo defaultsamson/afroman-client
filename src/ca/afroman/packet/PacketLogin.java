@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 

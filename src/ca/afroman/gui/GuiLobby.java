@@ -159,11 +159,8 @@ public class GuiLobby extends GuiScreen
 		
 		if (ClientGame.instance().isLightingOn())
 		{
-			light1.setX(player1X + 8);
-			light1.setY(player1Y + 8);
-			
-			light2.setX(player2X + 8);
-			light2.setY(player2Y + 8);
+			light1.setLocation(player1X + 8, player1Y + 8);
+			light2.setLocation(player2X + 8, player2Y + 8);
 			
 			lightmap.clear();
 			light1.renderCentered(lightmap);

@@ -3,7 +3,6 @@ package ca.afroman.packet;
 import java.nio.ByteBuffer;
 
 import ca.afroman.entity.ServerPlayerEntity;
-import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 

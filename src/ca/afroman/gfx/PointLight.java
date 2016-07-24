@@ -6,11 +6,24 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
+import ca.afroman.util.IDCounter;
 
 public class PointLight extends Entity
 {
 	protected Color colour;
 	private double radius;
+	
+	private static IDCounter idCounter;
+	
+	public static IDCounter getIDCounter()
+	{
+		if (idCounter == null)
+		{
+			idCounter = new IDCounter();
+		}
+		
+		return idCounter;
+	}
 	
 	public PointLight(int id, double x, double y, double radius)
 	{
@@ -31,6 +44,7 @@ public class PointLight extends Entity
 		
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void renderCentered(LightMap renderTo)
 	{
 		if (level instanceof ClientLevel)
@@ -63,7 +77,10 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			level.getLights().remove(this);
+			synchronized (level.getLights())
+			{
+				level.getLights().remove(this);
+			}
 		}
 		
 		// Sets the new level
@@ -71,7 +88,10 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			level.getLights().add(this);
+			synchronized (level.getLights())
+			{
+				level.getLights().add(this);
+			}
 		}
 	}
 }

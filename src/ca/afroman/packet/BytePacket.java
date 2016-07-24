@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ArrayUtil;
 import ca.afroman.util.ByteUtil;

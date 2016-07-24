@@ -2,7 +2,9 @@ package ca.afroman.legacy.packet;
 
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.level.LevelType;
+import ca.afroman.packet.PacketType;
 
+@Deprecated
 public class PacketAddLevelHitboxTrigger extends Packet
 {
 	private HitboxTrigger event;

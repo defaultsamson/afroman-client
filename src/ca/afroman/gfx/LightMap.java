@@ -18,6 +18,7 @@ public class LightMap extends Texture
 	public static boolean oldLightMixing = false;
 	public static final Color DEFAULT_AMBIENT = new Color(0F, 0F, 0F, 0.64F);
 	private static final Color CHEAP_AMBIENT = new Color(0F, 0F, 0F, 0.5F); // Must be this for the bit shift to work in the multiply
+	private static Texture filter = Assets.getTexture(AssetType.FILTER);
 	
 	private Color ambientColour;
 	
@@ -193,7 +194,7 @@ public class LightMap extends Texture
 			}
 		}
 		
-		this.draw(Assets.getTexture(AssetType.FILTER), 0, 0);
+		if (ClientGame.instance().getLightingState() == LightMapState.ON) this.draw(filter, 0, 0);
 	}
 	
 	private static int multiplyPixels(int x, int y, Color ambientColour)

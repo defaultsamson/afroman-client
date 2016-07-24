@@ -8,6 +8,7 @@ import java.util.List;
 import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.TriggerType;
@@ -35,11 +36,13 @@ public class ClientLevel extends Level
 	private LightMap lightmap;
 	private double xOffset = 0;
 	private double yOffset = 0;
+	private Font lightDebug;
 	
 	public ClientLevel(LevelType type)
 	{
 		super(type);
 		
+		lightDebug = Assets.getFont(AssetType.FONT_NOBLE);
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 	}
 	
@@ -49,6 +52,7 @@ public class ClientLevel extends Level
 		yOffset = y - (ClientGame.HEIGHT / 2);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void render(Texture renderTo)
 	{
 		List<List<Entity>> tiles = getTiles();
@@ -138,19 +142,24 @@ public class ClientLevel extends Level
 			
 			List<PointLight> lights = this.getLights();
 			
-			for (PointLight light : lights)
+			synchronized (lights)
 			{
-				light.renderCentered(lightmap);
-				
-				if (ClientGame.instance().isHitboxDebugging())
+				for (PointLight light : lights) // Throws ConcurrentModificationException
 				{
-					int x = this.worldToScreenX(light.getX());
-					int y = this.worldToScreenY(light.getY());
-					int radius = (int) light.getRadius();
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
-					renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
-					renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+					light.renderCentered(lightmap);
+					
+					if (ClientGame.instance().isHitboxDebugging())
+					{
+						int x = this.worldToScreenX(light.getX());
+						int y = this.worldToScreenY(light.getY());
+						int radius = (int) light.getRadius();
+						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
+						renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
+						renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+						
+						lightDebug.renderCentered(renderTo, this.worldToScreenX(light.getX()), this.worldToScreenY(light.getY()) - 3, "" + light.getID());
+					}
 				}
 			}
 			
@@ -534,7 +543,7 @@ public class ClientLevel extends Level
 				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 				{
 					currentBuildLightRadius -= speed;
-					if (currentBuildLightRadius < 1) currentBuildLightRadius = 1;
+					if (currentBuildLightRadius < 2) currentBuildLightRadius = 2;
 				}
 				
 				if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())

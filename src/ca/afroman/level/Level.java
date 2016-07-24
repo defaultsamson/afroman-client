@@ -143,7 +143,7 @@ public class Level
 							double y = Double.parseDouble(parameters[1]);
 							double radius = Double.parseDouble(parameters[2]);
 							
-							new PointLight(Entity.getIDCounter().getNext(), x, y, radius).addToLevel(level);
+							new PointLight(PointLight.getIDCounter().getNext(), x, y, radius).addToLevel(level);
 							break;
 					}
 				}
@@ -478,7 +478,7 @@ public class Level
 		{
 			double radius = light.getRadius();
 			
-			if (new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+			if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
 			{
 				return light;
 			}

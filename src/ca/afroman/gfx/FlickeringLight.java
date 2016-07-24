@@ -28,6 +28,7 @@ public class FlickeringLight extends PointLight
 		this.ticksPerFrame = ticksPerFrame;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void renderCentered(LightMap renderTo)
 	{

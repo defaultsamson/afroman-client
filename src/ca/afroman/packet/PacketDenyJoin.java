@@ -1,6 +1,5 @@
 package ca.afroman.packet;
 
-import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.server.DenyJoinReason;
 import ca.afroman.util.ByteUtil;

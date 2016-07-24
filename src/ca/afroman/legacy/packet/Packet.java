@@ -1,7 +1,9 @@
 package ca.afroman.legacy.packet;
 
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
 
+@Deprecated
 public abstract class Packet
 {
 	/** The pattern that separates the PacketType ordinal from a the content. */

@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.entity.api.Entity;
-import ca.afroman.legacy.packet.PacketType;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
