@@ -14,7 +14,7 @@ import ca.afroman.log.ALogType;
 
 public class AudioClip extends Asset
 {
-	private static final boolean ENABLE_AUDIO = false;
+	private static final boolean ENABLE_AUDIO = true;
 	private static final String AUDIO_DIR = "/audio/";
 	
 	private Clip clip;
