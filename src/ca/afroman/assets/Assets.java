@@ -79,9 +79,9 @@ public class Assets
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 		
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down.wav"));
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up.wav"));
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu.wav"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu"));
 	}
 	
 	public static Font getFont(AssetType type)

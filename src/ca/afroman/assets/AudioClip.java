@@ -3,6 +3,7 @@ package ca.afroman.assets;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -15,7 +16,10 @@ import ca.afroman.log.ALogType;
 public class AudioClip extends Asset
 {
 	private static final boolean ENABLE_AUDIO = true;
+	private static final boolean USE_MP3 = true;
 	private static final String AUDIO_DIR = "/audio/";
+	private static final String MP3_DIR = "mp3/";
+	private static final String WAV_DIR = "wav/";
 	
 	private Clip clip;
 	
@@ -32,10 +36,24 @@ public class AudioClip extends Asset
 		
 		try
 		{
-			URL url = AudioClip.class.getResource(AUDIO_DIR + path);
+			URL url = AudioClip.class.getResource(AUDIO_DIR + (USE_MP3 ? MP3_DIR : WAV_DIR) + path + (USE_MP3 ? ".mp3" : ".wav"));
 			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
-			clip = AudioSystem.getClip();
-			clip.open(audioIn);
+			
+			if (USE_MP3)
+			{
+				AudioFormat baseFormat = audioIn.getFormat();
+				AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+				
+				AudioInputStream decodedAudioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
+				
+				clip = AudioSystem.getClip();
+				clip.open(decodedAudioIn);
+			}
+			else
+			{
+				clip = AudioSystem.getClip();
+				clip.open(audioIn);
+			}
 		}
 		catch (UnsupportedAudioFileException e)
 		{
@@ -57,6 +75,8 @@ public class AudioClip extends Asset
 	{
 		if (ENABLE_AUDIO)
 		{
+			if (clip == null) return;
+			
 			clip.setFramePosition(0);
 			clip.loop(200);
 			clip.start();
@@ -67,6 +87,8 @@ public class AudioClip extends Asset
 	{
 		if (ENABLE_AUDIO)
 		{
+			if (clip == null) return;
+			
 			clip.setFramePosition(0);
 			
 			clip.start();
@@ -75,6 +97,7 @@ public class AudioClip extends Asset
 	
 	public void stop()
 	{
+		if (clip == null) return;
 		clip.stop();
 	}
 	
