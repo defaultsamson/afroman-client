@@ -15,7 +15,7 @@ import ca.afroman.log.ALogType;
 
 public class AudioClip extends Asset
 {
-	private static final boolean ENABLE_AUDIO = true;
+	private static final boolean ENABLE_AUDIO = false;
 	private static final boolean USE_MP3 = true;
 	private static final String AUDIO_DIR = "/audio/";
 	private static final String MP3_DIR = "mp3/";
@@ -32,28 +32,16 @@ public class AudioClip extends Asset
 	
 	public static AudioClip fromResource(AssetType type, String path)
 	{
-		Clip clip = null;
+		// TODO automatically detect whether to use MP3 or WAV based on which directories exist
+		// URL test = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR);
+		
+		URL url = AudioClip.class.getResource(AUDIO_DIR + (USE_MP3 ? MP3_DIR : WAV_DIR) + path + (USE_MP3 ? ".mp3" : ".wav"));
+		
+		AudioInputStream audioIn = null;
 		
 		try
 		{
-			URL url = AudioClip.class.getResource(AUDIO_DIR + (USE_MP3 ? MP3_DIR : WAV_DIR) + path + (USE_MP3 ? ".mp3" : ".wav"));
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
-			
-			if (USE_MP3)
-			{
-				AudioFormat baseFormat = audioIn.getFormat();
-				AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
-				
-				AudioInputStream decodedAudioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
-				
-				clip = AudioSystem.getClip();
-				clip.open(decodedAudioIn);
-			}
-			else
-			{
-				clip = AudioSystem.getClip();
-				clip.open(audioIn);
-			}
+			audioIn = AudioSystem.getAudioInputStream(url);
 		}
 		catch (UnsupportedAudioFileException e)
 		{
@@ -63,9 +51,70 @@ public class AudioClip extends Asset
 		{
 			ClientGame.instance().logger().log(ALogType.CRITICAL, "I/O Error while loading a clip", e);
 		}
-		catch (LineUnavailableException e)
+		
+		Clip clip = null;
+		
+		if (USE_MP3)
 		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
+			if (audioIn != null)
+			{
+				AudioFormat baseFormat = audioIn.getFormat();
+				AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+				
+				AudioInputStream decodedAudioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
+				
+				try
+				{
+					clip = AudioSystem.getClip();
+				}
+				catch (LineUnavailableException e)
+				{
+					ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
+				}
+				
+				if (clip != null)
+				{
+					try
+					{
+						clip.open(decodedAudioIn);
+					}
+					catch (LineUnavailableException e)
+					{
+						ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
+					}
+					catch (IOException e)
+					{
+						ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
+					}
+				}
+			}
+		}
+		else
+		{
+			try
+			{
+				clip = AudioSystem.getClip();
+			}
+			catch (LineUnavailableException e)
+			{
+				ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
+			}
+			
+			if (clip != null)
+			{
+				try
+				{
+					clip.open(audioIn);
+				}
+				catch (LineUnavailableException e)
+				{
+					ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
+				}
+				catch (IOException e)
+				{
+					ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
+				}
+			}
 		}
 		
 		return new AudioClip(type, clip);

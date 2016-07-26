@@ -425,10 +425,18 @@ public class Level
 	 */
 	public Hitbox getHitbox(double x, double y)
 	{
+		Collections.reverse(getHitboxes());
+		
 		for (Hitbox hitbox : getHitboxes())
 		{
-			if (hitbox.contains(x, y)) return hitbox;
+			if (hitbox.contains(x, y))
+			{
+				Collections.reverse(getHitboxes());
+				return hitbox;
+			}
 		}
+		
+		Collections.reverse(getHitboxes());
 		return null;
 	}
 	
@@ -474,16 +482,20 @@ public class Level
 	
 	public PointLight getLight(double x, double y)
 	{
+		Collections.reverse(lights);
+		
 		for (PointLight light : lights)
 		{
 			double radius = light.getRadius();
 			
 			if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
 			{
+				Collections.reverse(lights);
 				return light;
 			}
 		}
 		
+		Collections.reverse(lights);
 		return null;
 	}
 	

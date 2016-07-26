@@ -152,7 +152,7 @@ public class Assets
 		
 		for (Asset asset : assets)
 		{
-			if (asset.getAssetType() == type)
+			if (asset != null && asset.getAssetType() == type)
 			{
 				return asset;
 			}
