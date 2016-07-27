@@ -507,7 +507,7 @@ public class Entity implements ITickable
 				
 				if (this.isColliding(hEvent.getHitbox()))
 				{
-					// TODO separate server-side entity checks
+					// TODO separate server-side entity checks1
 					if (this instanceof ServerPlayerEntity || this instanceof ClientPlayerEntity)
 					{
 						

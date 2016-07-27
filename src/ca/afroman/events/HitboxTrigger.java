@@ -15,67 +15,21 @@ public class HitboxTrigger extends InputType implements IEvent
 	private static int nextAvailableID = 0;
 	
 	private List<TriggerType> triggerTypes;
-	private List<Integer> triggers;
-	private List<Integer> outChainedTriggers;
+	private List<Integer> inTriggers;
+	private List<Integer> outTriggers;
 	private Hitbox hitbox;
 	
-	public HitboxTrigger(int id, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inChainedTriggers, List<Integer> outChainedTriggers)
+	public HitboxTrigger(int id, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		hitbox = new Hitbox(id, x, y, width, height);
+		this(id, new Hitbox(id, x, y, width, height), triggerTypes, inTriggers, outTriggers);
+	}
+	
+	public HitboxTrigger(int id, Hitbox box, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
+	{
+		hitbox = box;
 		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
-		this.triggers = (triggers != null ? triggers : new ArrayList<Integer>());
-		this.outChainedTriggers = (outChainedTriggers != null ? outChainedTriggers : new ArrayList<Integer>());
-	}
-	
-	/**
-	 * Used for packet sending only. (PacketAddLevelHitboxTrigger)
-	 * 
-	 * @return
-	 */
-	public String triggerTypesAsSendable()
-	{
-		String toReturn = "a";
-		
-		for (TriggerType type : triggerTypes)
-		{
-			toReturn += "," + type.ordinal();
-		}
-		
-		return toReturn;
-	}
-	
-	/**
-	 * Used for packet sending only. (PacketAddLevelHitboxTrigger)
-	 * 
-	 * @return
-	 */
-	public String triggersAsSendable()
-	{
-		String toReturn = "b";
-		
-		for (int trig : triggers)
-		{
-			toReturn += "," + trig;
-		}
-		
-		return toReturn;
-	}
-	
-	/**
-	 * Used for packet sending only. (PacketAddLevelHitboxTrigger)
-	 * 
-	 * @return
-	 */
-	public String chainTriggersAsSendable()
-	{
-		String toReturn = "c";
-		
-		for (int trig : outChainedTriggers)
-		{
-			toReturn += "," + trig;
-		}
-		
-		return toReturn;
+		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
+		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
 	}
 	
 	/**
@@ -152,15 +106,20 @@ public class HitboxTrigger extends InputType implements IEvent
 	}
 	
 	@Override
-	public List<Integer> getTriggers()
+	public List<Integer> getInTriggers()
 	{
-		return triggers;
+		return inTriggers;
 	}
 	
 	@Override
-	public List<Integer> getChainTriggers()
+	public List<Integer> getOutTriggers()
 	{
-		return outChainedTriggers;
+		return outTriggers;
+	}
+	
+	public List<TriggerType> getTriggerTypes()
+	{
+		return triggerTypes;
 	}
 	
 	@Override

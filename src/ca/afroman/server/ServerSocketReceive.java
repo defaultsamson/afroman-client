@@ -16,9 +16,7 @@ import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.IEventCounter;
 import ca.afroman.gfx.PointLight;
-import ca.afroman.legacy.packet.Packet;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
@@ -400,71 +398,139 @@ public class ServerSocketReceive extends DynamicThread
 					break;
 				case ADD_EVENT_HITBOX_TRIGGER:
 				{
-					String[] split = Packet.readContent(new byte[] {}).split(",");
-					LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
 					Level level = ServerGame.instance().getLevelByType(levelType);
 					
 					if (level != null)
 					{
-						logger().log(ALogType.WARNING, "Hell yeah I received that shit");
-						int id = IEventCounter.getIDCounter().getNext();
+						int id = buf.getInt();
+						int x = buf.getInt();
+						int y = buf.getInt();
+						int width = buf.getInt();
+						int height = buf.getInt();
 						
-						double x = Double.parseDouble(split[2]);
-						double y = Double.parseDouble(split[3]);
-						double width = Double.parseDouble(split[4]);
-						double height = Double.parseDouble(split[5]);
+						List<TriggerType> triggers = new ArrayList<TriggerType>();
 						
-						List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
-						List<Integer> triggers = new ArrayList<Integer>();
-						List<Integer> chainedTriggers = new ArrayList<Integer>();
-						
-						int mode = 0;
-						
-						// If there's further arguments
-						for (int i = 6; i < split.length; i++)
+						for (int i = buf.position(); i < buf.limit(); i++)
 						{
-							if (split[i].equals("a")) // triggerTypesAsSendable
+							if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
 							{
-								mode = 1;
+								buf.position(buf.position() + 2);
+								break;
 							}
-							else if (split[i].equals("b")) // triggersAsSendable
-							{
-								mode = 2;
-							}
-							else if (split[i].equals("c")) // chainTriggersAsSendable
-							{
-								mode = 3;
-							}
-							else if (mode != 0)
-							{
-								switch (mode)
-								{
-									case 1:
-										triggerTypes.add(TriggerType.fromOrdinal(Integer.parseInt(split[i])));
-										break;
-									case 2:
-										triggers.add(Integer.parseInt(split[i]));
-										break;
-									case 3:
-										chainedTriggers.add(Integer.parseInt(split[i]));
-										break;
-								}
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "No mode selected during ADD_EVENT_HITBOX_TRIGGER");
-							}
+							
+							triggers.add(TriggerType.fromOrdinal(buf.get()));
+							i++;
 						}
-						HitboxTrigger hitbox = new HitboxTrigger(id, x, y, width, height, triggerTypes, triggers, chainedTriggers);
 						
-						hitbox.addToLevel(level);
+						List<Integer> triggersIn = new ArrayList<Integer>();
+						
+						for (int i = buf.position(); i < buf.limit(); i++)
+						{
+							if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+							{
+								buf.position(buf.position() + 2);
+								break;
+							}
+							
+							triggersIn.add(buf.getInt());
+							i += ByteUtil.INT_BYTE_COUNT;
+						}
+						
+						List<Integer> triggersOut = new ArrayList<Integer>();
+						
+						for (int i = buf.position(); i < buf.limit(); i++)
+						{
+							if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+							{
+								// Don't bother furthering the position because this means that it's done
+								// buf.position(buf.position() + 2);
+								break;
+							}
+							
+							triggersOut.add(buf.getInt());
+							i += ByteUtil.INT_BYTE_COUNT;
+						}
+						
+						HitboxTrigger trig = new HitboxTrigger(id, x, y, width, height, triggers, triggersIn, triggersOut);
+						trig.addToLevel(level);
 					}
 					else
 					{
 						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
+					
 				}
 					break;
+				// case ADD_EVENT_HITBOX_TRIGGER:
+				// {
+				// String[] split = Packet.readContent(new byte[] {}).split(",");
+				// LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
+				// Level level = ServerGame.instance().getLevelByType(levelType);
+				//
+				// if (level != null)
+				// {
+				// logger().log(ALogType.WARNING, "Hell yeah I received that shit");
+				// int id = IEventCounter.getIDCounter().getNext();
+				//
+				// double x = Double.parseDouble(split[2]);
+				// double y = Double.parseDouble(split[3]);
+				// double width = Double.parseDouble(split[4]);
+				// double height = Double.parseDouble(split[5]);
+				//
+				// List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
+				// List<Integer> triggers = new ArrayList<Integer>();
+				// List<Integer> chainedTriggers = new ArrayList<Integer>();
+				//
+				// int mode = 0;
+				//
+				// // If there's further arguments
+				// for (int i = 6; i < split.length; i++)
+				// {
+				// if (split[i].equals("a")) // triggerTypesAsSendable
+				// {
+				// mode = 1;
+				// }
+				// else if (split[i].equals("b")) // triggersAsSendable
+				// {
+				// mode = 2;
+				// }
+				// else if (split[i].equals("c")) // chainTriggersAsSendable
+				// {
+				// mode = 3;
+				// }
+				// else if (mode != 0)
+				// {
+				// switch (mode)
+				// {
+				// case 1:
+				// triggerTypes.add(TriggerType.fromOrdinal(Integer.parseInt(split[i])));
+				// break;
+				// case 2:
+				// triggers.add(Integer.parseInt(split[i]));
+				// break;
+				// case 3:
+				// chainedTriggers.add(Integer.parseInt(split[i]));
+				// break;
+				// }
+				// }
+				// else
+				// {
+				// logger().log(ALogType.WARNING, "No mode selected during ADD_EVENT_HITBOX_TRIGGER");
+				// }
+				// }
+				// HitboxTrigger hitbox = new HitboxTrigger(id, x, y, width, height, triggerTypes, triggers, chainedTriggers);
+				//
+				// hitbox.addToLevel(level);
+				// }
+				// else
+				// {
+				// logger().log(ALogType.WARNING, "No level with type " + levelType);
+				// }
+				// }
+				// break;
 			}
 		}
 		else if (type == PacketType.REQUEST_CONNECTION)

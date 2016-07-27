@@ -22,10 +22,10 @@ import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiBuildModeLayer;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
-import ca.afroman.legacy.packet.PacketAddLevelHitboxTrigger;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
+import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketRemoveHitbox;
 import ca.afroman.packet.PacketRemovePointLight;
 import ca.afroman.packet.PacketRemoveTile;
@@ -573,12 +573,17 @@ public class ClientLevel extends Level
 						else if (currentBuildMode == 4)
 						{
 							List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
-							List<Integer> triggers = new ArrayList<Integer>();
-							List<Integer> chainedTriggers = new ArrayList<Integer>();
+							// List<Integer> triggers = new ArrayList<Integer>();
+							// List<Integer> chainedTriggers = new ArrayList<Integer>();
 							
 							triggerTypes.add(TriggerType.PLAYER_COLLIDE);
 							
-							PacketAddLevelHitboxTrigger pack = new PacketAddLevelHitboxTrigger(this.getType(), new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, triggers, chainedTriggers));
+							HitboxTrigger trig = new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, null, null);
+							
+							PacketAddTrigger pack = new PacketAddTrigger(this.getType(), trig);
+							ClientGame.instance().sockets().sender().sendPacket(pack);
+							
+							// PacketAddLevelHitboxTrigger pack = new PacketAddLevelHitboxTrigger(this.getType(), new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, triggers, chainedTriggers));
 							// TODO pack ClientGame.instance().sockets().sender().sendPacket(pack);
 						}
 						

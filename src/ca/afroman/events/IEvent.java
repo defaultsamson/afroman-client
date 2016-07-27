@@ -38,10 +38,10 @@ public interface IEvent
 	/**
 	 * @return the ID's that will trigger this.
 	 */
-	public List<Integer> getTriggers();
+	public List<Integer> getInTriggers();
 	
 	/**
 	 * @return the ID's that, when this is triggered, will pass on to other event in the current level.
 	 */
-	public List<Integer> getChainTriggers();
+	public List<Integer> getOutTriggers();
 }

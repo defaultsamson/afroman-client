@@ -290,7 +290,7 @@ public class Level
 		// TODO detect infinite loops?
 		for (IEvent event : getScriptedEvents())
 		{
-			for (int eventTrigger : event.getTriggers())
+			for (int eventTrigger : event.getInTriggers())
 			{
 				// If the event has the specified eventID
 				if (eventTrigger == inTrigger)
@@ -299,7 +299,7 @@ public class Level
 					event.onTrigger();
 					
 					// Pass trigger to the event's chain triggers
-					for (int eventChainTrigger : event.getChainTriggers())
+					for (int eventChainTrigger : event.getOutTriggers())
 					{
 						chainScriptedEvents(eventChainTrigger);
 					}
