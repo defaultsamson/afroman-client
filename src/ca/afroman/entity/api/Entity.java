@@ -6,9 +6,6 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.ServerPlayerEntity;
-import ca.afroman.entity.TriggerType;
-import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.IEvent;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketPlayerMove;
@@ -280,7 +277,7 @@ public class Entity implements ITickable
 		return false;
 	}
 	
-	private boolean isColliding(Hitbox... worldHitboxes)
+	public boolean isColliding(Hitbox... worldHitboxes)
 	{
 		for (Hitbox box : hitboxInLevel())
 		{
@@ -499,27 +496,26 @@ public class Entity implements ITickable
 			}
 		}
 		
-		for (IEvent event : level.getScriptedEvents())
-		{
-			if (event instanceof HitboxTrigger)
-			{
-				HitboxTrigger hEvent = (HitboxTrigger) event;
-				
-				if (this.isColliding(hEvent.getHitbox()))
-				{
-					// TODO separate server-side entity checks1
-					if (this instanceof ServerPlayerEntity || this instanceof ClientPlayerEntity)
-					{
-						
-						hEvent.attemptTrigger(TriggerType.PLAYER_COLLIDE);
-					}
-					else
-					{
-						hEvent.attemptTrigger(TriggerType.ENTITY_COLLIDE);
-					}
-				}
-			}
-		}
+		// for (IEvent event : level.getScriptedEvents())
+		// {
+		// if (event instanceof HitboxTrigger)
+		// {
+		// HitboxTrigger hEvent = (HitboxTrigger) event;
+		//
+		// if (this.isColliding(hEvent.getHitbox())) hEvent.setPressed(TriggerType.PLAYER_COLLIDE);
+		//
+		// // // TODO separate server-side entity checks1
+		// // if (this instanceof ServerPlayerEntity || this instanceof ClientPlayerEntity)
+		// // {
+		// //
+		// // hEvent.attemptTrigger(TriggerType.PLAYER_COLLIDE);
+		// // }
+		// // else
+		// // {
+		// // hEvent.attemptTrigger(TriggerType.ENTITY_COLLIDE);
+		// // }
+		// }
+		// }
 		
 		// Used to send packets from the server to the client to update the player direction after it's stopped moving to stop the animation
 		boolean sendPacket = false;

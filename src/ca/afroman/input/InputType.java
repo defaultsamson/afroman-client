@@ -6,7 +6,7 @@ public class InputType
 	protected boolean filteredPress = false;
 	protected boolean filteredRelease = false;
 	
-	protected void setPressed(boolean isPressed)
+	public void setPressed(boolean isPressed)
 	{
 		filteredPress = (!pressed && isPressed);
 		filteredRelease = (pressed && !isPressed);

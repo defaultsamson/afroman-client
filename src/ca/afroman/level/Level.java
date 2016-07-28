@@ -78,6 +78,11 @@ public class Level
 		{
 			entity.tick();
 		}
+		
+		for (IEvent event : getScriptedEvents())
+		{
+			event.tick();
+		}
 	}
 	
 	public static Level fromFile(LevelType levelType)

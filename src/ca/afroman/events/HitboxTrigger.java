@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.entity.TriggerType;
+import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
@@ -30,25 +31,6 @@ public class HitboxTrigger extends InputType implements IEvent
 		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-	}
-	
-	/**
-	 * Trigger this ScriptedEvent using a trigger type. It this scripted
-	 * event is set to be able to be triggered by the TriggerType <b>type</b>
-	 * then it will invoke this event's onTriggered() method.
-	 * 
-	 * @param type the TriggerType
-	 */
-	public void attemptTrigger(TriggerType type)
-	{
-		for (TriggerType trigger : triggerTypes)
-		{
-			if (trigger == type)
-			{
-				onTrigger();
-				return;
-			}
-		}
 	}
 	
 	public Hitbox getHitbox()
@@ -123,11 +105,32 @@ public class HitboxTrigger extends InputType implements IEvent
 	}
 	
 	@Override
+	public void tick()
+	{
+		if (this.triggerTypes.contains(TriggerType.PLAYER_COLLIDE))
+		{
+			boolean hasPressed = false;
+			
+			for (Entity player : this.hitbox.getLevel().getPlayers())
+			{
+				if (player.isColliding(this.getHitbox()))
+				{
+					this.setPressed(true);
+					hasPressed = true;
+					break;
+				}
+			}
+			
+			if (!hasPressed) this.setPressed(false);
+		}
+		
+		if (this.isPressedFiltered()) ServerGame.instance().logger().log(ALogType.DEBUG, "Triggered: ");
+	}
+	
+	@Override
 	public void onTrigger()
 	{
-		this.setPressed(true);
 		
-		if (this.isPressedFiltered()) ServerGame.instance().logger().log(ALogType.DEBUG, "#Triggered1");
 	}
 	
 	@Override

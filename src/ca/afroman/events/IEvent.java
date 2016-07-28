@@ -5,6 +5,12 @@ import java.util.List;
 public interface IEvent
 {
 	/**
+	 * Only ticks after triggered.
+	 */
+	public void tick();
+	
+	/**
+	 * Triggers
 	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="Smiley face" height="120" width="120">
 	 * <a href="https://i.imgur.com/dNVvntX.gif">ono</a>
 	 */
