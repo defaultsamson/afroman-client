@@ -1,10 +1,12 @@
-package ca.afroman.gui;
+package ca.afroman.gui.build;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.gui.GuiScreen;
+import ca.afroman.gui.GuiTextButton;
 import ca.afroman.level.ClientLevel;
 
-public class GuiBuildModeLayer extends GuiScreen
+public class GuiTileEditor extends GuiScreen
 {
 	private GuiTextButton layer0edit;
 	private GuiTextButton layer1edit;
@@ -22,7 +24,7 @@ public class GuiBuildModeLayer extends GuiScreen
 	
 	private GuiTextButton grid;
 	
-	public GuiBuildModeLayer()
+	public GuiTileEditor()
 	{
 		super(null);
 	}

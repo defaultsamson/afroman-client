@@ -29,6 +29,7 @@ import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.HitboxTrigger;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMapState;
 import ca.afroman.gfx.PointLight;
@@ -64,7 +65,7 @@ public class ClientGame extends DynamicTickRenderThread
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final short VERSION = 29;
+	public static final short VERSION = 30;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	public static final int RECEIVE_PACKET_BUFFER_LIMIT = 128;
@@ -273,30 +274,6 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		music.startLoop();
-		
-		// short test1 = -5383;
-		// System.out.println("Test: " + test1);
-		// byte[] converted = ByteUtil.shortAsBytes(test1);
-		// System.out.print("Conv: ");
-		// for (byte hn : converted)
-		// System.out.print(", " + hn);
-		// System.out.println();
-		// short back = ByteUtil.shortFromBytes(converted);
-		// System.out.println("Back: " + back);
-		
-		// double test = -53245432.2423;
-		// System.out.println("Test: " + test);
-		// byte[] converted = ByteUtil.doubleAsBytes(test);
-		// System.out.print("Conv: ");
-		// for (byte hn : converted)
-		// System.out.print(", " + hn);
-		// System.out.println();
-		// System.out.print("Strn: ");
-		// for (byte hn : ("" + test).getBytes())
-		// System.out.print(", " + hn);
-		// System.out.println();
-		// double back = ByteUtil.doubleFromBytes(converted);
-		// System.out.println("Back: " + back);
 	}
 	
 	/**
@@ -818,6 +795,30 @@ public class ClientGame extends DynamicTickRenderThread
 					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
 					
 					sockets().sender().removePacket(sentID);
+				}
+					break;
+				case ADD_EVENT_HITBOX_TRIGGER:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						int x = buf.getInt();
+						int y = buf.getInt();
+						int width = buf.getInt();
+						int height = buf.getInt();
+						
+						HitboxTrigger trig = new HitboxTrigger(id, x, y, width, height, null, null, null);
+						trig.addToLevel(level);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
 				}
 					break;
 			}

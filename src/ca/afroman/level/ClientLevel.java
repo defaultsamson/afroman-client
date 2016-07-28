@@ -11,15 +11,16 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.YComparator;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.IEvent;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
-import ca.afroman.gui.GuiBuildModeLayer;
+import ca.afroman.gui.build.GuiHitboxTriggerEditor;
+import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.packet.PacketAddHitbox;
@@ -187,7 +188,6 @@ public class ClientLevel extends Level
 		
 		// Draws out the hitboxes
 		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == 3 && ClientGame.instance().isBuildMode()))
-		
 		{
 			for (Hitbox box : this.getHitboxes())
 			{
@@ -235,6 +235,26 @@ public class ClientLevel extends Level
 			}
 		}
 		
+		// Draws out scripted events
+		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == 4 && ClientGame.instance().isBuildMode()))
+		{
+			Paint oldPaint = renderTo.getGraphics().getPaint();
+			renderTo.getGraphics().setPaint(new Color(0.3F, 0.3F, 1F, 1F)); // Blue
+			
+			for (IEvent e : getScriptedEvents())
+			{
+				renderTo.getGraphics().drawRect(worldToScreenX(e.getX()), worldToScreenY(e.getY()), (int) e.getWidth() - 1, (int) e.getHeight() - 1);
+			}
+			
+			if (currentBuildMode == 4 && hitboxClickCount == 1)
+			{
+				renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
+				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
+			}
+			
+			renderTo.getGraphics().setPaint(oldPaint);
+		}
+		
 		// Draws the building hitbox, cursor asset, the grid, and the tooltips
 		if (ClientGame.instance().isBuildMode())
 		{
@@ -275,16 +295,6 @@ public class ClientLevel extends Level
 			{
 				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
 			}
-			else if (currentBuildMode == 4 && hitboxClickCount == 1)
-			{
-				Paint oldPaint = renderTo.getGraphics().getPaint();
-				renderTo.getGraphics().setPaint(new Color(0.3F, 0.3F, 1F, 1F)); // Blue
-				// renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
-				
-				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
-				
-				renderTo.getGraphics().setPaint(oldPaint);
-			}
 			
 			if (timeOnTool < MAX_TOOLTIP_TIME)
 			{
@@ -312,7 +322,7 @@ public class ClientLevel extends Level
 						text1 = "Scripted Events";
 						text2 = "Click to place both corners";
 						text3 = "Right click to cancel corner";
-						text4 = "Then follow GUI instructions";
+						text4 = "Right click box to edit";
 						break;
 				}
 				
@@ -366,21 +376,24 @@ public class ClientLevel extends Level
 			
 			int speed = (isShifting ? 5 : 1);
 			
-			if (ClientGame.instance().input().up.isPressed())
+			if (ClientGame.instance().getCurrentScreen() == null || ClientGame.instance().getCurrentScreen() instanceof GuiTileEditor)
 			{
-				yOffset -= speed;
-			}
-			if (ClientGame.instance().input().down.isPressed())
-			{
-				yOffset += speed;
-			}
-			if (ClientGame.instance().input().left.isPressed())
-			{
-				xOffset -= speed;
-			}
-			if (ClientGame.instance().input().right.isPressed())
-			{
-				xOffset += speed;
+				if (ClientGame.instance().input().up.isPressed())
+				{
+					yOffset -= speed;
+				}
+				if (ClientGame.instance().input().down.isPressed())
+				{
+					yOffset += speed;
+				}
+				if (ClientGame.instance().input().left.isPressed())
+				{
+					xOffset -= speed;
+				}
+				if (ClientGame.instance().input().right.isPressed())
+				{
+					xOffset += speed;
+				}
 			}
 			
 			if (ClientGame.instance().input().e.isPressedFiltered())
@@ -408,9 +421,9 @@ public class ClientLevel extends Level
 			// Placing and removing blocks
 			if (currentBuildMode == 1)
 			{
-				if (!(ClientGame.instance().getCurrentScreen() instanceof GuiBuildModeLayer))
+				if (!(ClientGame.instance().getCurrentScreen() instanceof GuiTileEditor))
 				{
-					ClientGame.instance().setCurrentScreen(new GuiBuildModeLayer());
+					ClientGame.instance().setCurrentScreen(new GuiTileEditor());
 				}
 				
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
@@ -514,7 +527,7 @@ public class ClientLevel extends Level
 			}
 			else
 			{
-				if (ClientGame.instance().getCurrentScreen() instanceof GuiBuildModeLayer)
+				if (ClientGame.instance().getCurrentScreen() instanceof GuiTileEditor)
 				{
 					ClientGame.instance().setCurrentScreen(null);
 				}
@@ -553,15 +566,26 @@ public class ClientLevel extends Level
 			}
 			
 			// HitBox mode
+			if (currentBuildMode != 4)
+			{
+				if (ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor)
+				{
+					ClientGame.instance().setCurrentScreen(null);
+				}
+			}
+			
 			if (currentBuildMode == 3 || currentBuildMode == 4)
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
 					if (hitboxClickCount == 0)
 					{
-						hitboxX1 = screenToWorldX(ClientGame.instance().input().getMouseX());
-						hitboxY1 = screenToWorldY(ClientGame.instance().input().getMouseY());
-						hitboxClickCount = 1;
+						if (ClientGame.instance().getCurrentScreen() == null)
+						{
+							hitboxX1 = screenToWorldX(ClientGame.instance().input().getMouseX());
+							hitboxY1 = screenToWorldY(ClientGame.instance().input().getMouseY());
+							hitboxClickCount = 1;
+						}
 					}
 					else if (hitboxClickCount == 1)
 					{
@@ -572,19 +596,8 @@ public class ClientLevel extends Level
 						}
 						else if (currentBuildMode == 4)
 						{
-							List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
-							// List<Integer> triggers = new ArrayList<Integer>();
-							// List<Integer> chainedTriggers = new ArrayList<Integer>();
-							
-							triggerTypes.add(TriggerType.PLAYER_COLLIDE);
-							
-							HitboxTrigger trig = new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, null, null);
-							
-							PacketAddTrigger pack = new PacketAddTrigger(this.getType(), trig);
+							PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) hitboxX, (int) hitboxY, (int) hitboxWidth, (int) hitboxHeight);
 							ClientGame.instance().sockets().sender().sendPacket(pack);
-							
-							// PacketAddLevelHitboxTrigger pack = new PacketAddLevelHitboxTrigger(this.getType(), new HitboxTrigger(-1, hitboxX, hitboxY, hitboxWidth, hitboxHeight, triggerTypes, triggers, chainedTriggers));
-							// TODO pack ClientGame.instance().sockets().sender().sendPacket(pack);
 						}
 						
 						hitboxClickCount = 0;
@@ -611,7 +624,21 @@ public class ClientLevel extends Level
 						}
 						else if (currentBuildMode == 4)
 						{
-							// TODO
+							if (ClientGame.instance().getCurrentScreen() == null)
+							{
+								IEvent event = this.getScriptedEvent(screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
+								
+								if (event != null)
+								{
+									if (event instanceof HitboxTrigger)
+									{
+										if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
+										{
+											ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -655,7 +682,12 @@ public class ClientLevel extends Level
 			timeOnTool = 0;
 			hitboxClickCount = 0;
 			
-			if (ClientGame.instance().getCurrentScreen() instanceof GuiBuildModeLayer)
+			if (ClientGame.instance().getCurrentScreen() instanceof GuiTileEditor)
+			{
+				ClientGame.instance().setCurrentScreen(null);
+			}
+			
+			if (ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor)
 			{
 				ClientGame.instance().setCurrentScreen(null);
 			}

@@ -1,4 +1,4 @@
-package ca.afroman.legacy.packet;
+package ca.afroman.packet.legacy;
 
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketType;

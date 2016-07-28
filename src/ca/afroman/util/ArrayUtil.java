@@ -45,4 +45,9 @@ public class ArrayUtil
 		
 		return ret;
 	}
+	
+	public static boolean isEmpty(String[] arr)
+	{
+		return !(arr.length > 0 && (arr.length == 1 ? !arr[0].equals("") : true));
+	}
 }

@@ -10,10 +10,21 @@ import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
 import ca.afroman.log.ALogType;
 import ca.afroman.server.ServerGame;
+import ca.afroman.util.IDCounter;
 
 public class HitboxTrigger extends InputType implements IEvent
 {
-	private static int nextAvailableID = 0;
+	private static IDCounter idCounter;
+	
+	public static IDCounter getIDCounter()
+	{
+		if (idCounter == null)
+		{
+			idCounter = new IDCounter();
+		}
+		
+		return idCounter;
+	}
 	
 	private List<TriggerType> triggerTypes;
 	private List<Integer> inTriggers;
@@ -67,30 +78,15 @@ public class HitboxTrigger extends InputType implements IEvent
 		}
 	}
 	
-	/**
-	 * @return the next available ID for use. (Ignored previous ID's that are now free for use. TODO?)
-	 */
-	public static int getNextAvailableID()
-	{
-		int toReturn = nextAvailableID;
-		nextAvailableID++;
-		return toReturn;
-	}
-	
-	/**
-	 * Resets the nextAvailableID so that it starts counting from 0 again.
-	 * <p>
-	 * <b>WARNING: </b>only intended for use on server shutdowns.
-	 */
-	public static void resetNextAvailableID()
-	{
-		nextAvailableID = 0;
-	}
-	
 	@Override
 	public List<Integer> getInTriggers()
 	{
 		return inTriggers;
+	}
+	
+	public void setInTriggers(List<Integer> trigs)
+	{
+		inTriggers = trigs;
 	}
 	
 	@Override
@@ -99,9 +95,19 @@ public class HitboxTrigger extends InputType implements IEvent
 		return outTriggers;
 	}
 	
+	public void setOutTriggers(List<Integer> trigs)
+	{
+		outTriggers = trigs;
+	}
+	
 	public List<TriggerType> getTriggerTypes()
 	{
 		return triggerTypes;
+	}
+	
+	public void setTriggerTypes(List<TriggerType> types)
+	{
+		triggerTypes = types;
 	}
 	
 	@Override

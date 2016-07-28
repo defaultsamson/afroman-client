@@ -16,6 +16,7 @@ import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.IEvent;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
@@ -27,6 +28,7 @@ import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
+import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketRemoveHitbox;
@@ -331,7 +333,6 @@ public class ServerSocketReceive extends DynamicThread
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
 						PointLight light = new PointLight(PointLight.getIDCounter().getNext(), x, y, radius);
-						System.out.println("Creating Server-Side Light: (" + level.getType() + ", " + light.getID() + ")");
 						light.addToLevel(level);
 						manager.sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 					}
@@ -352,8 +353,6 @@ public class ServerSocketReceive extends DynamicThread
 					{
 						int id = buf.getInt();
 						
-						System.out.println("Removing Server-Side Light: (" + level.getType() + ", " + id + ")");
-						
 						PointLight light = level.getLight(id);
 						
 						if (light != null)
@@ -364,7 +363,7 @@ public class ServerSocketReceive extends DynamicThread
 						}
 						else
 						{
-							System.out.println("Could not find Server-Side Light");
+							logger().log(ALogType.WARNING, "Could not find light " + id);
 						}
 					}
 					else
@@ -405,63 +404,103 @@ public class ServerSocketReceive extends DynamicThread
 					
 					if (level != null)
 					{
-						int id = buf.getInt();
+						int id = HitboxTrigger.getIDCounter().getNext();
+						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
 						int x = buf.getInt();
 						int y = buf.getInt();
 						int width = buf.getInt();
 						int height = buf.getInt();
 						
-						List<TriggerType> triggers = new ArrayList<TriggerType>();
-						
-						for (int i = buf.position(); i < buf.limit(); i++)
-						{
-							if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-							{
-								buf.position(buf.position() + 2);
-								break;
-							}
-							
-							triggers.add(TriggerType.fromOrdinal(buf.get()));
-							i++;
-						}
-						
-						List<Integer> triggersIn = new ArrayList<Integer>();
-						
-						for (int i = buf.position(); i < buf.limit(); i++)
-						{
-							if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-							{
-								buf.position(buf.position() + 2);
-								break;
-							}
-							
-							triggersIn.add(buf.getInt());
-							i += ByteUtil.INT_BYTE_COUNT;
-						}
-						
-						List<Integer> triggersOut = new ArrayList<Integer>();
-						
-						for (int i = buf.position(); i < buf.limit(); i++)
-						{
-							if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-							{
-								// Don't bother furthering the position because this means that it's done
-								// buf.position(buf.position() + 2);
-								break;
-							}
-							
-							triggersOut.add(buf.getInt());
-							i += ByteUtil.INT_BYTE_COUNT;
-						}
-						
-						HitboxTrigger trig = new HitboxTrigger(id, x, y, width, height, triggers, triggersIn, triggersOut);
+						HitboxTrigger trig = new HitboxTrigger(id, x, y, width, height, null, null, null);
 						trig.addToLevel(level);
+						manager.sender().sendPacketToAllClients(new PacketAddTrigger(levelType, id, x, y, width, height));
 					}
 					else
 					{
 						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
+				}
+					break;
+				case EDIT_EVENT_HITBOX_TRIGGER:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					Level level = ServerGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						
+						IEvent eHitbox = level.getScriptedEvent(id);
+						
+						if (eHitbox != null)
+						{
+							if (eHitbox instanceof HitboxTrigger)
+							{
+								HitboxTrigger hitbox = (HitboxTrigger) eHitbox;
+								
+								List<TriggerType> triggers = new ArrayList<TriggerType>();
+								
+								for (int i = buf.position(); i < buf.limit(); i++)
+								{
+									if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+									{
+										buf.position(buf.position() + 2);
+										break;
+									}
+									
+									triggers.add(TriggerType.fromOrdinal(buf.get()));
+									i++;
+								}
+								
+								List<Integer> triggersIn = new ArrayList<Integer>();
+								
+								for (int i = buf.position(); i < buf.limit(); i++)
+								{
+									if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+									{
+										buf.position(buf.position() + 2);
+										break;
+									}
+									
+									triggersIn.add(buf.getInt());
+									i += ByteUtil.INT_BYTE_COUNT;
+								}
+								
+								List<Integer> triggersOut = new ArrayList<Integer>();
+								
+								for (int i = buf.position(); i < buf.limit(); i++)
+								{
+									if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
+									{
+										// Don't bother furthering the position because this means that it's done
+										// buf.position(buf.position() + 2);
+										break;
+									}
+									
+									triggersOut.add(buf.getInt());
+									i += ByteUtil.INT_BYTE_COUNT;
+								}
+								
+								hitbox.setTriggerTypes(triggers);
+								hitbox.setInTriggers(triggersIn);
+								hitbox.setOutTriggers(triggersOut);
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No event with ID " + id);
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
 				}
 					break;
 				// case ADD_EVENT_HITBOX_TRIGGER:
