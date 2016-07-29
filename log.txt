@@ -1,1 +1,1 @@
-[2016-06-28/14:45:54] [Client/Game] [DEBUG] Game Loaded. Took 0.933 seconds
+[2016-06-29/12:50:37] [Client/Game] [DEBUG] Game Loaded. Took 0.266 seconds

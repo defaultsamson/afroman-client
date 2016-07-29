@@ -40,13 +40,13 @@ public class ServerGame extends DynamicTickThread
 	
 	private ServerSocketManager socketManager;
 	
-	public ServerGame(String password)
+	public ServerGame(String password, String port)
 	{
 		super(newDefaultThreadGroupInstance(), "Game", 60);
 		
 		if (game == null) game = this;
 		
-		socketManager = new ServerSocketManager(password);
+		socketManager = new ServerSocketManager(password, port);
 	}
 	
 	public void loadGame()

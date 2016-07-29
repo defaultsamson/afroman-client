@@ -10,7 +10,6 @@ import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
-import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicTickThread;
 
 public class ClientSocketSend extends DynamicTickThread
@@ -122,7 +121,7 @@ public class ClientSocketSend extends DynamicTickThread
 			if (con != null && con.getIPAddress() != null)
 			{
 				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
-				sendData(packet.getData(), con.getIPAddress());
+				sendData(packet.getData(), con.getIPAddress(), con.getPort());
 			}
 		}
 	}
@@ -136,11 +135,11 @@ public class ClientSocketSend extends DynamicTickThread
 	 * @deprecated Still works to send raw data, but sendPacket() is preferred.
 	 */
 	@Deprecated
-	private void sendData(byte[] data, InetAddress address)
+	private void sendData(byte[] data, InetAddress address, int port)
 	{
 		if (address != null)
 		{
-			DatagramPacket packet = new DatagramPacket(data, data.length, address, ServerSocketManager.PORT);
+			DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
 			
 			try
 			{

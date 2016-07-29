@@ -5,6 +5,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.client.Role;
 import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.log.ALogType;
@@ -18,7 +19,7 @@ import ca.afroman.packet.PacketUpdatePlayerList;
 public class ServerSocketManager implements IDynamicRunning
 {
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
-	public static final int PORT = 2413;
+	public static final int DEFAULT_PORT = 2413;
 	public static final int MAX_PLAYERS = 8;
 	
 	private static ThreadGroup thread = null;
@@ -38,13 +39,33 @@ public class ServerSocketManager implements IDynamicRunning
 	private ServerSocketReceive rSocket;
 	private ServerSocketSend sSocket;
 	
-	public ServerSocketManager(String password)
+	public ServerSocketManager(String password, String port)
 	{
 		playerList = new ArrayList<IPConnectedPlayer>();
 		
+		int thyPortholio = DEFAULT_PORT;
+		
+		if (port.length() > 0)
+		{
+			try
+			{
+				int newPort = Integer.parseInt(port);
+				
+				// Checks if the given port is out of range
+				if (!(newPort < 0 || newPort > 0xFFFF)) thyPortholio = newPort;
+			}
+			catch (NumberFormatException e)
+			{
+				ServerGame.instance().logger().log(ALogType.WARNING, "Failed to parse port", e);
+			}
+		}
+		
+		// Sets the port to whatever is now set
+		ClientGame.instance().setPort("" + thyPortholio);
+		
 		try
 		{
-			this.socket = new DatagramSocket(PORT);
+			this.socket = new DatagramSocket(thyPortholio);
 		}
 		catch (SocketException e)
 		{

@@ -106,6 +106,7 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	private String username = "";
 	private String password = "";
+	private String port = "";
 	private String typedIP = "";
 	
 	private ClientSocketManager socketManager;
@@ -434,6 +435,7 @@ public class ClientGame extends DynamicTickRenderThread
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, HEIGHT - 9, "V");
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 9, HEIGHT - 9, "" + VERSION);
+			
 			// TODO Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
 			// TODO Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
 		}
@@ -847,7 +849,7 @@ public class ClientGame extends DynamicTickRenderThread
 		frame.setUndecorated(isFullScreen);
 		
 		frame.getContentPane().setBackground(Color.black);
-		frame.getContentPane().add(canvas, BorderLayout.CENTER); // TODO This crashes the game if the window isn't on the primary screen (Maybe? Maybe not? test this)
+		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.pack();
 		frame.setResizable(!isFullScreen);
 		frame.setLocationRelativeTo(null);
@@ -950,6 +952,16 @@ public class ClientGame extends DynamicTickRenderThread
 		return password;
 	}
 	
+	public void setPort(String newPort)
+	{
+		this.port = newPort;
+	}
+	
+	public String getPort()
+	{
+		return port;
+	}
+	
 	public void setServerIP(String newIP)
 	{
 		this.typedIP = newIP;
@@ -1010,7 +1022,28 @@ public class ClientGame extends DynamicTickRenderThread
 		render();
 		
 		socketManager = new ClientSocketManager();
-		socketManager.setServerIP(getServerIP(), ServerSocketManager.PORT); // TODO allow selectable port
+		
+		int thyPortholio = ServerSocketManager.DEFAULT_PORT;
+		
+		if (port.length() > 0)
+		{
+			try
+			{
+				int newPort = Integer.parseInt(port);
+				
+				// Checks if the given port is out of range
+				if (!(newPort < 0 || newPort > 0xFFFF)) thyPortholio = newPort;
+			}
+			catch (NumberFormatException e)
+			{
+				logger().log(ALogType.WARNING, "Failed to parse port", e);
+			}
+		}
+		
+		// Sets the port to whatever is now set
+		setPort("" + thyPortholio);
+		
+		socketManager.setServerIP(getServerIP(), thyPortholio);
 		socketManager.startThis();
 		socketManager.sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
 	}
@@ -1079,6 +1112,15 @@ public class ClientGame extends DynamicTickRenderThread
 	public void updatePlayerList()
 	{
 		this.updatePlayerList = true;
+	}
+	
+	public ClientPlayerEntity getThisPlayer()
+	{
+		Role role = sockets().getServerConnection().getRole();
+		
+		if (role != Role.SPECTATOR) return getPlayer(role);
+		else
+			return null;
 	}
 	
 	/**

@@ -9,6 +9,7 @@ import ca.afroman.entity.TriggerType;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.gui.GuiTextField;
+import ca.afroman.input.TypingMode;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.util.ArrayUtil;
@@ -40,12 +41,15 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		triggers = new GuiTextField(this, 20, 28, width);
 		triggers.setFocussed();
+		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		buttons.add(triggers);
 		
 		inTriggers = new GuiTextField(this, 20, 58, width);
+		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		buttons.add(inTriggers);
 		
 		outTriggers = new GuiTextField(this, 20, 88, width);
+		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		buttons.add(outTriggers);
 		
 		cancel = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");

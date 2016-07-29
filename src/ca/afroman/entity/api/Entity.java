@@ -15,10 +15,9 @@ import ca.afroman.util.IDCounter;
 
 public class Entity implements ITickable
 {
-	
 	private static final boolean PLAYER_COLLISION = false;
 	private static final boolean HITBOX_COLLISION = true;
-	private static final boolean ENTITY_COLLISION = true;
+	private static final boolean ENTITY_COLLISION = false;
 	
 	private static IDCounter idCounter;
 	
@@ -495,27 +494,6 @@ public class Entity implements ITickable
 				deltaY = 0;
 			}
 		}
-		
-		// for (IEvent event : level.getScriptedEvents())
-		// {
-		// if (event instanceof HitboxTrigger)
-		// {
-		// HitboxTrigger hEvent = (HitboxTrigger) event;
-		//
-		// if (this.isColliding(hEvent.getHitbox())) hEvent.setPressed(TriggerType.PLAYER_COLLIDE);
-		//
-		// // // TODO separate server-side entity checks1
-		// // if (this instanceof ServerPlayerEntity || this instanceof ClientPlayerEntity)
-		// // {
-		// //
-		// // hEvent.attemptTrigger(TriggerType.PLAYER_COLLIDE);
-		// // }
-		// // else
-		// // {
-		// // hEvent.attemptTrigger(TriggerType.ENTITY_COLLIDE);
-		// // }
-		// }
-		// }
 		
 		// Used to send packets from the server to the client to update the player direction after it's stopped moving to stop the animation
 		boolean sendPacket = false;

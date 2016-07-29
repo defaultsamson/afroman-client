@@ -7,11 +7,16 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.input.TypingMode;
 import ca.afroman.server.ServerGame;
 import ca.afroman.server.ServerSocketManager;
 
 public class GuiHostServer extends GuiScreen
 {
+	private static String userText = "";
+	private static String passText = "";
+	private static String portText = "";
+	
 	private SpriteAnimation afroMan;
 	private SpriteAnimation player2;
 	private LightMap lightmap;
@@ -19,6 +24,7 @@ public class GuiHostServer extends GuiScreen
 	
 	private GuiTextField username;
 	private GuiTextField password;
+	private GuiTextField port;
 	
 	private GuiTextButton hostButton;
 	
@@ -37,25 +43,30 @@ public class GuiHostServer extends GuiScreen
 		light = new FlickeringLight(-1, ClientGame.WIDTH / 2, 38, 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
-		username.setText(ClientGame.instance().getUsername());
+		username.setText(userText);
 		username.setMaxLength(11);
-		username.setAllowPunctuation(false);
+		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		username.setFocussed();
-		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 112);
-		password.setText(ClientGame.instance().getPassword());
-		password.setMaxLength(11);
-		password.setAllowPunctuation(false);
 		
-		ClientGame.instance().setServerIP(ServerSocketManager.IPv4_LOCALHOST);
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 72);
+		password.setText(passText);
+		password.setMaxLength(11);
+		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
+		
+		port = new GuiTextField(this, (ClientGame.WIDTH / 2) - 37, 90, 36);
+		port.setText(portText);
+		port.setMaxLength(5);
+		port.setTypingMode(TypingMode.ONLY_NUMBERS);
 		
 		buttons.add(username);
 		buttons.add(password);
+		buttons.add(port);
 		
-		hostButton = new GuiTextButton(this, 1, 150, 62, 72, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
+		hostButton = new GuiTextButton(this, 1, 144, 62, 72, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
 		hostButton.setEnabled(!this.username.getText().isEmpty());
 		
 		buttons.add(hostButton);
-		buttons.add(new GuiTextButton(this, 200, 150, 90, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
+		buttons.add(new GuiTextButton(this, 200, 144, 90, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	@Override
@@ -76,7 +87,8 @@ public class GuiHostServer extends GuiScreen
 		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Host A Server");
 		
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 62 - 10, "Username");
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 90 - 10, "Server Pass");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 78, 90 - 10, "Pass");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 19, 90 - 10, "Port");
 	}
 	
 	@Override
@@ -97,9 +109,13 @@ public class GuiHostServer extends GuiScreen
 			{
 				password.setFocussed();
 			}
+			else if (password.isFocussed())
+			{
+				port.setFocussed();
+			}
 			else
 			{
-				password.setFocussed(false);
+				username.setFocussed();
 			}
 		}
 		
@@ -122,12 +138,15 @@ public class GuiHostServer extends GuiScreen
 	
 	private void hostServer()
 	{
-		ClientGame.instance().setUsername(this.username.getText());
+		ClientGame.instance().setUsername(userText);
+		ClientGame.instance().setPassword(passText);
+		ClientGame.instance().setPort(portText);
+		ClientGame.instance().setServerIP(ServerSocketManager.IPv4_LOCALHOST);
 		
 		// If not already hosting
 		if (!ClientGame.instance().isHostingServer())
 		{
-			if (ServerGame.instance() == null) new ServerGame(this.password.getText());
+			if (ServerGame.instance() == null) new ServerGame(passText, portText);
 			// Start that server thread
 			ServerGame.instance().startThis();
 		}
@@ -151,7 +170,19 @@ public class GuiHostServer extends GuiScreen
 	{
 		this.hostButton.setEnabled(!this.username.getText().isEmpty());
 		
-		ClientGame.instance().setUsername(this.username.getText());
-		ClientGame.instance().setPassword(this.password.getText());
+		userText = this.username.getText();
+		passText = this.password.getText();
+		portText = this.port.getText();
+		
+		try
+		{
+			int port = Integer.parseInt(portText);
+			
+			if (port < 0 || port > 0xFFFF) this.hostButton.setEnabled(false);
+		}
+		catch (NumberFormatException e)
+		{
+			
+		}
 	}
 }

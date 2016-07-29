@@ -32,6 +32,7 @@ public class GuiLobby extends GuiScreen
 	private FlickeringLight light2;
 	
 	private String lanIP;
+	private String port;
 	
 	private GuiTextButton startButton;
 	private GuiTextButton stopButton;
@@ -76,6 +77,8 @@ public class GuiLobby extends GuiScreen
 			{
 				ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not resolve local host address", e);
 			}
+			
+			port = ClientGame.instance().getPort();
 		}
 		// Draw a leave server button
 		else
@@ -173,7 +176,7 @@ public class GuiLobby extends GuiScreen
 		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN IP: " + lanIP);
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN: " + lanIP + ":" + port);
 		}
 		else
 		{

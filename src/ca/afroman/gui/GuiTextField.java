@@ -6,6 +6,8 @@ import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.input.InputHandler;
+import ca.afroman.input.TypingKeyWrapper;
+import ca.afroman.input.TypingMode;
 
 public class GuiTextField extends GuiButton
 {
@@ -13,7 +15,7 @@ public class GuiTextField extends GuiButton
 	private int maxLength = 18;
 	private String text = "";
 	private boolean isFocussed = false;
-	private boolean allowPunc = true;
+	private TypingMode mode = TypingMode.FULL;
 	
 	public GuiTextField(GuiScreen screen, int x, int y, int width)
 	{
@@ -57,6 +59,14 @@ public class GuiTextField extends GuiButton
 			InputHandler input = ClientGame.instance().input();
 			boolean isShifting = input.shift.isPressed() || input.capsLock.isToggled();
 			
+			for (TypingKeyWrapper t : TypingMode.getKeyModes())
+			{
+				if (t.getKey().isPressedTyping())
+				{
+					typeChar(t.getTypedChar(isShifting, mode));
+				}
+			}
+			
 			if (input.backspace.isPressedTyping())
 			{
 				if (text.length() > 0)
@@ -69,490 +79,6 @@ public class GuiTextField extends GuiButton
 			if (input.backspace.isPressed())
 			{
 				letterTyped = true;
-			}
-			
-			// All the punctuation
-			if (allowPunc)
-			{
-				if (input.space.isPressedTyping())
-				{
-					typeChar(" ");
-				}
-				if (input.period.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar(">");
-					}
-					else
-					{
-						typeChar(".");
-					}
-				}
-				if (input.comma.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar("<");
-					}
-					else
-					{
-						typeChar(",");
-					}
-				}
-				if (input.slash.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar("?");
-					}
-					else
-					{
-						typeChar("/");
-					}
-				}
-				if (input.backslash.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar("|");
-					}
-					else
-					{
-						typeChar("\\");
-					}
-				}
-				if (input.semicolon.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar(":");
-					}
-					else
-					{
-						typeChar(";");
-					}
-				}
-				if (input.hyphen.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar("_");
-					}
-					else
-					{
-						typeChar("-");
-					}
-				}
-				if (input.equals.isPressedTyping())
-				{
-					if (isShifting)
-					{
-						typeChar("+");
-					}
-					else
-					{
-						typeChar("=");
-					}
-				}
-			}
-			
-			if (input.zero.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar(")");
-				}
-				else
-				{
-					typeChar("0");
-				}
-			}
-			if (input.one.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("!");
-				}
-				else
-				{
-					typeChar("1");
-				}
-			}
-			if (input.two.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("@");
-				}
-				else
-				{
-					typeChar("2");
-				}
-			}
-			if (input.three.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("#");
-				}
-				else
-				{
-					typeChar("3");
-				}
-			}
-			if (input.four.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("$");
-				}
-				else
-				{
-					typeChar("4");
-				}
-			}
-			if (input.five.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("%");
-				}
-				else
-				{
-					typeChar("5");
-				}
-			}
-			if (input.six.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("^");
-				}
-				else
-				{
-					typeChar("6");
-				}
-			}
-			if (input.seven.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("&");
-				}
-				else
-				{
-					typeChar("7");
-				}
-			}
-			if (input.eight.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("*");
-				}
-				else
-				{
-					typeChar("8");
-				}
-			}
-			if (input.nine.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					if (allowPunc) typeChar("(");
-				}
-				else
-				{
-					typeChar("9");
-				}
-			}
-			
-			if (input.a.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("A");
-				}
-				else
-				{
-					typeChar("a");
-				}
-			}
-			if (input.b.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("B");
-				}
-				else
-				{
-					typeChar("b");
-				}
-			}
-			if (input.c.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("C");
-				}
-				else
-				{
-					typeChar("c");
-				}
-			}
-			if (input.d.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("D");
-				}
-				else
-				{
-					typeChar("d");
-				}
-			}
-			if (input.e.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("E");
-				}
-				else
-				{
-					typeChar("e");
-				}
-			}
-			if (input.f.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("F");
-				}
-				else
-				{
-					typeChar("f");
-				}
-			}
-			if (input.g.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("G");
-				}
-				else
-				{
-					typeChar("g");
-				}
-			}
-			if (input.h.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("H");
-				}
-				else
-				{
-					typeChar("h");
-				}
-			}
-			if (input.i.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("I");
-				}
-				else
-				{
-					typeChar("i");
-				}
-			}
-			if (input.j.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("J");
-				}
-				else
-				{
-					typeChar("j");
-				}
-			}
-			if (input.k.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("K");
-				}
-				else
-				{
-					typeChar("k");
-				}
-			}
-			if (input.l.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("L");
-				}
-				else
-				{
-					typeChar("l");
-				}
-			}
-			if (input.m.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("M");
-				}
-				else
-				{
-					typeChar("m");
-				}
-			}
-			if (input.n.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("N");
-				}
-				else
-				{
-					typeChar("n");
-				}
-			}
-			if (input.o.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("O");
-				}
-				else
-				{
-					typeChar("o");
-				}
-			}
-			if (input.p.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("P");
-				}
-				else
-				{
-					typeChar("p");
-				}
-			}
-			if (input.q.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("Q");
-				}
-				else
-				{
-					typeChar("q");
-				}
-			}
-			if (input.r.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("R");
-				}
-				else
-				{
-					typeChar("r");
-				}
-			}
-			if (input.s.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("S");
-				}
-				else
-				{
-					typeChar("s");
-				}
-			}
-			if (input.t.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("T");
-				}
-				else
-				{
-					typeChar("t");
-				}
-			}
-			if (input.u.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("U");
-				}
-				else
-				{
-					typeChar("u");
-				}
-			}
-			if (input.v.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("V");
-				}
-				else
-				{
-					typeChar("v");
-				}
-			}
-			if (input.w.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("W");
-				}
-				else
-				{
-					typeChar("w");
-				}
-			}
-			if (input.x.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("X");
-				}
-				else
-				{
-					typeChar("x");
-				}
-			}
-			if (input.y.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("Y");
-				}
-				else
-				{
-					typeChar("y");
-				}
-			}
-			if (input.z.isPressedTyping())
-			{
-				if (isShifting)
-				{
-					typeChar("Z");
-				}
-				else
-				{
-					typeChar("z");
-				}
 			}
 			
 			if (letterTyped)
@@ -573,15 +99,18 @@ public class GuiTextField extends GuiButton
 		}
 	}
 	
-	private void typeChar(String character)
+	private void typeChar(String character, TypingMode... modes)
 	{
-		letterTyped = true;
-		if (text.length() < maxLength) text += character;
+		if (character.length() > 0)
+		{
+			letterTyped = true;
+			if (text.length() < maxLength) text += character;
+		}
 	}
 	
-	public void setAllowPunctuation(boolean newAllowPunc)
+	public void setTypingMode(TypingMode newMode)
 	{
-		allowPunc = newAllowPunc;
+		mode = newMode;
 	}
 	
 	public void setFocussed()
