@@ -8,6 +8,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.client.ClientGame;
 
 public abstract class GuiScreen
 {
@@ -134,4 +135,9 @@ public abstract class GuiScreen
 	 * @param buttonID the id of the button
 	 */
 	public abstract void releaseAction(int buttonID);
+	
+	public void goToParentScreen()
+	{
+		ClientGame.instance().setCurrentScreen(this.parentScreen);
+	}
 }

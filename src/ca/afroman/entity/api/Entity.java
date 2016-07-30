@@ -19,15 +19,10 @@ public class Entity implements ITickable
 	private static final boolean HITBOX_COLLISION = true;
 	private static final boolean ENTITY_COLLISION = false;
 	
-	private static IDCounter idCounter;
+	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
 	{
-		if (idCounter == null)
-		{
-			idCounter = new IDCounter();
-		}
-		
 		return idCounter;
 	}
 	

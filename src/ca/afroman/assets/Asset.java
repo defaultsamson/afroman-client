@@ -1,6 +1,6 @@
 package ca.afroman.assets;
 
-public abstract class Asset
+public class Asset implements Cloneable
 {
 	// This simply acts as a class to relate all the assets together for the Assets class
 	
@@ -12,9 +12,15 @@ public abstract class Asset
 	}
 	
 	@Override
-	public abstract Asset clone();
+	public Asset clone()
+	{
+		return new Asset(type);
+	}
 	
-	public abstract void dispose();
+	public void dispose()
+	{
+		
+	}
 	
 	public AssetType getAssetType()
 	{

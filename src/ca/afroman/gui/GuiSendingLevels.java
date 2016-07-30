@@ -56,7 +56,7 @@ public class GuiSendingLevels extends GuiScreen
 	{
 		if (ClientGame.instance().isHostingServer())
 		{
-			// TODO not just fucking 3 you git
+			// TODO not just 3 you fucking git
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().sockets().getConnectedPlayers().size() + ") players");
 			
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for client responses");

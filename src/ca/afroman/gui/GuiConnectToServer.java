@@ -34,7 +34,7 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Connecting to Server: " + ClientGame.instance().getServerIP());
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Connecting to Server: " + ClientGame.instance().getServerIP() + (ClientGame.instance().getPort().length() > 0 ? ":" + ClientGame.instance().getPort() : ""));
 		
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for server response");
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
@@ -55,8 +55,8 @@ public class GuiConnectToServer extends GuiScreen
 		switch (buttonID)
 		{
 			case 0:
-				ClientGame.instance().setCurrentScreen(this.parentScreen);
-				ClientGame.instance().sockets().setServerIP(null, ServerSocketManager.DEFAULT_PORT); // TODO selectable port
+				goToParentScreen();
+				ClientGame.instance().sockets().setServerIP(null, ServerSocketManager.DEFAULT_PORT);
 				break;
 		}
 	}

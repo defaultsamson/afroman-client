@@ -5,15 +5,10 @@ import ca.afroman.util.IDCounter;
 
 public class ConnectedPlayer
 {
-	private static IDCounter idCounter;
+	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
 	{
-		if (idCounter == null)
-		{
-			idCounter = new IDCounter();
-		}
-		
 		return idCounter;
 	}
 	

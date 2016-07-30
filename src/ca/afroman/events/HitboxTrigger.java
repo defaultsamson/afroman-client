@@ -14,15 +14,10 @@ import ca.afroman.util.IDCounter;
 
 public class HitboxTrigger extends InputType implements IEvent
 {
-	private static IDCounter idCounter;
+	private static IDCounter idCounter = new IDCounter();;
 	
 	public static IDCounter getIDCounter()
 	{
-		if (idCounter == null)
-		{
-			idCounter = new IDCounter();
-		}
-		
 		return idCounter;
 	}
 	

@@ -121,10 +121,25 @@ public class GuiJoinServer extends GuiScreen
 			}
 		}
 		
-		if (ClientGame.instance().input().enter.isPressedFiltered())
+		if (ClientGame.instance().input().enter.isPressedFiltered() && canContinue())
 		{
 			joinServer();
 		}
+		
+		if (ClientGame.instance().input().escape.isPressedFiltered())
+		{
+			goToParentScreen();
+		}
+	}
+	
+	@Override
+	public void goToParentScreen()
+	{
+		userText = username.getText();
+		ipText = serverIP.getText();
+		passText = password.getText();
+		
+		super.goToParentScreen();
 	}
 	
 	@Override
@@ -138,7 +153,11 @@ public class GuiJoinServer extends GuiScreen
 	
 	private void joinServer()
 	{
-		String[] portSplit = serverIP.getText().split(":");
+		userText = username.getText();
+		ipText = serverIP.getText();
+		passText = password.getText();
+		
+		String[] portSplit = ipText.split(":");
 		
 		String port = "";
 		
@@ -172,20 +191,19 @@ public class GuiJoinServer extends GuiScreen
 				joinServer();
 				break;
 			case 200:
-				ClientGame.instance().setCurrentScreen(this.parentScreen);
+				goToParentScreen();
 				break;
 		}
+	}
+	
+	private boolean canContinue()
+	{
+		return !this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty() && serverIP.getText().split(":").length <= 2;
 	}
 	
 	@Override
 	public void keyTyped()
 	{
-		this.joinButton.setEnabled(!this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty());
-		
-		if (ipText.split(":").length > 2) this.joinButton.setEnabled(false);
-		
-		userText = username.getText();
-		ipText = serverIP.getText();
-		passText = password.getText();
+		this.joinButton.setEnabled(canContinue());
 	}
 }

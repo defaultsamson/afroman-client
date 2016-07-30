@@ -53,9 +53,6 @@ public class IPConnection
 		{
 			return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
 		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 }

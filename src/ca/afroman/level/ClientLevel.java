@@ -275,14 +275,14 @@ public class ClientLevel extends Level
 					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.1F));
 					
 					// Vertical lines
-					for (int i = 0; i < Math.ceil(ClientGame.WIDTH / grid) + bleed; i++)
+					for (int i = 0; i < Math.ceil((double) ClientGame.WIDTH / (double) grid) + bleed; i++)
 					{
 						int x = (i * grid) - xOffset;
 						renderTo.getGraphics().drawLine(x, 0, x, ClientGame.HEIGHT);
 					}
 					
 					// Horizontal lines
-					for (int i = 0; i < Math.ceil(ClientGame.HEIGHT / grid) + bleed; i++)
+					for (int i = 0; i < Math.ceil((double) ClientGame.HEIGHT / (double) grid) + bleed; i++)
 					{
 						int y = (i * grid) - yOffset;
 						renderTo.getGraphics().drawLine(0, y, ClientGame.WIDTH, y);

@@ -42,6 +42,8 @@ public class Texture extends DrawableAsset
 			ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not read texture from class resource stream", e);
 		}
 		
+		if (inImage == null) return null;
+		
 		// Puts the loaded image into a BufferedImage capable of transparency
 		BufferedImage image = new BufferedImage(inImage.getWidth(), inImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		image.createGraphics().drawImage(inImage, 0, 0, null);

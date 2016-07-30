@@ -119,10 +119,25 @@ public class GuiHostServer extends GuiScreen
 			}
 		}
 		
-		if (ClientGame.instance().input().enter.isPressedFiltered())
+		if (ClientGame.instance().input().enter.isPressedFiltered() && canContinue())
 		{
 			hostServer();
 		}
+		
+		if (ClientGame.instance().input().escape.isPressedFiltered())
+		{
+			goToParentScreen();
+		}
+	}
+	
+	@Override
+	public void goToParentScreen()
+	{
+		userText = this.username.getText();
+		passText = this.password.getText();
+		portText = this.port.getText();
+		
+		super.goToParentScreen();
 	}
 	
 	@Override
@@ -130,14 +145,16 @@ public class GuiHostServer extends GuiScreen
 	{
 		switch (buttonID)
 		{
-			case 1: // Host Server
-				hostServer();
-				break;
+			
 		}
 	}
 	
 	private void hostServer()
 	{
+		userText = this.username.getText();
+		passText = this.password.getText();
+		portText = this.port.getText();
+		
 		ClientGame.instance().setUsername(userText);
 		ClientGame.instance().setPassword(passText);
 		ClientGame.instance().setPort(portText);
@@ -159,30 +176,34 @@ public class GuiHostServer extends GuiScreen
 	{
 		switch (buttonID)
 		{
+			case 1: // Host Server
+				hostServer();
+				break;
 			case 200:
-				ClientGame.instance().setCurrentScreen(this.parentScreen);
+				goToParentScreen();
 				break;
 		}
 	}
 	
-	@Override
-	public void keyTyped()
+	private boolean canContinue()
 	{
-		this.hostButton.setEnabled(!this.username.getText().isEmpty());
-		
-		userText = this.username.getText();
-		passText = this.password.getText();
-		portText = this.port.getText();
-		
 		try
 		{
-			int port = Integer.parseInt(portText);
+			int port = Integer.parseInt(this.port.getText());
 			
-			if (port < 0 || port > 0xFFFF) this.hostButton.setEnabled(false);
+			if (port < 0 || port > 0xFFFF) return false;
 		}
 		catch (NumberFormatException e)
 		{
 			
 		}
+		
+		return !this.username.getText().isEmpty();
+	}
+	
+	@Override
+	public void keyTyped()
+	{
+		this.hostButton.setEnabled(canContinue());
 	}
 }

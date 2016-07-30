@@ -67,7 +67,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		if (ClientGame.instance().input().escape.isPressedFiltered())
 		{
-			ClientGame.instance().setCurrentScreen(parentScreen);
+			goToParentScreen();
 		}
 		
 		if (ClientGame.instance().input().tab.isPressedFiltered())
@@ -136,7 +136,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 				
 				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), triggerID, triggers, inTriggers, outTriggers);
 				ClientGame.instance().sockets().sender().sendPacket(pack);
-				ClientGame.instance().setCurrentScreen(parentScreen);
+				goToParentScreen();
 				break;
 		}
 	}

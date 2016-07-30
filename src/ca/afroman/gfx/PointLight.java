@@ -13,15 +13,10 @@ public class PointLight extends Entity
 	protected Color colour;
 	private double radius;
 	
-	private static IDCounter idCounter;
+	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
 	{
-		if (idCounter == null)
-		{
-			idCounter = new IDCounter();
-		}
-		
 		return idCounter;
 	}
 	

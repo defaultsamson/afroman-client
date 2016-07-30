@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.PortUnreachableException;
 
+import ca.afroman.gui.GuiClickNotification;
+import ca.afroman.gui.GuiJoinServer;
+import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.IPConnection;
@@ -39,6 +42,8 @@ public class ClientSocketReceive extends DynamicThread
 		catch (PortUnreachableException e)
 		{
 			logger().log(ALogType.CRITICAL, "Port is unreachable", e);
+			ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+			new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "PORT", "UNREACHABLE");
 		}
 		catch (IOException e)
 		{

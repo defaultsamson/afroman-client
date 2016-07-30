@@ -21,7 +21,7 @@ public enum TypingMode
 		if (keyModes == null)
 		{
 			InputHandler input = ClientGame.instance().input();
-			keyModes = new ArrayList<TypingKeyWrapper>();
+			List<TypingKeyWrapper> keyModes = new ArrayList<TypingKeyWrapper>();
 			keyModes.add(new TypingKeyWrapper(input.space, " ", new TypingModeWrapper(TypingMode.FULL)));
 			keyModes.add(new TypingKeyWrapper(input.comma, "<", new TypingModeWrapper(TypingMode.FULL), ",", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_COMMA)));
 			keyModes.add(new TypingKeyWrapper(input.slash, "?", new TypingModeWrapper(TypingMode.FULL), "/", new TypingModeWrapper(TypingMode.FULL)));
@@ -70,6 +70,8 @@ public enum TypingMode
 			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
 			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
 			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
+			
+			TypingMode.keyModes = keyModes;
 		}
 		
 		return keyModes;
