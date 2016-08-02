@@ -12,13 +12,14 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
-import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
+import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
+import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
@@ -31,9 +32,8 @@ import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketDenyJoin;
-import ca.afroman.packet.PacketRemoveHitbox;
-import ca.afroman.packet.PacketRemovePointLight;
-import ca.afroman.packet.PacketRemoveTile;
+import ca.afroman.packet.PacketEditTrigger;
+import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketType;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
@@ -127,6 +127,13 @@ public class ServerSocketReceive extends DynamicThread
 				case INVALID:
 					logger().log(ALogType.CRITICAL, "INVALID PACKET");
 					break;
+				case CONFIRM_RECEIVED:
+				{
+					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
+					
+					manager.sender().removePacket(sender.getConnection(), sentID);
+				}
+					break;
 				case SETROLE:
 				{
 					if (sentByHost)
@@ -209,6 +216,22 @@ public class ServerSocketReceive extends DynamicThread
 						logger().log(ALogType.CRITICAL, "A non-host user was trying to start the server: " + sender.getConnection().asReadable());
 					}
 					break;
+				case REQUEST_PLAYER_MOVE:
+				{
+					Role role = sender.getRole();
+					if (role != Role.SPECTATOR)
+					{
+						ServerPlayerEntity player = ServerGame.instance().getPlayer(role);
+						if (player != null)
+						{
+							byte x = packet.getContent()[0];
+							byte y = packet.getContent()[1];
+							
+							player.move(x, y);
+						}
+					}
+				}
+					break;
 				case ADD_LEVEL_TILE:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
@@ -227,7 +250,7 @@ public class ServerSocketReceive extends DynamicThread
 						double y = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						Entity tile = new Entity(Entity.getIDCounter().getNext(), asset, x, y);
+						Entity tile = new Entity(true, Entity.getIDCounter().getNext(), asset, x, y);
 						tile.addTileToLevel(level, layer);
 						manager.sender().sendPacketToAllClients(new PacketAddTile(layer, level.getType(), tile));
 					}
@@ -237,7 +260,7 @@ public class ServerSocketReceive extends DynamicThread
 					}
 				}
 					break;
-				case REMOVE_LEVEL_TILE:
+				case REMOVE_LEVEL_OBJECT:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
@@ -246,15 +269,63 @@ public class ServerSocketReceive extends DynamicThread
 					
 					if (level != null)
 					{
+						LevelObjectType objType = LevelObjectType.fromOrdinal(buf.getShort());
+						
 						int id = buf.getInt();
 						
-						Entity tile = level.getTile(id);
+						boolean removed = false;
 						
-						if (tile != null)
+						switch (objType)
 						{
-							PacketRemoveTile pack = new PacketRemoveTile(tile.getID(), levelType);
+							default:
+								break;
+							case TILE:
+								Entity tile = level.getTile(id);
+								
+								if (tile != null)
+								{
+									tile.removeTileFromLevel();
+									removed = true;
+								}
+								break;
+							case HITBOX:
+								Hitbox box = level.getHitbox(id);
+								
+								if (box != null)
+								{
+									box.removeFromLevel();
+									removed = true;
+								}
+								break;
+							case POINT_LIGHT:
+								PointLight light = level.getLight(id);
+								
+								if (light != null)
+								{
+									light.removeFromLevel();
+									removed = true;
+								}
+								break;
+							case HITBOX_TRIGGER:
+								IEvent event = level.getScriptedEvent(id);
+								
+								if (event != null)
+								{
+									event.removeFromLevel();
+									removed = true;
+								}
+								break;
+						}
+						
+						if (removed)
+						{
+							// TODO use the previous byte content so it doens't need to reformat to bytes
+							PacketRemoveLevelObject pack = new PacketRemoveLevelObject(id, levelType, objType);
 							manager.sender().sendPacketToAllClients(pack);
-							tile.removeTileFromLevel();
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "Could not remove object id " + id + " of type " + objType);
 						}
 					}
 					else
@@ -290,32 +361,6 @@ public class ServerSocketReceive extends DynamicThread
 					}
 				}
 					break;
-				case REMOVE_LEVEL_HITBOX:
-				{
-					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-					
-					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
-					
-					if (level != null)
-					{
-						int id = buf.getInt();
-						
-						Hitbox box = level.getHitbox(id);
-						
-						if (box != null)
-						{
-							PacketRemoveHitbox pack = new PacketRemoveHitbox(box.getID(), levelType);
-							manager.sender().sendPacketToAllClients(pack);
-							box.removeFromLevel();
-						}
-					}
-					else
-					{
-						logger().log(ALogType.WARNING, "No level with type " + levelType);
-					}
-				}
-					break;
 				case ADD_LEVEL_POINTLIGHT:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
@@ -332,7 +377,7 @@ public class ServerSocketReceive extends DynamicThread
 						double radius = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						PointLight light = new PointLight(PointLight.getIDCounter().getNext(), x, y, radius);
+						PointLight light = new PointLight(true, PointLight.getIDCounter().getNext(), x, y, radius);
 						light.addToLevel(level);
 						manager.sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 					}
@@ -340,59 +385,6 @@ public class ServerSocketReceive extends DynamicThread
 					{
 						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
-				}
-					break;
-				case REMOVE_LEVEL_POINTLIGHT:
-				{
-					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-					
-					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
-					
-					if (level != null)
-					{
-						int id = buf.getInt();
-						
-						PointLight light = level.getLight(id);
-						
-						if (light != null)
-						{
-							PacketRemovePointLight pack = new PacketRemovePointLight(light.getID(), levelType);
-							manager.sender().sendPacketToAllClients(pack);
-							light.removeFromLevel();
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "Could not find light " + id);
-						}
-					}
-					else
-					{
-						logger().log(ALogType.WARNING, "No level with type " + levelType);
-					}
-				}
-					break;
-				case REQUEST_PLAYER_MOVE:
-				{
-					Role role = sender.getRole();
-					if (role != Role.SPECTATOR)
-					{
-						ServerPlayerEntity player = ServerGame.instance().getPlayer(role);
-						if (player != null)
-						{
-							byte x = packet.getContent()[0];
-							byte y = packet.getContent()[1];
-							
-							player.move(x, y);
-						}
-					}
-				}
-					break;
-				case CONFIRM_RECEIVED:
-				{
-					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
-					
-					manager.sender().removePacket(sender.getConnection(), sentID);
 				}
 					break;
 				case ADD_EVENT_HITBOX_TRIGGER:
@@ -411,7 +403,7 @@ public class ServerSocketReceive extends DynamicThread
 						int width = buf.getInt();
 						int height = buf.getInt();
 						
-						HitboxTrigger trig = new HitboxTrigger(id, x, y, width, height, null, null, null);
+						HitboxTrigger trig = new HitboxTrigger(true, id, x, y, width, height, null, null, null);
 						trig.addToLevel(level);
 						manager.sender().sendPacketToAllClients(new PacketAddTrigger(levelType, id, x, y, width, height));
 					}
@@ -442,50 +434,18 @@ public class ServerSocketReceive extends DynamicThread
 								
 								List<TriggerType> triggers = new ArrayList<TriggerType>();
 								
-								for (int i = buf.position(); i < buf.limit(); i++)
-								{
-									if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-									{
-										buf.position(buf.position() + 2);
-										break;
-									}
-									
-									triggers.add(TriggerType.fromOrdinal(buf.get()));
-									i++;
-								}
+								for (byte b : ByteUtil.extractBytes(buf, Byte.MIN_VALUE, Byte.MAX_VALUE))
+									triggers.add(TriggerType.fromOrdinal(b));
 								
-								List<Integer> triggersIn = new ArrayList<Integer>();
-								
-								for (int i = buf.position(); i < buf.limit(); i++)
-								{
-									if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-									{
-										buf.position(buf.position() + 2);
-										break;
-									}
-									
-									triggersIn.add(buf.getInt());
-									i += ByteUtil.INT_BYTE_COUNT;
-								}
-								
-								List<Integer> triggersOut = new ArrayList<Integer>();
-								
-								for (int i = buf.position(); i < buf.limit(); i++)
-								{
-									if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-									{
-										// Don't bother furthering the position because this means that it's done
-										// buf.position(buf.position() + 2);
-										break;
-									}
-									
-									triggersOut.add(buf.getInt());
-									i += ByteUtil.INT_BYTE_COUNT;
-								}
+								List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
+								List<Integer> triggersOut = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
 								
 								hitbox.setTriggerTypes(triggers);
 								hitbox.setInTriggers(triggersIn);
 								hitbox.setOutTriggers(triggersOut);
+								
+								// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
+								manager.sender().sendPacketToAllClients(new PacketEditTrigger(levelType, id, triggers, triggersIn, triggersOut));
 							}
 							else
 							{
@@ -503,73 +463,6 @@ public class ServerSocketReceive extends DynamicThread
 					}
 				}
 					break;
-				// case ADD_EVENT_HITBOX_TRIGGER:
-				// {
-				// String[] split = Packet.readContent(new byte[] {}).split(",");
-				// LevelType levelType = LevelType.fromOrdinal(Integer.parseInt(split[0]));
-				// Level level = ServerGame.instance().getLevelByType(levelType);
-				//
-				// if (level != null)
-				// {
-				// logger().log(ALogType.WARNING, "Hell yeah I received that shit");
-				// int id = IEventCounter.getIDCounter().getNext();
-				//
-				// double x = Double.parseDouble(split[2]);
-				// double y = Double.parseDouble(split[3]);
-				// double width = Double.parseDouble(split[4]);
-				// double height = Double.parseDouble(split[5]);
-				//
-				// List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
-				// List<Integer> triggers = new ArrayList<Integer>();
-				// List<Integer> chainedTriggers = new ArrayList<Integer>();
-				//
-				// int mode = 0;
-				//
-				// // If there's further arguments
-				// for (int i = 6; i < split.length; i++)
-				// {
-				// if (split[i].equals("a")) // triggerTypesAsSendable
-				// {
-				// mode = 1;
-				// }
-				// else if (split[i].equals("b")) // triggersAsSendable
-				// {
-				// mode = 2;
-				// }
-				// else if (split[i].equals("c")) // chainTriggersAsSendable
-				// {
-				// mode = 3;
-				// }
-				// else if (mode != 0)
-				// {
-				// switch (mode)
-				// {
-				// case 1:
-				// triggerTypes.add(TriggerType.fromOrdinal(Integer.parseInt(split[i])));
-				// break;
-				// case 2:
-				// triggers.add(Integer.parseInt(split[i]));
-				// break;
-				// case 3:
-				// chainedTriggers.add(Integer.parseInt(split[i]));
-				// break;
-				// }
-				// }
-				// else
-				// {
-				// logger().log(ALogType.WARNING, "No mode selected during ADD_EVENT_HITBOX_TRIGGER");
-				// }
-				// }
-				// HitboxTrigger hitbox = new HitboxTrigger(id, x, y, width, height, triggerTypes, triggers, chainedTriggers);
-				//
-				// hitbox.addToLevel(level);
-				// }
-				// else
-				// {
-				// logger().log(ALogType.WARNING, "No level with type " + levelType);
-				// }
-				// }
-				// break;
 			}
 		}
 		else if (type == PacketType.REQUEST_CONNECTION)

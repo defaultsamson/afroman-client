@@ -3,16 +3,16 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.entity.TriggerType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.IServerClient;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
 import ca.afroman.log.ALogType;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.IDCounter;
 
-public class HitboxTrigger extends InputType implements IEvent
+public class HitboxTrigger extends InputType implements IEvent, IServerClient
 {
 	private static IDCounter idCounter = new IDCounter();;
 	
@@ -21,18 +21,21 @@ public class HitboxTrigger extends InputType implements IEvent
 		return idCounter;
 	}
 	
+	private boolean isServerSide;
+	
 	private List<TriggerType> triggerTypes;
 	private List<Integer> inTriggers;
 	private List<Integer> outTriggers;
 	private Hitbox hitbox;
 	
-	public HitboxTrigger(int id, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxTrigger(boolean isServerSide, int id, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		this(id, new Hitbox(id, x, y, width, height), triggerTypes, inTriggers, outTriggers);
+		this(isServerSide, id, new Hitbox(id, x, y, width, height), triggerTypes, inTriggers, outTriggers);
 	}
 	
-	public HitboxTrigger(int id, Hitbox box, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxTrigger(boolean isServerSide, int id, Hitbox box, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
+		this.isServerSide = isServerSide;
 		hitbox = box;
 		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
@@ -49,6 +52,7 @@ public class HitboxTrigger extends InputType implements IEvent
 	 * 
 	 * @param level the new level.
 	 */
+	@Override
 	public void addToLevel(Level newLevel)
 	{
 		if (hitbox.getLevel() == newLevel) return;
@@ -108,24 +112,33 @@ public class HitboxTrigger extends InputType implements IEvent
 	@Override
 	public void tick()
 	{
-		if (this.triggerTypes.contains(TriggerType.PLAYER_COLLIDE))
+		// Only activate the triggers if it's on the server side
+		if (isServerSide())
 		{
-			boolean hasPressed = false;
-			
-			for (Entity player : this.hitbox.getLevel().getPlayers())
+			if (this.triggerTypes.contains(TriggerType.PLAYER_COLLIDE))
 			{
-				if (player.isColliding(this.getHitbox()))
+				boolean hasPressed = false;
+				
+				for (Entity player : this.hitbox.getLevel().getPlayers())
 				{
-					this.setPressed(true);
-					hasPressed = true;
-					break;
+					if (player.isColliding(this.getHitbox()))
+					{
+						this.setPressed(true);
+						hasPressed = true;
+						break;
+					}
 				}
+				
+				if (!hasPressed) this.setPressed(false);
 			}
 			
-			if (!hasPressed) this.setPressed(false);
+			String message = "Triggered: ";
+			
+			for (int in : getInTriggers())
+				message += in + ", ";
+			
+			if (this.isPressedFiltered()) ServerGame.instance().logger().log(ALogType.DEBUG, message);
 		}
-		
-		if (this.isPressedFiltered()) ServerGame.instance().logger().log(ALogType.DEBUG, "Triggered: ");
 	}
 	
 	@Override
@@ -162,5 +175,17 @@ public class HitboxTrigger extends InputType implements IEvent
 	public double getHeight()
 	{
 		return hitbox.getHeight();
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return isServerSide;
+	}
+	
+	@Override
+	public void removeFromLevel()
+	{
+		addToLevel(null);
 	}
 }

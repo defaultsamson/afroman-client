@@ -9,6 +9,7 @@ import ca.afroman.entity.api.ClientAssetEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.level.Level;
+import ca.afroman.packet.PacketPlayerMove;
 
 public class ClientPlayerEntity extends ClientAssetEntityDirectional implements IRoleEntity
 {
@@ -91,5 +92,11 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 	public Role getRole()
 	{
 		return role;
+	}
+	
+	@Override
+	public void onMove(byte xa, byte ya)
+	{
+		ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(xa, ya));
 	}
 }

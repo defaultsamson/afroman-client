@@ -12,15 +12,15 @@ public class FlickeringLight extends PointLight
 	private int tickCounter = 0;
 	private double radius2;
 	
-	public FlickeringLight(int id, double x, double y, double radius1, double radius2, int ticksPerFrame)
+	public FlickeringLight(boolean isServerSide, int id, double x, double y, double radius1, double radius2, int ticksPerFrame)
 	{
-		this(id, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
+		this(isServerSide, id, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
 	}
 	
-	public FlickeringLight(int id, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
+	public FlickeringLight(boolean isServerSide, int id, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
 	{
 		// Picks the larger of the 2 radi to use for anchoring the draw location
-		super(id, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
+		super(isServerSide, id, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
 		
 		// Picks the smaller of the 2 radi
 		this.radius2 = (radius1 <= radius2 ? radius1 : radius2);

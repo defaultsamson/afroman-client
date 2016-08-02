@@ -70,8 +70,8 @@ public class GuiChooseRole extends GuiScreen
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
-		light1 = new FlickeringLight(-1, p1X + 8, p2Y + 8, 42, 44, 6);
-		light2 = new FlickeringLight(-1, p2X + 8, p1Y + 8, 42, 44, 6);
+		light1 = new FlickeringLight(false, -1, p1X + 8, p2Y + 8, 42, 44, 6);
+		light2 = new FlickeringLight(false, -1, p2X + 8, p1Y + 8, 42, 44, 6);
 	}
 	
 	@Override

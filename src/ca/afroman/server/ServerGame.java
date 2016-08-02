@@ -7,6 +7,8 @@ import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.IEvent;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
@@ -14,6 +16,8 @@ import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddLevel;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
+import ca.afroman.packet.PacketAddTrigger;
+import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.thread.DynamicTickThread;
 import ca.afroman.util.IDCounter;
@@ -59,7 +63,7 @@ public class ServerGame extends DynamicTickThread
 		
 		for (LevelType type : LevelType.values())
 		{
-			if (type != LevelType.NULL) getLevels().add(Level.fromFile(type));
+			if (type != LevelType.NULL) getLevels().add(Level.fromFile(true, type));
 		}
 		
 		players = new ArrayList<ServerPlayerEntity>();
@@ -91,6 +95,16 @@ public class ServerGame extends DynamicTickThread
 			{
 				sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 			}
+			
+			for (IEvent event : level.getScriptedEvents())
+			{
+				if (event instanceof HitboxTrigger)
+				{
+					HitboxTrigger e = (HitboxTrigger) event;
+					sockets().sender().sendPacketToAllClients(new PacketAddTrigger(level.getType(), e));
+					sockets().sender().sendPacketToAllClients(new PacketEditTrigger(level.getType(), e.getID(), e.getTriggerTypes(), e.getInTriggers(), e.getOutTriggers()));
+				}
+			}
 		}
 		
 		players = new ArrayList<ServerPlayerEntity>();
@@ -104,16 +118,8 @@ public class ServerGame extends DynamicTickThread
 			player.setLocation(10 + (i * 18), 20);
 		}
 		
-		/*
-		 * TODO add level loading
-		 * player = new PlayerMPEntity(100, 120, 1, input, null, -1);
-		 * player.addToLevel(blankLevel);
-		 * // player = new PlayerMPEntity(blankLevel, 100, 100, 1, input, null, -1);
-		 * // player.setCameraToFollow(true);
-		 * // blankLevel.putPlayer();
-		 */
-		
 		// TODO only start ticking once the game has loaded for all clients
+		
 		isInGame = true;
 		isSendingLevels = false;
 		

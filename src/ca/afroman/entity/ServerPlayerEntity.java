@@ -7,6 +7,7 @@ import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketSetPlayerLevel;
+import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.server.ServerGame;
 
 public class ServerPlayerEntity extends Entity implements IRoleEntity
@@ -23,7 +24,7 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	 */
 	public ServerPlayerEntity(Role role, double x, double y)
 	{
-		super(-1, (role == Role.PLAYER1 ? ClientPlayerEntity.PLAYER1_ASSET : ClientPlayerEntity.PLAYER2_ASSET), x, y, new Hitbox(3, 5, 10, 11));
+		super(true, -1, (role == Role.PLAYER1 ? ClientPlayerEntity.PLAYER1_ASSET : ClientPlayerEntity.PLAYER2_ASSET), x, y, new Hitbox(3, 5, 10, 11));
 		
 		this.role = role;
 	}
@@ -64,5 +65,11 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	public Role getRole()
 	{
 		return role;
+	}
+	
+	@Override
+	public void onMove(byte xa, byte ya)
+	{
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
 	}
 }

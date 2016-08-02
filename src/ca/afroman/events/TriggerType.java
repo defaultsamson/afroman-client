@@ -1,4 +1,4 @@
-package ca.afroman.entity;
+package ca.afroman.events;
 
 public enum TriggerType
 {

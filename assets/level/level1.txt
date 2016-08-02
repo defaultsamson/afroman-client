@@ -475,4 +475,9 @@ POINT_LIGHT(-66.0, -83.0, 64.0)
 POINT_LIGHT(36.0, -82.0, 64.0)
 POINT_LIGHT(174.0, -33.0, 71.0)
 POINT_LIGHT(-45.0, 44.0, 71.0)
-a
+
+
+// The HitboxTriggers. HitboxTrigger(x, y, width, height, triggerTypes, inTriggers, outTriggers)
+
+HITBOX_TRIGGER(1.0, 56.0, 37.0, 10.0, {PLAYER_COLLIDE}, {12}, {})
+HITBOX_TRIGGER(-6.0, 30.0, 29.0, 16.0, {PLAYER_COLLIDE}, {12, 3}, {})

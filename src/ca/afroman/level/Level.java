@@ -11,16 +11,21 @@ import java.util.List;
 import ca.afroman.assets.AssetType;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.IServerClient;
+import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
+import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.log.ALogType;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.FileUtil;
 
-public class Level
+public class Level implements IServerClient
 {
 	private static final String LEVEL_DIR = "/level/";
+	
+	private boolean isServerSide;
 	
 	/** The level identified. */
 	private LevelType type;
@@ -37,8 +42,9 @@ public class Level
 	/** Scripted Events in this level. */
 	private List<IEvent> events;
 	
-	public Level(LevelType type)
+	public Level(boolean isServerSide, LevelType type)
 	{
+		this.isServerSide = isServerSide;
 		this.type = type;
 		
 		lights = new ArrayList<PointLight>();
@@ -85,7 +91,7 @@ public class Level
 		}
 	}
 	
-	public static Level fromFile(LevelType levelType)
+	public static Level fromFile(boolean isServerSide, LevelType levelType)
 	{
 		Level level = null;
 		
@@ -98,10 +104,11 @@ public class Level
 			{
 				try
 				{
-					String[] split1 = line.split("\\(");
-					LevelObjectType objectType = LevelObjectType.valueOf(split1[0]);
-					String[] split2 = split1[1].split("\\)");
-					String[] parameters = split2.length > 0 ? split2[0].split(", ") : null;
+					String[] split = line.split("\\(");
+					LevelObjectType objectType = LevelObjectType.valueOf(split[0]);
+					String[] split2 = split[1].split("\\)");
+					String rawParameters = split2.length > 0 ? split2[0] : "";
+					String[] parameters = rawParameters.length() > 0 ? rawParameters.split(", ") : null;
 					
 					switch (objectType)
 					{
@@ -112,7 +119,7 @@ public class Level
 							// int x = Integer.parseInt(parameters[0]); TODO add spawn points for each level where the players will respawn at if they die. If they saved after they passed a checkpoint (spawnpoint) then put them back to the save point
 							// int y = Integer.parseInt(parameters[1]);
 							
-							level = new Level(levelType);
+							level = new Level(isServerSide, levelType);
 							break;
 						case TILE: // (AssetType, x, y, width, height, hitbox ...)
 						{
@@ -121,7 +128,7 @@ public class Level
 							double y = Double.parseDouble(parameters[2]);
 							AssetType type = AssetType.valueOf(parameters[3]);
 							
-							new Entity(Entity.getIDCounter().getNext(), type, x, y).addTileToLevel(level, layer);
+							new Entity(isServerSide, Entity.getIDCounter().getNext(), type, x, y).addTileToLevel(level, layer);
 							
 							// If it has custom hitboxes defined
 							// if (parameters.length > 4)
@@ -144,11 +151,63 @@ public class Level
 							level.getHitboxes().add(new Hitbox(Hitbox.getIDCounter().getNext(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
 							break;
 						case POINT_LIGHT:
+						{
 							double x = Double.parseDouble(parameters[0]);
 							double y = Double.parseDouble(parameters[1]);
 							double radius = Double.parseDouble(parameters[2]);
 							
-							new PointLight(PointLight.getIDCounter().getNext(), x, y, radius).addToLevel(level);
+							new PointLight(isServerSide, PointLight.getIDCounter().getNext(), x, y, radius).addToLevel(level);
+						}
+							break;
+						case HITBOX_TRIGGER:
+						{
+							double x = Double.parseDouble(parameters[0]);
+							double y = Double.parseDouble(parameters[1]);
+							double width = Double.parseDouble(parameters[2]);
+							double height = Double.parseDouble(parameters[3]);
+							
+							String[][] subParameters = new String[3][];
+							
+							// isolates all the sub-parameters
+							for (int i = 0; i < subParameters.length; i++)
+							{
+								String[] r1 = rawParameters.split("\\{")[1 + i].split("\\}");
+								String r2 = r1.length > 0 ? r1[0] : "";
+								subParameters[i] = r2.length() > 0 ? r2.split(", ") : null;
+							}
+							
+							List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
+							
+							if (subParameters[0] != null)
+							{
+								for (String e : subParameters[0])
+								{
+									triggerTypes.add(TriggerType.valueOf(e));
+								}
+							}
+							
+							List<Integer> inTriggers = new ArrayList<Integer>();
+							
+							if (subParameters[1] != null)
+							{
+								for (String e : subParameters[1])
+								{
+									inTriggers.add(Integer.parseInt(e));
+								}
+							}
+							
+							List<Integer> outTriggers = new ArrayList<Integer>();
+							
+							if (subParameters[2] != null)
+							{
+								for (String e : subParameters[2])
+								{
+									outTriggers.add(Integer.parseInt(e));
+								}
+							}
+							
+							new HitboxTrigger(isServerSide, HitboxTrigger.getIDCounter().getNext(), x, y, width, height, triggerTypes, inTriggers, outTriggers).addToLevel(level);;
+						}
 							break;
 					}
 				}
@@ -238,6 +297,38 @@ public class Level
 			else
 			{
 				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
+			}
+		}
+		
+		toReturn.add("");
+		toReturn.add("");
+		toReturn.add("// The HitboxTriggers. HitboxTrigger(x, y, width, height, triggerTypes, inTriggers, outTriggers)");
+		toReturn.add("");
+		
+		for (IEvent e : getScriptedEvents())
+		{
+			if (e instanceof HitboxTrigger)
+			{
+				HitboxTrigger t = (HitboxTrigger) e;
+				
+				String text = LevelObjectType.HITBOX_TRIGGER + "(" + e.getX() + ", " + e.getY() + ", " + e.getWidth() + ", " + e.getHeight() + ", {";
+				
+				for (int k = 0; k < t.getTriggerTypes().size(); k++)
+					text += t.getTriggerTypes().get(k) + (k == t.getTriggerTypes().size() - 1 ? "" : ", ");
+				
+				text += "}, {";
+				
+				for (int k = 0; k < t.getInTriggers().size(); k++)
+					text += t.getInTriggers().get(k) + (k == t.getInTriggers().size() - 1 ? "" : ", ");
+				
+				text += "}, {";
+				
+				for (int k = 0; k < t.getOutTriggers().size(); k++)
+					text += t.getOutTriggers().get(k) + (k == t.getOutTriggers().size() - 1 ? "" : ", ");
+				
+				text += "})";
+				
+				toReturn.add(text);
 			}
 		}
 		
@@ -507,5 +598,11 @@ public class Level
 	public List<PointLight> getLights()
 	{
 		return lights;
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return isServerSide;
 	}
 }

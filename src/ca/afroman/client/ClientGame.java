@@ -30,6 +30,8 @@ import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.IEvent;
+import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMapState;
 import ca.afroman.gfx.PointLight;
@@ -42,6 +44,7 @@ import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.input.InputHandler;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
@@ -257,8 +260,8 @@ public class ClientGame extends DynamicTickRenderThread
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
 		
 		lights = new HashMap<Role, FlickeringLight>();
-		lights.put(Role.PLAYER1, new FlickeringLight(-1, 0, 0, 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(-1, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, 0, 0, 50, 47, 4));
 		
 		setCurrentScreen(new GuiMainMenu());
 		
@@ -527,36 +530,18 @@ public class ClientGame extends DynamicTickRenderThread
 				case UPDATE_PLAYERLIST:
 				{
 					ClientGame.instance().updatePlayerList();
-					
 					List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
-					for (int i = 0; i < packet.getContent().length;)
+					// If there's still remaining bytes and they aren't the signal
+					while (buf.hasRemaining() && !ByteUtil.isSignal(buf.array(), buf.position(), Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE))
 					{
-						// Signal to tell that it's at the end of the packet. @see PacketUpdatePlayerList
-						if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE && packet.getContent()[i + 2] == Byte.MAX_VALUE && packet.getContent()[i + 3] == Byte.MIN_VALUE)
-						{
-							break;
-						}
+						// !(packet.getContent()[buf.position()] == Byte.MIN_VALUE && packet.getContent()[buf.position() + 1] == Byte.MAX_VALUE && packet.getContent()[buf.position() + 2] == Byte.MAX_VALUE && packet.getContent()[buf.position() + 3] == Byte.MIN_VALUE)
+						short id = buf.getShort();
+						Role role = Role.fromOrdinal(buf.get());
+						String name = new String(ByteUtil.extractBytes(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
 						
-						short id = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), i, i + ByteUtil.SHORT_BYTE_COUNT));
-						Role role = Role.fromOrdinal(packet.getContent()[i + ByteUtil.SHORT_BYTE_COUNT]);
-						
-						int change = 3;
-						for (int j = i + 3; j < packet.getContent().length - 1; j++)
-						{
-							// The signal. @see PacketUpdatePlayerList
-							if (packet.getContent()[j] == Byte.MIN_VALUE && packet.getContent()[j + 1] == Byte.MAX_VALUE)
-							{
-								String name = new String(Arrays.copyOfRange(packet.getContent(), i + 3, j)).trim();
-								
-								i += 2 + change; // Adds the amount of bytes read for the name, plus 2 for the end name signal
-								
-								players.add(new ConnectedPlayer(id, role, name));
-								break;
-							}
-							
-							change++;
-						}
+						players.add(new ConnectedPlayer(id, role, name));
 					}
 					
 					ClientGame.instance().sockets().updateConnectedPlayer(players);
@@ -611,6 +596,73 @@ public class ClientGame extends DynamicTickRenderThread
 					}
 				}
 					break;
+				case REMOVE_LEVEL_OBJECT:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						LevelObjectType objType = LevelObjectType.fromOrdinal(buf.getShort());
+						
+						int id = buf.getInt();
+						
+						boolean removed = false;
+						
+						switch (objType)
+						{
+							default:
+								break;
+							case TILE:
+								Entity tile = level.getTile(id);
+								
+								if (tile != null)
+								{
+									tile.removeTileFromLevel();
+									removed = true;
+								}
+								break;
+							case HITBOX:
+								Hitbox box = level.getHitbox(id);
+								
+								if (box != null)
+								{
+									box.removeFromLevel();
+									removed = true;
+								}
+								break;
+							case POINT_LIGHT:
+								PointLight light = level.getLight(id);
+								
+								if (light != null)
+								{
+									light.removeFromLevel();
+									removed = true;
+								}
+								break;
+							case HITBOX_TRIGGER:
+								IEvent event = level.getScriptedEvent(id);
+								
+								if (event != null)
+								{
+									event.removeFromLevel();
+									removed = true;
+								}
+								break;
+						}
+						
+						if (!removed)
+						{
+							logger().log(ALogType.WARNING, "Could not remove object id " + id + " of type " + objType);
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
 				case ADD_LEVEL_TILE:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
@@ -629,30 +681,6 @@ public class ClientGame extends DynamicTickRenderThread
 						
 						ClientAssetEntity tile = new ClientAssetEntity(id, asset, x, y);
 						tile.addTileToLevel(level, layer);
-					}
-					else
-					{
-						logger().log(ALogType.WARNING, "No level with type " + levelType);
-					}
-				}
-					break;
-				case REMOVE_LEVEL_TILE:
-				{
-					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-					
-					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
-					
-					if (level != null)
-					{
-						int id = buf.getInt();
-						
-						Entity entity = level.getTile(id);
-						
-						if (entity != null)
-						{
-							entity.removeTileFromLevel();
-						}
 					}
 					else
 					{
@@ -684,30 +712,6 @@ public class ClientGame extends DynamicTickRenderThread
 					}
 				}
 					break;
-				case REMOVE_LEVEL_HITBOX:
-				{
-					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-					
-					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
-					
-					if (level != null)
-					{
-						int id = buf.getInt();
-						
-						Hitbox box = level.getHitbox(id);
-						
-						if (box != null)
-						{
-							box.removeFromLevel();
-						}
-					}
-					else
-					{
-						logger().log(ALogType.WARNING, "No level with type " + levelType);
-					}
-				}
-					break;
 				case ADD_LEVEL_POINTLIGHT:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
@@ -722,32 +726,8 @@ public class ClientGame extends DynamicTickRenderThread
 						double y = buf.getInt();
 						double radius = buf.getInt();
 						
-						PointLight light = new PointLight(id, x, y, radius);
+						PointLight light = new PointLight(false, id, x, y, radius);
 						light.addToLevel(level);
-					}
-					else
-					{
-						logger().log(ALogType.WARNING, "No level with type " + levelType);
-					}
-				}
-					break;
-				case REMOVE_LEVEL_POINTLIGHT:
-				{
-					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-					
-					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
-					
-					if (level != null)
-					{
-						int id = buf.getInt();
-						
-						PointLight light = level.getLight(id);
-						
-						if (light != null)
-						{
-							light.removeFromLevel();
-						}
 					}
 					else
 					{
@@ -814,8 +794,52 @@ public class ClientGame extends DynamicTickRenderThread
 						int width = buf.getInt();
 						int height = buf.getInt();
 						
-						HitboxTrigger trig = new HitboxTrigger(id, x, y, width, height, null, null, null);
+						HitboxTrigger trig = new HitboxTrigger(false, id, x, y, width, height, null, null, null);
 						trig.addToLevel(level);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case EDIT_EVENT_HITBOX_TRIGGER:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						
+						IEvent eHitbox = level.getScriptedEvent(id);
+						
+						if (eHitbox != null)
+						{
+							if (eHitbox instanceof HitboxTrigger)
+							{
+								HitboxTrigger hitbox = (HitboxTrigger) eHitbox;
+								
+								List<TriggerType> triggers = new ArrayList<TriggerType>();
+								
+								for (byte b : ByteUtil.extractBytes(buf, Byte.MIN_VALUE, Byte.MAX_VALUE))
+									triggers.add(TriggerType.fromOrdinal(b));
+								
+								hitbox.setTriggerTypes(triggers);
+								hitbox.setInTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
+								hitbox.setOutTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No event with ID " + id);
+						}
 					}
 					else
 					{

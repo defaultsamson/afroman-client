@@ -2,6 +2,8 @@ package ca.afroman.events;
 
 import java.util.List;
 
+import ca.afroman.level.Level;
+
 public interface IEvent
 {
 	/**
@@ -50,4 +52,8 @@ public interface IEvent
 	 * @return the ID's that, when this is triggered, will pass on to other event in the current level.
 	 */
 	public List<Integer> getOutTriggers();
+	
+	public void removeFromLevel();
+	
+	public void addToLevel(Level level);
 }

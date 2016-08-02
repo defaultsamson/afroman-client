@@ -27,9 +27,7 @@ import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
-import ca.afroman.packet.PacketRemoveHitbox;
-import ca.afroman.packet.PacketRemovePointLight;
-import ca.afroman.packet.PacketRemoveTile;
+import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.util.ListUtil;
 
 public class ClientLevel extends Level
@@ -41,7 +39,7 @@ public class ClientLevel extends Level
 	
 	public ClientLevel(LevelType type)
 	{
-		super(type);
+		super(false, type);
 		
 		lightDebug = Assets.getFont(AssetType.FONT_NOBLE);
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
@@ -457,7 +455,7 @@ public class ClientLevel extends Level
 						}
 					}
 					
-					Entity tileToAdd = new Entity(-1, cursorAsset.getAssetType(), x, y);
+					Entity tileToAdd = new Entity(false, -1, cursorAsset.getAssetType(), x, y);
 					PacketAddTile pack = new PacketAddTile(editLayer, this.getType(), tileToAdd);
 					ClientGame.instance().sockets().sender().sendPacket(pack);
 				}
@@ -468,7 +466,7 @@ public class ClientLevel extends Level
 					
 					if (tile != null)
 					{
-						PacketRemoveTile pack = new PacketRemoveTile(tile.getID(), this.getType());
+						PacketRemoveLevelObject pack = new PacketRemoveLevelObject(tile.getID(), this.getType(), LevelObjectType.TILE);
 						ClientGame.instance().sockets().sender().sendPacket(pack);
 					}
 				}
@@ -538,7 +536,7 @@ public class ClientLevel extends Level
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
-					PointLight light = new PointLight(-1, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
+					PointLight light = new PointLight(false, -1, screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()), currentBuildLightRadius);
 					
 					ClientGame.instance().sockets().sender().sendPacket(new PacketAddPointLight(this.getType(), light));
 				}
@@ -549,7 +547,8 @@ public class ClientLevel extends Level
 					
 					if (light != null)
 					{
-						ClientGame.instance().sockets().sender().sendPacket(new PacketRemovePointLight(light.getID(), this.getType()));
+						PacketRemoveLevelObject pack = new PacketRemoveLevelObject(light.getID(), this.getType(), LevelObjectType.POINT_LIGHT);
+						ClientGame.instance().sockets().sender().sendPacket(pack);
 					}
 				}
 				
@@ -618,7 +617,7 @@ public class ClientLevel extends Level
 							
 							if (box != null)
 							{
-								PacketRemoveHitbox pack = new PacketRemoveHitbox(box.getID(), this.getType());
+								PacketRemoveLevelObject pack = new PacketRemoveLevelObject(box.getID(), this.getType(), LevelObjectType.HITBOX);
 								ClientGame.instance().sockets().sender().sendPacket(pack);
 							}
 						}

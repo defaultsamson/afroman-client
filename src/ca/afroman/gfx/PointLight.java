@@ -20,14 +20,14 @@ public class PointLight extends Entity
 		return idCounter;
 	}
 	
-	public PointLight(int id, double x, double y, double radius)
+	public PointLight(boolean isServerSide, int id, double x, double y, double radius)
 	{
-		this(id, x, y, radius, ColourUtil.TRANSPARENT);
+		this(isServerSide, id, x, y, radius, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(int id, double x, double y, double radius, Color colour)
+	public PointLight(boolean isServerSide, int id, double x, double y, double radius, Color colour)
 	{
-		super(id, AssetType.INVALID, x, y);
+		super(isServerSide, id, AssetType.INVALID, x, y);
 		
 		this.colour = colour;
 		this.radius = radius;

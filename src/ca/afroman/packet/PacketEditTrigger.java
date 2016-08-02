@@ -3,7 +3,7 @@ package ca.afroman.packet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.entity.TriggerType;
+import ca.afroman.events.TriggerType;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;

@@ -3,17 +3,14 @@ package ca.afroman.entity.api;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.client.ClientGame;
-import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
-import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.IDCounter;
 
-public class Entity implements ITickable
+public class Entity implements ITickable, IServerClient
 {
 	private static final boolean PLAYER_COLLISION = false;
 	private static final boolean HITBOX_COLLISION = true;
@@ -35,6 +32,8 @@ public class Entity implements ITickable
 	protected boolean hasHitbox;
 	protected Hitbox[] hitbox;
 	
+	private boolean serverSide;
+	
 	// All the movement related variables
 	protected double speed;
 	protected final double originalSpeed;
@@ -51,9 +50,9 @@ public class Entity implements ITickable
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Entity(int id, AssetType assetType, double x, double y)
+	public Entity(boolean isServerSide, int id, AssetType assetType, double x, double y)
 	{
-		this(id, assetType, x, y, false, new Hitbox[] { null });
+		this(isServerSide, id, assetType, x, y, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -66,9 +65,9 @@ public class Entity implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
+	public Entity(boolean isServerSide, int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
 	{
-		this(id, assetType, x, y, true, hitboxes);
+		this(isServerSide, id, assetType, x, y, true, hitboxes);
 	}
 	
 	/**
@@ -80,7 +79,7 @@ public class Entity implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(int id, AssetType assetType, double x, double y, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(boolean isServerSide, int id, AssetType assetType, double x, double y, boolean hasHitbox, Hitbox... hitboxes)
 	{
 		this.id = id; // -1 if this is not an object in a level
 		this.level = null;
@@ -89,6 +88,8 @@ public class Entity implements ITickable
 		this.y = y;
 		this.hasHitbox = hasHitbox;
 		hitbox = (hasHitbox ? hitboxes : null);
+		
+		serverSide = isServerSide;
 		
 		speed = 1.0;
 		originalSpeed = speed;
@@ -523,21 +524,13 @@ public class Entity implements ITickable
 		
 		if (sendPacket)
 		{
-			// TODO separate server-side entity checks
-			if (this instanceof ServerPlayerEntity)
-			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation((ServerPlayerEntity) this));
-			}
-			else if (this instanceof ClientPlayerEntity)
-			{
-				ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(xa, ya));
-			}
-			else
-			{
-				// TODO
-				// ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateEntityLocation(this));
-			}
+			onMove(xa, ya);
 		}
+	}
+	
+	public void onMove(byte xa, byte ya)
+	{
+		
 	}
 	
 	/**
@@ -592,5 +585,11 @@ public class Entity implements ITickable
 	public int getID()
 	{
 		return id;
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return serverSide;
 	}
 }

@@ -16,7 +16,8 @@ import ca.afroman.log.ALogType;
 public class AudioClip extends Asset
 {
 	private static final boolean ENABLE_AUDIO = true;
-	private static final boolean USE_MP3 = false;
+	private static boolean initUseMp3 = true;
+	private static boolean USE_MP3;
 	private static final String AUDIO_DIR = "/audio/";
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";
@@ -32,8 +33,11 @@ public class AudioClip extends Asset
 	
 	public static AudioClip fromResource(AssetType type, String path)
 	{
-		// TODO automatically detect whether to use MP3 or WAV based on which directories exist
-		// URL test = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR);
+		if (initUseMp3)
+		{
+			USE_MP3 = AudioClip.class.getResource(AUDIO_DIR + MP3_DIR + path + ".mp3") != null;
+			initUseMp3 = false;
+		}
 		
 		URL url = AudioClip.class.getResource(AUDIO_DIR + (USE_MP3 ? MP3_DIR : WAV_DIR) + path + (USE_MP3 ? ".mp3" : ".wav"));
 		

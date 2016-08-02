@@ -5,13 +5,16 @@ import java.util.List;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.TriggerType;
+import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.TriggerType;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.gui.GuiTextField;
 import ca.afroman.input.TypingMode;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.LevelObjectType;
 import ca.afroman.packet.PacketEditTrigger;
+import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.util.ArrayUtil;
 
 public class GuiHitboxTriggerEditor extends GuiScreen
@@ -22,6 +25,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	
 	private GuiTextButton finish;
 	private GuiTextButton cancel;
+	private GuiTextButton delete;
 	
 	private ClientLevel level;
 	private int triggerID;
@@ -32,32 +36,65 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		this.level = level;
 		this.triggerID = triggerID;
+		
+		int width = (ClientGame.WIDTH - 40);
+		
+		HitboxTrigger trigger = (HitboxTrigger) level.getScriptedEvent(triggerID);
+		
+		String text = "";
+		
+		for (TriggerType t : trigger.getTriggerTypes())
+		{
+			text += t.ordinal() + ",";
+		}
+		
+		triggers = new GuiTextField(this, 20, 28, width);
+		triggers.setFocussed();
+		triggers.setText(text);
+		triggers.setMaxLength(5000);
+		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
+		buttons.add(triggers);
+		
+		text = "";
+		
+		for (int e : trigger.getInTriggers())
+		{
+			text += e + ",";
+		}
+		
+		inTriggers = new GuiTextField(this, 20, 58, width);
+		inTriggers.setText(text);
+		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
+		inTriggers.setMaxLength(5000);
+		buttons.add(inTriggers);
+		
+		text = "";
+		
+		for (int e : trigger.getOutTriggers())
+		{
+			text += e + ",";
+		}
+		
+		outTriggers = new GuiTextField(this, 20, 88, width);
+		outTriggers.setText(text);
+		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
+		outTriggers.setMaxLength(5000);
+		buttons.add(outTriggers);
+		
+		cancel = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
+		delete = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 46, 6, 54, blackFont, "Delete");
+		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
+		
+		buttons.add(cancel);
+		buttons.add(delete);
+		buttons.add(finish);
+		keyTyped();
 	}
 	
 	@Override
 	public void init()
 	{
-		int width = (ClientGame.WIDTH - 40);
 		
-		triggers = new GuiTextField(this, 20, 28, width);
-		triggers.setFocussed();
-		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
-		buttons.add(triggers);
-		
-		inTriggers = new GuiTextField(this, 20, 58, width);
-		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
-		buttons.add(inTriggers);
-		
-		outTriggers = new GuiTextField(this, 20, 88, width);
-		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
-		buttons.add(outTriggers);
-		
-		cancel = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
-		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
-		
-		buttons.add(cancel);
-		buttons.add(finish);
-		keyTyped();
 	}
 	
 	@Override
@@ -103,6 +140,11 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		switch (buttonID)
 		{
+			case 202:
+				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(triggerID, level.getType(), LevelObjectType.HITBOX_TRIGGER));
+			case 201:
+				goToParentScreen();
+				break;
 			case 200:
 				List<TriggerType> triggers = new ArrayList<TriggerType>();
 				String[] trigs = this.triggers.getText().split(",");

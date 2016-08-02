@@ -7,7 +7,8 @@ public enum LevelObjectType
 	ENTITY,
 	HITBOX,
 	POINT_LIGHT,
-	FLICKERING_LIGHT;
+	FLICKERING_LIGHT,
+	HITBOX_TRIGGER;
 	
 	public static LevelObjectType fromOrdinal(int ordinal)
 	{

@@ -9,7 +9,7 @@ public class ClientEntity extends Entity
 	
 	public ClientEntity(int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
 	{
-		super(id, assetType, x, y, hitboxes);
+		super(false, id, assetType, x, y, hitboxes);
 		
 		cameraFollow = false;
 	}
