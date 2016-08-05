@@ -847,6 +847,34 @@ public class ClientGame extends DynamicTickRenderThread
 					}
 				}
 					break;
+				case ACTIVATE_TRIGGER:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						
+						IEvent eHitbox = level.getScriptedEvent(id);
+						
+						if (eHitbox != null)
+						{
+							eHitbox.trigger();
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No event with ID " + id);
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
 			}
 		}
 		else

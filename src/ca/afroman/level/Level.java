@@ -108,7 +108,7 @@ public class Level implements IServerClient
 					LevelObjectType objectType = LevelObjectType.valueOf(split[0]);
 					String[] split2 = split[1].split("\\)");
 					String rawParameters = split2.length > 0 ? split2[0] : "";
-					String[] parameters = rawParameters.length() > 0 ? rawParameters.split(", ") : null;
+					String[] parameters = getParameters(rawParameters);
 					
 					switch (objectType)
 					{
@@ -166,41 +166,33 @@ public class Level implements IServerClient
 							double width = Double.parseDouble(parameters[2]);
 							double height = Double.parseDouble(parameters[3]);
 							
-							String[][] subParameters = new String[3][];
-							
-							// isolates all the sub-parameters
-							for (int i = 0; i < subParameters.length; i++)
-							{
-								String[] r1 = rawParameters.split("\\{")[1 + i].split("\\}");
-								String r2 = r1.length > 0 ? r1[0] : "";
-								subParameters[i] = r2.length() > 0 ? r2.split(", ") : null;
-							}
+							String[] rSubParameters = getRawSubParameters(rawParameters);
 							
 							List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
-							
-							if (subParameters[0] != null)
+							String[] triggerParameters = getParameters(rSubParameters[0]);
+							if (triggerParameters != null)
 							{
-								for (String e : subParameters[0])
+								for (String e : triggerParameters)
 								{
 									triggerTypes.add(TriggerType.valueOf(e));
 								}
 							}
 							
 							List<Integer> inTriggers = new ArrayList<Integer>();
-							
-							if (subParameters[1] != null)
+							String[] inTriggerP = getParameters(rSubParameters[1]);
+							if (inTriggerP != null)
 							{
-								for (String e : subParameters[1])
+								for (String e : inTriggerP)
 								{
 									inTriggers.add(Integer.parseInt(e));
 								}
 							}
 							
 							List<Integer> outTriggers = new ArrayList<Integer>();
-							
-							if (subParameters[2] != null)
+							String[] outTriggerP = getParameters(rSubParameters[2]);
+							if (outTriggerP != null)
 							{
-								for (String e : subParameters[2])
+								for (String e : outTriggerP)
 								{
 									outTriggers.add(Integer.parseInt(e));
 								}
@@ -221,6 +213,34 @@ public class Level implements IServerClient
 		}
 		
 		return level;
+	}
+	
+	public static String[] getParameters(String in)
+	{
+		return in.length() > 0 ? in.split(", ") : null;
+	}
+	
+	public static String[] getRawSubParameters(String in)
+	{
+		int count = in.split("\\{").length - 1;
+		
+		if (count >= 1)
+		{
+			String[] ret = new String[count];
+			
+			// isolates all the sub-parameters
+			for (int i = 0; i < count; i++)
+			{
+				String[] r1 = in.split("\\{")[1 + i].split("\\}");
+				ret[i] = r1.length > 0 ? r1[0] : "";
+			}
+			
+			return ret;
+		}
+		else
+		{
+			return null;
+		}
 	}
 	
 	public List<String> toSaveFile()
@@ -392,14 +412,8 @@ public class Level implements IServerClient
 				if (eventTrigger == inTrigger)
 				{
 					// Trigger it
-					event.onTrigger();
-					
-					// Pass trigger to the event's chain triggers
-					for (int eventChainTrigger : event.getOutTriggers())
-					{
-						chainScriptedEvents(eventChainTrigger);
-					}
-					return;
+					event.trigger();
+					break;
 				}
 			}
 		}

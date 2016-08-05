@@ -3,12 +3,14 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
 import ca.afroman.log.ALogType;
+import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.IDCounter;
 
@@ -132,19 +134,47 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 				if (!hasPressed) this.setPressed(false);
 			}
 			
-			String message = "Triggered: ";
-			
-			for (int in : getInTriggers())
-				message += in + ", ";
-			
-			if (this.isPressedFiltered()) ServerGame.instance().logger().log(ALogType.DEBUG, message);
+			if (this.isPressedFiltered())
+			{
+				trigger();
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(this.getID(), this.getLevel().getType()));
+			}
 		}
+	}
+	
+	public Level getLevel()
+	{
+		return hitbox.getLevel();
+	}
+	
+	@Override
+	public void trigger()
+	{
+		for (int out : getOutTriggers())
+		{
+			// TODO chain for all levels
+			getLevel().chainScriptedEvents(out);
+		}
+		
+		onTrigger();
 	}
 	
 	@Override
 	public void onTrigger()
 	{
-		
+		if (!isServerSide())
+		{
+			String message = "Out Triggers: ";
+			
+			for (int out : getOutTriggers())
+			{
+				message += out + ", ";
+			}
+			
+			if (getOutTriggers().isEmpty()) message += "(none)";
+			
+			ClientGame.instance().logger().log(ALogType.DEBUG, message);
+		}
 	}
 	
 	@Override

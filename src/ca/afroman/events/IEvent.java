@@ -12,8 +12,13 @@ public interface IEvent
 	public void tick();
 	
 	/**
-	 * Triggers
-	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="Smiley face" height="120" width="120">
+	 * Triggers this.
+	 */
+	public void trigger();
+	
+	/**
+	 * Runs when this is triggered.
+	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="hHHHHHHH" height="120" width="120">
 	 * <a href="https://i.imgur.com/dNVvntX.gif">ono</a>
 	 */
 	public void onTrigger();
