@@ -19,6 +19,8 @@ public class Assets
 		filter.setFromGreyscaleToAlphaMask();
 		assets.add(filter);
 		
+		assets.add(Texture.fromResource(AssetType.CAT, "cat.png"));
+		
 		assetArrays.add(new Font(AssetType.FONT_BLACK, font.getSubTexture(AssetType.FONT_BLACK, 0, 8 * 0, 256, 32)));
 		assetArrays.add(new Font(AssetType.FONT_WHITE, font.getSubTexture(AssetType.FONT_WHITE, 0, 8 * 12, 256, 32)));
 		assetArrays.add(new Font(AssetType.FONT_NOBLE, font.getSubTexture(AssetType.FONT_NOBLE, 0, 8 * 4, 256, 32)));

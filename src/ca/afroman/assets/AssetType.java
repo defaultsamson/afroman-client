@@ -4,6 +4,8 @@ public enum AssetType
 {
 	INVALID,
 	
+	CAT,
+	
 	FILTER,
 	
 	FONT_BLACK,
