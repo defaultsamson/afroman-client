@@ -163,7 +163,7 @@ public class ServerSocketManager implements IDynamicRunning
 	public void removeConnection(IPConnectedPlayer connection)
 	{
 		playerList.remove(connection);
-		receiver().removeConnection(connection.getConnection());
+		ServerGame.instance().removeConnection(connection.getConnection());
 		
 		updateClientsPlayerList();
 	}
@@ -182,7 +182,7 @@ public class ServerSocketManager implements IDynamicRunning
 		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
 		playerList.add(newConnection);
 		
-		receiver().addConnection(newConnection.getConnection());
+		ServerGame.instance().addConnection(newConnection.getConnection());
 		
 		// Tells the newly added connection their ID
 		sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));

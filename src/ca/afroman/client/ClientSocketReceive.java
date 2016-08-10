@@ -54,7 +54,7 @@ public class ClientSocketReceive extends DynamicThread
 	@Override
 	public void onStop()
 	{
-		manager.socket().close();
+		
 	}
 	
 	@Override
