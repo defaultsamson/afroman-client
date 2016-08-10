@@ -68,6 +68,7 @@ public class ServerGame extends DynamicTickThread
 		
 		socketManager = new ServerSocketManager(password, port);
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
+		toProcess = new ArrayList<BytePacket>();
 	}
 	
 	public void loadGame()
@@ -156,6 +157,7 @@ public class ServerGame extends DynamicTickThread
 	{
 		// TODO save levels?
 		receivedPackets.clear();
+		toProcess.clear();
 		
 		sockets().stopThis();
 		
@@ -168,6 +170,16 @@ public class ServerGame extends DynamicTickThread
 	@Override
 	public void tick()
 	{
+		synchronized (toProcess)
+		{
+			for (BytePacket pack : toProcess)
+			{
+				parsePacket(pack);
+			}
+			
+			toProcess.clear();
+		}
+		
 		if (isInGame)
 		{
 			if (getLevels() != null)
@@ -210,6 +222,15 @@ public class ServerGame extends DynamicTickThread
 	}
 	
 	private HashMap<IPConnection, List<Integer>> receivedPackets; // The ID's of all the packets that have been received
+	private List<BytePacket> toProcess;
+	
+	public void addPacketToProcess(BytePacket pack)
+	{
+		synchronized (toProcess)
+		{
+			toProcess.add(pack);
+		}
+	}
 	
 	/**
 	 * Reads a packet's data and acts accordingly.

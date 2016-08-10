@@ -37,7 +37,7 @@ public class ClientSocketReceive extends DynamicThread
 			manager.socket().receive(packet);
 			BytePacket pack = new BytePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + pack.getConnections().get(0).asReadable() + "] " + pack.getType());
-			ClientGame.instance().addPacket(pack);
+			ClientGame.instance().addPacketToProcess(pack);
 		}
 		catch (PortUnreachableException e)
 		{

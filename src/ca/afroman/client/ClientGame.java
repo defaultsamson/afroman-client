@@ -412,7 +412,6 @@ public class ClientGame extends DynamicTickRenderThread
 			currentScreen.tick();
 		}
 		
-		// TODO Have it not run the main game code. Leave that to the server
 		if (getCurrentLevel() != null)
 		{
 			getCurrentLevel().tick();
@@ -1080,11 +1079,7 @@ public class ClientGame extends DynamicTickRenderThread
 		}
 		
 		socketManager.stopThis();
-		
-		synchronized (receivedPackets)
-		{
-			receivedPackets.clear();
-		}
+		receivedPackets.clear();
 		
 		synchronized (packets)
 		{
@@ -1241,7 +1236,7 @@ public class ClientGame extends DynamicTickRenderThread
 		game.startThis();
 	}
 	
-	public void addPacket(BytePacket pack)
+	public void addPacketToProcess(BytePacket pack)
 	{
 		synchronized (packets)
 		{

@@ -43,7 +43,7 @@ public class ServerSocketReceive extends DynamicThread
 			
 			BytePacket pack = new BytePacket(packet.getData(), new IPConnection(packet.getAddress(), packet.getPort()));
 			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + pack.getConnections().get(0).asReadable() + "] " + pack.getType());
-			ServerGame.instance().parsePacket(pack);
+			ServerGame.instance().addPacketToProcess(pack);
 		}
 		catch (IOException e)
 		{
