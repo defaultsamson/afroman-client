@@ -3,14 +3,12 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
-import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.IDCounter;
@@ -62,10 +60,7 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 		
 		if (hitbox.getLevel() != null)
 		{
-			synchronized (hitbox.getLevel().getScriptedEvents())
-			{
-				hitbox.getLevel().getScriptedEvents().remove(this);
-			}
+			hitbox.getLevel().getScriptedEvents().remove(this);
 		}
 		
 		// Sets the new level
@@ -73,10 +68,7 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 		
 		if (hitbox.getLevel() != null)
 		{
-			synchronized (hitbox.getLevel().getScriptedEvents())
-			{
-				hitbox.getLevel().getScriptedEvents().add(this);
-			}
+			hitbox.getLevel().getScriptedEvents().add(this);
 		}
 	}
 	
@@ -176,19 +168,19 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 	@Override
 	public void onTrigger(Entity triggerer)
 	{
-		if (!isServerSide())
-		{
-			String message = "Out Triggers: ";
-			
-			for (int out : getOutTriggers())
-			{
-				message += out + ", ";
-			}
-			
-			if (getOutTriggers().isEmpty()) message += "(none)";
-			
-			ClientGame.instance().logger().log(ALogType.DEBUG, message);
-		}
+		// if (!isServerSide())
+		// {
+		// String message = "Out Triggers: ";
+		//
+		// for (int out : getOutTriggers())
+		// {
+		// message += out + ", ";
+		// }
+		//
+		// if (getOutTriggers().isEmpty()) message += "(none)";
+		//
+		// ClientGame.instance().logger().log(ALogType.DEBUG, message);
+		// }
 	}
 	
 	@Override

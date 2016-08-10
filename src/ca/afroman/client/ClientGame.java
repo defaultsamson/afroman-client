@@ -112,6 +112,9 @@ public class ClientGame extends DynamicTickRenderThread
 	private String port = "";
 	private String typedIP = "";
 	
+	private long totalMemory = 0;
+	private long usedMemory = 0;
+	
 	private ClientSocketManager socketManager;
 	
 	private GuiScreen currentScreen = null;
@@ -264,11 +267,11 @@ public class ClientGame extends DynamicTickRenderThread
 		receivedPackets = new ArrayList<Integer>();
 		packets = new ArrayList<BytePacket>();
 		
-		players = new ArrayList<ClientPlayerEntity>();
+		players = new ArrayList<ClientPlayerEntity>(2);
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
 		
-		lights = new HashMap<Role, FlickeringLight>();
+		lights = new HashMap<Role, FlickeringLight>(2);
 		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, 0, 0, 50, 47, 4));
 		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, 0, 0, 50, 47, 4));
 		
@@ -317,12 +320,24 @@ public class ClientGame extends DynamicTickRenderThread
 		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
 	}
 	
+	private byte updateMem = 120;
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public void tick()
 	{
 		tickCount++;
 		
+		updateMem++;
+		if (updateMem >= ticksPerSecond)
+		{
+			updateMem = 0;
+			Runtime rt = Runtime.getRuntime();
+			totalMemory = rt.freeMemory();
+			usedMemory = rt.totalMemory() - rt.freeMemory();
+		}
+		
+		// Parses all packets
 		synchronized (packets)
 		{
 			for (BytePacket pack : packets)
@@ -443,15 +458,16 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		if (hudDebug)
 		{
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "TPS: " + tps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "FPS: " + fps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "TPS: " + tps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 20, "FPS: " + fps);
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, HEIGHT - 9, "V");
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 9, HEIGHT - 9, "" + VERSION);
 			
 			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
 			{
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 20, "x: " + getThisPlayer().getX());
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 30, "y: " + getThisPlayer().getY());
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 30, "x: " + getThisPlayer().getX());
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 40, "y: " + getThisPlayer().getY());
 			}
 		}
 		

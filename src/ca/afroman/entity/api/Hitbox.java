@@ -60,10 +60,7 @@ public class Hitbox extends Rectangle2D.Double
 		
 		if (level != null)
 		{
-			synchronized (level.getHitboxes())
-			{
-				level.getHitboxes().remove(this);
-			}
+			level.getHitboxes().remove(this);
 		}
 		
 		// Sets the new level
@@ -71,10 +68,7 @@ public class Hitbox extends Rectangle2D.Double
 		
 		if (level != null)
 		{
-			synchronized (level.getHitboxes())
-			{
-				level.getHitboxes().add(this);
-			}
+			level.getHitboxes().add(this);
 		}
 	}
 	

@@ -48,7 +48,7 @@ public class Level implements IServerClient
 		this.type = type;
 		
 		lights = new ArrayList<PointLight>();
-		tiles = new ArrayList<List<Entity>>();
+		tiles = new ArrayList<List<Entity>>(6);
 		
 		tiles.add(new ArrayList<Entity>());
 		tiles.add(new ArrayList<Entity>());
@@ -254,23 +254,32 @@ public class Level implements IServerClient
 		toReturn.add("// The Tiles. LevelObjectType(layer, AssetType, x, y, width, height, hitboxes[if any])");
 		toReturn.add("");
 		
-		int i = 0;
+		int layer = 0;
 		for (List<Entity> tileList : getTiles())
 		{
 			for (Entity tile : tileList)
 			{
-				String tileString = LevelObjectType.TILE + "(" + i + ", " + tile.getX() + ", " + tile.getY() + ", " + tile.getAssetType();
+				StringBuilder sb = new StringBuilder();
+				sb.append(LevelObjectType.TILE.toString());
+				sb.append('(');
+				sb.append(layer);
+				sb.append(", ");
+				sb.append(tile.getX());
+				sb.append(", ");
+				sb.append(tile.getY());
+				sb.append(", ");
+				sb.append(tile.getAssetType().toString());
 				
 				if (tile.hasHitbox())
 				{
-					tileString += tile.hitboxesAsSaveable();
+					sb.append(tile.hitboxesAsSaveable());
 				}
 				
-				tileString += ")";
+				sb.append(')');
 				
-				toReturn.add(tileString);
+				toReturn.add(sb.toString());
 			}
-			i++;
+			layer++;
 		}
 		
 		toReturn.add("");
@@ -331,34 +340,57 @@ public class Level implements IServerClient
 			{
 				HitboxTrigger t = (HitboxTrigger) e;
 				
-				String text = LevelObjectType.HITBOX_TRIGGER + "(" + e.getX() + ", " + e.getY() + ", " + e.getWidth() + ", " + e.getHeight() + ", {";
+				StringBuilder sb = new StringBuilder();
+				sb.append(LevelObjectType.HITBOX_TRIGGER.toString());
+				sb.append('(');
+				sb.append(e.getX());
+				sb.append(", ");
+				sb.append(e.getY());
+				sb.append(", ");
+				sb.append(e.getWidth());
+				sb.append(", ");
+				sb.append(e.getHeight());
+				sb.append(", {");
 				
+				// Saves trigger types
 				for (int k = 0; k < t.getTriggerTypes().size(); k++)
-					text += t.getTriggerTypes().get(k) + (k == t.getTriggerTypes().size() - 1 ? "" : ", ");
+				{
+					sb.append(t.getTriggerTypes().get(k).toString());
+					if (k != t.getTriggerTypes().size() - 1) sb.append(", ");
+				}
 				
-				text += "}, {";
+				sb.append("}, {");
 				
+				// Saves in triggers
 				for (int k = 0; k < t.getInTriggers().size(); k++)
-					text += t.getInTriggers().get(k) + (k == t.getInTriggers().size() - 1 ? "" : ", ");
+				{
+					sb.append(t.getInTriggers().get(k));
+					if (k != t.getInTriggers().size() - 1) sb.append(", ");
+				}
 				
-				text += "}, {";
+				sb.append("}, {");
 				
+				// Saves out triggers
 				for (int k = 0; k < t.getOutTriggers().size(); k++)
-					text += t.getOutTriggers().get(k) + (k == t.getOutTriggers().size() - 1 ? "" : ", ");
+				{
+					sb.append(t.getOutTriggers().get(k));
+					if (k != t.getOutTriggers().size() - 1) sb.append(", ");
+				}
 				
-				text += "})";
+				sb.append("})");
 				
-				toReturn.add(text);
+				toReturn.add(sb.toString());
 			}
 		}
 		
 		// Copies the level data to the clipboard
-		String toCopy = "";
+		StringBuilder sb = new StringBuilder();
 		for (String copy : toReturn)
 		{
-			toCopy += copy + "\n";
+			sb.append(copy);
+			sb.append("\n");
 		}
-		StringSelection stringSelection = new StringSelection(toCopy);
+		StringSelection stringSelection = new StringSelection(sb.toString());
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 		

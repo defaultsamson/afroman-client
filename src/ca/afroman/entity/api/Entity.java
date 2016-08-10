@@ -564,7 +564,7 @@ public class Entity implements ITickable, IServerClient
 	 */
 	public String hitboxesAsSaveable()
 	{
-		String toReturn = "";
+		StringBuilder sb = new StringBuilder();
 		
 		if (this.hasHitbox())
 		{
@@ -572,11 +572,18 @@ public class Entity implements ITickable, IServerClient
 			{
 				Hitbox box = getHitbox()[i];
 				
-				toReturn += box.getX() + ", " + box.getY() + ", " + box.getWidth() + ", " + box.getHeight() + (i == getHitbox().length - 1 ? "" : ", ");
+				sb.append(box.getX());
+				sb.append(", ");
+				sb.append(box.getY());
+				sb.append(", ");
+				sb.append(box.getWidth());
+				sb.append(", ");
+				sb.append(box.getHeight());
+				if (i == getHitbox().length - 1) sb.append(", ");
 			}
 		}
 		
-		return toReturn;
+		return sb.toString();
 	}
 	
 	/**

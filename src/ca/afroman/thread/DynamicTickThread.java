@@ -42,7 +42,7 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	 * Runs every time that the thread loops.
 	 */
 	@Override
-	public synchronized void onRun()
+	public void onRun() // TODO synchronized? seems like it could be unnecessary
 	{
 		long now = System.nanoTime();
 		delta += (now - lastTime) / nsPerTick;

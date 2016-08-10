@@ -36,7 +36,7 @@ public class BytePacket
 		this.type = type;
 		id = mustSend ? getIDCounter().getNext() : IDCounter.WASTE_ID;
 		
-		connections = new ArrayList<IPConnection>();
+		connections = new ArrayList<IPConnection>(receivers.length);
 		
 		if (receivers != null)
 		{
@@ -60,7 +60,7 @@ public class BytePacket
 		type = PacketType.fromOrdinal(buf.getShort(0));
 		id = buf.getInt(2);
 		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT, rawData.length);
-		connections = new ArrayList<IPConnection>();
+		connections = new ArrayList<IPConnection>(1);
 		connections.add(sender);
 	}
 	

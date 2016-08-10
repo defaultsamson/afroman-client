@@ -41,42 +41,45 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		HitboxTrigger trigger = (HitboxTrigger) level.getScriptedEvent(triggerID);
 		
-		String text = "";
+		StringBuilder sb = new StringBuilder();
 		
 		for (TriggerType t : trigger.getTriggerTypes())
 		{
-			text += t.ordinal() + ",";
+			sb.append(t.ordinal());
+			sb.append(',');
 		}
 		
 		triggers = new GuiTextField(this, 20, 28, width);
 		triggers.setFocussed();
-		triggers.setText(text);
+		triggers.setText(sb.toString());
 		triggers.setMaxLength(5000);
 		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		buttons.add(triggers);
 		
-		text = "";
+		StringBuilder sb2 = new StringBuilder();
 		
 		for (int e : trigger.getInTriggers())
 		{
-			text += e + ",";
+			sb2.append(e);
+			sb2.append(',');
 		}
 		
 		inTriggers = new GuiTextField(this, 20, 58, width);
-		inTriggers.setText(text);
+		inTriggers.setText(sb2.toString());
 		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		inTriggers.setMaxLength(5000);
 		buttons.add(inTriggers);
 		
-		text = "";
+		StringBuilder sb3 = new StringBuilder();
 		
 		for (int e : trigger.getOutTriggers())
 		{
-			text += e + ",";
+			sb3.append(e);
+			sb3.append(',');
 		}
 		
 		outTriggers = new GuiTextField(this, 20, 88, width);
-		outTriggers.setText(text);
+		outTriggers.setText(sb3.toString());
 		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		outTriggers.setMaxLength(5000);
 		buttons.add(outTriggers);
@@ -146,8 +149,8 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 				goToParentScreen();
 				break;
 			case 200:
-				List<TriggerType> triggers = new ArrayList<TriggerType>();
 				String[] trigs = this.triggers.getText().split(",");
+				List<TriggerType> triggers = new ArrayList<TriggerType>(trigs.length);
 				if (!ArrayUtil.isEmpty(trigs))
 				{
 					for (String t : trigs)
@@ -156,8 +159,8 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 					}
 				}
 				
-				List<Integer> inTriggers = new ArrayList<Integer>();
 				String[] inTrigs = this.inTriggers.getText().split(",");
+				List<Integer> inTriggers = new ArrayList<Integer>(inTrigs.length);
 				if (!ArrayUtil.isEmpty(inTrigs))
 				{
 					for (String t : inTrigs)
@@ -166,8 +169,8 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 					}
 				}
 				
-				List<Integer> outTriggers = new ArrayList<Integer>();
 				String[] outTrigs = this.outTriggers.getText().split(",");
+				List<Integer> outTriggers = new ArrayList<Integer>(outTrigs.length);
 				if (!ArrayUtil.isEmpty(outTrigs))
 				{
 					for (String t : outTrigs)

@@ -41,10 +41,7 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 		
 		if (level != null)
 		{
-			synchronized (level.getPlayers())
-			{
-				level.getPlayers().remove(this);
-			}
+			level.getPlayers().remove(this);
 		}
 		
 		// Sets the new level
@@ -52,10 +49,7 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 		
 		if (level != null)
 		{
-			synchronized (level.getPlayers())
-			{
-				level.getPlayers().add(this);
-			}
+			level.getPlayers().add(this);
 		}
 		
 		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), (level != null ? level.getType() : LevelType.NULL)));

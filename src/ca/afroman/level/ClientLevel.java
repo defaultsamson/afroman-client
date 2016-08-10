@@ -141,24 +141,21 @@ public class ClientLevel extends Level
 			
 			List<PointLight> lights = this.getLights();
 			
-			synchronized (lights)
+			for (PointLight light : lights) // Throws ConcurrentModificationException
 			{
-				for (PointLight light : lights) // Throws ConcurrentModificationException
+				light.renderCentered(lightmap);
+				
+				if (ClientGame.instance().isHitboxDebugging())
 				{
-					light.renderCentered(lightmap);
+					int x = this.worldToScreenX(light.getX());
+					int y = this.worldToScreenY(light.getY());
+					int radius = (int) light.getRadius();
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
+					renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
+					renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
 					
-					if (ClientGame.instance().isHitboxDebugging())
-					{
-						int x = this.worldToScreenX(light.getX());
-						int y = this.worldToScreenY(light.getY());
-						int radius = (int) light.getRadius();
-						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
-						renderTo.getGraphics().fillRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
-						renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
-						renderTo.getGraphics().drawRect(x - radius, y - radius, (radius * 2) - 1, (radius * 2) - 1);
-						
-						lightDebug.renderCentered(renderTo, this.worldToScreenX(light.getX()), this.worldToScreenY(light.getY()) - 3, "" + light.getID());
-					}
+					lightDebug.renderCentered(renderTo, this.worldToScreenX(light.getX()), this.worldToScreenY(light.getY()) - 3, "" + light.getID());
 				}
 			}
 			

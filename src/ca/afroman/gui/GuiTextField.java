@@ -13,7 +13,7 @@ public class GuiTextField extends GuiButton
 {
 	private Font font;
 	private int maxLength = 18;
-	private String text = "";
+	private StringBuilder text = new StringBuilder();
 	private boolean isFocussed = false;
 	private TypingMode mode = TypingMode.FULL;
 	
@@ -71,7 +71,8 @@ public class GuiTextField extends GuiButton
 			{
 				if (text.length() > 0)
 				{
-					text = text.substring(0, text.length() - 1);
+					text.deleteCharAt(text.length() - 1);
+					// text = text.substring(0, text.length() - 1);
 					
 					letterTyped = true;
 				}
@@ -107,7 +108,7 @@ public class GuiTextField extends GuiButton
 		if (character.length() > 0)
 		{
 			letterTyped = true;
-			if (text.length() < maxLength) text += character;
+			if (text.length() < maxLength) text.append(character);
 		}
 	}
 	
@@ -134,7 +135,7 @@ public class GuiTextField extends GuiButton
 	
 	public String getText()
 	{
-		return text;
+		return text.toString();
 	}
 	
 	public void setText(String newText)
@@ -144,7 +145,10 @@ public class GuiTextField extends GuiButton
 			newText = newText.substring(0, maxLength);
 		}
 		
-		this.text = newText;
+		text = new StringBuilder();
+		text.append(newText);
+		
+		// this.text = newText;
 	}
 	
 	@Override

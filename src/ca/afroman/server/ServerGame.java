@@ -77,14 +77,12 @@ public class ServerGame extends DynamicTickThread
 		
 		sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
 		
-		levels = new ArrayList<Level>();
+		levels = new ArrayList<Level>(LevelType.values().length);
 		
 		for (LevelType type : LevelType.values())
 		{
 			if (type != LevelType.NULL) getLevels().add(Level.fromFile(true, type));
 		}
-		
-		players = new ArrayList<ServerPlayerEntity>();
 		
 		// Sends the levels to everyone else
 		for (Level level : getLevels())
@@ -125,7 +123,7 @@ public class ServerGame extends DynamicTickThread
 			}
 		}
 		
-		players = new ArrayList<ServerPlayerEntity>();
+		players = new ArrayList<ServerPlayerEntity>(2);
 		getPlayers().add(new ServerPlayerEntity(Role.PLAYER1, 80, 50));
 		getPlayers().add(new ServerPlayerEntity(Role.PLAYER2, 20, 20));
 		
@@ -167,6 +165,8 @@ public class ServerGame extends DynamicTickThread
 		game = null;
 	}
 	
+	private boolean stopServer = false;
+	
 	@Override
 	public void tick()
 	{
@@ -179,6 +179,9 @@ public class ServerGame extends DynamicTickThread
 			
 			toProcess.clear();
 		}
+		
+		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
+		if (stopServer) ServerGame.instance().stopThis();
 		
 		if (isInGame)
 		{
@@ -343,7 +346,7 @@ public class ServerGame extends DynamicTickThread
 					{
 						if (ServerGame.instance() != null)
 						{
-							ServerGame.instance().stopThis();
+							stopServer = true;
 						}
 						else
 						{
