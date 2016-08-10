@@ -128,6 +128,15 @@ public class ClientGame extends DynamicTickRenderThread
 	{
 		super.onStart();
 		
+		// Initialises the console output.
+		logger().log(ALogType.DEBUG, "Initializing external console output...");
+		Console.initialize();
+		
+		logger().log(ALogType.DEBUG, "Initializing logging streams...");
+		ALogger.initStreams();
+		
+		logger().log(ALogType.DEBUG, "Creating environment...");
+		
 		canvas = new Canvas();
 		frame = new JFrame(NAME);
 		
@@ -239,16 +248,16 @@ public class ClientGame extends DynamicTickRenderThread
 		};
 		renderLoading.startThis();
 		
-		// DO THE LOADING
-		
 		// Allows key listens for TAB and such
 		canvas.setFocusTraversalKeysEnabled(false);
 		
-		// Initialises the console output.
-		Console.initialize();
-		ALogger.initStreams();
+		// DO THE LOADING
+		
+		logger().log(ALogType.DEBUG, "Loading game...");
+		
 		Assets.load();
 		
+		logger().log(ALogType.DEBUG, "Initializing game variables...");
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
@@ -268,13 +277,14 @@ public class ClientGame extends DynamicTickRenderThread
 		// WHEN FINISHED LOADING
 		
 		// End the loading screen
+		logger().log(ALogType.DEBUG, "Disposing of loading screen...");
 		renderLoading.stopThis();
 		frame.setResizable(true);
 		canvas.repaint();
 		
 		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
 		
-		logger().log(ALogType.DEBUG, "Game Loaded. Took " + loadTime + " seconds");
+		logger().log(ALogType.DEBUG, "Game loaded. Took " + loadTime + " seconds");
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		music.startLoop();
@@ -439,8 +449,11 @@ public class ClientGame extends DynamicTickRenderThread
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, HEIGHT - 9, "V");
 			Assets.getFont(AssetType.FONT_BLACK).render(screen, 9, HEIGHT - 9, "" + VERSION);
 			
-			// TODO Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 20, "x: " + player.getX() );
-			// TODO Assets.getFont(Assets.FONT_BLACK).render(screen, 1, 30, "y: " + player.getY());
+			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
+			{
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 20, "x: " + getThisPlayer().getX());
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 30, "y: " + getThisPlayer().getY());
+			}
 		}
 		
 		// Renders everything that was just drawn
@@ -862,7 +875,26 @@ public class ClientGame extends DynamicTickRenderThread
 						
 						if (eHitbox != null)
 						{
-							eHitbox.trigger();
+							byte hnng = buf.get();
+							Role role = Role.fromOrdinal(hnng);
+							
+							if (role != null)
+							{
+								ClientPlayerEntity player = getPlayer(role);
+								
+								if (player != null)
+								{
+									eHitbox.trigger(player);
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No player found with role " + role);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No role found with ordinal " + hnng);
+							}
 						}
 						else
 						{
@@ -1168,11 +1200,12 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public ClientPlayerEntity getThisPlayer()
 	{
-		Role role = sockets().getServerConnection().getRole();
-		
-		if (role != Role.SPECTATOR) return getPlayer(role);
-		else
-			return null;
+		if (sockets() != null && sockets().getServerConnection() != null)
+		{
+			Role role = sockets().getServerConnection().getRole();
+			if (role != Role.SPECTATOR) return getPlayer(role);
+		}
+		return null;
 	}
 	
 	/**

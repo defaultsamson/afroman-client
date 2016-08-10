@@ -78,7 +78,10 @@ public class GuiTextField extends GuiButton
 			}
 			if (input.backspace.isPressed())
 			{
-				letterTyped = true;
+				if (text.length() > 0)
+				{
+					letterTyped = true;
+				}
 			}
 			
 			if (letterTyped)

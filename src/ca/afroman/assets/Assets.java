@@ -3,6 +3,9 @@ package ca.afroman.assets;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
+import ca.afroman.log.ALogType;
+
 public class Assets
 {
 	private static List<AssetArray> assetArrays = new ArrayList<AssetArray>();
@@ -11,6 +14,8 @@ public class Assets
 	
 	public static void load()
 	{
+		ClientGame.instance().logger().log(ALogType.DEBUG, "Loading textures...");
+		
 		Texture sheet = Texture.fromResource(AssetType.INVALID, "spritesheet.png");
 		Texture font = Texture.fromResource(AssetType.INVALID, "fonts.png");
 		Texture buttons = Texture.fromResource(AssetType.INVALID, "buttons.png");
@@ -80,6 +85,8 @@ public class Assets
 		
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
+		
+		ClientGame.instance().logger().log(ALogType.DEBUG, "Loading audio...");
 		
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down"));
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up"));

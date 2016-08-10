@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
+import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
@@ -16,7 +17,7 @@ import ca.afroman.util.IDCounter;
 
 public class HitboxTrigger extends InputType implements IEvent, IServerClient
 {
-	private static IDCounter idCounter = new IDCounter();;
+	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
 	{
@@ -111,33 +112,46 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 		triggerTypes = types;
 	}
 	
+	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
+	private Entity lastHit = null;
+	
 	@Override
 	public void tick()
 	{
 		// Only activate the triggers if it's on the server side
 		if (isServerSide())
 		{
-			if (this.triggerTypes.contains(TriggerType.PLAYER_COLLIDE))
+			boolean playerCollide = this.triggerTypes.contains(TriggerType.PLAYER_COLLIDE);
+			boolean playerUncollide = this.triggerTypes.contains(TriggerType.PLAYER_UNCOLLIDE);
+			
+			if (playerCollide || playerUncollide)
 			{
-				boolean hasPressed = false;
+				ServerPlayerEntity player = null;
 				
-				for (Entity player : this.hitbox.getLevel().getPlayers())
+				for (Entity p : this.hitbox.getLevel().getPlayers())
 				{
-					if (player.isColliding(this.getHitbox()))
+					if (p.isColliding(this.getHitbox()))
 					{
-						this.setPressed(true);
-						hasPressed = true;
+						player = (ServerPlayerEntity) p;
 						break;
 					}
 				}
 				
-				if (!hasPressed) this.setPressed(false);
-			}
-			
-			if (this.isPressedFiltered())
-			{
-				trigger();
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(this.getID(), this.getLevel().getType()));
+				this.setPressed(player != null);
+				
+				if (playerCollide && this.isPressedFiltered())
+				{
+					trigger(player);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(this.getID(), this.getLevel().getType(), player.getRole()));
+				}
+				
+				if (playerUncollide && this.isReleasedFiltered())
+				{
+					trigger(player);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(this.getID(), this.getLevel().getType(), ((ServerPlayerEntity) lastHit).getRole()));
+				}
+				
+				lastHit = player;
 			}
 		}
 	}
@@ -148,19 +162,19 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 	}
 	
 	@Override
-	public void trigger()
+	public void trigger(Entity triggerer)
 	{
+		onTrigger(triggerer);
+		
 		for (int out : getOutTriggers())
 		{
 			// TODO chain for all levels
-			getLevel().chainScriptedEvents(out);
+			getLevel().chainScriptedEvents(triggerer, out);
 		}
-		
-		onTrigger();
 	}
 	
 	@Override
-	public void onTrigger()
+	public void onTrigger(Entity triggerer)
 	{
 		if (!isServerSide())
 		{

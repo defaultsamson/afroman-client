@@ -401,7 +401,7 @@ public class Level implements IServerClient
 		return null;
 	}
 	
-	public void chainScriptedEvents(int inTrigger)
+	public void chainScriptedEvents(Entity triggerer, int inTrigger)
 	{
 		// TODO detect infinite loops?
 		for (IEvent event : getScriptedEvents())
@@ -412,7 +412,7 @@ public class Level implements IServerClient
 				if (eventTrigger == inTrigger)
 				{
 					// Trigger it
-					event.trigger();
+					event.trigger(triggerer);
 					break;
 				}
 			}

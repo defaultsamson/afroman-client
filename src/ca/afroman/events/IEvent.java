@@ -2,6 +2,7 @@ package ca.afroman.events;
 
 import java.util.List;
 
+import ca.afroman.entity.api.Entity;
 import ca.afroman.level.Level;
 
 public interface IEvent
@@ -14,14 +15,14 @@ public interface IEvent
 	/**
 	 * Triggers this.
 	 */
-	public void trigger();
+	public void trigger(Entity triggerer);
 	
 	/**
 	 * Runs when this is triggered.
 	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="hHHHHHHH" height="120" width="120">
 	 * <a href="https://i.imgur.com/dNVvntX.gif">ono</a>
 	 */
-	public void onTrigger();
+	public void onTrigger(Entity triggerer);
 	
 	/**
 	 * @return the ID of this event. FOR SERVER/CLIENT REFERENCE ONLY, it does not act as a trigger.

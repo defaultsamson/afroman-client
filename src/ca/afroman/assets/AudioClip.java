@@ -35,8 +35,9 @@ public class AudioClip extends Asset
 	{
 		if (initUseMp3)
 		{
-			USE_MP3 = AudioClip.class.getResource(AUDIO_DIR + MP3_DIR + path + ".mp3") != null;
+			USE_MP3 = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + path + ".wav") == null;
 			initUseMp3 = false;
+			ClientGame.instance().logger().log(ALogType.DEBUG, "Loading audio using " + (USE_MP3 ? "MP3" : "WAV") + " files");
 		}
 		
 		URL url = AudioClip.class.getResource(AUDIO_DIR + (USE_MP3 ? MP3_DIR : WAV_DIR) + path + (USE_MP3 ? ".mp3" : ".wav"));
