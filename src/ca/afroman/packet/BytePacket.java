@@ -36,14 +36,18 @@ public class BytePacket
 		this.type = type;
 		id = mustSend ? getIDCounter().getNext() : IDCounter.WASTE_ID;
 		
-		connections = new ArrayList<IPConnection>(receivers.length);
-		
 		if (receivers != null)
 		{
+			connections = new ArrayList<IPConnection>(receivers.length);
+			
 			for (IPConnection con : receivers)
 			{
 				connections.add(con);
 			}
+		}
+		else
+		{
+			connections = new ArrayList<IPConnection>();
 		}
 	}
 	
