@@ -117,6 +117,8 @@ public class FileUtil
 			toReturn.add(fileScanner.nextLine());
 		}
 		
+		fileScanner.close();
+		
 		return toReturn;
 	}
 }
