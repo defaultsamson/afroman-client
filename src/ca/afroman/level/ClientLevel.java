@@ -61,7 +61,7 @@ public class ClientLevel extends Level
 		{
 			boolean draw = true;
 			
-			if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+			if (ClientGame.instance().isBuildMode() && currentBuildMode == BuildMode.TILE)
 			{
 				switch (i)
 				{
@@ -108,7 +108,7 @@ public class ClientLevel extends Level
 		{
 			boolean draw = true;
 			
-			if (ClientGame.instance().isBuildMode() && currentBuildMode == 1)
+			if (ClientGame.instance().isBuildMode() && currentBuildMode == BuildMode.TILE)
 			{
 				switch (i)
 				{
@@ -160,7 +160,7 @@ public class ClientLevel extends Level
 			}
 			
 			// Draws the light on the cursor if there is one
-			if (ClientGame.instance().isBuildMode() && currentBuildMode == 2)
+			if (ClientGame.instance().isBuildMode() && currentBuildMode == BuildMode.LIGHT)
 			{
 				int radius = currentBuildLightRadius;
 				int x = ClientGame.instance().input().getMouseX() - radius;
@@ -182,7 +182,7 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out the hitboxes
-		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == 3 && ClientGame.instance().isBuildMode()))
+		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == BuildMode.HITBOX && ClientGame.instance().isBuildMode()))
 		{
 			for (Hitbox box : this.getHitboxes())
 			{
@@ -231,7 +231,7 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out scripted events
-		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == 4 && ClientGame.instance().isBuildMode()))
+		if (ClientGame.instance().isHitboxDebugging() || (currentBuildMode == BuildMode.EVENT && ClientGame.instance().isBuildMode()))
 		{
 			Paint oldPaint = renderTo.getGraphics().getPaint();
 			renderTo.getGraphics().setPaint(new Color(0.3F, 0.3F, 1F, 1F)); // Blue
@@ -241,7 +241,7 @@ public class ClientLevel extends Level
 				renderTo.getGraphics().drawRect(worldToScreenX(e.getX()), worldToScreenY(e.getY()), (int) e.getWidth() - 1, (int) e.getHeight() - 1);
 			}
 			
-			if (currentBuildMode == 4 && hitboxClickCount == 1)
+			if (currentBuildMode == BuildMode.EVENT && hitboxClickCount == 1)
 			{
 				renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
 				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
@@ -253,7 +253,7 @@ public class ClientLevel extends Level
 		// Draws the building hitbox, cursor asset, the grid, and the tooltips
 		if (ClientGame.instance().isBuildMode())
 		{
-			if (currentBuildMode == 1)
+			if (currentBuildMode == BuildMode.TILE)
 			{
 				if (cursorAsset != null && cursorAsset instanceof IRenderable) ((IRenderable) cursorAsset).render(renderTo, ClientGame.instance().input().getMouseX(), ClientGame.instance().input().getMouseY());
 				
@@ -286,7 +286,7 @@ public class ClientLevel extends Level
 					renderTo.getGraphics().setPaint(oldPaint);
 				}
 			}
-			else if (currentBuildMode == 3 && hitboxClickCount == 1)
+			else if (currentBuildMode == BuildMode.HITBOX && hitboxClickCount == 1)
 			{
 				renderTo.getGraphics().drawRect(worldToScreenX(hitboxX), worldToScreenY(hitboxY), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
 			}
@@ -300,21 +300,21 @@ public class ClientLevel extends Level
 				
 				switch (currentBuildMode)
 				{
-					case 1:
+					case TILE:
 						text2 = "Tiles";
 						text3 = "Scroll to switch texture";
 						break;
-					case 2:
+					case LIGHT:
 						text2 = "Lights";
 						text3 = "Scroll to change size";
 						break;
-					case 3:
+					case HITBOX:
 						text2 = "Hitboxes";
 						text3 = "Click to place both corners";
 						text4 = "Right click to cancel corner";
 						break;
-					case 4:
-						text1 = "Scripted Events";
+					case EVENT:
+						text1 = "Events";
 						text2 = "Click to place both corners";
 						text3 = "Right click to cancel corner";
 						text4 = "Right click box to edit";
@@ -329,8 +329,7 @@ public class ClientLevel extends Level
 		}
 	}
 	
-	private int currentBuildMode = 1;
-	private int buildModes = 4;
+	private BuildMode currentBuildMode = BuildMode.TILE;
 	private int timeOnTool = 0;
 	private static final int MAX_TOOLTIP_TIME = (60 * 3); // Time in ticks
 	
@@ -393,28 +392,20 @@ public class ClientLevel extends Level
 			
 			if (ClientGame.instance().input().e.isPressedFiltered())
 			{
-				currentBuildMode++;
 				timeOnTool = 0; // On change, reset tooltips
 				
-				if (currentBuildMode > buildModes)
-				{
-					currentBuildMode = 1;
-				}
+				currentBuildMode = BuildMode.getNext(currentBuildMode);
 			}
 			
 			if (ClientGame.instance().input().q.isPressedFiltered())
 			{
-				currentBuildMode--;
 				timeOnTool = 0; // On change, reset tooltips
 				
-				if (currentBuildMode < 1)
-				{
-					currentBuildMode = buildModes;
-				}
+				currentBuildMode = BuildMode.getLast(currentBuildMode);
 			}
 			
 			// Placing and removing blocks
-			if (currentBuildMode == 1)
+			if (currentBuildMode == BuildMode.TILE)
 			{
 				if (!(ClientGame.instance().getCurrentScreen() instanceof GuiTileEditor))
 				{
@@ -468,54 +459,18 @@ public class ClientLevel extends Level
 					}
 				}
 				
-				boolean assetUpdated = false;
-				
-				int ordinalDir = 0;
+				if (cursorAsset == null) cursorAsset = Assets.getAsset(AssetType.getNextRenderable(AssetType.fromOrdinal(0))).clone();
 				
 				if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 				{
-					ordinalDir -= speed;
-					assetUpdated = true;
+					cursorAsset.dispose();
+					cursorAsset = Assets.getAsset(AssetType.getLastRenderable(cursorAsset.getAssetType())).clone();
 				}
 				
 				if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
 				{
-					ordinalDir += speed;
-					assetUpdated = true;
-				}
-				
-				if (assetUpdated || cursorAsset == null)
-				{
-					// If it goes over the index bounds, loop back to 0
-					currentBuildTextureOrdinal += ordinalDir;
-					
-					if (currentBuildTextureOrdinal > AssetType.values().length - 1)
-					{
-						currentBuildTextureOrdinal = 0;
-					}
-					
-					if (currentBuildTextureOrdinal < 0)
-					{
-						currentBuildTextureOrdinal = AssetType.values().length - 1;
-					}
-					
-					// Only allow ordinals of assets that are Textures or SpriteAnimations
-					while (!(Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)) instanceof IRenderable))
-					{
-						currentBuildTextureOrdinal += ordinalDir;
-						
-						if (currentBuildTextureOrdinal > AssetType.values().length - 1)
-						{
-							currentBuildTextureOrdinal = 0;
-						}
-						
-						if (currentBuildTextureOrdinal < 0)
-						{
-							currentBuildTextureOrdinal = AssetType.values().length - 1;
-						}
-					}
-					
-					cursorAsset = Assets.getAsset(AssetType.fromOrdinal(currentBuildTextureOrdinal)).clone();
+					cursorAsset.dispose();
+					cursorAsset = Assets.getAsset(AssetType.getNextRenderable(cursorAsset.getAssetType())).clone();
 				}
 				
 				if (cursorAsset instanceof ITickable) ((ITickable) cursorAsset).tick();
@@ -529,7 +484,7 @@ public class ClientLevel extends Level
 			}
 			
 			// PointLight mode
-			if (currentBuildMode == 2)
+			if (currentBuildMode == BuildMode.LIGHT)
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
@@ -562,7 +517,7 @@ public class ClientLevel extends Level
 			}
 			
 			// HitBox mode
-			if (currentBuildMode != 4)
+			if (currentBuildMode != BuildMode.HITBOX)
 			{
 				if (ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor)
 				{
@@ -570,7 +525,7 @@ public class ClientLevel extends Level
 				}
 			}
 			
-			if (currentBuildMode == 3 || currentBuildMode == 4)
+			if (currentBuildMode == BuildMode.HITBOX || currentBuildMode == BuildMode.EVENT)
 			{
 				if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 				{
@@ -585,12 +540,12 @@ public class ClientLevel extends Level
 					}
 					else if (hitboxClickCount == 1)
 					{
-						if (currentBuildMode == 3)
+						if (currentBuildMode == BuildMode.HITBOX)
 						{
 							PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight));
 							ClientGame.instance().sockets().sender().sendPacket(pack);
 						}
-						else if (currentBuildMode == 4)
+						else if (currentBuildMode == BuildMode.EVENT)
 						{
 							PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) hitboxX, (int) hitboxY, (int) hitboxWidth, (int) hitboxHeight);
 							ClientGame.instance().sockets().sender().sendPacket(pack);
@@ -608,7 +563,7 @@ public class ClientLevel extends Level
 					}
 					else
 					{
-						if (currentBuildMode == 3)
+						if (currentBuildMode == BuildMode.HITBOX)
 						{
 							Hitbox box = this.getHitbox(screenToWorldX(ClientGame.instance().input().getMouseX()), screenToWorldY(ClientGame.instance().input().getMouseY()));
 							
@@ -618,7 +573,7 @@ public class ClientLevel extends Level
 								ClientGame.instance().sockets().sender().sendPacket(pack);
 							}
 						}
-						else if (currentBuildMode == 4)
+						else if (currentBuildMode == BuildMode.EVENT)
 						{
 							if (ClientGame.instance().getCurrentScreen() == null)
 							{

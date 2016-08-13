@@ -165,7 +165,7 @@ public class ClientGame extends DynamicTickRenderThread
 			@Override
 			public void componentMoved(ComponentEvent e)
 			{
-				
+			
 			}
 			
 			@Override
@@ -180,7 +180,7 @@ public class ClientGame extends DynamicTickRenderThread
 				
 			}
 		});
-		
+			
 		canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
 		canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
@@ -228,7 +228,7 @@ public class ClientGame extends DynamicTickRenderThread
 			@Override
 			public void onStart()
 			{
-				
+			
 			}
 			
 			@Override

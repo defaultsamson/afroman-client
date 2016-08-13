@@ -148,6 +148,7 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 		}
 	}
 	
+	@Override
 	public Level getLevel()
 	{
 		return hitbox.getLevel();

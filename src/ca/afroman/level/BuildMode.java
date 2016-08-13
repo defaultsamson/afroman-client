@@ -1,42 +1,13 @@
-package ca.afroman.packet;
+package ca.afroman.level;
 
-import ca.afroman.level.BuildMode;
-
-public enum PacketType
+public enum BuildMode
 {
-	INVALID,
-	CONFIRM_RECEIVED,
+	TILE,
+	LIGHT,
+	HITBOX,
+	EVENT;
 	
-	REQUEST_CONNECTION,
-	DENY_JOIN,
-	ASSIGN_CLIENTID,
-	UPDATE_PLAYERLIST,
-	SETROLE,
-	PLAYER_DISCONNECT,
-	STOP_SERVER,
-	START_SERVER,
-	
-	SEND_LEVELS,
-	
-	INSTANTIATE_LEVEL,
-	ADD_LEVEL_ENTITY,
-	ADD_LEVEL_TILE,
-	ADD_LEVEL_HITBOX,
-	ADD_LEVEL_POINTLIGHT,
-	ADD_LEVEL_PLAYER,
-	
-	ADD_EVENT_HITBOX_TRIGGER,
-	EDIT_EVENT_HITBOX_TRIGGER,
-	
-	REMOVE_LEVEL_OBJECT,
-	
-	ACTIVATE_TRIGGER,
-	
-	REQUEST_PLAYER_MOVE,
-	SET_ENTITY_LOCATION,
-	SET_PLAYER_LOCATION;
-	
-	public static PacketType fromOrdinal(int ordinal)
+	public static BuildMode fromOrdinal(int ordinal)
 	{
 		if (ordinal < 0 || ordinal > values().length - 1) return null;
 		
@@ -52,7 +23,7 @@ public enum PacketType
 	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static PacketType getNext(BuildMode current)
+	public static BuildMode getNext(BuildMode current)
 	{
 		int newOrdinal = current.ordinal() + 1;
 		
@@ -76,13 +47,13 @@ public enum PacketType
 	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static PacketType getLast(BuildMode current)
+	public static BuildMode getLast(BuildMode current)
 	{
 		int newOrdinal = current.ordinal() - 1;
 		
 		if (newOrdinal < 0)
 		{
-			return fromOrdinal(BuildMode.values().length - 1);
+			return fromOrdinal(values().length - 1);
 		}
 		else
 		{

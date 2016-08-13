@@ -62,4 +62,6 @@ public interface IEvent
 	public void removeFromLevel();
 	
 	public void addToLevel(Level level);
+	
+	public Level getLevel();
 }
