@@ -18,6 +18,7 @@ import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.log.ALogType;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.FileUtil;
 
@@ -124,11 +125,10 @@ public class Level implements IServerClient
 						case TILE: // (AssetType, x, y, width, height, hitbox ...)
 						{
 							byte layer = Byte.parseByte(parameters[0]);
-							double x = Double.parseDouble(parameters[1]);
-							double y = Double.parseDouble(parameters[2]);
+							Vector2DDouble pos = new Vector2DDouble(Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]));
 							AssetType type = AssetType.valueOf(parameters[3]);
 							
-							new Entity(isServerSide, Entity.getIDCounter().getNext(), type, x, y).addTileToLevel(level, layer);
+							new Entity(isServerSide, Entity.getIDCounter().getNext(), type, pos).addTileToLevel(level, layer);
 							
 							// If it has custom hitboxes defined
 							// if (parameters.length > 4)
@@ -152,11 +152,10 @@ public class Level implements IServerClient
 							break;
 						case POINT_LIGHT:
 						{
-							double x = Double.parseDouble(parameters[0]);
-							double y = Double.parseDouble(parameters[1]);
+							Vector2DDouble pos = new Vector2DDouble(Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]));
 							double radius = Double.parseDouble(parameters[2]);
 							
-							new PointLight(isServerSide, PointLight.getIDCounter().getNext(), x, y, radius).addToLevel(level);
+							new PointLight(isServerSide, PointLight.getIDCounter().getNext(), pos, radius).addToLevel(level);
 						}
 							break;
 						case HITBOX_TRIGGER:
@@ -264,9 +263,9 @@ public class Level implements IServerClient
 				sb.append('(');
 				sb.append(layer);
 				sb.append(", ");
-				sb.append(tile.getX());
+				sb.append(tile.getPosition().getX());
 				sb.append(", ");
-				sb.append(tile.getY());
+				sb.append(tile.getPosition().getY());
 				sb.append(", ");
 				sb.append(tile.getAssetType().toString());
 				
@@ -325,7 +324,7 @@ public class Level implements IServerClient
 			}
 			else
 			{
-				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getX() + ", " + light.getY() + ", " + light.getRadius() + ")");
+				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getPosition().getX() + ", " + light.getPosition().getY() + ", " + light.getRadius() + ")");
 			}
 		}
 		
@@ -409,11 +408,11 @@ public class Level implements IServerClient
 	 * @param y the y in-level ordinate
 	 * @return the entity. <b>null</b> if there are no entities at that given location.
 	 */
-	public IEvent getScriptedEvent(double x, double y)
+	public IEvent getScriptedEvent(Vector2DDouble pos)
 	{
 		for (IEvent event : getScriptedEvents())
 		{
-			if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(x, y)) return event;
+			if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return event;
 		}
 		return null;
 	}
@@ -468,7 +467,7 @@ public class Level implements IServerClient
 	 * @param y the y in-level ordinate
 	 * @return the tile. <b>null</b> if there are no tiles at that given location.
 	 */
-	public Entity getTile(byte layer, double x, double y)
+	public Entity getTile(byte layer, Vector2DDouble pos)
 	{
 		List<Entity> tiles = getTiles(layer);
 		
@@ -477,9 +476,9 @@ public class Level implements IServerClient
 		for (Entity tile : tiles)
 		{
 			// TODO generate removable hitboxes for tiles based on asset
-			Hitbox surrounding = new Hitbox(tile.getX(), tile.getY(), 16, 16);
+			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
 			
-			if (surrounding.contains(x, y))
+			if (surrounding.contains(pos.getX(), pos.getY()))
 			{
 				Collections.reverse(tiles);
 				return tile;
@@ -515,17 +514,16 @@ public class Level implements IServerClient
 	/**
 	 * Gets an entity at the given coordinates.
 	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
+	 * @param pos the position
 	 * @return the entity. <b>null</b> if there are no entities at that given location.
 	 */
-	public Entity getEntity(double x, double y)
+	public Entity getEntity(Vector2DDouble pos)
 	{
 		for (Entity entity : getEntities())
 		{
 			for (Hitbox hitbox : entity.hitboxInLevel())
 			{
-				if (hitbox.contains(x, y)) return entity;
+				if (hitbox.contains(pos.getX(), pos.getY())) return entity;
 			}
 		}
 		return null;
@@ -561,17 +559,16 @@ public class Level implements IServerClient
 	/**
 	 * Gets a hitbox at the given coordinates.
 	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 * @return the entity. <b>null</b> if there are no entities at that given location.
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no hitboxes at that given location.
 	 */
-	public Hitbox getHitbox(double x, double y)
+	public Hitbox getHitbox(Vector2DDouble pos)
 	{
 		Collections.reverse(getHitboxes());
 		
 		for (Hitbox hitbox : getHitboxes())
 		{
-			if (hitbox.contains(x, y))
+			if (hitbox.contains(pos.getX(), pos.getY()))
 			{
 				Collections.reverse(getHitboxes());
 				return hitbox;
@@ -611,7 +608,7 @@ public class Level implements IServerClient
 	 * Gets a light with the given id.
 	 * 
 	 * @param id the id of the hitbox
-	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
+	 * @return the hitbox. <b>null</b> if there are no lights with the given id.
 	 */
 	public PointLight getLight(int id)
 	{
@@ -622,7 +619,13 @@ public class Level implements IServerClient
 		return null;
 	}
 	
-	public PointLight getLight(double x, double y)
+	/**
+	 * Gets a PointLight at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
+	 */
+	public PointLight getLight(Vector2DDouble pos)
 	{
 		Collections.reverse(lights);
 		
@@ -630,10 +633,20 @@ public class Level implements IServerClient
 		{
 			double radius = light.getRadius();
 			
-			if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+			double xa = (pos.getX() - light.getPosition().getX());
+			double ya = (pos.getY() - light.getPosition().getY());
+			
+			// If the light is not unnamed
+			if (light.getID() != -1) ;
 			{
-				Collections.reverse(lights);
-				return light;
+				// If the light contains the point
+				// Old method, creates a square hitbox to check for collision
+				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
+				{
+					Collections.reverse(lights);
+					return light;
+				}
 			}
 		}
 		

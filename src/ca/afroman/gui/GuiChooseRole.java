@@ -10,6 +10,8 @@ import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketSetRole;
+import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiChooseRole extends GuiScreen
 {
@@ -22,10 +24,8 @@ public class GuiChooseRole extends GuiScreen
 	private GuiTextButton player1b;
 	private GuiTextButton player2b;
 	
-	private int p1X = 58;
-	private int p1Y = 48;
-	private int p2X = ClientGame.WIDTH - 58 - 16;
-	private int p2Y = 48;
+	private Vector2DInt p1 = new Vector2DInt(58, 48);
+	private Vector2DInt p2 = new Vector2DInt(ClientGame.WIDTH - 58 - 16, 48);
 	private LightMap lightmap;
 	private FlickeringLight light1;
 	private FlickeringLight light2;
@@ -70,8 +70,8 @@ public class GuiChooseRole extends GuiScreen
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
-		light1 = new FlickeringLight(false, -1, p1X + 8, p2Y + 8, 42, 44, 6);
-		light2 = new FlickeringLight(false, -1, p2X + 8, p1Y + 8, 42, 44, 6);
+		light1 = new FlickeringLight(false, -1, new Vector2DDouble(p1.getX() + 8, p1.getY() + 8), 42, 44, 6);
+		light2 = new FlickeringLight(false, -1, new Vector2DDouble(p2.getX() + 8, p2.getY() + 8), 42, 44, 6);
 	}
 	
 	@Override
@@ -89,8 +89,8 @@ public class GuiChooseRole extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(player1.getCurrentFrame(), p1X, p1Y);
-		renderTo.draw(player2.getCurrentFrame(), p2X, p2Y);
+		renderTo.draw(player1.getCurrentFrame(), p1);
+		renderTo.draw(player2.getCurrentFrame(), p2);
 		
 		if (ClientGame.instance().isLightingOn())
 		{
@@ -99,10 +99,10 @@ public class GuiChooseRole extends GuiScreen
 			light2.renderCentered(lightmap);
 			lightmap.patch();
 			
-			renderTo.draw(lightmap, 0, 0);
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
 		}
 		
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Choose a new role for " + player.getUsername());
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Choose a new role for " + player.getUsername());
 	}
 	
 	@Override

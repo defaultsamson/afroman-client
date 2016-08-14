@@ -20,8 +20,8 @@ public class PacketSetPlayerLocation extends BytePacket
 		buf.put((byte) player.getDirection().ordinal());
 		buf.put((byte) player.getLastDirection().ordinal());
 		
-		buf.putInt((int) player.getX());
-		buf.putInt((int) player.getY());
+		buf.putInt((int) player.getPosition().getX());
+		buf.putInt((int) player.getPosition().getY());
 		
 		toSend = buf.array();
 	}

@@ -6,6 +6,7 @@ import ca.afroman.client.ExitGameReason;
 import ca.afroman.packet.PacketBeginGame;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiSendingLevels extends GuiScreen
 {
@@ -57,17 +58,17 @@ public class GuiSendingLevels extends GuiScreen
 		if (ClientGame.instance().isHostingServer())
 		{
 			// TODO not just 3 you fucking git
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Sent levels to (" + 3 + "/" + ClientGame.instance().sockets().getConnectedPlayers().size() + ") players");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Sent levels to (" + 3 + "/" + ClientGame.instance().sockets().getConnectedPlayers().size() + ") players");
 			
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 45, "Waiting for client responses");
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 55, "for " + (millsPassed / 1000) + " seconds...");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 45), "Waiting for client responses");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 55), "for " + (millsPassed / 1000) + " seconds...");
 			
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 80, "If nothing happens for a while,");
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 90, "try resending the levels.");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 80), "If nothing happens for a while,");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 90), "try resending the levels.");
 		}
 		else
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Recieving levels...");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Recieving levels...");
 		}
 	}
 	

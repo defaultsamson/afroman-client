@@ -8,6 +8,7 @@ import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.packet.PacketSetPlayerLevel;
 import ca.afroman.packet.PacketSetPlayerLocation;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
 public class ServerPlayerEntity extends Entity implements IRoleEntity
@@ -17,14 +18,13 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	/**
 	 * Creates a new Entity without a hitbox.
 	 * 
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
+	 * @param pos the position
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public ServerPlayerEntity(Role role, double x, double y)
+	public ServerPlayerEntity(Role role, Vector2DDouble pos)
 	{
-		super(true, -1, (role == Role.PLAYER1 ? ClientPlayerEntity.PLAYER1_ASSET : ClientPlayerEntity.PLAYER2_ASSET), x, y, new Hitbox(3, 5, 10, 11));
+		super(true, -1, (role == Role.PLAYER1 ? ClientPlayerEntity.PLAYER1_ASSET : ClientPlayerEntity.PLAYER2_ASSET), pos, new Hitbox(3, 5, 10, 11));
 		
 		this.role = role;
 	}
@@ -64,6 +64,7 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	@Override
 	public void onMove(byte xa, byte ya)
 	{
+		System.out.println("Shit");
 		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
 	}
 }

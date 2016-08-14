@@ -2,11 +2,12 @@ package ca.afroman.gui.build;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.GridSize;
+import ca.afroman.resource.Vector2DInt;
 
-public class GuiTileEditor extends GuiScreen
+public class GuiTileEditor extends GuiGrid
 {
 	private GuiTextButton layer0edit;
 	private GuiTextButton layer1edit;
@@ -22,16 +23,10 @@ public class GuiTileEditor extends GuiScreen
 	private GuiTextButton layer4show;
 	private GuiTextButton layer5show;
 	
-	private GuiTextButton grid;
-	
 	public GuiTileEditor()
 	{
-		super(null);
-	}
-	
-	@Override
-	public void init()
-	{
+		super();
+		
 		layer0show = new GuiTextButton(this, 00, 5, 18 + (18 * 0), 32, blackFont, "L1 X");
 		layer1show = new GuiTextButton(this, 10, 5, 18 + (18 * 1), 32, blackFont, "L2 X");
 		layer2show = new GuiTextButton(this, 20, 5, 18 + (18 * 2), 32, blackFont, "L3 X");
@@ -60,15 +55,20 @@ public class GuiTileEditor extends GuiScreen
 		buttons.add(layer4edit);
 		buttons.add(layer5edit);
 		
-		grid = new GuiTextButton(this, 500, 200 - 4 - 12, 3, 41 + 12, blackFont, "Grid 0");
-		
-		buttons.add(grid);
-		
 		updateButtons();
 	}
 	
+	@Override
+	public void init()
+	{
+		
+	}
+	
+	@Override
 	public void updateButtons()
 	{
+		super.updateButtons();
+		
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
 			ClientLevel level = ClientGame.instance().getCurrentLevel();
@@ -109,20 +109,22 @@ public class GuiTileEditor extends GuiScreen
 					layer5edit.setEnabled(false);
 					break;
 			}
-			
-			grid.setText("Grid " + level.grid);
 		}
 	}
 	
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		nobleFont.renderCentered(renderTo, 28, 6, "Layers");
+		super.drawScreen(renderTo);
+		
+		nobleFont.renderCentered(renderTo, new Vector2DInt(28, 6), "Layers");
 	}
 	
 	@Override
 	public void pressAction(int buttonID)
 	{
+		super.pressAction(buttonID);
+		
 		// Rids of the click so that the Level doesn't get it
 		ClientGame.instance().input().mouseLeft.isPressedFiltered();
 		
@@ -169,7 +171,7 @@ public class GuiTileEditor extends GuiScreen
 					level.editLayer = 5;
 					break;
 				case 500:
-					level.grid = (level.grid == 0 ? 8 : (level.grid == 8 ? 16 : (level.grid == 16 ? 32 : 0)));
+					level.grid = GridSize.getNext(level.grid);
 					break;
 			}
 			
@@ -180,12 +182,12 @@ public class GuiTileEditor extends GuiScreen
 	@Override
 	public void releaseAction(int buttonID)
 	{
-		
+		super.releaseAction(buttonID);
 	}
 	
 	@Override
 	public void keyTyped()
 	{
-		
+		super.keyTyped();
 	}
 }

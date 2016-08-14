@@ -12,6 +12,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.resource.Vector2DInt;
 
 public class LightMap extends Texture
 {
@@ -42,9 +43,9 @@ public class LightMap extends Texture
 	 * @param radius
 	 */
 	@Deprecated
-	public void drawLight(double x, double y, double radius)
+	public void drawLight(Vector2DInt pos, double radius)
 	{
-		drawLight(x, y, radius, ColourUtil.TRANSPARENT);
+		drawLight(pos, radius, ColourUtil.TRANSPARENT);
 	}
 	
 	/**
@@ -56,15 +57,15 @@ public class LightMap extends Texture
 	 * @param rgbColour
 	 */
 	@Deprecated
-	public void drawLight(double x, double y, double radius, Color rgbColour)
+	public void drawLight(Vector2DInt pos, double radius, Color rgbColour)
 	{
-		int drawX = (int) x;
-		int drawY = (int) y;
+		int drawX = pos.getX();
+		int drawY = pos.getY();
 		int drawRadius = (int) radius;
 		int drawWidth = (int) (radius * 2);
 		int drawHeight = drawWidth;
 		
-		if (x + drawWidth > 0 && y + drawHeight > 0 && x < getWidth() && y < getHeight())
+		if (drawX + drawWidth > 0 && drawY + drawHeight > 0 && drawX < getWidth() && drawY < getHeight())
 		{
 			BufferedImage lightTexture = new BufferedImage(drawWidth, drawHeight, BufferedImage.TYPE_INT_ARGB);
 			
@@ -178,6 +179,8 @@ public class LightMap extends Texture
 		}
 	}
 	
+	public static final Vector2DInt PATCH_POSITION = new Vector2DInt(0, 0);
+	
 	/**
 	 * Fills all blank spots with ambient colour, and applies the filter.
 	 */
@@ -194,7 +197,7 @@ public class LightMap extends Texture
 			}
 		}
 		
-		if (ClientGame.instance().getLightingState() == LightMapState.ON) this.draw(filter, 0, 0);
+		if (ClientGame.instance().getLightingState() == LightMapState.ON) this.draw(filter, PATCH_POSITION);
 	}
 	
 	private static int multiplyPixels(int x, int y, Color ambientColour)

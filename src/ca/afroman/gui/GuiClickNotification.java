@@ -6,6 +6,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiClickNotification extends GuiTextButton
 {
@@ -35,8 +36,8 @@ public class GuiClickNotification extends GuiTextButton
 		drawTo.getGraphics().setPaint(new Color(0F, 0F, 0F, 1F));
 		drawTo.getGraphics().drawRect(hitbox.x - 10, hitbox.y - 35, hitbox.width + 20 - 1, hitbox.height + 40);
 		
-		font.renderCentered(drawTo, hitbox.x + (hitbox.width / 2), hitbox.y - 26, notifText1);
-		font.renderCentered(drawTo, hitbox.x + (hitbox.width / 2), hitbox.y - 14, notifText2);
+		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y - 26), notifText1);
+		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y - 14), notifText2);
 		
 		super.render(drawTo);
 	}

@@ -2,6 +2,7 @@ package ca.afroman.gui;
 
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiTextButton extends GuiButton
 {
@@ -39,6 +40,6 @@ public class GuiTextButton extends GuiButton
 	{
 		super.render(drawTo);
 		
-		font.renderCentered(drawTo, hitbox.x + (hitbox.width / 2), hitbox.y + 4, text);
+		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y + 4), text);
 	}
 }

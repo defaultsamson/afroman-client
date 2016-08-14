@@ -53,6 +53,8 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketLogin;
+import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.server.ServerSocketManager;
@@ -268,12 +270,12 @@ public class ClientGame extends DynamicTickRenderThread
 		packets = new ArrayList<BytePacket>();
 		
 		players = new ArrayList<ClientPlayerEntity>(2);
-		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, 0, 0));
-		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, 0, 0));
+		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, new Vector2DDouble(0, 0)));
+		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, new Vector2DDouble(0, 0)));
 		
 		lights = new HashMap<Role, FlickeringLight>(2);
-		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, 0, 0, 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, 0, 0, 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
 		
 		setCurrentScreen(new GuiMainMenu());
 		
@@ -322,7 +324,6 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	private byte updateMem = 120;
 	
-	@SuppressWarnings("deprecation")
 	@Override
 	public void tick()
 	{
@@ -360,8 +361,7 @@ public class ClientGame extends DynamicTickRenderThread
 			ClientPlayerEntity player = getPlayer(light.getKey());
 			
 			light.getValue().addToLevel(player.getLevel());
-			light.getValue().setX(player.getX() + (16 / 2));
-			light.getValue().setY(player.getY() + (16 / 2));
+			light.getValue().setPosition(new Vector2DDouble(player.getPosition().getX() + (16 / 2), player.getPosition().getY() + (16 / 2)));
 		}
 		
 		if (input.consoleDebug.isReleasedFiltered())
@@ -458,16 +458,16 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		if (hudDebug)
 		{
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 0, "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 10, "TPS: " + tps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 20, "FPS: " + fps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, HEIGHT - 9, "V");
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, 9, HEIGHT - 9, "" + VERSION);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
 			
 			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
 			{
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 30, "x: " + getThisPlayer().getX());
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, 1, 40, "y: " + getThisPlayer().getY());
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 30), "x: " + getThisPlayer().getPosition().getX());
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 40), "y: " + getThisPlayer().getPosition().getY());
 			}
 		}
 		
@@ -489,7 +489,6 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	private boolean exitGame = false;
 	
-	@SuppressWarnings("deprecation")
 	public void parsePacket(BytePacket packet)
 	{
 		IPConnection sender = packet.getConnections().get(0);
@@ -707,7 +706,7 @@ public class ClientGame extends DynamicTickRenderThread
 						double x = buf.getInt();
 						double y = buf.getInt();
 						
-						ClientAssetEntity tile = new ClientAssetEntity(id, asset, x, y);
+						ClientAssetEntity tile = new ClientAssetEntity(id, asset, new Vector2DDouble(x, y));
 						tile.addTileToLevel(level, layer);
 					}
 					else
@@ -754,7 +753,7 @@ public class ClientGame extends DynamicTickRenderThread
 						double y = buf.getInt();
 						double radius = buf.getInt();
 						
-						PointLight light = new PointLight(false, id, x, y, radius);
+						PointLight light = new PointLight(false, id, new Vector2DDouble(x, y), radius);
 						light.addToLevel(level);
 					}
 					else
@@ -795,8 +794,7 @@ public class ClientGame extends DynamicTickRenderThread
 					{
 						player.setDirection(Direction.fromOrdinal(buf.get()));
 						player.setLastDirection(Direction.fromOrdinal(buf.get()));
-						player.setX(buf.getInt());
-						player.setY(buf.getInt());
+						player.setPosition(new Vector2DDouble(buf.getInt(), buf.getInt()));
 					}
 				}
 					break;

@@ -21,6 +21,7 @@ public class Hitbox extends Rectangle2D.Double
 	
 	private static final long serialVersionUID = -318324421701678550L;
 	
+	// TODO use a Vector2DDouble instead
 	public Hitbox(double x, double y, double width, double height)
 	{
 		this(-1, x, y, width, height);
@@ -86,5 +87,13 @@ public class Hitbox extends Rectangle2D.Double
 	public void setLevel(Level level)
 	{
 		this.level = level;
+	}
+	
+	@Override
+	public Hitbox clone()
+	{
+		Hitbox box = new Hitbox(x, y, width, height);
+		box.addToLevel(level);
+		return box;
 	}
 }

@@ -2,14 +2,15 @@ package ca.afroman.entity.api;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.resource.Vector2DDouble;
 
 public class ClientEntity extends Entity
 {
 	protected boolean cameraFollow;
 	
-	public ClientEntity(int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
+	public ClientEntity(int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(false, id, assetType, x, y, hitboxes);
+		super(false, id, assetType, pos, hitboxes);
 		
 		cameraFollow = false;
 	}
@@ -31,7 +32,7 @@ public class ClientEntity extends Entity
 		
 		if (cameraFollow)
 		{
-			getLevel().setCameraCenterInWorld(x + (16 / 2), y + (16 / 2));
+			getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
 		}
 	}
 	

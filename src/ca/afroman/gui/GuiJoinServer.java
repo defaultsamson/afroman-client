@@ -9,6 +9,8 @@ import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
 import ca.afroman.log.ALogType;
+import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiJoinServer extends GuiScreen
 {
@@ -39,7 +41,7 @@ public class GuiJoinServer extends GuiScreen
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(false, -1, ClientGame.WIDTH / 2, 38, 60, 62, 5);
+		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4, 112);
 		username.setText(userText);
@@ -74,8 +76,8 @@ public class GuiJoinServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
-		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
+		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
+		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
 		
 		if (ClientGame.instance().isLightingOn())
 		{
@@ -83,14 +85,14 @@ public class GuiJoinServer extends GuiScreen
 			light.renderCentered(lightmap);
 			lightmap.patch();
 			
-			renderTo.draw(lightmap, 0, 0);
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
 		}
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Join a Server");
+		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Join a Server");
 		
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 50 - 4, "Username");
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 80 - 6, "Password");
-		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 110 - 8, "Server IP");
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 50 - 4), "Username");
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 80 - 6), "Password");
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 110 - 8), "Server IP");
 	}
 	
 	@Override

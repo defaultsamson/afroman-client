@@ -2,6 +2,7 @@ package ca.afroman.assets;
 
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.resource.Vector2DInt;
 
 public class SpriteAnimation extends AssetArray implements ITickable, IRenderable
 {
@@ -95,9 +96,9 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	}
 	
 	@Override
-	public void render(Texture renderTo, int x, int y)
+	public void render(Texture renderTo, Vector2DInt pos)
 	{
-		renderTo.draw(getCurrentFrame(), x, y);
+		renderTo.draw(getCurrentFrame(), pos);
 	}
 	
 	@Override

@@ -31,10 +31,10 @@ public class PacketAddTile extends BytePacket
 		buf.putInt(entity.getAssetType() != null ? entity.getAssetType().ordinal() : AssetType.INVALID.ordinal());
 		
 		// x
-		buf.putInt((int) entity.getX());
+		buf.putInt((int) entity.getPosition().getX());
 		
 		// y
-		buf.putInt((int) entity.getY());
+		buf.putInt((int) entity.getPosition().getY());
 		
 		toSend = buf.array();
 	}

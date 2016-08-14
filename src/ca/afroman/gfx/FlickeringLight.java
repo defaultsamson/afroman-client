@@ -3,6 +3,8 @@ package ca.afroman.gfx;
 import java.awt.Color;
 
 import ca.afroman.level.ClientLevel;
+import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 
 public class FlickeringLight extends PointLight
 {
@@ -12,15 +14,15 @@ public class FlickeringLight extends PointLight
 	private int tickCounter = 0;
 	private double radius2;
 	
-	public FlickeringLight(boolean isServerSide, int id, double x, double y, double radius1, double radius2, int ticksPerFrame)
+	public FlickeringLight(boolean isServerSide, int id, Vector2DDouble pos, double radius1, double radius2, int ticksPerFrame)
 	{
-		this(isServerSide, id, x, y, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
+		this(isServerSide, id, pos, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
 	}
 	
-	public FlickeringLight(boolean isServerSide, int id, double x, double y, double radius1, double radius2, int ticksPerFrame, Color colour)
+	public FlickeringLight(boolean isServerSide, int id, Vector2DDouble pos, double radius1, double radius2, int ticksPerFrame, Color colour)
 	{
 		// Picks the larger of the 2 radi to use for anchoring the draw location
-		super(isServerSide, id, x, y, (radius1 > radius2 ? radius1 : radius2), colour);
+		super(isServerSide, id, pos, (radius1 > radius2 ? radius1 : radius2), colour);
 		
 		// Picks the smaller of the 2 radi
 		this.radius2 = (radius1 <= radius2 ? radius1 : radius2);
@@ -32,18 +34,21 @@ public class FlickeringLight extends PointLight
 	@Override
 	public void renderCentered(LightMap renderTo)
 	{
-		double xOffset = x;
-		double yOffset = y;
+		// TODO control this with positions entirely and don't get their primitive types
+		Vector2DInt offsetPos;
 		
 		if (level != null && level instanceof ClientLevel)
 		{
 			ClientLevel cLevel = (ClientLevel) this.level;
 			
-			xOffset = cLevel.worldToScreenX(x);
-			yOffset = cLevel.worldToScreenY(y);
+			offsetPos = cLevel.worldToScreen(position);
+		}
+		else
+		{
+			offsetPos = new Vector2DInt((int) position.getX(), (int) position.getY());
 		}
 		
-		renderTo.drawLight(xOffset - displayRadius, yOffset - displayRadius, displayRadius, colour);
+		renderTo.drawLight(offsetPos.add((int) -displayRadius, (int) -displayRadius), displayRadius, colour);
 	}
 	
 	@Override

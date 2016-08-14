@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.ColourUtil;
 import ca.afroman.log.ALogType;
+import ca.afroman.resource.Vector2DInt;
 
 public class Texture extends DrawableAsset
 {
@@ -189,13 +190,14 @@ public class Texture extends DrawableAsset
 	/**
 	 * Superimposes a Texture over this one.
 	 * 
-	 * @param toDraw the image to draw's RGB pixel data
-	 * @param width the width of <b>toDraw</b>'s image
-	 * @param x the x ordinate to draw <b>toDraw</b> on <b>this</b>
-	 * @param y the y ordinate to draw <b>toDraw</b> on <b>this</b>
+	 * @param toDraw the image to draw
+	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
 	 */
-	public void draw(Texture toDraw, int x, int y)
+	public void draw(Texture toDraw, Vector2DInt pos)
 	{
+		int x = pos.getX();
+		int y = pos.getY();
+		
 		// Only draw if what's trying to be drawn is within the bounds of this
 		if (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
 		{
@@ -204,9 +206,9 @@ public class Texture extends DrawableAsset
 	}
 	
 	@Override
-	public void render(Texture renderTo, int x, int y)
+	public void render(Texture renderTo, Vector2DInt pos)
 	{
-		renderTo.draw(this, x, y);
+		renderTo.draw(this, pos);
 	}
 	
 	/**

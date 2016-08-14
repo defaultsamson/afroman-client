@@ -7,6 +7,8 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
+import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiMainMenu extends GuiScreen
 {
@@ -27,7 +29,7 @@ public class GuiMainMenu extends GuiScreen
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(false, -1, ClientGame.WIDTH / 2, 38, 60, 62, 5);
+		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
 		
 		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join"));
 		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 1), 72, blackFont, "Host"));
@@ -37,8 +39,8 @@ public class GuiMainMenu extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(afroMan.getCurrentFrame(), (ClientGame.WIDTH / 2) - 20, 30);
-		renderTo.draw(player2.getCurrentFrame(), (ClientGame.WIDTH / 2) + 4, 30);
+		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
+		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
 		
 		if (ClientGame.instance().isLightingOn())
 		{
@@ -46,10 +48,10 @@ public class GuiMainMenu extends GuiScreen
 			light.renderCentered(lightmap);
 			lightmap.patch();
 			
-			renderTo.draw(lightmap, 0, 0);
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
 		}
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Cancer: The Adventures of Afro Man");
+		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Cancer: The Adventures of Afro Man");
 	}
 	
 	@Override

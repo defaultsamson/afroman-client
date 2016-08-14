@@ -15,6 +15,7 @@ import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
+import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.ArrayUtil;
 
 public class GuiHitboxTriggerEditor extends GuiScreen
@@ -130,9 +131,9 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		nobleFont.render(renderTo, 36, 18, "Trigger Types");
-		nobleFont.render(renderTo, 36, 48, "In Triggers");
-		nobleFont.render(renderTo, 36, 78, "Out Triggers");
+		nobleFont.render(renderTo, new Vector2DInt(36, 18), "Trigger Types");
+		nobleFont.render(renderTo, new Vector2DInt(36, 48), "In Triggers");
+		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
 	}
 	
 	@Override

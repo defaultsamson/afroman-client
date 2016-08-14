@@ -34,6 +34,7 @@ import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.packet.PacketType;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.thread.DynamicTickThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.IDCounter;
@@ -124,14 +125,14 @@ public class ServerGame extends DynamicTickThread
 		}
 		
 		players = new ArrayList<ServerPlayerEntity>(2);
-		getPlayers().add(new ServerPlayerEntity(Role.PLAYER1, 80, 50));
-		getPlayers().add(new ServerPlayerEntity(Role.PLAYER2, 20, 20));
+		getPlayers().add(new ServerPlayerEntity(Role.PLAYER1, new Vector2DDouble(80, 50)));
+		getPlayers().add(new ServerPlayerEntity(Role.PLAYER2, new Vector2DDouble(20, 20)));
 		
 		for (int i = 0; i < getPlayers().size(); i++)
 		{
 			ServerPlayerEntity player = getPlayers().get(i);
 			player.addToLevel(this.getLevelByType(LevelType.MAIN));
-			player.setLocation(10 + (i * 18), 20);
+			player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
 		}
 		
 		// TODO only start ticking once the game has loaded for all clients
@@ -376,6 +377,7 @@ public class ServerGame extends DynamicTickThread
 						ServerPlayerEntity player = ServerGame.instance().getPlayer(role);
 						if (player != null)
 						{
+							System.out.println("Packet okay");
 							byte x = packet.getContent()[0];
 							byte y = packet.getContent()[1];
 							
@@ -398,11 +400,10 @@ public class ServerGame extends DynamicTickThread
 						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
 						// int id = buf.getInt();
 						AssetType asset = AssetType.fromOrdinal(buf.getInt());
-						double x = buf.getInt();
-						double y = buf.getInt();
+						Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						Entity tile = new Entity(true, Entity.getIDCounter().getNext(), asset, x, y);
+						Entity tile = new Entity(true, Entity.getIDCounter().getNext(), asset, pos);
 						tile.addTileToLevel(level, layer);
 						sockets().sender().sendPacketToAllClients(new PacketAddTile(layer, level.getType(), tile));
 					}
@@ -524,12 +525,11 @@ public class ServerGame extends DynamicTickThread
 					{
 						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
 						// int id = buf.getInt();
-						double x = buf.getInt();
-						double y = buf.getInt();
+						Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
 						double radius = buf.getInt();
 						
 						// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-						PointLight light = new PointLight(true, PointLight.getIDCounter().getNext(), x, y, radius);
+						PointLight light = new PointLight(true, PointLight.getIDCounter().getNext(), pos, radius);
 						light.addToLevel(level);
 						sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 					}

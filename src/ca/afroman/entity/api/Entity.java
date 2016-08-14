@@ -7,6 +7,7 @@ import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketSetPlayerLocation;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.IDCounter;
 
@@ -27,10 +28,10 @@ public class Entity implements ITickable, IServerClient
 	private int id;
 	protected Level level;
 	protected AssetType assetType;
-	protected double x;
-	protected double y;
+	protected Vector2DDouble position;
 	protected boolean hasHitbox;
 	protected Hitbox[] hitbox;
+	protected Hitbox[] hitboxInLevel;
 	
 	private boolean serverSide;
 	
@@ -50,9 +51,9 @@ public class Entity implements ITickable, IServerClient
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Entity(boolean isServerSide, int id, AssetType assetType, double x, double y)
+	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position)
 	{
-		this(isServerSide, id, assetType, x, y, false, new Hitbox[] { null });
+		this(isServerSide, id, assetType, position, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -65,9 +66,9 @@ public class Entity implements ITickable, IServerClient
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(boolean isServerSide, int id, AssetType assetType, double x, double y, Hitbox... hitboxes)
+	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position, Hitbox... hitboxes)
 	{
-		this(isServerSide, id, assetType, x, y, true, hitboxes);
+		this(isServerSide, id, assetType, position, true, hitboxes);
 	}
 	
 	/**
@@ -79,15 +80,27 @@ public class Entity implements ITickable, IServerClient
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(boolean isServerSide, int id, AssetType assetType, double x, double y, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
 	{
 		this.id = id; // -1 if this is not an object in a level
 		this.level = null;
 		this.assetType = assetType;
-		this.x = x;
-		this.y = y;
+		this.position = position;
 		this.hasHitbox = hasHitbox;
-		hitbox = (hasHitbox ? hitboxes : null);
+		hitbox = hasHitbox ? hitboxes : null;
+		
+		if (hasHitbox)
+		{
+			hitboxInLevel = new Hitbox[hitbox.length];
+			
+			for (int i = 0; i < hitbox.length; i++)
+				hitboxInLevel[i] = hitbox[i].clone();
+		}
+		else
+		{
+			hitboxInLevel = null;
+		}
+		updateHitboxInLevel();
 		
 		serverSide = isServerSide;
 		
@@ -110,10 +123,10 @@ public class Entity implements ITickable, IServerClient
 		return toReturn;
 	}
 	
-	public void setLocation(double newX, double newY)
+	public void setPosition(Vector2DDouble position)
 	{
-		this.x = newX;
-		this.y = newY;
+		this.position = position;
+		updateHitboxInLevel();
 		
 		// TODO separate server-side entity checks
 		if (this instanceof ServerPlayerEntity)
@@ -123,41 +136,11 @@ public class Entity implements ITickable, IServerClient
 	}
 	
 	/**
-	 * Sets the level x ordinate of this Entity.
-	 * 
-	 * @deprecated Use setLocation() for overriding a player's location, as this doesn't communicate with the server.
+	 * @return the position of this entity.
 	 */
-	@Deprecated
-	public void setX(double newX)
+	public Vector2DDouble getPosition()
 	{
-		this.x = newX;
-	}
-	
-	/**
-	 * Sets the level y ordinate of this Entity.
-	 * 
-	 * @deprecated Use setLocation() for overriding a player's location, as this doesn't communicate with the server.
-	 */
-	@Deprecated
-	public void setY(double newY)
-	{
-		this.y = newY;
-	}
-	
-	/**
-	 * @return the level x ordinate of this Entity.
-	 */
-	public double getX()
-	{
-		return x;
-	}
-	
-	/**
-	 * @return the level y ordinate of this Entity.
-	 */
-	public double getY()
-	{
-		return y;
+		return position;
 	}
 	
 	/**
@@ -274,15 +257,30 @@ public class Entity implements ITickable, IServerClient
 	
 	public boolean isColliding(Hitbox... worldHitboxes)
 	{
-		for (Hitbox box : hitboxInLevel())
+		if (hitboxInLevel() != null)
 		{
-			for (Hitbox oBox : worldHitboxes)
+			for (Hitbox box : hitboxInLevel())
 			{
-				// If the hitboxes are colliding in world
-				if (oBox.intersects(box)) return true;
+				for (Hitbox oBox : worldHitboxes)
+				{
+					// If the hitboxes are colliding in world
+					if (oBox.intersects(box)) return true;
+				}
 			}
 		}
 		return false;
+	}
+	
+	private void updateHitboxInLevel()
+	{
+		if (hasHitbox)
+		{
+			for (int i = 0; i < hitboxInLevel.length; i++)
+			{
+				hitboxInLevel[i].x = hitbox[i].getX() + position.getX();
+				hitboxInLevel[i].y = hitbox[i].getY() + position.getY();
+			}
+		}
 	}
 	
 	/**
@@ -290,14 +288,7 @@ public class Entity implements ITickable, IServerClient
 	 */
 	public Hitbox[] hitboxInLevel()
 	{
-		Hitbox[] boxes = new Hitbox[hitbox.length];
-		
-		for (int i = 0; i < hitbox.length; i++)
-		{
-			boxes[i] = new Hitbox(hitbox[i].x + x, hitbox[i].y + y, hitbox[i].width, hitbox[i].height);
-		}
-		
-		return boxes;
+		return hitboxInLevel;
 	}
 	
 	/**
@@ -363,12 +354,7 @@ public class Entity implements ITickable, IServerClient
 	@SuppressWarnings("unused")
 	public void move(byte xa, byte ya)
 	{
-		// It's it's not set to move anyways
-		// if (xa == 0 && ya == 0)
-		// {
-		// direction = Direction.NONE;
-		// return;
-		// }
+		if (isServerSide()) System.out.println("Movingsd4");
 		
 		if (getLevel() == null)
 		{
@@ -382,7 +368,9 @@ public class Entity implements ITickable, IServerClient
 		// Tests if it can move in the x
 		if (xa != 0)
 		{
-			x += deltaX;
+			position.add(deltaX, 0);
+			
+			updateHitboxInLevel();
 			
 			// Tests if it's allowed to move or not
 			boolean canMove = true;
@@ -394,6 +382,7 @@ public class Entity implements ITickable, IServerClient
 					// Don't let it collide with itself
 					if (other != this && this.isColliding(other))
 					{
+						if (isServerSide()) System.out.println("1");
 						canMove = false;
 						break;
 					}
@@ -406,6 +395,7 @@ public class Entity implements ITickable, IServerClient
 				{
 					if (this.isColliding(hitbox))
 					{
+						if (isServerSide()) System.out.println("2");
 						canMove = false;
 						break;
 					}
@@ -430,7 +420,7 @@ public class Entity implements ITickable, IServerClient
 			// If it it now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
 			{
-				x -= deltaX;
+				position.add(-deltaX, 0);
 				deltaX = 0;
 			}
 		}
@@ -438,7 +428,9 @@ public class Entity implements ITickable, IServerClient
 		// Tests if it can move in the y
 		if (ya != 0)
 		{
-			y += deltaY;
+			position.add(0, deltaY);
+			
+			updateHitboxInLevel();
 			
 			// Tests if it's allowed to move or not
 			boolean canMove = true;
@@ -450,6 +442,7 @@ public class Entity implements ITickable, IServerClient
 					// Don't let it collide with itself
 					if (other != this && this.isColliding(other))
 					{
+						if (isServerSide()) System.out.println("3");
 						canMove = false;
 						break;
 					}
@@ -462,6 +455,7 @@ public class Entity implements ITickable, IServerClient
 				{
 					if (this.isColliding(hitbox))
 					{
+						if (isServerSide()) System.out.println("4");
 						canMove = false;
 						break;
 					}
@@ -486,10 +480,12 @@ public class Entity implements ITickable, IServerClient
 			// If it is now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
 			{
-				y -= deltaY;
+				position.add(0, -deltaY);
 				deltaY = 0;
 			}
 		}
+		
+		updateHitboxInLevel();
 		
 		// Used to send packets from the server to the client to update the player direction after it's stopped moving to stop the animation
 		boolean sendPacket = false;
@@ -513,6 +509,8 @@ public class Entity implements ITickable, IServerClient
 		else
 		{
 			sendPacket = true;
+			
+			if (isServerSide()) System.out.println("Movingsd5");
 			
 			numSteps++;
 			

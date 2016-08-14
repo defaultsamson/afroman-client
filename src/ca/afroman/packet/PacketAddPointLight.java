@@ -24,10 +24,10 @@ public class PacketAddPointLight extends BytePacket
 		buf.putInt(light.getID());
 		
 		// x
-		buf.putInt((int) light.getX());
+		buf.putInt((int) light.getPosition().getX());
 		
 		// y
-		buf.putInt((int) light.getY());
+		buf.putInt((int) light.getPosition().getY());
 		
 		// radius
 		buf.putInt((int) light.getRadius());

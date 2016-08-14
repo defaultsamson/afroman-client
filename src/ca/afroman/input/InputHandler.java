@@ -15,6 +15,7 @@ import java.util.List;
 import ca.afroman.assets.Assets;
 import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
+import ca.afroman.resource.Vector2DInt;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener
 {
@@ -25,8 +26,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public MouseButton mouseRight = new MouseButton(mouseButtons, MouseEvent.BUTTON3);
 	public MouseScroll mouseWheelUp = new MouseScroll();
 	public MouseScroll mouseWheelDown = new MouseScroll();
-	private int mouseX = 0;
-	private int mouseY = 0;
+	private Vector2DInt mousePos = new Vector2DInt(0, 0);
 	
 	private List<Key> keys = new ArrayList<Key>();
 	
@@ -171,27 +171,16 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		
 		// The Game resolution width / canvas width (ONLY the canvas, no black borders or JFrame)
 		double xRatio = ClientGame.WIDTH / (double) ClientGame.instance().getCanvas().getWidth();
-		mouseX = (int) (e.getX() * xRatio);
 		
 		// The Game resolution height / canvas height (ONLY the canvas, no black borders or JFrame)
 		double yRatio = ClientGame.HEIGHT / (double) ClientGame.instance().getCanvas().getHeight();
-		mouseY = (int) (e.getY() * yRatio);
+		
+		mousePos.setPosition((int) (e.getX() * xRatio), (int) (e.getY() * yRatio));
 	}
 	
-	/**
-	 * @return gets the mouse x position of in-game coordinates
-	 */
-	public int getMouseX()
+	public Vector2DInt getMousePos()
 	{
-		return mouseX;
-	}
-	
-	/**
-	 * @return gets the mouse x position of in-game coordinates
-	 */
-	public int getMouseY()
-	{
-		return mouseY;
+		return mousePos;
 	}
 	
 	@Override

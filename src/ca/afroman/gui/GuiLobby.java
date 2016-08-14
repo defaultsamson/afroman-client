@@ -17,6 +17,8 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.packet.PacketBeginGame;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
+import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerSocketManager;
 
 public class GuiLobby extends GuiScreen
@@ -52,8 +54,8 @@ public class GuiLobby extends GuiScreen
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
-		light1 = new FlickeringLight(false, -1, 0, 0, 42, 44, 6);
-		light2 = new FlickeringLight(false, -1, 0, 0, 42, 44, 6);
+		light1 = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 42, 44, 6);
+		light2 = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 42, 44, 6);
 		
 		startButton = new GuiTextButton(this, 2000, (ClientGame.WIDTH / 2) - 84 - 8, 116, 84, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());
@@ -157,30 +159,30 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(player1.getCurrentFrame(), player1X, player1Y);
-		renderTo.draw(player2.getCurrentFrame(), player2X, player2Y);
+		renderTo.draw(player1.getCurrentFrame(), new Vector2DInt(player1X, player1Y));
+		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt(player2X, player2Y));
 		
 		if (ClientGame.instance().isLightingOn())
 		{
-			light1.setLocation(player1X + 8, player1Y + 8);
-			light2.setLocation(player2X + 8, player2Y + 8);
+			light1.setPosition(new Vector2DDouble(player1X + 8, player1Y + 8));
+			light2.setPosition(new Vector2DDouble(player2X + 8, player2Y + 8));
 			
 			lightmap.clear();
 			light1.renderCentered(lightmap);
 			light2.renderCentered(lightmap);
 			lightmap.patch();
 			
-			renderTo.draw(lightmap, 0, 0);
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
 		}
 		
-		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN: " + lanIP + ":" + port);
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "LAN: " + lanIP + ":" + port);
 		}
 		else
 		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Waiting for host to start server)");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "(Waiting for host to start server)");
 		}
 	}
 	

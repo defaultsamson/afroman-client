@@ -8,6 +8,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.input.InputHandler;
 import ca.afroman.input.TypingKeyWrapper;
 import ca.afroman.input.TypingMode;
+import ca.afroman.resource.Vector2DInt;
 
 public class GuiTextField extends GuiButton
 {
@@ -170,6 +171,6 @@ public class GuiTextField extends GuiButton
 		
 		String displayText = text + (drawBlinker && text.length() < maxLength ? "_" : "");
 		
-		font.render(drawTo, hitbox.x + 2, hitbox.y + 4, displayText);
+		font.render(drawTo, new Vector2DInt(hitbox.x + 2, hitbox.y + 4), displayText);
 	}
 }
