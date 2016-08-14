@@ -12,21 +12,22 @@ import ca.afroman.thread.DynamicThread;
 
 public class ServerSocketReceive extends DynamicThread
 {
-	public String password;
-	
 	private ServerSocketManager manager;
 	
 	/**
 	 * A new server instance.
-	 * 
-	 * @param password the password for the server. Enter "" for no password.
 	 */
-	public ServerSocketReceive(ServerSocketManager manager, String password)
+	public ServerSocketReceive(ServerSocketManager manager)
 	{
 		super(ServerGame.instance().getThreadGroup(), "Receive");
 		
 		this.manager = manager;
-		this.password = password;
+	}
+	
+	@Override
+	public void onPause()
+	{
+		
 	}
 	
 	@Override
@@ -58,19 +59,13 @@ public class ServerSocketReceive extends DynamicThread
 	}
 	
 	@Override
-	public void onPause()
+	public void onStop()
 	{
 		
 	}
 	
 	@Override
 	public void onUnpause()
-	{
-		
-	}
-	
-	@Override
-	public void onStop()
 	{
 		
 	}

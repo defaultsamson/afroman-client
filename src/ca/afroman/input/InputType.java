@@ -2,15 +2,17 @@ package ca.afroman.input;
 
 public class InputType
 {
+	private static final int INTERVAL = 30;
 	protected boolean pressed = false;
 	protected boolean filteredPress = false;
+	
 	protected boolean filteredRelease = false;
 	
-	public void setPressed(boolean isPressed)
+	private int spot = 0;
+	
+	public boolean isPressed()
 	{
-		filteredPress = (!pressed && isPressed);
-		filteredRelease = (pressed && !isPressed);
-		pressed = isPressed;
+		return pressed;
 	}
 	
 	/**
@@ -22,19 +24,6 @@ public class InputType
 		filteredPress = false;
 		return toReturn;
 	}
-	
-	/**
-	 * Does the same as the <b>isReleased()</b> method, but reverts to false as soon as it's used once.
-	 */
-	public boolean isReleasedFiltered()
-	{
-		boolean toReturn = filteredRelease;
-		filteredRelease = false;
-		return toReturn;
-	}
-	
-	private int spot = 0;
-	private static final int INTERVAL = 30;
 	
 	/**
 	 * Filters this key for typing purposes. Does the same as isPressedFiltered(),
@@ -70,13 +59,25 @@ public class InputType
 		}
 	}
 	
-	public boolean isPressed()
-	{
-		return pressed;
-	}
-	
 	public boolean isReleased()
 	{
 		return !pressed;
+	}
+	
+	/**
+	 * Does the same as the <b>isReleased()</b> method, but reverts to false as soon as it's used once.
+	 */
+	public boolean isReleasedFiltered()
+	{
+		boolean toReturn = filteredRelease;
+		filteredRelease = false;
+		return toReturn;
+	}
+	
+	public void setPressed(boolean isPressed)
+	{
+		filteredPress = (!pressed && isPressed);
+		filteredRelease = (pressed && !isPressed);
+		pressed = isPressed;
 	}
 }

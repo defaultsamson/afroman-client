@@ -13,45 +13,6 @@ public class Vector2DDouble
 		this.y = y;
 	}
 	
-	public double getX()
-	{
-		return x;
-	}
-	
-	public double getY()
-	{
-		return y;
-	}
-	
-	public Vector2DDouble setX(double x)
-	{
-		this.x = x;
-		
-		return this;
-	}
-	
-	public Vector2DDouble setY(double y)
-	{
-		this.y = y;
-		
-		return this;
-	}
-	
-	public Vector2DDouble setPosition(Vector2DDouble pos)
-	{
-		setPosition(pos.getX(), pos.getY());
-		
-		return this;
-	}
-	
-	public Vector2DDouble setPosition(double x, double y)
-	{
-		this.x = x;
-		this.y = y;
-		
-		return this;
-	}
-	
 	public Vector2DDouble add(double xa, double ya)
 	{
 		x += xa;
@@ -96,6 +57,45 @@ public class Vector2DDouble
 		alignToGrid(grid);
 		x += (grid.getSize() / 2);
 		y += (grid.getSize() / 2);
+		
+		return this;
+	}
+	
+	public double getX()
+	{
+		return x;
+	}
+	
+	public double getY()
+	{
+		return y;
+	}
+	
+	public Vector2DDouble setPosition(double x, double y)
+	{
+		this.x = x;
+		this.y = y;
+		
+		return this;
+	}
+	
+	public Vector2DDouble setPosition(Vector2DDouble pos)
+	{
+		setPosition(pos.getX(), pos.getY());
+		
+		return this;
+	}
+	
+	public Vector2DDouble setX(double x)
+	{
+		this.x = x;
+		
+		return this;
+	}
+	
+	public Vector2DDouble setY(double y)
+	{
+		this.y = y;
 		
 		return this;
 	}

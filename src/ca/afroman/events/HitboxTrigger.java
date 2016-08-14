@@ -29,6 +29,9 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 	private List<Integer> outTriggers;
 	private Hitbox hitbox;
 	
+	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
+	private Entity lastHit = null;
+	
 	public HitboxTrigger(boolean isServerSide, int id, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
 		this(isServerSide, id, new Hitbox(id, x, y, width, height), triggerTypes, inTriggers, outTriggers);
@@ -41,11 +44,6 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-	}
-	
-	public Hitbox getHitbox()
-	{
-		return hitbox;
 	}
 	
 	/**
@@ -73,14 +71,32 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 	}
 	
 	@Override
+	public double getHeight()
+	{
+		return hitbox.getHeight();
+	}
+	
+	public Hitbox getHitbox()
+	{
+		return hitbox;
+	}
+	
+	@Override
+	public int getID()
+	{
+		return hitbox.getID();
+	}
+	
+	@Override
 	public List<Integer> getInTriggers()
 	{
 		return inTriggers;
 	}
 	
-	public void setInTriggers(List<Integer> trigs)
+	@Override
+	public Level getLevel()
 	{
-		inTriggers = trigs;
+		return hitbox.getLevel();
 	}
 	
 	@Override
@@ -89,23 +105,73 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 		return outTriggers;
 	}
 	
-	public void setOutTriggers(List<Integer> trigs)
-	{
-		outTriggers = trigs;
-	}
-	
 	public List<TriggerType> getTriggerTypes()
 	{
 		return triggerTypes;
+	}
+	
+	@Override
+	public double getWidth()
+	{
+		return hitbox.getWidth();
+	}
+	
+	@Override
+	public double getX()
+	{
+		return hitbox.getX();
+	}
+	
+	@Override
+	public double getY()
+	{
+		return hitbox.getY();
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return isServerSide;
+	}
+	
+	@Override
+	public void onTrigger(Entity triggerer)
+	{
+		// if (!isServerSide())
+		// {
+		// String message = "Out Triggers: ";
+		//
+		// for (int out : getOutTriggers())
+		// {
+		// message += out + ", ";
+		// }
+		//
+		// if (getOutTriggers().isEmpty()) message += "(none)";
+		//
+		// ClientGame.instance().logger().log(ALogType.DEBUG, message);
+		// }
+	}
+	
+	@Override
+	public void removeFromLevel()
+	{
+		addToLevel(null);
+	}
+	
+	public void setInTriggers(List<Integer> trigs)
+	{
+		inTriggers = trigs;
+	}
+	
+	public void setOutTriggers(List<Integer> trigs)
+	{
+		outTriggers = trigs;
 	}
 	
 	public void setTriggerTypes(List<TriggerType> types)
 	{
 		triggerTypes = types;
 	}
-	
-	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
-	private Entity lastHit = null;
 	
 	@Override
 	public void tick()
@@ -149,12 +215,6 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 	}
 	
 	@Override
-	public Level getLevel()
-	{
-		return hitbox.getLevel();
-	}
-	
-	@Override
 	public void trigger(Entity triggerer)
 	{
 		onTrigger(triggerer);
@@ -164,65 +224,5 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 			// TODO chain for all levels
 			getLevel().chainScriptedEvents(triggerer, out);
 		}
-	}
-	
-	@Override
-	public void onTrigger(Entity triggerer)
-	{
-		// if (!isServerSide())
-		// {
-		// String message = "Out Triggers: ";
-		//
-		// for (int out : getOutTriggers())
-		// {
-		// message += out + ", ";
-		// }
-		//
-		// if (getOutTriggers().isEmpty()) message += "(none)";
-		//
-		// ClientGame.instance().logger().log(ALogType.DEBUG, message);
-		// }
-	}
-	
-	@Override
-	public int getID()
-	{
-		return hitbox.getID();
-	}
-	
-	@Override
-	public double getX()
-	{
-		return hitbox.getX();
-	}
-	
-	@Override
-	public double getY()
-	{
-		return hitbox.getY();
-	}
-	
-	@Override
-	public double getWidth()
-	{
-		return hitbox.getWidth();
-	}
-	
-	@Override
-	public double getHeight()
-	{
-		return hitbox.getHeight();
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return isServerSide;
-	}
-	
-	@Override
-	public void removeFromLevel()
-	{
-		addToLevel(null);
 	}
 }

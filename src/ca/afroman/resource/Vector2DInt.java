@@ -13,45 +13,6 @@ public class Vector2DInt
 		this.y = y;
 	}
 	
-	public int getX()
-	{
-		return x;
-	}
-	
-	public int getY()
-	{
-		return y;
-	}
-	
-	public Vector2DInt setPosition(Vector2DInt pos)
-	{
-		setPosition(pos.getX(), pos.getY());
-		
-		return this;
-	}
-	
-	public Vector2DInt setX(int x)
-	{
-		this.x = x;
-		
-		return this;
-	}
-	
-	public Vector2DInt setY(int y)
-	{
-		this.y = y;
-		
-		return this;
-	}
-	
-	public Vector2DInt setPosition(int x, int y)
-	{
-		this.x = x;
-		this.y = y;
-		
-		return this;
-	}
-	
 	public Vector2DInt add(int xa, int ya)
 	{
 		x += xa;
@@ -96,6 +57,45 @@ public class Vector2DInt
 		alignToGrid(grid);
 		x += (grid.getSize() / 2);
 		y += (grid.getSize() / 2);
+		
+		return this;
+	}
+	
+	public int getX()
+	{
+		return x;
+	}
+	
+	public int getY()
+	{
+		return y;
+	}
+	
+	public Vector2DInt setPosition(int x, int y)
+	{
+		this.x = x;
+		this.y = y;
+		
+		return this;
+	}
+	
+	public Vector2DInt setPosition(Vector2DInt pos)
+	{
+		setPosition(pos.getX(), pos.getY());
+		
+		return this;
+	}
+	
+	public Vector2DInt setX(int x)
+	{
+		this.x = x;
+		
+		return this;
+	}
+	
+	public Vector2DInt setY(int y)
+	{
+		this.y = y;
 		
 		return this;
 	}

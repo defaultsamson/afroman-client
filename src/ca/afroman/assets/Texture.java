@@ -19,17 +19,6 @@ public class Texture extends DrawableAsset
 {
 	public static final String TEXTURE_PATH = "/texture/";
 	
-	private BufferedImage image;
-	private Graphics2D graphics;
-	
-	public Texture(AssetType type, BufferedImage image)
-	{
-		super(type, image.getWidth(), image.getHeight());
-		
-		this.image = image;
-		this.graphics = image.createGraphics();
-	}
-	
 	public static Texture fromResource(AssetType type, String path)
 	{
 		// Loads the image
@@ -75,23 +64,16 @@ public class Texture extends DrawableAsset
 		return new Texture(type, image);
 	}
 	
-	/**
-	 * Converts the greyscale to alpha mask.
-	 */
-	public void setFromGreyscaleToAlphaMask()
+	private BufferedImage image;
+	
+	private Graphics2D graphics;
+	
+	public Texture(AssetType type, BufferedImage image)
 	{
-		for (int y = 0; y < image.getHeight(); y++)
-		{
-			for (int x = 0; x < image.getWidth(); x++)
-			{
-				int origRGB = this.image.getRGB(x, y);
-				int origColor = origRGB & 0x00FFFFFF; // mask away any alpha present
-				
-				int newRGB = (origColor & 0x00FF0000) << 8; // shift red into alpha bits
-				
-				this.image.setRGB(x, y, newRGB);
-			}
-		}
+		super(type, image.getWidth(), image.getHeight());
+		
+		this.image = image;
+		this.graphics = image.createGraphics();
 	}
 	
 	@Override
@@ -103,9 +85,29 @@ public class Texture extends DrawableAsset
 		return new Texture(getAssetType(), new BufferedImage(cm, raster, isAlphaPremultiplied, null));
 	}
 	
-	public Graphics2D getGraphics()
+	@Override
+	public void dispose()
 	{
-		return graphics;
+		graphics.dispose();
+		image.flush();
+	}
+	
+	/**
+	 * Superimposes a Texture over this one.
+	 * 
+	 * @param toDraw the image to draw
+	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
+	 */
+	public void draw(Texture toDraw, Vector2DInt pos)
+	{
+		int x = pos.getX();
+		int y = pos.getY();
+		
+		// Only draw if what's trying to be drawn is within the bounds of this
+		if (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
+		{
+			graphics.drawImage(toDraw.image, x, y, null);
+		}
 	}
 	
 	/**
@@ -128,6 +130,52 @@ public class Texture extends DrawableAsset
 		at.translate(0, -image.getHeight(null));
 		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		image = op.filter(image, null);
+	}
+	
+	public Graphics2D getGraphics()
+	{
+		return graphics;
+	}
+	
+	/**
+	 * @return the raw BufferedImage in this.
+	 */
+	public BufferedImage getImage()
+	{
+		return image;
+	}
+	
+	/**
+	 * Gets the pixel data of a sub-image of an image's pixels data.
+	 * 
+	 * @param x the x ordinate to get from in <b>inPixel</b>
+	 * @param y the y ordinate to get from in <b>inPixel</b>
+	 * @param width the width of the area of <b>inPixel</b>'s image to get
+	 * @param height the height of the area of <b>inPixel</b>'s image to get
+	 */
+	public BufferedImage getSubImage(int x, int y, int width, int height)
+	{
+		return image.getSubimage(x, y, width, height);
+	}
+	
+	/**
+	 * Gets a sub-section of this.
+	 * 
+	 * @param x the x ordinate to start selecting from
+	 * @param y the y ordinate to start selecting from
+	 * @param width the width of the selection
+	 * @param height the height of the selection
+	 * @return the sub-section of this with the given parameters.
+	 */
+	public Texture getSubTexture(AssetType newType, int x, int y, int width, int height)
+	{
+		return new Texture(newType, getSubImage(x, y, width, height));
+	}
+	
+	@Override
+	public void render(Texture renderTo, Vector2DInt pos)
+	{
+		renderTo.draw(this, pos);
 	}
 	
 	public void rotate(double degrees)
@@ -153,62 +201,22 @@ public class Texture extends DrawableAsset
 	}
 	
 	/**
-	 * @return the raw BufferedImage in this.
+	 * Converts the greyscale to alpha mask.
 	 */
-	public BufferedImage getImage()
+	public void setFromGreyscaleToAlphaMask()
 	{
-		return image;
-	}
-	
-	/**
-	 * Gets a sub-section of this.
-	 * 
-	 * @param x the x ordinate to start selecting from
-	 * @param y the y ordinate to start selecting from
-	 * @param width the width of the selection
-	 * @param height the height of the selection
-	 * @return the sub-section of this with the given parameters.
-	 */
-	public Texture getSubTexture(AssetType newType, int x, int y, int width, int height)
-	{
-		return new Texture(newType, getSubImage(x, y, width, height));
-	}
-	
-	/**
-	 * Gets the pixel data of a sub-image of an image's pixels data.
-	 * 
-	 * @param x the x ordinate to get from in <b>inPixel</b>
-	 * @param y the y ordinate to get from in <b>inPixel</b>
-	 * @param width the width of the area of <b>inPixel</b>'s image to get
-	 * @param height the height of the area of <b>inPixel</b>'s image to get
-	 */
-	public BufferedImage getSubImage(int x, int y, int width, int height)
-	{
-		return image.getSubimage(x, y, width, height);
-	}
-	
-	/**
-	 * Superimposes a Texture over this one.
-	 * 
-	 * @param toDraw the image to draw
-	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
-	 */
-	public void draw(Texture toDraw, Vector2DInt pos)
-	{
-		int x = pos.getX();
-		int y = pos.getY();
-		
-		// Only draw if what's trying to be drawn is within the bounds of this
-		if (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
+		for (int y = 0; y < image.getHeight(); y++)
 		{
-			graphics.drawImage(toDraw.image, x, y, null);
+			for (int x = 0; x < image.getWidth(); x++)
+			{
+				int origRGB = this.image.getRGB(x, y);
+				int origColor = origRGB & 0x00FFFFFF; // mask away any alpha present
+				
+				int newRGB = (origColor & 0x00FF0000) << 8; // shift red into alpha bits
+				
+				this.image.setRGB(x, y, newRGB);
+			}
 		}
-	}
-	
-	@Override
-	public void render(Texture renderTo, Vector2DInt pos)
-	{
-		renderTo.draw(this, pos);
 	}
 	
 	/**
@@ -236,12 +244,5 @@ public class Texture extends DrawableAsset
 		}
 		
 		return textures;
-	}
-	
-	@Override
-	public void dispose()
-	{
-		graphics.dispose();
-		image.flush();
 	}
 }

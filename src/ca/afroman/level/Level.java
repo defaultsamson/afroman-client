@@ -26,72 +26,6 @@ public class Level implements IServerClient
 {
 	private static final String LEVEL_DIR = "/level/";
 	
-	private boolean isServerSide;
-	
-	/** The level identified. */
-	private LevelType type;
-	/** PointLights in this Level. */
-	private List<PointLight> lights;
-	/** Entities that cannot be interacted with, and will always be there (All the different layers). */
-	private List<List<Entity>> tiles;
-	/** Entities that can move, be interacted with, or be removed. */
-	private List<Entity> entities;
-	/** Player objects. */
-	private List<Entity> players;
-	/** Hitbox in this Level. */
-	private List<Hitbox> hitboxes;
-	/** Scripted Events in this level. */
-	private List<IEvent> events;
-	
-	public Level(boolean isServerSide, LevelType type)
-	{
-		this.isServerSide = isServerSide;
-		this.type = type;
-		
-		lights = new ArrayList<PointLight>();
-		tiles = new ArrayList<List<Entity>>(6);
-		
-		tiles.add(new ArrayList<Entity>());
-		tiles.add(new ArrayList<Entity>());
-		tiles.add(new ArrayList<Entity>());
-		tiles.add(new ArrayList<Entity>());
-		tiles.add(new ArrayList<Entity>());
-		tiles.add(new ArrayList<Entity>());
-		
-		entities = new ArrayList<Entity>();
-		players = new ArrayList<Entity>();
-		hitboxes = new ArrayList<Hitbox>();
-		events = new ArrayList<IEvent>();
-	}
-	
-	public void tick()
-	{
-		List<List<Entity>> tiles = getTiles();
-		
-		for (List<Entity> tileList : tiles)
-		{
-			for (Entity tile : tileList)
-			{
-				tile.tick();
-			}
-		}
-		
-		for (Entity entity : getEntities())
-		{
-			entity.tick();
-		}
-		
-		for (Entity entity : getPlayers())
-		{
-			entity.tick();
-		}
-		
-		for (IEvent event : getScriptedEvents())
-		{
-			event.tick();
-		}
-	}
-	
 	public static Level fromFile(boolean isServerSide, LevelType levelType)
 	{
 		Level level = null;
@@ -239,6 +173,343 @@ public class Level implements IServerClient
 		else
 		{
 			return null;
+		}
+	}
+	
+	private boolean isServerSide;
+	/** The level identified. */
+	private LevelType type;
+	/** PointLights in this Level. */
+	private List<PointLight> lights;
+	/** Entities that cannot be interacted with, and will always be there (All the different layers). */
+	private List<List<Entity>> tiles;
+	/** Entities that can move, be interacted with, or be removed. */
+	private List<Entity> entities;
+	
+	/** Player objects. */
+	private List<Entity> players;
+	
+	/** Hitbox in this Level. */
+	private List<Hitbox> hitboxes;
+	
+	/** Scripted Events in this level. */
+	private List<IEvent> events;
+	
+	public Level(boolean isServerSide, LevelType type)
+	{
+		this.isServerSide = isServerSide;
+		this.type = type;
+		
+		lights = new ArrayList<PointLight>();
+		tiles = new ArrayList<List<Entity>>(6);
+		
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		tiles.add(new ArrayList<Entity>());
+		
+		entities = new ArrayList<Entity>();
+		players = new ArrayList<Entity>();
+		hitboxes = new ArrayList<Hitbox>();
+		events = new ArrayList<IEvent>();
+	}
+	
+	public void chainScriptedEvents(Entity triggerer, int inTrigger)
+	{
+		// TODO detect infinite loops?
+		for (IEvent event : getScriptedEvents())
+		{
+			for (int eventTrigger : event.getInTriggers())
+			{
+				// If the event has the specified eventID
+				if (eventTrigger == inTrigger)
+				{
+					// Trigger it
+					event.trigger(triggerer);
+					break;
+				}
+			}
+		}
+	}
+	
+	public List<Entity> getEntities()
+	{
+		return entities;
+	}
+	
+	/**
+	 * Gets an entity with the given id.
+	 * 
+	 * @param id the id of the entity
+	 * @return the entity. <b>null</b> if there are no entities with the given id.
+	 */
+	public Entity getEntity(int id)
+	{
+		for (Entity entity : getEntities())
+		{
+			if (entity.getID() == id) return entity;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets an entity at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no entities at that given location.
+	 */
+	public Entity getEntity(Vector2DDouble pos)
+	{
+		for (Entity entity : getEntities())
+		{
+			for (Hitbox hitbox : entity.hitboxInLevel())
+			{
+				if (hitbox.contains(pos.getX(), pos.getY())) return entity;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a hitbox with the given id.
+	 * 
+	 * @param id the id of the hitbox
+	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
+	 */
+	public Hitbox getHitbox(int id)
+	{
+		for (Hitbox box : getHitboxes())
+		{
+			if (box.getID() == id) return box;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a hitbox at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no hitboxes at that given location.
+	 */
+	public Hitbox getHitbox(Vector2DDouble pos)
+	{
+		Collections.reverse(getHitboxes());
+		
+		for (Hitbox hitbox : getHitboxes())
+		{
+			if (hitbox.contains(pos.getX(), pos.getY()))
+			{
+				Collections.reverse(getHitboxes());
+				return hitbox;
+			}
+		}
+		
+		Collections.reverse(getHitboxes());
+		return null;
+	}
+	
+	public List<Hitbox> getHitboxes()
+	{
+		return hitboxes;
+	}
+	
+	/**
+	 * Gets a light with the given id.
+	 * 
+	 * @param id the id of the hitbox
+	 * @return the hitbox. <b>null</b> if there are no lights with the given id.
+	 */
+	public PointLight getLight(int id)
+	{
+		for (PointLight light : lights)
+		{
+			if (light.getID() == id) return light;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a PointLight at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
+	 */
+	public PointLight getLight(Vector2DDouble pos)
+	{
+		Collections.reverse(lights);
+		
+		for (PointLight light : lights)
+		{
+			double radius = light.getRadius();
+			
+			double xa = (pos.getX() - light.getPosition().getX());
+			double ya = (pos.getY() - light.getPosition().getY());
+			
+			// If the light is not unnamed
+			if (light.getID() != -1) ;
+			{
+				// If the light contains the point
+				// Old method, creates a square hitbox to check for collision
+				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
+				{
+					Collections.reverse(lights);
+					return light;
+				}
+			}
+		}
+		
+		Collections.reverse(lights);
+		return null;
+	}
+	
+	public List<PointLight> getLights()
+	{
+		return lights;
+	}
+	
+	public List<Entity> getPlayers()
+	{
+		return players;
+	}
+	
+	/**
+	 * Gets a hitbox with the given id.
+	 * 
+	 * @param id the id of the hitbox
+	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
+	 */
+	public IEvent getScriptedEvent(int id)
+	{
+		for (IEvent box : getScriptedEvents())
+		{
+			if (box.getID() == id) return box;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a hitbox at the given coordinates.
+	 * 
+	 * @param x the x in-level ordinate
+	 * @param y the y in-level ordinate
+	 * @return the entity. <b>null</b> if there are no entities at that given location.
+	 */
+	public IEvent getScriptedEvent(Vector2DDouble pos)
+	{
+		for (IEvent event : getScriptedEvents())
+		{
+			if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return event;
+		}
+		return null;
+	}
+	
+	// public void addEntityBehind(Entity entity)
+	// {
+	// Collections.reverse(entities);
+	// entities.add(entity);
+	// Collections.reverse(entities);
+	// }
+	
+	public List<IEvent> getScriptedEvents()
+	{
+		return events;
+	}
+	
+	/**
+	 * Gets a tile at the given coordinates.
+	 * 
+	 * @param x the x in-level ordinate
+	 * @param y the y in-level ordinate
+	 * @return the tile. <b>null</b> if there are no tiles at that given location.
+	 */
+	public Entity getTile(byte layer, Vector2DDouble pos)
+	{
+		List<Entity> tiles = getTiles(layer);
+		
+		Collections.reverse(tiles);
+		
+		for (Entity tile : tiles)
+		{
+			// TODO generate removable hitboxes for tiles based on asset
+			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
+			
+			if (surrounding.contains(pos.getX(), pos.getY()))
+			{
+				Collections.reverse(tiles);
+				return tile;
+			}
+		}
+		Collections.reverse(tiles);
+		return null;
+	}
+	
+	/**
+	 * Gets a tile with the given id.
+	 * 
+	 * @param id the id of the tile
+	 * @return the entity. <b>null</b> if there are no tiles with the given id.
+	 */
+	public Entity getTile(int id)
+	{
+		for (List<Entity> tileList : tiles)
+		{
+			for (Entity tile : tileList)
+			{
+				if (tile.getID() == id) return tile;
+			}
+		}
+		return null;
+	}
+	
+	public List<List<Entity>> getTiles()
+	{
+		return tiles;
+	}
+	
+	public List<Entity> getTiles(byte layer)
+	{
+		return tiles.get(layer);
+	}
+	
+	public LevelType getType()
+	{
+		return type;
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return isServerSide;
+	}
+	
+	public void tick()
+	{
+		List<List<Entity>> tiles = getTiles();
+		
+		for (List<Entity> tileList : tiles)
+		{
+			for (Entity tile : tileList)
+			{
+				tile.tick();
+			}
+		}
+		
+		for (Entity entity : getEntities())
+		{
+			entity.tick();
+		}
+		
+		for (Entity entity : getPlayers())
+		{
+			entity.tick();
+		}
+		
+		for (IEvent event : getScriptedEvents())
+		{
+			event.tick();
 		}
 	}
 	
@@ -394,274 +665,5 @@ public class Level implements IServerClient
 		clpbrd.setContents(stringSelection, null);
 		
 		return toReturn;
-	}
-	
-	public List<IEvent> getScriptedEvents()
-	{
-		return events;
-	}
-	
-	/**
-	 * Gets a hitbox at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 * @return the entity. <b>null</b> if there are no entities at that given location.
-	 */
-	public IEvent getScriptedEvent(Vector2DDouble pos)
-	{
-		for (IEvent event : getScriptedEvents())
-		{
-			if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return event;
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets a hitbox with the given id.
-	 * 
-	 * @param id the id of the hitbox
-	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
-	 */
-	public IEvent getScriptedEvent(int id)
-	{
-		for (IEvent box : getScriptedEvents())
-		{
-			if (box.getID() == id) return box;
-		}
-		return null;
-	}
-	
-	public void chainScriptedEvents(Entity triggerer, int inTrigger)
-	{
-		// TODO detect infinite loops?
-		for (IEvent event : getScriptedEvents())
-		{
-			for (int eventTrigger : event.getInTriggers())
-			{
-				// If the event has the specified eventID
-				if (eventTrigger == inTrigger)
-				{
-					// Trigger it
-					event.trigger(triggerer);
-					break;
-				}
-			}
-		}
-	}
-	
-	public List<List<Entity>> getTiles()
-	{
-		return tiles;
-	}
-	
-	public List<Entity> getTiles(byte layer)
-	{
-		return tiles.get(layer);
-	}
-	
-	/**
-	 * Gets a tile at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 * @return the tile. <b>null</b> if there are no tiles at that given location.
-	 */
-	public Entity getTile(byte layer, Vector2DDouble pos)
-	{
-		List<Entity> tiles = getTiles(layer);
-		
-		Collections.reverse(tiles);
-		
-		for (Entity tile : tiles)
-		{
-			// TODO generate removable hitboxes for tiles based on asset
-			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
-			
-			if (surrounding.contains(pos.getX(), pos.getY()))
-			{
-				Collections.reverse(tiles);
-				return tile;
-			}
-		}
-		Collections.reverse(tiles);
-		return null;
-	}
-	
-	/**
-	 * Gets a tile with the given id.
-	 * 
-	 * @param id the id of the tile
-	 * @return the entity. <b>null</b> if there are no tiles with the given id.
-	 */
-	public Entity getTile(int id)
-	{
-		for (List<Entity> tileList : tiles)
-		{
-			for (Entity tile : tileList)
-			{
-				if (tile.getID() == id) return tile;
-			}
-		}
-		return null;
-	}
-	
-	public List<Entity> getEntities()
-	{
-		return entities;
-	}
-	
-	/**
-	 * Gets an entity at the given coordinates.
-	 * 
-	 * @param pos the position
-	 * @return the entity. <b>null</b> if there are no entities at that given location.
-	 */
-	public Entity getEntity(Vector2DDouble pos)
-	{
-		for (Entity entity : getEntities())
-		{
-			for (Hitbox hitbox : entity.hitboxInLevel())
-			{
-				if (hitbox.contains(pos.getX(), pos.getY())) return entity;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets an entity with the given id.
-	 * 
-	 * @param id the id of the entity
-	 * @return the entity. <b>null</b> if there are no entities with the given id.
-	 */
-	public Entity getEntity(int id)
-	{
-		for (Entity entity : getEntities())
-		{
-			if (entity.getID() == id) return entity;
-		}
-		return null;
-	}
-	
-	// public void addEntityBehind(Entity entity)
-	// {
-	// Collections.reverse(entities);
-	// entities.add(entity);
-	// Collections.reverse(entities);
-	// }
-	
-	public List<Hitbox> getHitboxes()
-	{
-		return hitboxes;
-	}
-	
-	/**
-	 * Gets a hitbox at the given coordinates.
-	 * 
-	 * @param pos the position
-	 * @return the entity. <b>null</b> if there are no hitboxes at that given location.
-	 */
-	public Hitbox getHitbox(Vector2DDouble pos)
-	{
-		Collections.reverse(getHitboxes());
-		
-		for (Hitbox hitbox : getHitboxes())
-		{
-			if (hitbox.contains(pos.getX(), pos.getY()))
-			{
-				Collections.reverse(getHitboxes());
-				return hitbox;
-			}
-		}
-		
-		Collections.reverse(getHitboxes());
-		return null;
-	}
-	
-	/**
-	 * Gets a hitbox with the given id.
-	 * 
-	 * @param id the id of the hitbox
-	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
-	 */
-	public Hitbox getHitbox(int id)
-	{
-		for (Hitbox box : getHitboxes())
-		{
-			if (box.getID() == id) return box;
-		}
-		return null;
-	}
-	
-	public List<Entity> getPlayers()
-	{
-		return players;
-	}
-	
-	public LevelType getType()
-	{
-		return type;
-	}
-	
-	/**
-	 * Gets a light with the given id.
-	 * 
-	 * @param id the id of the hitbox
-	 * @return the hitbox. <b>null</b> if there are no lights with the given id.
-	 */
-	public PointLight getLight(int id)
-	{
-		for (PointLight light : lights)
-		{
-			if (light.getID() == id) return light;
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets a PointLight at the given coordinates.
-	 * 
-	 * @param pos the position
-	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
-	 */
-	public PointLight getLight(Vector2DDouble pos)
-	{
-		Collections.reverse(lights);
-		
-		for (PointLight light : lights)
-		{
-			double radius = light.getRadius();
-			
-			double xa = (pos.getX() - light.getPosition().getX());
-			double ya = (pos.getY() - light.getPosition().getY());
-			
-			// If the light is not unnamed
-			if (light.getID() != -1) ;
-			{
-				// If the light contains the point
-				// Old method, creates a square hitbox to check for collision
-				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
-				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
-				{
-					Collections.reverse(lights);
-					return light;
-				}
-			}
-		}
-		
-		Collections.reverse(lights);
-		return null;
-	}
-	
-	public List<PointLight> getLights()
-	{
-		return lights;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return isServerSide;
 	}
 }

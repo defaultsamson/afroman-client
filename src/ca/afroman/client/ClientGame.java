@@ -77,9 +77,19 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	private static ClientGame game;
 	
+	private static long startLoadTime;
+	
 	public static ClientGame instance()
 	{
 		return game;
+	}
+	
+	public static void main(String[] args)
+	{
+		startLoadTime = System.currentTimeMillis();
+		
+		game = new ClientGame();
+		game.startThis();
 	}
 	
 	private static ThreadGroup newDefaultThreadGroupInstance()
@@ -87,45 +97,256 @@ public class ClientGame extends DynamicTickRenderThread
 		return new ThreadGroup("Client");
 	}
 	
-	private static long startLoadTime;
-	
 	private JFrame frame;
 	private Canvas canvas;
-	private Texture screen;
 	
+	private Texture screen;
 	private boolean fullscreen = false;
 	private boolean hudDebug = false; // Shows debug information on the hud
 	private boolean hitboxDebug = false; // Shows all hitboxes
 	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
+	
 	private boolean consoleDebug = false; // Shows a console window
 	
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	private InputHandler input;
-	
 	private List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
 	private List<ClientPlayerEntity> players;
-	private HashMap<Role, FlickeringLight> lights;
 	
+	private HashMap<Role, FlickeringLight> lights;
 	private String username = "";
 	private String password = "";
 	private String port = "";
+	
 	private String typedIP = "";
-	
+	/** Keeps track of the amount of ticks passed to time memory usage updates. */
+	private byte updateMem = Byte.MAX_VALUE - 1;
 	private long totalMemory = 0;
-	private long usedMemory = 0;
 	
+	private long usedMemory = 0;
 	private ClientSocketManager socketManager;
+	/** The ID's of all the packets that have been received. */
+	private List<Integer> receivedPackets;
+	/** A list of packets to send */
+	private List<BytePacket> toSend;
+	
+	/** Whether or not to exit from the game and go to the main menu. */
+	private boolean exitGame = false;
 	
 	private GuiScreen currentScreen = null;
 	
 	private AudioClip music;
 	
+	private boolean hasStartedUpdateList = false;
+	
 	public ClientGame()
 	{
 		super(newDefaultThreadGroupInstance(), "Game", 60);
+	}
+	
+	public void addPacketToProcess(BytePacket pack)
+	{
+		synchronized (toSend)
+		{
+			toSend.add(pack);
+		}
+	}
+	
+	public void exitFromGame(ExitGameReason reason)
+	{
+		// TODO let the server know that the client has disconnected
+		// sockets().sender().sendPacket(new PacketPlayerDisconnect());
+		
+		socketManager.stopThis();
+		receivedPackets.clear();
+		toSend.clear();
+		
+		getLevels().clear();
+		setCurrentLevel(null);
+		
+		IDCounter.resetAll();
+		
+		if (this.isHostingServer())
+		{
+			ServerGame.instance().stopThis();
+		}
+		
+		music.startLoop();
+		setCurrentScreen(new GuiMainMenu());
+		
+		switch (reason)
+		{
+			default:
+				break;
+			case SERVER_CLOSED:
+				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
+				break;
+		}
+	}
+	
+	public Canvas getCanvas()
+	{
+		return canvas;
+	}
+	
+	public ClientLevel getCurrentLevel()
+	{
+		return currentLevel;
+	}
+	
+	public GuiScreen getCurrentScreen()
+	{
+		return currentScreen;
+	}
+	
+	public JFrame getFrame()
+	{
+		return frame;
+	}
+	
+	public ClientLevel getLevelByType(LevelType type)
+	{
+		for (ClientLevel level : getLevels())
+		{
+			if (level.getType() == type) return level;
+		}
+		return null;
+	}
+	
+	public List<ClientLevel> getLevels()
+	{
+		return levels;
+	}
+	
+	public LightMapState getLightingState()
+	{
+		return lightingDebug;
+	}
+	
+	public String getPassword()
+	{
+		return password;
+	}
+	
+	/**
+	 * Gets the player with the given role.
+	 * 
+	 * @param role whether it's player 1 or 2
+	 * @return the player.
+	 */
+	public ClientPlayerEntity getPlayer(Role role)
+	{
+		for (ClientPlayerEntity entity : getPlayers())
+		{
+			if (entity.getRole() == role) return entity;
+		}
+		return null;
+	}
+	
+	public List<ClientPlayerEntity> getPlayers()
+	{
+		return players;
+	}
+	
+	public String getPort()
+	{
+		return port;
+	}
+	
+	public String getServerIP()
+	{
+		return typedIP;
+	}
+	
+	public ClientPlayerEntity getThisPlayer()
+	{
+		if (sockets() != null && sockets().getServerConnection() != null)
+		{
+			Role role = sockets().getServerConnection().getRole();
+			if (role != Role.SPECTATOR) return getPlayer(role);
+		}
+		return null;
+	}
+	
+	public String getUsername()
+	{
+		return username;
+	}
+	
+	public boolean hasServerListBeenUpdated()
+	{
+		return updatePlayerList && hasStartedUpdateList;
+	}
+	
+	public InputHandler input()
+	{
+		return input;
+	}
+	
+	public boolean isBuildMode()
+	{
+		return buildMode;
+	}
+	
+	public boolean isFullScreen()
+	{
+		return fullscreen;
+	}
+	
+	public boolean isHitboxDebugging()
+	{
+		return hitboxDebug;
+	}
+	
+	public boolean isHostingServer()
+	{
+		return ServerGame.instance() != null;
+	}
+	
+	public boolean isHudDebugging()
+	{
+		return hudDebug;
+	}
+	
+	public boolean isLightingOn()
+	{
+		return lightingDebug != LightMapState.OFF;
+	}
+	
+	public void joinServer()
+	{
+		music.stop();
+		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
+		render();
+		
+		socketManager = new ClientSocketManager();
+		
+		int thyPortholio = ServerSocketManager.DEFAULT_PORT;
+		
+		if (port.length() > 0)
+		{
+			try
+			{
+				int newPort = Integer.parseInt(port);
+				
+				// Checks if the given port is out of range
+				if (!(newPort < 0 || newPort > 0xFFFF)) thyPortholio = newPort;
+			}
+			catch (NumberFormatException e)
+			{
+				logger().log(ALogType.WARNING, "Failed to parse port", e);
+			}
+		}
+		
+		// Sets the port to whatever is now set
+		setPort("" + thyPortholio);
+		
+		socketManager.setServerIP(getServerIP(), thyPortholio);
+		socketManager.startThis();
+		socketManager.sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
 	}
 	
 	@Override
@@ -151,6 +372,18 @@ public class ClientGame extends DynamicTickRenderThread
 			private boolean doIt = true;
 			
 			@Override
+			public void componentHidden(ComponentEvent e)
+			{
+			
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e)
+			{
+				
+			}
+			
+			@Override
 			public void componentResized(ComponentEvent e)
 			{
 				if (doIt) // Stops it from detecting the resizeGame method from resizing its bounds.
@@ -165,19 +398,7 @@ public class ClientGame extends DynamicTickRenderThread
 			}
 			
 			@Override
-			public void componentMoved(ComponentEvent e)
-			{
-			
-			}
-			
-			@Override
 			public void componentShown(ComponentEvent e)
-			{
-				
-			}
-			
-			@Override
-			public void componentHidden(ComponentEvent e)
 			{
 				
 			}
@@ -213,6 +434,12 @@ public class ClientGame extends DynamicTickRenderThread
 		DynamicThread renderLoading = new DynamicThread(this.getThreadGroup(), "Loading-Display")
 		{
 			@Override
+			public void onPause()
+			{
+			
+			}
+			
+			@Override
 			public void onRun()
 			{
 				canvas.getGraphics().drawImage(loading.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
@@ -230,18 +457,6 @@ public class ClientGame extends DynamicTickRenderThread
 			@Override
 			public void onStart()
 			{
-			
-			}
-			
-			@Override
-			public void onPause()
-			{
-				
-			}
-			
-			@Override
-			public void onUnpause()
-			{
 				
 			}
 			
@@ -249,6 +464,12 @@ public class ClientGame extends DynamicTickRenderThread
 			public void onStop()
 			{
 				loading.getImage().flush();
+			}
+			
+			@Override
+			public void onUnpause()
+			{
+				
 			}
 		};
 		renderLoading.startThis();
@@ -267,7 +488,7 @@ public class ClientGame extends DynamicTickRenderThread
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
 		receivedPackets = new ArrayList<Integer>();
-		packets = new ArrayList<BytePacket>();
+		toSend = new ArrayList<BytePacket>();
 		
 		players = new ArrayList<ClientPlayerEntity>(2);
 		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, new Vector2DDouble(0, 0)));
@@ -295,199 +516,20 @@ public class ClientGame extends DynamicTickRenderThread
 		music.startLoop();
 	}
 	
-	/**
-	 * Operation to perform to resize the game, keeping the aspect ratio.
-	 * 
-	 * @param windowWidth the new desired width.
-	 * @param windowHeight the new desired height.
-	 */
-	public void resizeGame(int windowWidth, int windowHeight)
-	{
-		int newWidth = 0;
-		int newHeight = 0;
-		
-		// If what the drawn height should be based on the width goes off screen
-		if (windowWidth / 16 * 9 > windowHeight)
-		{
-			newWidth = windowHeight / 9 * 16;
-			newHeight = windowHeight;
-		}
-		else // Else do the height based on the width
-		{
-			newWidth = windowWidth;
-			newHeight = windowWidth / 16 * 9;
-		}
-		
-		// Resizes the canvas to match the new window size, keeping it centred.
-		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
-	}
-	
-	private byte updateMem = 120;
-	
 	@Override
-	public void tick()
+	public void onStop()
 	{
-		tickCount++;
+		socketManager.stopThis();
+		receivedPackets.clear();
+		toSend.clear();
 		
-		updateMem++;
-		if (updateMem >= ticksPerSecond)
-		{
-			updateMem = 0;
-			Runtime rt = Runtime.getRuntime();
-			totalMemory = rt.freeMemory();
-			usedMemory = rt.totalMemory() - rt.freeMemory();
-		}
+		getLevels().clear();
+		setCurrentLevel(null);
+		setCurrentScreen(null);
 		
-		// Parses all packets
-		synchronized (packets)
-		{
-			for (BytePacket pack : packets)
-			{
-				parsePacket(pack);
-			}
-			
-			packets.clear();
-		}
-		
-		if (exitGame)
-		{
-			ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
-		}
-		
-		if (updatePlayerList) hasStartedUpdateList = true;
-		
-		for (Entry<Role, FlickeringLight> light : lights.entrySet())
-		{
-			ClientPlayerEntity player = getPlayer(light.getKey());
-			
-			light.getValue().addToLevel(player.getLevel());
-			light.getValue().setPosition(new Vector2DDouble(player.getPosition().getX() + (16 / 2), player.getPosition().getY() + (16 / 2)));
-		}
-		
-		if (input.consoleDebug.isReleasedFiltered())
-		{
-			consoleDebug = !consoleDebug;
-			
-			Console.setVisible(consoleDebug);
-			
-			logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
-		}
-		
-		if (input.full_screen.isPressedFiltered())
-		{
-			setFullScreen(!fullscreen);
-		}
-		
-		if (input.hudDebug.isPressedFiltered())
-		{
-			hudDebug = !hudDebug;
-			
-			logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
-		}
-		
-		if (input.hitboxDebug.isPressedFiltered())
-		{
-			hitboxDebug = !hitboxDebug;
-			
-			logger().log(ALogType.DEBUG, "Show Hitboxes: " + hitboxDebug);
-		}
-		if (input.lightingDebug.isPressedFiltered())
-		{
-			int currentOrdinal = lightingDebug.ordinal();
-			
-			currentOrdinal++;
-			
-			// Roll over
-			if (currentOrdinal >= LightMapState.values().length)
-			{
-				currentOrdinal = 0;
-			}
-			
-			lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
-			
-			logger().log(ALogType.DEBUG, "Lighting: " + lightingDebug.toString());
-		}
-		if (input.saveLevel.isPressedFiltered())
-		{
-			if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
-			logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
-		}
-		
-		if (input.levelBuilder.isPressedFiltered())
-		{
-			buildMode = !buildMode;
-			
-			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
-			
-			this.getPlayer(sockets().getServerConnection().getRole()).setCameraToFollow(!buildMode);
-		}
-		
-		if (currentScreen != null)
-		{
-			currentScreen.tick();
-		}
-		
-		if (getCurrentLevel() != null)
-		{
-			getCurrentLevel().tick();
-		}
-		
-		if (hasStartedUpdateList)
-		{
-			hasStartedUpdateList = false;
-			updatePlayerList = false;
-		}
+		if (this.isHostingServer()) ServerGame.instance().stopThis();
+		if (sockets() != null) sockets().stopThis();
 	}
-	
-	@Override
-	public void render()
-	{
-		// Clears the canvas
-		screen.getGraphics().setColor(Color.WHITE);
-		screen.getGraphics().fillRect(0, 0, (int) screen.getWidth(), (int) screen.getHeight());
-		
-		if (getCurrentLevel() != null)
-		{
-			getCurrentLevel().render(screen);
-		}
-		
-		if (getCurrentScreen() != null)
-		{
-			getCurrentScreen().render(screen);
-		}
-		
-		if (hudDebug)
-		{
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
-			
-			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
-			{
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 30), "x: " + getThisPlayer().getPosition().getX());
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 40), "y: " + getThisPlayer().getPosition().getY());
-			}
-		}
-		
-		// Renders everything that was just drawn
-		BufferStrategy bs = canvas.getBufferStrategy();
-		if (bs == null)
-		{
-			canvas.createBufferStrategy(2);
-			return;
-		}
-		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
-		g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-		g.dispose();
-		bs.show();
-	}
-	
-	private List<Integer> receivedPackets; // The ID's of all the packets that have been received
-	private List<BytePacket> packets;
-	
-	private boolean exitGame = false;
 	
 	public void parsePacket(BytePacket packet)
 	{
@@ -928,6 +970,89 @@ public class ClientGame extends DynamicTickRenderThread
 		}
 	}
 	
+	@Override
+	public void render()
+	{
+		// Clears the canvas
+		screen.getGraphics().setColor(Color.WHITE);
+		screen.getGraphics().fillRect(0, 0, (int) screen.getWidth(), (int) screen.getHeight());
+		
+		if (getCurrentLevel() != null)
+		{
+			getCurrentLevel().render(screen);
+		}
+		
+		if (getCurrentScreen() != null)
+		{
+			getCurrentScreen().render(screen);
+		}
+		
+		if (hudDebug)
+		{
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
+			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
+			
+			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
+			{
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 30), "x: " + getThisPlayer().getPosition().getX());
+				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 40), "y: " + getThisPlayer().getPosition().getY());
+			}
+		}
+		
+		// Renders everything that was just drawn
+		BufferStrategy bs = canvas.getBufferStrategy();
+		if (bs == null)
+		{
+			canvas.createBufferStrategy(2);
+			return;
+		}
+		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
+		g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+		g.dispose();
+		bs.show();
+	}
+	
+	/**
+	 * Operation to perform to resize the game, keeping the aspect ratio.
+	 * 
+	 * @param windowWidth the new desired width.
+	 * @param windowHeight the new desired height.
+	 */
+	public void resizeGame(int windowWidth, int windowHeight)
+	{
+		int newWidth = 0;
+		int newHeight = 0;
+		
+		// If what the drawn height should be based on the width goes off screen
+		if (windowWidth / 16 * 9 > windowHeight)
+		{
+			newWidth = windowHeight / 9 * 16;
+			newHeight = windowHeight;
+		}
+		else // Else do the height based on the width
+		{
+			newWidth = windowWidth;
+			newHeight = windowWidth / 16 * 9;
+		}
+		
+		// Resizes the canvas to match the new window size, keeping it centred.
+		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
+	}
+	
+	public void setCurrentLevel(ClientLevel newLevel)
+	{
+		// System.out.println("Setting Current Level: " + (newLevel == null ? "null" : newLevel.getType()));
+		currentLevel = newLevel;
+	}
+	
+	public void setCurrentScreen(GuiScreen screen)
+	{
+		this.currentScreen = screen;
+	}
+	
 	public void setFullScreen(boolean isFullScreen)
 	{
 		fullscreen = isFullScreen;
@@ -984,69 +1109,9 @@ public class ClientGame extends DynamicTickRenderThread
 		old.getContentPane().removeAll();
 	}
 	
-	public boolean isFullScreen()
-	{
-		return fullscreen;
-	}
-	
-	public boolean isHudDebugging()
-	{
-		return hudDebug;
-	}
-	
-	public boolean isHitboxDebugging()
-	{
-		return hitboxDebug;
-	}
-	
-	public LightMapState getLightingState()
-	{
-		return lightingDebug;
-	}
-	
-	public boolean isLightingOn()
-	{
-		return lightingDebug != LightMapState.OFF;
-	}
-	
-	public boolean isBuildMode()
-	{
-		return buildMode;
-	}
-	
-	public boolean isHostingServer()
-	{
-		return ServerGame.instance() != null;
-	}
-	
-	public void setCurrentScreen(GuiScreen screen)
-	{
-		this.currentScreen = screen;
-	}
-	
-	public GuiScreen getCurrentScreen()
-	{
-		return currentScreen;
-	}
-	
-	public void setUsername(String newUsername)
-	{
-		this.username = newUsername;
-	}
-	
-	public String getUsername()
-	{
-		return username;
-	}
-	
 	public void setPassword(String newPassword)
 	{
 		this.password = newPassword;
-	}
-	
-	public String getPassword()
-	{
-		return password;
 	}
 	
 	public void setPort(String newPort)
@@ -1054,121 +1119,14 @@ public class ClientGame extends DynamicTickRenderThread
 		this.port = newPort;
 	}
 	
-	public String getPort()
-	{
-		return port;
-	}
-	
 	public void setServerIP(String newIP)
 	{
 		this.typedIP = newIP;
 	}
 	
-	public String getServerIP()
+	public void setUsername(String newUsername)
 	{
-		return typedIP;
-	}
-	
-	private boolean hasStartedUpdateList = false;
-	
-	public boolean hasServerListBeenUpdated()
-	{
-		return updatePlayerList && hasStartedUpdateList;
-	}
-	
-	public void exitFromGame(ExitGameReason reason)
-	{
-		music.startLoop();
-		getLevels().clear();
-		setCurrentLevel(null);
-		setCurrentScreen(new GuiMainMenu());
-		
-		switch (reason)
-		{
-			default:
-				break;
-			case SERVER_CLOSED:
-				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
-				break;
-		}
-		
-		socketManager.stopThis();
-		receivedPackets.clear();
-		
-		synchronized (packets)
-		{
-			packets.clear();
-		}
-		
-		IDCounter.resetAll();
-		
-		if (this.isHostingServer())
-		{
-			ServerGame.instance().stopThis();
-		}
-	}
-	
-	public void joinServer()
-	{
-		music.stop();
-		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
-		render();
-		
-		socketManager = new ClientSocketManager();
-		
-		int thyPortholio = ServerSocketManager.DEFAULT_PORT;
-		
-		if (port.length() > 0)
-		{
-			try
-			{
-				int newPort = Integer.parseInt(port);
-				
-				// Checks if the given port is out of range
-				if (!(newPort < 0 || newPort > 0xFFFF)) thyPortholio = newPort;
-			}
-			catch (NumberFormatException e)
-			{
-				logger().log(ALogType.WARNING, "Failed to parse port", e);
-			}
-		}
-		
-		// Sets the port to whatever is now set
-		setPort("" + thyPortholio);
-		
-		socketManager.setServerIP(getServerIP(), thyPortholio);
-		socketManager.startThis();
-		socketManager.sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
-	}
-	
-	public ClientLevel getCurrentLevel()
-	{
-		return currentLevel;
-	}
-	
-	public void setCurrentLevel(ClientLevel newLevel)
-	{
-		// System.out.println("Setting Current Level: " + (newLevel == null ? "null" : newLevel.getType()));
-		currentLevel = newLevel;
-	}
-	
-	public ClientLevel getLevelByType(LevelType type)
-	{
-		for (ClientLevel level : getLevels())
-		{
-			if (level.getType() == type) return level;
-		}
-		return null;
-	}
-	
-	public Canvas getCanvas()
-	{
-		return canvas;
-	}
-	
-	public JFrame getFrame()
-	{
-		return frame;
+		this.username = newUsername;
 	}
 	
 	public ClientSocketManager sockets()
@@ -1176,85 +1134,124 @@ public class ClientGame extends DynamicTickRenderThread
 		return socketManager;
 	}
 	
-	public InputHandler input()
-	{
-		return input;
-	}
-	
 	@Override
-	public void onPause()
+	public void tick()
 	{
+		tickCount++;
 		
-	}
-	
-	@Override
-	public void onUnpause()
-	{
+		updateMem++;
+		if (updateMem >= ticksPerSecond)
+		{
+			updateMem = 0;
+			Runtime rt = Runtime.getRuntime();
+			totalMemory = rt.freeMemory();
+			usedMemory = rt.totalMemory() - rt.freeMemory();
+		}
 		
-	}
-	
-	@Override
-	public void onStop()
-	{
-		if (this.isHostingServer()) ServerGame.instance().stopThis();
-		if (sockets() != null) sockets().stopThis();
+		// Parses all packets
+		synchronized (toSend)
+		{
+			for (BytePacket pack : toSend)
+			{
+				parsePacket(pack);
+			}
+			
+			toSend.clear();
+		}
 		
-		receivedPackets.clear();
+		if (exitGame)
+		{
+			ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
+			exitGame = false;
+		}
+		
+		if (updatePlayerList) hasStartedUpdateList = true;
+		
+		for (Entry<Role, FlickeringLight> light : lights.entrySet())
+		{
+			ClientPlayerEntity player = getPlayer(light.getKey());
+			
+			light.getValue().addToLevel(player.getLevel());
+			light.getValue().setPosition(new Vector2DDouble(player.getPosition().getX() + (16 / 2), player.getPosition().getY() + (16 / 2)));
+		}
+		
+		if (input.consoleDebug.isReleasedFiltered())
+		{
+			consoleDebug = !consoleDebug;
+			
+			Console.setVisible(consoleDebug);
+			
+			logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
+		}
+		
+		if (input.full_screen.isPressedFiltered())
+		{
+			setFullScreen(!fullscreen);
+		}
+		
+		if (input.hudDebug.isPressedFiltered())
+		{
+			hudDebug = !hudDebug;
+			
+			logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
+		}
+		
+		if (input.hitboxDebug.isPressedFiltered())
+		{
+			hitboxDebug = !hitboxDebug;
+			
+			logger().log(ALogType.DEBUG, "Show Hitboxes: " + hitboxDebug);
+		}
+		if (input.lightingDebug.isPressedFiltered())
+		{
+			int currentOrdinal = lightingDebug.ordinal();
+			
+			currentOrdinal++;
+			
+			// Roll over
+			if (currentOrdinal >= LightMapState.values().length)
+			{
+				currentOrdinal = 0;
+			}
+			
+			lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
+			
+			logger().log(ALogType.DEBUG, "Lighting: " + lightingDebug.toString());
+		}
+		if (input.saveLevel.isPressedFiltered())
+		{
+			if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
+			logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
+		}
+		
+		if (input.levelBuilder.isPressedFiltered())
+		{
+			buildMode = !buildMode;
+			
+			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
+			
+			this.getPlayer(sockets().getServerConnection().getRole()).setCameraToFollow(!buildMode);
+		}
+		
+		if (currentScreen != null)
+		{
+			currentScreen.tick();
+		}
+		
+		if (getCurrentLevel() != null)
+		{
+			getCurrentLevel().tick();
+		}
+		
+		if (hasStartedUpdateList)
+		{
+			hasStartedUpdateList = false;
+			updatePlayerList = false;
+		}
 	}
 	
 	public void updatePlayerList()
 	{
 		this.updatePlayerList = true;
-	}
-	
-	public ClientPlayerEntity getThisPlayer()
-	{
-		if (sockets() != null && sockets().getServerConnection() != null)
-		{
-			Role role = sockets().getServerConnection().getRole();
-			if (role != Role.SPECTATOR) return getPlayer(role);
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets the player with the given role.
-	 * 
-	 * @param role whether it's player 1 or 2
-	 * @return the player.
-	 */
-	public ClientPlayerEntity getPlayer(Role role)
-	{
-		for (ClientPlayerEntity entity : getPlayers())
-		{
-			if (entity.getRole() == role) return entity;
-		}
-		return null;
-	}
-	
-	public List<ClientPlayerEntity> getPlayers()
-	{
-		return players;
-	}
-	
-	public List<ClientLevel> getLevels()
-	{
-		return levels;
-	}
-	
-	public static void main(String[] args)
-	{
-		startLoadTime = System.currentTimeMillis();
-		
-		game = new ClientGame();
-		game.startThis();
-	}
-	
-	public void addPacketToProcess(BytePacket pack)
-	{
-		synchronized (packets)
-		{
-			packets.add(pack);
-		}
 	}
 }

@@ -7,27 +7,34 @@ import ca.afroman.level.Level;
 
 public interface IEvent
 {
-	/**
-	 * Only ticks after triggered.
-	 */
-	public void tick();
+	public void addToLevel(Level level);
 	
 	/**
-	 * Triggers this.
+	 * @return the height of this event's area.
 	 */
-	public void trigger(Entity triggerer);
-	
-	/**
-	 * Runs when this is triggered.
-	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="hHHHHHHH" height="120" width="120">
-	 * <a href="https://i.imgur.com/dNVvntX.gif">ono</a>
-	 */
-	public void onTrigger(Entity triggerer);
+	public double getHeight();
 	
 	/**
 	 * @return the ID of this event. FOR SERVER/CLIENT REFERENCE ONLY, it does not act as a trigger.
 	 */
 	public int getID();
+	
+	/**
+	 * @return the ID's that will trigger this.
+	 */
+	public List<Integer> getInTriggers();
+	
+	public Level getLevel();
+	
+	/**
+	 * @return the ID's that, when this is triggered, will pass on to other event in the current level.
+	 */
+	public List<Integer> getOutTriggers();
+	
+	/**
+	 * @return the width of this event's area.
+	 */
+	public double getWidth();
 	
 	/**
 	 * @return the x position of this event.
@@ -40,28 +47,21 @@ public interface IEvent
 	public double getY();
 	
 	/**
-	 * @return the width of this event's area.
+	 * Runs when this is triggered.
+	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="hHHHHHHH" height="120" width="120">
+	 * <a href="https://i.imgur.com/dNVvntX.gif">ono</a>
 	 */
-	public double getWidth();
-	
-	/**
-	 * @return the height of this event's area.
-	 */
-	public double getHeight();
-	
-	/**
-	 * @return the ID's that will trigger this.
-	 */
-	public List<Integer> getInTriggers();
-	
-	/**
-	 * @return the ID's that, when this is triggered, will pass on to other event in the current level.
-	 */
-	public List<Integer> getOutTriggers();
+	public void onTrigger(Entity triggerer);
 	
 	public void removeFromLevel();
 	
-	public void addToLevel(Level level);
+	/**
+	 * Only ticks after triggered.
+	 */
+	public void tick();
 	
-	public Level getLevel();
+	/**
+	 * Triggers this.
+	 */
+	public void trigger(Entity triggerer);
 }

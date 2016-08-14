@@ -24,25 +24,22 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 		this.ticksPerSecond = ticksPerSecond;
 	}
 	
-	@Override
-	public void onStart()
+	public int getTickCount()
 	{
-		lastTime = System.nanoTime();
-		nsPerTick = 1000000000 / ticksPerSecond;
-		
-		ticks = 0;
-		tickCount = 0;
-		tps = 0;
-		
-		lastTimer = System.currentTimeMillis();
-		delta = 0;
+		return tickCount;
+	}
+	
+	public int getTicksPerSecond()
+	{
+		return tps;
 	}
 	
 	/**
 	 * Runs every time that the thread loops.
 	 */
+	// DO NOT INVOKE super.onRun()
 	@Override
-	public void onRun() // TODO synchronized? seems like it could be unnecessary
+	public void onRun()
 	{
 		long now = System.nanoTime();
 		delta += (now - lastTime) / nsPerTick;
@@ -66,15 +63,21 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	}
 	
 	@Override
+	public void onStart()
+	{
+		super.onStart();
+		
+		lastTime = System.nanoTime();
+		nsPerTick = 1000000000 / ticksPerSecond;
+		
+		ticks = 0;
+		tickCount = 0;
+		tps = 0;
+		
+		lastTimer = System.currentTimeMillis();
+		delta = 0;
+	}
+	
+	@Override
 	public abstract void tick();
-	
-	public int getTicksPerSecond()
-	{
-		return tps;
-	}
-	
-	public int getTickCount()
-	{
-		return tickCount;
-	}
 }

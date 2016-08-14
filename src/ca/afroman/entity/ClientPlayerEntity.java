@@ -32,38 +32,6 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 		this.role = role;
 	}
 	
-	@Override
-	public void tick()
-	{
-		super.tick();
-		
-		// If it's not in build mode and the role of this is the role of the client, let them move
-		if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().sockets().getServerConnection().getRole())
-		{
-			byte xa = 0;
-			byte ya = 0;
-			
-			if (ClientGame.instance().input().up.isPressed())
-			{
-				ya = -1;
-			}
-			if (ClientGame.instance().input().down.isPressed())
-			{
-				ya = 1;
-			}
-			if (ClientGame.instance().input().left.isPressed())
-			{
-				xa = -1;
-			}
-			if (ClientGame.instance().input().right.isPressed())
-			{
-				xa = 1;
-			}
-			
-			this.move(xa, ya);
-		}
-	}
-	
 	/**
 	 * Removes an entity from their current level and puts them in another level.
 	 * 
@@ -98,5 +66,37 @@ public class ClientPlayerEntity extends ClientAssetEntityDirectional implements 
 	public void onMove(byte xa, byte ya)
 	{
 		ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(xa, ya));
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
+		
+		// If it's not in build mode and the role of this is the role of the client, let them move
+		if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().sockets().getServerConnection().getRole())
+		{
+			byte xa = 0;
+			byte ya = 0;
+			
+			if (ClientGame.instance().input().up.isPressed())
+			{
+				ya = -1;
+			}
+			if (ClientGame.instance().input().down.isPressed())
+			{
+				ya = 1;
+			}
+			if (ClientGame.instance().input().left.isPressed())
+			{
+				xa = -1;
+			}
+			if (ClientGame.instance().input().right.isPressed())
+			{
+				xa = 1;
+			}
+			
+			this.move(xa, ya);
+		}
 	}
 }

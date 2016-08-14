@@ -22,6 +22,26 @@ public class GuiSendingLevels extends GuiScreen
 	}
 	
 	@Override
+	public void drawScreen(Texture renderTo)
+	{
+		if (ClientGame.instance().isHostingServer())
+		{
+			// TODO not just 3 you fucking git
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Sent levels to (" + 3 + "/" + ClientGame.instance().sockets().getConnectedPlayers().size() + ") players");
+			
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 45), "Waiting for client responses");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 55), "for " + (millsPassed / 1000) + " seconds...");
+			
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 80), "If nothing happens for a while,");
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 90), "try resending the levels.");
+		}
+		else
+		{
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Recieving levels...");
+		}
+	}
+	
+	@Override
 	public void init()
 	{
 		resendButton = new GuiTextButton(this, 2000, 20 + 20, 116, 72, blackFont, "Resend Levels");
@@ -45,31 +65,9 @@ public class GuiSendingLevels extends GuiScreen
 	}
 	
 	@Override
-	public void tick()
+	public void keyTyped()
 	{
-		millsPassed = (int) (System.currentTimeMillis() - startTime);
 		
-		super.tick();
-	}
-	
-	@Override
-	public void drawScreen(Texture renderTo)
-	{
-		if (ClientGame.instance().isHostingServer())
-		{
-			// TODO not just 3 you fucking git
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Sent levels to (" + 3 + "/" + ClientGame.instance().sockets().getConnectedPlayers().size() + ") players");
-			
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 45), "Waiting for client responses");
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 55), "for " + (millsPassed / 1000) + " seconds...");
-			
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 80), "If nothing happens for a while,");
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 90), "try resending the levels.");
-		}
-		else
-		{
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Recieving levels...");
-		}
 	}
 	
 	@Override
@@ -95,8 +93,10 @@ public class GuiSendingLevels extends GuiScreen
 	}
 	
 	@Override
-	public void keyTyped()
+	public void tick()
 	{
+		millsPassed = (int) (System.currentTimeMillis() - startTime);
 		
+		super.tick();
 	}
 }

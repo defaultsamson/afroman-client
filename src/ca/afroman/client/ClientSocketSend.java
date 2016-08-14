@@ -29,36 +29,29 @@ public class ClientSocketSend extends DynamicTickThread
 		sendingPackets = new ArrayList<BytePacket>();
 	}
 	
-	@Override
-	public void tick()
+	public void addPacket(BytePacket packet)
 	{
-		List<BytePacket> packs = getPacketQueue();
+		if (!packet.mustSend()) return;
 		
-		synchronized (packs)
+		synchronized (sendingPackets)
 		{
-			// For each packet queued to send to the connection
-			for (BytePacket pack : packs)
+			// Don't add it if it's just looping through and trying to add it again
+			if (!sendingPackets.contains(packet))
 			{
-				ClientGame.instance().sockets().sender().sendPacket(pack);
+				sendingPackets.add(packet);
 			}
 		}
 	}
 	
-	@Override
-	public void onPause()
+	public List<BytePacket> getPacketQueue()
 	{
-		
-	}
-	
-	@Override
-	public void onUnpause()
-	{
-		
+		return sendingPackets;
 	}
 	
 	@Override
 	public void onStop()
 	{
+		super.onStop();
 		sendingPackets.clear();
 	}
 	
@@ -88,40 +81,6 @@ public class ClientSocketSend extends DynamicTickThread
 			if (toRemove != null)
 			{
 				sent.remove(toRemove);
-			}
-		}
-	}
-	
-	public void addPacket(BytePacket packet)
-	{
-		if (!packet.mustSend()) return;
-		
-		synchronized (sendingPackets)
-		{
-			// Don't add it if it's just looping through and trying to add it again
-			if (!sendingPackets.contains(packet))
-			{
-				sendingPackets.add(packet);
-			}
-		}
-	}
-	
-	/**
-	 * Sends a packet to the server.
-	 * 
-	 * @param packet the packet
-	 */
-	public void sendPacket(BytePacket packet)
-	{
-		packet.setConnections(manager.getServerConnection().getConnection());
-		addPacket(packet);
-		
-		for (IPConnection con : packet.getConnections())
-		{
-			if (con != null && con.getIPAddress() != null)
-			{
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
-				sendData(packet.getData(), con.getIPAddress(), con.getPort());
 			}
 		}
 	}
@@ -156,8 +115,38 @@ public class ClientSocketSend extends DynamicTickThread
 		}
 	}
 	
-	public List<BytePacket> getPacketQueue()
+	/**
+	 * Sends a packet to the server.
+	 * 
+	 * @param packet the packet
+	 */
+	public void sendPacket(BytePacket packet)
 	{
-		return sendingPackets;
+		packet.setConnections(manager.getServerConnection().getConnection());
+		addPacket(packet);
+		
+		for (IPConnection con : packet.getConnections())
+		{
+			if (con != null && con.getIPAddress() != null)
+			{
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+				sendData(packet.getData(), con.getIPAddress(), con.getPort());
+			}
+		}
+	}
+	
+	@Override
+	public void tick()
+	{
+		List<BytePacket> packs = getPacketQueue();
+		
+		synchronized (packs)
+		{
+			// For each packet queued to send to the connection
+			for (BytePacket pack : packs)
+			{
+				ClientGame.instance().sockets().sender().sendPacket(pack);
+			}
+		}
 	}
 }

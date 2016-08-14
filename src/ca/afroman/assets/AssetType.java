@@ -78,29 +78,6 @@ public enum AssetType
 	}
 	
 	/**
-	 * Gets the enum value of this past the <b>current</b> value.
-	 * <p>
-	 * If no value is found past the <b>current</b> value, the value at
-	 * index 0 will be returned.
-	 * 
-	 * @param current the current item to check past
-	 * @return the next item on the list of this enumerator.
-	 */
-	public static AssetType getNext(AssetType current)
-	{
-		int newOrdinal = current.ordinal() + 1;
-		
-		if (newOrdinal > values().length - 1)
-		{
-			return fromOrdinal(0);
-		}
-		else
-		{
-			return fromOrdinal(newOrdinal);
-		}
-	}
-	
-	/**
 	 * Gets the enum value of this prior to the <b>current</b> value.
 	 * <p>
 	 * If no value is found before the <b>current</b> value, the value at
@@ -125,22 +102,6 @@ public enum AssetType
 	}
 	
 	/**
-	 * Gets the enum value of this past the <b>current</b> value.
-	 * <p>
-	 * If no value is found past the <b>current</b> value, the value at
-	 * index 0 will be returned.
-	 * 
-	 * @param current the current item to check past
-	 * @return the next item on the list of this enumerator.
-	 */
-	public static AssetType getNextRenderable(AssetType current)
-	{
-		for (int i = 0; i < values().length; i++)
-			if (Assets.getAsset(current = getNext(current)) instanceof IRenderable) return current;
-		return null;
-	}
-	
-	/**
 	 * Gets the enum value of this prior to the <b>current</b> value.
 	 * <p>
 	 * If no value is found before the <b>current</b> value, the value at
@@ -154,6 +115,45 @@ public enum AssetType
 	{
 		for (int i = 0; i < values().length; i++)
 			if (Assets.getAsset(current = getLast(current)) instanceof IRenderable) return current;
+		return null;
+	}
+	
+	/**
+	 * Gets the enum value of this past the <b>current</b> value.
+	 * <p>
+	 * If no value is found past the <b>current</b> value, the value at
+	 * index 0 will be returned.
+	 * 
+	 * @param current the current item to check past
+	 * @return the next item on the list of this enumerator.
+	 */
+	public static AssetType getNext(AssetType current)
+	{
+		int newOrdinal = current.ordinal() + 1;
+		
+		if (newOrdinal > values().length - 1)
+		{
+			return fromOrdinal(0);
+		}
+		else
+		{
+			return fromOrdinal(newOrdinal);
+		}
+	}
+	
+	/**
+	 * Gets the enum value of this past the <b>current</b> value.
+	 * <p>
+	 * If no value is found past the <b>current</b> value, the value at
+	 * index 0 will be returned.
+	 * 
+	 * @param current the current item to check past
+	 * @return the next item on the list of this enumerator.
+	 */
+	public static AssetType getNextRenderable(AssetType current)
+	{
+		for (int i = 0; i < values().length; i++)
+			if (Assets.getAsset(current = getNext(current)) instanceof IRenderable) return current;
 		return null;
 	}
 }

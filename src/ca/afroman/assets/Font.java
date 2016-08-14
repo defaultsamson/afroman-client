@@ -21,9 +21,17 @@ public class Font extends AssetArray
 		super(type, fontTexture.toTextureArray(COLUMNS, ROWS));
 	}
 	
-	public void renderRight(Texture renderTo, Vector2DInt pos, String message)
+	public void render(Texture renderTo, Vector2DInt pos, String message)
 	{
-		render(renderTo, pos.add(-(message.length() * 6), 0), message);
+		for (int i = 0; i < message.length(); i++)
+		{
+			int charIndex = chars.indexOf(message.charAt(i));
+			if (charIndex >= 0)
+			{
+				renderTo.draw((Texture) getAsset(charIndex), pos);
+			}
+			pos.add(6, 0);
+		}
 	}
 	
 	public void renderCentered(Texture renderTo, Vector2DInt pos, String message)
@@ -31,22 +39,8 @@ public class Font extends AssetArray
 		render(renderTo, pos.add(-((message.length() * 6) / 2), 0), message);
 	}
 	
-	public void render(Texture renderTo, Vector2DInt pos, String message)
+	public void renderRight(Texture renderTo, Vector2DInt pos, String message)
 	{
-		// TODO see if there's a reason for needing this?
-		pos.add(-6, 0);
-		
-		for (int i = 0; i < message.length(); i++)
-		{
-			int charIndex = chars.indexOf(message.charAt(i));
-			if (charIndex >= 0)
-			{
-				renderTo.draw((Texture) getAsset(charIndex), pos.add(6, 0));
-			}
-			else
-			{
-				pos.add(6, 0);
-			}
-		}
+		render(renderTo, pos.add(-(message.length() * 6), 0), message);
 	}
 }

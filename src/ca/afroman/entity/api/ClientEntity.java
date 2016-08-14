@@ -15,6 +15,12 @@ public class ClientEntity extends Entity
 		cameraFollow = false;
 	}
 	
+	@Override
+	public ClientLevel getLevel()
+	{
+		return (ClientLevel) super.getLevel();
+	}
+	
 	/**
 	 * Makes the level camera follow this Entity or not.
 	 * 
@@ -34,11 +40,5 @@ public class ClientEntity extends Entity
 		{
 			getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
 		}
-	}
-	
-	@Override
-	public ClientLevel getLevel()
-	{
-		return (ClientLevel) super.getLevel();
 	}
 }

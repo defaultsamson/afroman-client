@@ -35,9 +35,40 @@ import ca.afroman.util.ListUtil;
 
 public class ClientLevel extends Level
 {
+	private static final int MAX_TOOLTIP_TIME = (60 * 3); // Time in ticks
 	private LightMap lightmap;
 	private Vector2DDouble offset;
+	
 	private Font lightDebug;
+	
+	private BuildMode buildMode = BuildMode.TILE;
+	
+	private int timeOnTool = 0;
+	
+	// Mode 1, Tiles
+	private Asset cursorAsset = null;
+	public boolean showLayer0 = true;
+	public boolean showLayer1 = true;
+	
+	public boolean showLayer2 = true;
+	public boolean showLayer3 = true;
+	public boolean showLayer4 = true;
+	public boolean showLayer5 = true;
+	public GridSize grid = GridSize.MEDIUM;
+	public byte editLayer = 0;
+	// Mode 2, PointLights
+	private int currentBuildLightRadius = 10;
+	// Mode 3, HitBoxes
+	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
+	
+	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
+	
+	private Vector2DDouble hitbox = new Vector2DDouble(0, 0);
+	
+	private double hitboxWidth = 0;
+	private double hitboxHeight = 0;
+	private int hitboxClickCount = 0;
+	private boolean lastIsBuildMode = false;
 	
 	public ClientLevel(LevelType type)
 	{
@@ -48,9 +79,58 @@ public class ClientLevel extends Level
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 	}
 	
-	public void setCameraCenterInWorld(Vector2DDouble point)
+	private void cleanupBuildMode(BuildMode mode)
 	{
-		offset.setPosition(point.getX() - ClientGame.WIDTH / 2, point.getY() - ClientGame.HEIGHT / 2);
+		// Cleanup
+		switch (mode)
+		{
+			case TILE:
+				ClientGame.instance().setCurrentScreen(null);
+				break;
+			case LIGHT:
+				ClientGame.instance().setCurrentScreen(null);
+				break;
+			case HITBOX:
+				ClientGame.instance().setCurrentScreen(null);
+				hitboxClickCount = 0;
+				break;
+			case EVENT:
+				hitboxClickCount = 0;
+				break;
+		}
+	}
+	
+	public Vector2DDouble getCameraOffset()
+	{
+		return offset;
+	}
+	
+	public LightMap getLightMap()
+	{
+		return lightmap;
+	}
+	
+	private void loadBuildMode(BuildMode mode)
+	{
+		timeOnTool = 0;
+		
+		// Load new build mode
+		switch (buildMode)
+		{
+			case TILE:
+				if (cursorAsset == null) cursorAsset = Assets.getAsset(AssetType.getNextRenderable(AssetType.fromOrdinal(0))).clone();
+				ClientGame.instance().setCurrentScreen(new GuiTileEditor());
+				break;
+			case LIGHT:
+				ClientGame.instance().setCurrentScreen(new GuiGrid());
+				break;
+			case HITBOX:
+				
+				break;
+			case EVENT:
+				
+				break;
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -334,78 +414,15 @@ public class ClientLevel extends Level
 		}
 	}
 	
-	private BuildMode buildMode = BuildMode.TILE;
-	private int timeOnTool = 0;
-	private static final int MAX_TOOLTIP_TIME = (60 * 3); // Time in ticks
-	
-	// Mode 1, Tiles
-	private Asset cursorAsset = null;
-	public boolean showLayer0 = true;
-	public boolean showLayer1 = true;
-	public boolean showLayer2 = true;
-	public boolean showLayer3 = true;
-	public boolean showLayer4 = true;
-	public boolean showLayer5 = true;
-	public GridSize grid = GridSize.MEDIUM;
-	
-	public byte editLayer = 0;
-	
-	// Mode 2, PointLights
-	private int currentBuildLightRadius = 10;
-	
-	// Mode 3, HitBoxes
-	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
-	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
-	private Vector2DDouble hitbox = new Vector2DDouble(0, 0);
-	private double hitboxWidth = 0;
-	private double hitboxHeight = 0;
-	private int hitboxClickCount = 0;
-	
-	private void cleanupBuildMode(BuildMode mode)
+	public Vector2DDouble screenToWorld(Vector2DInt point)
 	{
-		// Cleanup
-		switch (mode)
-		{
-			case TILE:
-				ClientGame.instance().setCurrentScreen(null);
-				break;
-			case LIGHT:
-				ClientGame.instance().setCurrentScreen(null);
-				break;
-			case HITBOX:
-				ClientGame.instance().setCurrentScreen(null);
-				hitboxClickCount = 0;
-				break;
-			case EVENT:
-				hitboxClickCount = 0;
-				break;
-		}
+		return new Vector2DDouble(point.getX() + offset.getX(), point.getY() + offset.getY());
 	}
 	
-	private void loadBuildMode(BuildMode mode)
+	public void setCameraCenterInWorld(Vector2DDouble point)
 	{
-		timeOnTool = 0;
-		
-		// Load new build mode
-		switch (buildMode)
-		{
-			case TILE:
-				if (cursorAsset == null) cursorAsset = Assets.getAsset(AssetType.getNextRenderable(AssetType.fromOrdinal(0))).clone();
-				ClientGame.instance().setCurrentScreen(new GuiTileEditor());
-				break;
-			case LIGHT:
-				ClientGame.instance().setCurrentScreen(new GuiGrid());
-				break;
-			case HITBOX:
-				
-				break;
-			case EVENT:
-				
-				break;
-		}
+		offset.setPosition(point.getX() - ClientGame.WIDTH / 2, point.getY() - ClientGame.HEIGHT / 2);
 	}
-	
-	private boolean lastIsBuildMode = false;
 	
 	@Override
 	public void tick()
@@ -678,23 +695,8 @@ public class ClientLevel extends Level
 		super.tick();
 	}
 	
-	public Vector2DDouble screenToWorld(Vector2DInt point)
-	{
-		return new Vector2DDouble(point.getX() + offset.getX(), point.getY() + offset.getY());
-	}
-	
 	public Vector2DInt worldToScreen(Vector2DDouble point)
 	{
 		return new Vector2DInt((int) point.getX() - (int) offset.getX(), (int) point.getY() - (int) offset.getY());
-	}
-	
-	public Vector2DDouble getCameraOffset()
-	{
-		return offset;
-	}
-	
-	public LightMap getLightMap()
-	{
-		return lightmap;
 	}
 }

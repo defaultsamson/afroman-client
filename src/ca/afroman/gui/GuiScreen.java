@@ -12,13 +12,15 @@ import ca.afroman.client.ClientGame;
 
 public abstract class GuiScreen
 {
+	protected static Font nobleFont = Assets.getFont(AssetType.FONT_NOBLE);
+	protected static Font whiteFont = Assets.getFont(AssetType.FONT_WHITE);
+	protected static Font blackFont = Assets.getFont(AssetType.FONT_BLACK);
+	
 	protected GuiScreen parentScreen;
 	protected List<GuiButton> buttons;
 	private List<GuiButton> buttonToRemove;
 	
-	protected static Font nobleFont = Assets.getFont(AssetType.FONT_NOBLE);
-	protected static Font whiteFont = Assets.getFont(AssetType.FONT_WHITE);
-	protected static Font blackFont = Assets.getFont(AssetType.FONT_BLACK);
+	private GuiButton listening = null;
 	
 	public GuiScreen(GuiScreen parentScreen)
 	{
@@ -29,19 +31,70 @@ public abstract class GuiScreen
 		init();
 	}
 	
-	public abstract void init();
-	
 	public void addButton(GuiButton button)
 	{
 		buttons.add(button);
 	}
+	
+	/**
+	 * Draws the screen.
+	 * 
+	 * @param delta the time between the last time the screen was drawn and the time that this is currently being drawn
+	 */
+	public abstract void drawScreen(Texture renderTo);
+	
+	public GuiButton getListeningButton()
+	{
+		return this.listening;
+	}
+	
+	public GuiScreen getParent()
+	{
+		return this.parentScreen;
+	}
+	
+	public void goToParentScreen()
+	{
+		ClientGame.instance().setCurrentScreen(this.parentScreen);
+	}
+	
+	public abstract void init();
+	
+	public abstract void keyTyped();
+	
+	/**
+	 * Fires whenever a button is pressed.
+	 * 
+	 * @param buttonID the id of the button
+	 */
+	public abstract void pressAction(int buttonID);
+	
+	/**
+	 * Fires whenever a button is released.
+	 * 
+	 * @param buttonID the id of the button
+	 */
+	public abstract void releaseAction(int buttonID);
 	
 	public void removeButton(GuiButton button)
 	{
 		buttonToRemove.add(button);
 	}
 	
-	private GuiButton listening = null;
+	/**
+	 * Operates in the same way as renderEntries(SpriteBatch batch);
+	 * 
+	 * @param batch the SpriteBatch to draw the buttons to
+	 */
+	public void render(Texture renderTo)
+	{
+		drawScreen(renderTo);
+		
+		for (GuiButton button : buttons)
+		{
+			button.render(renderTo);
+		}
+	}
 	
 	public void setListeningButton(GuiButton button)
 	{
@@ -50,11 +103,6 @@ public abstract class GuiScreen
 		{
 			this.listening = button;
 		}
-	}
-	
-	public GuiButton getListeningButton()
-	{
-		return this.listening;
 	}
 	
 	public void tick()
@@ -88,53 +136,5 @@ public abstract class GuiScreen
 				((GuiTextField) button).setFocussed(false);
 			}
 		}
-	}
-	
-	/**
-	 * Draws the screen.
-	 * 
-	 * @param delta the time between the last time the screen was drawn and the time that this is currently being drawn
-	 */
-	public abstract void drawScreen(Texture renderTo);
-	
-	/**
-	 * Operates in the same way as renderEntries(SpriteBatch batch);
-	 * 
-	 * @param batch the SpriteBatch to draw the buttons to
-	 */
-	public void render(Texture renderTo)
-	{
-		drawScreen(renderTo);
-		
-		for (GuiButton button : buttons)
-		{
-			button.render(renderTo);
-		}
-	}
-	
-	public GuiScreen getParent()
-	{
-		return this.parentScreen;
-	}
-	
-	public abstract void keyTyped();
-	
-	/**
-	 * Fires whenever a button is pressed.
-	 * 
-	 * @param buttonID the id of the button
-	 */
-	public abstract void pressAction(int buttonID);
-	
-	/**
-	 * Fires whenever a button is released.
-	 * 
-	 * @param buttonID the id of the button
-	 */
-	public abstract void releaseAction(int buttonID);
-	
-	public void goToParentScreen()
-	{
-		ClientGame.instance().setCurrentScreen(this.parentScreen);
 	}
 }

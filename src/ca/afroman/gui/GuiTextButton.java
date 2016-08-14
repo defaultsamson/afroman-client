@@ -30,16 +30,16 @@ public class GuiTextButton extends GuiButton
 		return text;
 	}
 	
-	public void setText(String text)
-	{
-		this.text = text;
-	}
-	
 	@Override
 	public void render(Texture drawTo)
 	{
 		super.render(drawTo);
 		
 		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y + 4), text);
+	}
+	
+	public void setText(String text)
+	{
+		this.text = text;
 	}
 }

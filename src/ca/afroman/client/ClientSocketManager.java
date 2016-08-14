@@ -56,6 +56,68 @@ public class ClientSocketManager implements IDynamicRunning
 		sSocket = new ClientSocketSend(this);
 	}
 	
+	public List<ConnectedPlayer> getConnectedPlayers()
+	{
+		return playerList;
+	}
+	
+	public IPConnectedPlayer getServerConnection()
+	{
+		return serverConnection;
+	}
+	
+	/**
+	 * @return a list of all the ConnectedPlayers, excluding this current player.
+	 */
+	public List<ConnectedPlayer> otherPlayers()
+	{
+		List<ConnectedPlayer> toReturn = new ArrayList<ConnectedPlayer>();
+		
+		for (ConnectedPlayer player : getConnectedPlayers())
+		{
+			if (player.getID() != getServerConnection().getID()) toReturn.add(player);
+		}
+		
+		return toReturn;
+	}
+	
+	@Override
+	public void pauseThis()
+	{
+		rSocket.pauseThis();
+		sSocket.pauseThis();
+	}
+	
+	public ConnectedPlayer playerByID(int id)
+	{
+		for (ConnectedPlayer player : getConnectedPlayers())
+		{
+			if (player.getID() == id) return player;
+		}
+		
+		return null;
+	}
+	
+	public ConnectedPlayer playerByRole(Role role)
+	{
+		for (ConnectedPlayer player : getConnectedPlayers())
+		{
+			if (player.getRole() == role) return player;
+		}
+		
+		return null;
+	}
+	
+	public ClientSocketReceive receiver()
+	{
+		return rSocket;
+	}
+	
+	public ClientSocketSend sender()
+	{
+		return sSocket;
+	}
+	
 	public void setServerIP(String serverIpAddress, int port)
 	{
 		serverConnection.getConnection().setPort(port);
@@ -92,73 +154,11 @@ public class ClientSocketManager implements IDynamicRunning
 		return socket;
 	}
 	
-	public IPConnectedPlayer getServerConnection()
-	{
-		return serverConnection;
-	}
-	
-	public ConnectedPlayer playerByRole(Role role)
-	{
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getRole() == role) return player;
-		}
-		
-		return null;
-	}
-	
-	public ConnectedPlayer playerByID(int id)
-	{
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getID() == id) return player;
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * @return a list of all the ConnectedPlayers, excluding this current player.
-	 */
-	public List<ConnectedPlayer> otherPlayers()
-	{
-		List<ConnectedPlayer> toReturn = new ArrayList<ConnectedPlayer>();
-		
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getID() != getServerConnection().getID()) toReturn.add(player);
-		}
-		
-		return toReturn;
-	}
-	
-	public List<ConnectedPlayer> getConnectedPlayers()
-	{
-		return playerList;
-	}
-	
 	@Override
 	public void startThis()
 	{
 		rSocket.startThis();
 		sSocket.startThis();
-	}
-	
-	public ClientSocketReceive receiver()
-	{
-		return rSocket;
-	}
-	
-	public ClientSocketSend sender()
-	{
-		return sSocket;
-	}
-	
-	@Override
-	public void pauseThis()
-	{
-		rSocket.pauseThis();
-		sSocket.pauseThis();
 	}
 	
 	@Override

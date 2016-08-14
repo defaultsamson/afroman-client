@@ -39,7 +39,7 @@ public class ServerSocketManager implements IDynamicRunning
 	private ServerSocketReceive rSocket;
 	private ServerSocketSend sSocket;
 	
-	public ServerSocketManager(String password, String port)
+	public ServerSocketManager(String port)
 	{
 		playerList = new ArrayList<IPConnectedPlayer>();
 		
@@ -72,13 +72,30 @@ public class ServerSocketManager implements IDynamicRunning
 			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT", e);
 		}
 		
-		rSocket = new ServerSocketReceive(this, password);
+		rSocket = new ServerSocketReceive(this);
 		sSocket = new ServerSocketSend(this);
 	}
 	
-	public DatagramSocket socket()
+	/**
+	 * Sets up a IPConnectedPlayer for a new connection. Makes the player join the server.
+	 * 
+	 * @param connection the connection to set up for
+	 * @param username the desired username
+	 */
+	public void addConnection(IPConnection connection, String username)
 	{
-		return socket;
+		// Gives player a default role based on what critical roles are still required
+		Role role = (this.getPlayerByRole(Role.PLAYER1) == null ? Role.PLAYER1 : (this.getPlayerByRole(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
+		
+		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
+		playerList.add(newConnection);
+		
+		ServerGame.instance().addConnection(newConnection.getConnection());
+		
+		// Tells the newly added connection their ID
+		sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));
+		
+		updateClientsPlayerList();
 	}
 	
 	/**
@@ -106,6 +123,21 @@ public class ServerSocketManager implements IDynamicRunning
 		{
 			// If the IP and port equal those that were specified, return the player
 			if (player.getConnection().equals(connection)) return player;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a player by their ID number.
+	 * 
+	 * @param id the ID number
+	 * @return the player.
+	 */
+	public IPConnectedPlayer getPlayerByID(short id)
+	{
+		for (IPConnectedPlayer player : playerList)
+		{
+			if (player.getID() == id) return player;
 		}
 		return null;
 	}
@@ -140,19 +172,16 @@ public class ServerSocketManager implements IDynamicRunning
 		return null;
 	}
 	
-	/**
-	 * Gets a player by their ID number.
-	 * 
-	 * @param id the ID number
-	 * @return the player.
-	 */
-	public IPConnectedPlayer getPlayerByID(short id)
+	@Override
+	public void pauseThis()
 	{
-		for (IPConnectedPlayer player : playerList)
-		{
-			if (player.getID() == id) return player;
-		}
-		return null;
+		rSocket.pauseThis();
+		sSocket.pauseThis();
+	}
+	
+	public ServerSocketReceive receiver()
+	{
+		return rSocket;
 	}
 	
 	/**
@@ -168,34 +197,14 @@ public class ServerSocketManager implements IDynamicRunning
 		updateClientsPlayerList();
 	}
 	
-	/**
-	 * Sets up a IPConnectedPlayer for a new connection. Makes the player join the server.
-	 * 
-	 * @param connection the connection to set up for
-	 * @param username the desired username
-	 */
-	public void addConnection(IPConnection connection, String username)
+	public ServerSocketSend sender()
 	{
-		// Gives player a default role based on what critical roles are still required
-		Role role = (this.getPlayerByRole(Role.PLAYER1) == null ? Role.PLAYER1 : (this.getPlayerByRole(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
-		
-		IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
-		playerList.add(newConnection);
-		
-		ServerGame.instance().addConnection(newConnection.getConnection());
-		
-		// Tells the newly added connection their ID
-		sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));
-		
-		updateClientsPlayerList();
+		return sSocket;
 	}
 	
-	/**
-	 * Updates the player list for all the connected clients.
-	 */
-	public void updateClientsPlayerList()
+	public DatagramSocket socket()
 	{
-		sender().sendPacketToAllClients(new PacketUpdatePlayerList(playerList));
+		return socket;
 	}
 	
 	@Override
@@ -203,23 +212,6 @@ public class ServerSocketManager implements IDynamicRunning
 	{
 		rSocket.startThis();
 		sSocket.startThis();
-	}
-	
-	public ServerSocketReceive receiver()
-	{
-		return rSocket;
-	}
-	
-	public ServerSocketSend sender()
-	{
-		return sSocket;
-	}
-	
-	@Override
-	public void pauseThis()
-	{
-		rSocket.pauseThis();
-		sSocket.pauseThis();
 	}
 	
 	@Override
@@ -243,5 +235,13 @@ public class ServerSocketManager implements IDynamicRunning
 		playerList.clear();
 		rSocket.stopThis();
 		sSocket.stopThis();
+	}
+	
+	/**
+	 * Updates the player list for all the connected clients.
+	 */
+	public void updateClientsPlayerList()
+	{
+		sender().sendPacketToAllClients(new PacketUpdatePlayerList(playerList));
 	}
 }

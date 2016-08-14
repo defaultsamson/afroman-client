@@ -47,6 +47,36 @@ public class GuiLobby extends GuiScreen
 	}
 	
 	@Override
+	public void drawScreen(Texture renderTo)
+	{
+		renderTo.draw(player1.getCurrentFrame(), new Vector2DInt(player1X, player1Y));
+		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt(player2X, player2Y));
+		
+		if (ClientGame.instance().isLightingOn())
+		{
+			light1.setPosition(new Vector2DDouble(player1X + 8, player1Y + 8));
+			light2.setPosition(new Vector2DDouble(player2X + 8, player2Y + 8));
+			
+			lightmap.clear();
+			light1.renderCentered(lightmap);
+			light2.renderCentered(lightmap);
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
+		}
+		
+		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
+		if (ClientGame.instance().isHostingServer())
+		{
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "LAN: " + lanIP + ":" + port);
+		}
+		else
+		{
+			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "(Waiting for host to start server)");
+		}
+	}
+	
+	@Override
 	public void init()
 	{
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
@@ -91,6 +121,40 @@ public class GuiLobby extends GuiScreen
 		
 		// Makes sure that the GUI buttons are initialised no matter what
 		firstTime = true;
+	}
+	
+	@Override
+	public void keyTyped()
+	{
+		
+	}
+	
+	@Override
+	public void pressAction(int buttonID)
+	{
+		
+	}
+	
+	@Override
+	public void releaseAction(int buttonID)
+	{
+		if (buttonID == 2000) // Start Game
+		{
+			ClientGame.instance().sockets().sender().sendPacket(new PacketBeginGame());
+		}
+		else if (buttonID == 2001) // Stop Server
+		{
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer(ClientGame.instance().sockets().getServerConnection().getConnection()));
+		}
+		else if (buttonID == 2002) // Leave server
+		{
+			ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerDisconnect());
+			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
+		}
+		else
+		{
+			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, (short) buttonID));
+		}
 	}
 	
 	@Override
@@ -154,69 +218,5 @@ public class GuiLobby extends GuiScreen
 		}
 		
 		super.tick();
-	}
-	
-	@Override
-	public void drawScreen(Texture renderTo)
-	{
-		renderTo.draw(player1.getCurrentFrame(), new Vector2DInt(player1X, player1Y));
-		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt(player2X, player2Y));
-		
-		if (ClientGame.instance().isLightingOn())
-		{
-			light1.setPosition(new Vector2DDouble(player1X + 8, player1Y + 8));
-			light2.setPosition(new Vector2DDouble(player2X + 8, player2Y + 8));
-			
-			lightmap.clear();
-			light1.renderCentered(lightmap);
-			light2.renderCentered(lightmap);
-			lightmap.patch();
-			
-			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
-		}
-		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
-		if (ClientGame.instance().isHostingServer())
-		{
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "LAN: " + lanIP + ":" + port);
-		}
-		else
-		{
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "(Waiting for host to start server)");
-		}
-	}
-	
-	@Override
-	public void keyTyped()
-	{
-		
-	}
-	
-	@Override
-	public void pressAction(int buttonID)
-	{
-		
-	}
-	
-	@Override
-	public void releaseAction(int buttonID)
-	{
-		if (buttonID == 2000) // Start Game
-		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketBeginGame());
-		}
-		else if (buttonID == 2001) // Stop Server
-		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer(ClientGame.instance().sockets().getServerConnection().getConnection()));
-		}
-		else if (buttonID == 2002) // Leave server
-		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerDisconnect());
-			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
-		}
-		else
-		{
-			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, (short) buttonID));
-		}
 	}
 }

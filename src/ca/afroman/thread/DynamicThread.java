@@ -9,10 +9,6 @@ import ca.afroman.log.ALogger;
 
 public abstract class DynamicThread extends Thread implements IDynamicRunning
 {
-	private boolean exit = false;
-	protected boolean isRunning = false;
-	private ALogger logger;
-	
 	private static List<String> excludeNames;
 	static
 	{
@@ -40,11 +36,64 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		return toReturn;
 	}
 	
+	private boolean exit = false;
+	protected boolean isRunning = false;
+	
+	private ALogger logger;
+	
 	public DynamicThread(ThreadGroup group, String name)
 	{
 		super(group, getNameWithParents(group, name));
 		
 		logger = new ALogger(this.getName());
+	}
+	
+	public ALogger logger()
+	{
+		return logger;
+	}
+	
+	/**
+	 * Runs when this thread comes to a pause.
+	 */
+	public void onPause()
+	{
+		
+	}
+	
+	/**
+	 * Runs every time that the thread loops.
+	 */
+	public abstract void onRun();
+	
+	/**
+	 * Runs when this thread initially starts.
+	 */
+	public void onStart()
+	{
+		logger().log(ALogType.DEBUG, "Starting Thread: \"" + getName() + "\"");
+	}
+	
+	/**
+	 * Runs when this thread comes to a stop.
+	 */
+	public void onStop()
+	{
+		logger().log(ALogType.DEBUG, "Stopping Thread: \"" + getName() + "\"");
+	}
+	
+	/**
+	 * Runs when this thread comes back from being paused.
+	 */
+	public void onUnpause()
+	{
+		
+	}
+	
+	@Override
+	public void pauseThis()
+	{
+		isRunning = false;
 	}
 	
 	@Override
@@ -75,17 +124,6 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 				logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread while paused", e);
 			}
 		}
-	}
-	
-	/**
-	 * Runs every time that the thread loops.
-	 */
-	public abstract void onRun();
-	
-	@Override
-	public void startThis()
-	{
-		this.start();
 	}
 	
 	/**
@@ -122,31 +160,11 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		}
 	}
 	
-	public ALogger logger()
-	{
-		return logger;
-	}
-	
-	/**
-	 * Runs when this thread initially starts.
-	 */
-	public abstract void onStart();
-	
 	@Override
-	public void pauseThis()
+	public void startThis()
 	{
-		isRunning = false;
+		this.start();
 	}
-	
-	/**
-	 * Runs when this thread comes to a pause.
-	 */
-	public abstract void onPause();
-	
-	/**
-	 * Runs when this thread comes back from being paused.
-	 */
-	public abstract void onUnpause();
 	
 	/**
 	 * Completely stops this thread from running.
@@ -158,9 +176,4 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		isRunning = false;
 		onStop();
 	}
-	
-	/**
-	 * Runs when this thread comes to a stop.
-	 */
-	public abstract void onStop();
 }

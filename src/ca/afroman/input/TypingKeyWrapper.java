@@ -22,6 +22,21 @@ public class TypingKeyWrapper
 		this.modes2 = modes2;
 	}
 	
+	public Key getKey()
+	{
+		return key;
+	}
+	
+	public String getNormalChar()
+	{
+		return normal;
+	}
+	
+	public String getShiftingChar()
+	{
+		return shifting;
+	}
+	
 	public String getTypedChar(boolean shifting, TypingMode mode)
 	{
 		if (shifting)
@@ -34,20 +49,5 @@ public class TypingKeyWrapper
 		}
 		
 		return "";
-	}
-	
-	public String getShiftingChar()
-	{
-		return shifting;
-	}
-	
-	public String getNormalChar()
-	{
-		return normal;
-	}
-	
-	public Key getKey()
-	{
-		return key;
 	}
 }

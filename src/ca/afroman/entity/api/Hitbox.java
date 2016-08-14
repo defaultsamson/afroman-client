@@ -9,6 +9,8 @@ public class Hitbox extends Rectangle2D.Double
 {
 	private static IDCounter idCounter = new IDCounter();
 	
+	private static final long serialVersionUID = -318324421701678550L;
+	
 	public static IDCounter getIDCounter()
 	{
 		return idCounter;
@@ -18,8 +20,6 @@ public class Hitbox extends Rectangle2D.Double
 	private int id;
 	
 	public Level level = null;
-	
-	private static final long serialVersionUID = -318324421701678550L;
 	
 	// TODO use a Vector2DDouble instead
 	public Hitbox(double x, double y, double width, double height)
@@ -32,22 +32,6 @@ public class Hitbox extends Rectangle2D.Double
 		super(x, y, width, height);
 		
 		this.id = id;
-	}
-	
-	/**
-	 * @return this hitbox's ID.
-	 */
-	public int getID()
-	{
-		return id;
-	}
-	
-	/**
-	 * Removes this hitbox from its current level.
-	 */
-	public void removeFromLevel()
-	{
-		addToLevel(null);
 	}
 	
 	/**
@@ -73,9 +57,33 @@ public class Hitbox extends Rectangle2D.Double
 		}
 	}
 	
+	@Override
+	public Hitbox clone()
+	{
+		Hitbox box = new Hitbox(x, y, width, height);
+		box.addToLevel(level);
+		return box;
+	}
+	
+	/**
+	 * @return this hitbox's ID.
+	 */
+	public int getID()
+	{
+		return id;
+	}
+	
 	public Level getLevel()
 	{
 		return level;
+	}
+	
+	/**
+	 * Removes this hitbox from its current level.
+	 */
+	public void removeFromLevel()
+	{
+		addToLevel(null);
 	}
 	
 	/**
@@ -87,13 +95,5 @@ public class Hitbox extends Rectangle2D.Double
 	public void setLevel(Level level)
 	{
 		this.level = level;
-	}
-	
-	@Override
-	public Hitbox clone()
-	{
-		Hitbox box = new Hitbox(x, y, width, height);
-		box.addToLevel(level);
-		return box;
 	}
 }

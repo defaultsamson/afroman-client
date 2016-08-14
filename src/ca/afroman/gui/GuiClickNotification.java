@@ -29,6 +29,18 @@ public class GuiClickNotification extends GuiTextButton
 	}
 	
 	@Override
+	protected void onPressed()
+	{
+		
+	}
+	
+	@Override
+	protected void onRelease()
+	{
+		screen.removeButton(this);
+	}
+	
+	@Override
 	public void render(Texture drawTo)
 	{
 		drawTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
@@ -40,17 +52,5 @@ public class GuiClickNotification extends GuiTextButton
 		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y - 14), notifText2);
 		
 		super.render(drawTo);
-	}
-	
-	@Override
-	protected void onPressed()
-	{
-		
-	}
-	
-	@Override
-	protected void onRelease()
-	{
-		screen.removeButton(this);
 	}
 }

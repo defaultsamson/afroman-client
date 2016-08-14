@@ -19,26 +19,6 @@ public class IPConnection
 		this.port = port;
 	}
 	
-	public void setIPAddress(InetAddress address)
-	{
-		this.address = address;
-	}
-	
-	public InetAddress getIPAddress()
-	{
-		return address;
-	}
-	
-	public void setPort(int newPort)
-	{
-		this.port = newPort;
-	}
-	
-	public int getPort()
-	{
-		return port;
-	}
-	
 	/**
 	 * @return this IP and port in a readable form. (ex. "127.0.0.1:25565")
 	 */
@@ -54,5 +34,25 @@ public class IPConnection
 			return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
 		}
 		return false;
+	}
+	
+	public InetAddress getIPAddress()
+	{
+		return address;
+	}
+	
+	public int getPort()
+	{
+		return port;
+	}
+	
+	public void setIPAddress(InetAddress address)
+	{
+		this.address = address;
+	}
+	
+	public void setPort(int newPort)
+	{
+		this.port = newPort;
 	}
 }

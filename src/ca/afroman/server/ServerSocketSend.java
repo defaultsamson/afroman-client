@@ -30,21 +30,23 @@ public class ServerSocketSend extends DynamicTickThread
 		sendingPackets = new ArrayList<BytePacket>();
 	}
 	
-	@Override
-	public void tick()
+	private void addPacket(BytePacket packet)
 	{
-		// TODO Don't try to force other packets if it's still pushing out crazy amounts of level packets to everyone
-		if (!ServerGame.instance().isSendingLevels())
+		if (!packet.mustSend()) return;
+		
+		synchronized (sendingPackets)
 		{
-			synchronized (sendingPackets)
+			// Don't add it if it's just looping through and trying to add it again
+			if (!sendingPackets.contains(packet))
 			{
-				// For each packet queued to send to the connection
-				for (BytePacket pack : sendingPackets)
-				{
-					sendPacket(pack);
-				}
+				sendingPackets.add(packet);
 			}
 		}
+	}
+	
+	public List<BytePacket> getPacketQueue()
+	{
+		return sendingPackets;
 	}
 	
 	@Override
@@ -54,15 +56,15 @@ public class ServerSocketSend extends DynamicTickThread
 	}
 	
 	@Override
-	public void onUnpause()
-	{
-		
-	}
-	
-	@Override
 	public void onStop()
 	{
 		sendingPackets.clear();
+	}
+	
+	@Override
+	public void onUnpause()
+	{
+		
 	}
 	
 	/**
@@ -98,42 +100,6 @@ public class ServerSocketSend extends DynamicTickThread
 		}
 	}
 	
-	private void addPacket(BytePacket packet)
-	{
-		if (!packet.mustSend()) return;
-		
-		synchronized (sendingPackets)
-		{
-			// Don't add it if it's just looping through and trying to add it again
-			if (!sendingPackets.contains(packet))
-			{
-				sendingPackets.add(packet);
-			}
-		}
-	}
-	
-	public List<BytePacket> getPacketQueue()
-	{
-		return sendingPackets;
-	}
-	
-	/**
-	 * Sends data to a Client.
-	 * 
-	 * @param packet the packet to send
-	 * @param connection the Connection of the Client to send to
-	 */
-	public void sendPacket(BytePacket packet)
-	{
-		addPacket(packet);
-		
-		for (IPConnection con : packet.getConnections())
-		{
-			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
-			sendData(packet.getData(), con.getIPAddress(), con.getPort());
-		}
-	}
-	
 	/**
 	 * Sends data to a Client.
 	 * 
@@ -159,6 +125,23 @@ public class ServerSocketSend extends DynamicTickThread
 	}
 	
 	/**
+	 * Sends data to a Client.
+	 * 
+	 * @param packet the packet to send
+	 * @param connection the Connection of the Client to send to
+	 */
+	public void sendPacket(BytePacket packet)
+	{
+		addPacket(packet);
+		
+		for (IPConnection con : packet.getConnections())
+		{
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+			sendData(packet.getData(), con.getIPAddress(), con.getPort());
+		}
+	}
+	
+	/**
 	 * Sends a packet to all the connected clients.
 	 * 
 	 * @param packet the packet to send
@@ -173,5 +156,22 @@ public class ServerSocketSend extends DynamicTickThread
 		}
 		
 		sendPacket(packet);
+	}
+	
+	@Override
+	public void tick()
+	{
+		// TODO Don't try to force other packets if it's still pushing out crazy amounts of level packets to everyone
+		if (!ServerGame.instance().isSendingLevels())
+		{
+			synchronized (sendingPackets)
+			{
+				// For each packet queued to send to the connection
+				for (BytePacket pack : sendingPackets)
+				{
+					sendPacket(pack);
+				}
+			}
+		}
 	}
 }

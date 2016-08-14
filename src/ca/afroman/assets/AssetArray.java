@@ -14,31 +14,6 @@ public class AssetArray extends Asset
 		this.assets = assets;
 	}
 	
-	public Asset getAsset(int index)
-	{
-		return assets[index];
-	}
-	
-	public Asset[] getAssets()
-	{
-		return assets;
-	}
-	
-	public int length()
-	{
-		return assets.length;
-	}
-	
-	public Asset getRandomAsset()
-	{
-		return getAsset(new Random().nextInt(length()));
-	}
-	
-	public Asset getRandomAsset(int xSeed, int ySeed)
-	{
-		return getAsset(new Random(xSeed << 16 + ySeed).nextInt(length()));
-	}
-	
 	@Override
 	public Asset clone()
 	{
@@ -71,5 +46,30 @@ public class AssetArray extends Asset
 		{
 			asset.dispose();
 		}
+	}
+	
+	public Asset getAsset(int index)
+	{
+		return assets[index];
+	}
+	
+	public Asset[] getAssets()
+	{
+		return assets;
+	}
+	
+	public Asset getRandomAsset()
+	{
+		return getAsset(new Random().nextInt(length()));
+	}
+	
+	public Asset getRandomAsset(int xSeed, int ySeed)
+	{
+		return getAsset(new Random(xSeed << 16 + ySeed).nextInt(length()));
+	}
+	
+	public int length()
+	{
+		return assets.length;
 	}
 }

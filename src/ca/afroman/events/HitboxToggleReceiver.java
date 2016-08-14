@@ -31,106 +31,6 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 		hitbox = box;
 	}
 	
-	public Hitbox getHitbox()
-	{
-		return hitbox;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return isServerSide;
-	}
-	
-	@Override
-	public void tick()
-	{
-		
-	}
-	
-	@Override
-	public void trigger(Entity triggerer)
-	{
-		onTrigger(triggerer);
-		
-		for (int out : getOutTriggers())
-		{
-			// TODO chain for all levels
-			getLevel().chainScriptedEvents(triggerer, out);
-		}
-	}
-	
-	@Override
-	public void onTrigger(Entity triggerer)
-	{
-		if (hitbox.getLevel() == null)
-		{
-			hitbox.addToLevel(level);
-		}
-		else
-		{
-			hitbox.removeFromLevel();
-		}
-	}
-	
-	@Override
-	public int getID()
-	{
-		return hitbox.getID();
-	}
-	
-	@Override
-	public double getX()
-	{
-		return hitbox.getX();
-	}
-	
-	@Override
-	public double getY()
-	{
-		return hitbox.getY();
-	}
-	
-	@Override
-	public double getWidth()
-	{
-		return hitbox.getWidth();
-	}
-	
-	@Override
-	public double getHeight()
-	{
-		return hitbox.getHeight();
-	}
-	
-	@Override
-	public List<Integer> getInTriggers()
-	{
-		return inTriggers;
-	}
-	
-	public void setInTriggers(List<Integer> trigs)
-	{
-		inTriggers = trigs;
-	}
-	
-	@Override
-	public List<Integer> getOutTriggers()
-	{
-		return outTriggers;
-	}
-	
-	public void setOutTriggers(List<Integer> trigs)
-	{
-		outTriggers = trigs;
-	}
-	
-	@Override
-	public void removeFromLevel()
-	{
-		addToLevel(null);
-	}
-	
 	@Override
 	public void addToLevel(Level newLevel)
 	{
@@ -153,8 +53,108 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 	}
 	
 	@Override
+	public double getHeight()
+	{
+		return hitbox.getHeight();
+	}
+	
+	public Hitbox getHitbox()
+	{
+		return hitbox;
+	}
+	
+	@Override
+	public int getID()
+	{
+		return hitbox.getID();
+	}
+	
+	@Override
+	public List<Integer> getInTriggers()
+	{
+		return inTriggers;
+	}
+	
+	@Override
 	public Level getLevel()
 	{
 		return hitbox.getLevel();
+	}
+	
+	@Override
+	public List<Integer> getOutTriggers()
+	{
+		return outTriggers;
+	}
+	
+	@Override
+	public double getWidth()
+	{
+		return hitbox.getWidth();
+	}
+	
+	@Override
+	public double getX()
+	{
+		return hitbox.getX();
+	}
+	
+	@Override
+	public double getY()
+	{
+		return hitbox.getY();
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return isServerSide;
+	}
+	
+	@Override
+	public void onTrigger(Entity triggerer)
+	{
+		if (hitbox.getLevel() == null)
+		{
+			hitbox.addToLevel(level);
+		}
+		else
+		{
+			hitbox.removeFromLevel();
+		}
+	}
+	
+	@Override
+	public void removeFromLevel()
+	{
+		addToLevel(null);
+	}
+	
+	public void setInTriggers(List<Integer> trigs)
+	{
+		inTriggers = trigs;
+	}
+	
+	public void setOutTriggers(List<Integer> trigs)
+	{
+		outTriggers = trigs;
+	}
+	
+	@Override
+	public void tick()
+	{
+		
+	}
+	
+	@Override
+	public void trigger(Entity triggerer)
+	{
+		onTrigger(triggerer);
+		
+		for (int out : getOutTriggers())
+		{
+			// TODO chain for all levels
+			getLevel().chainScriptedEvents(triggerer, out);
+		}
 	}
 }

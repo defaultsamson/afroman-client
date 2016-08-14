@@ -62,6 +62,74 @@ public class GuiButton extends InputType
 		this.releaseSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_RELEASE);
 	}
 	
+	public boolean canHold()
+	{
+		return canHold;
+	}
+	
+	public int getID()
+	{
+		return id;
+	}
+	
+	/**
+	 * @return the texture set to be using based on the state.
+	 */
+	private Texture[] getTexture()
+	{
+		return (isEnabled ? textures[state] : textures[2]);
+	}
+	
+	public boolean isEnabled()
+	{
+		return isEnabled;
+	}
+	
+	protected void onPressed()
+	{
+		if (isEnabled && screen != null) screen.pressAction(id);
+	}
+	
+	protected void onRelease()
+	{
+		if (isEnabled && screen != null) screen.releaseAction(id);
+	}
+	
+	public void render(Texture drawTo)
+	{
+		// Draws the left pixels
+		drawTo.draw(getTexture()[0], new Vector2DInt(hitbox.x, hitbox.y));
+		
+		// Draws the center pixels
+		for (int i = 1; i < hitbox.getWidth() - 1; i++)
+		{
+			drawTo.draw(getTexture()[1], new Vector2DInt(hitbox.x + i, hitbox.y));
+		}
+		
+		// Draws the right pixels
+		drawTo.draw(getTexture()[2], new Vector2DInt(hitbox.x + hitbox.width - 1, hitbox.y));
+	}
+	
+	public void setCanHold(boolean canHold)
+	{
+		this.canHold = canHold;
+	}
+	
+	public void setEnabled()
+	{
+		setEnabled(true);
+	}
+	
+	public void setEnabled(boolean enabled)
+	{
+		isEnabled = enabled;
+	}
+	
+	public void setMakeSound(boolean isNoisy)
+	{
+		makeSound = isNoisy;
+	}
+	
 	public void tick()
 	{
 		if (isEnabled)
@@ -113,73 +181,5 @@ public class GuiButton extends InputType
 				}
 			}
 		}
-	}
-	
-	public boolean canHold()
-	{
-		return canHold;
-	}
-	
-	public void setEnabled()
-	{
-		setEnabled(true);
-	}
-	
-	public void setEnabled(boolean enabled)
-	{
-		isEnabled = enabled;
-	}
-	
-	public boolean isEnabled()
-	{
-		return isEnabled;
-	}
-	
-	public void setCanHold(boolean canHold)
-	{
-		this.canHold = canHold;
-	}
-	
-	protected void onPressed()
-	{
-		if (isEnabled && screen != null) screen.pressAction(id);
-	}
-	
-	protected void onRelease()
-	{
-		if (isEnabled && screen != null) screen.releaseAction(id);
-	}
-	
-	public int getID()
-	{
-		return id;
-	}
-	
-	/**
-	 * @return the texture set to be using based on the state.
-	 */
-	private Texture[] getTexture()
-	{
-		return (isEnabled ? textures[state] : textures[2]);
-	}
-	
-	public void render(Texture drawTo)
-	{
-		// Draws the left pixels
-		drawTo.draw(getTexture()[0], new Vector2DInt(hitbox.x, hitbox.y));
-		
-		// Draws the center pixels
-		for (int i = 1; i < hitbox.getWidth() - 1; i++)
-		{
-			drawTo.draw(getTexture()[1], new Vector2DInt(hitbox.x + i, hitbox.y));
-		}
-		
-		// Draws the right pixels
-		drawTo.draw(getTexture()[2], new Vector2DInt(hitbox.x + hitbox.width - 1, hitbox.y));
-	}
-	
-	public void setMakeSound(boolean isNoisy)
-	{
-		makeSound = isNoisy;
 	}
 }

@@ -30,6 +30,11 @@ public class FlickeringLight extends PointLight
 		this.ticksPerFrame = ticksPerFrame;
 	}
 	
+	public double internalRadiusOffset()
+	{
+		return getRadius() - displayRadius;
+	}
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public void renderCentered(LightMap renderTo)
@@ -90,10 +95,5 @@ public class FlickeringLight extends PointLight
 				}
 			}
 		}
-	}
-	
-	public double internalRadiusOffset()
-	{
-		return getRadius() - displayRadius;
 	}
 }

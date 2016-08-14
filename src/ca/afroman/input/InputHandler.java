@@ -107,27 +107,9 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		game.getFrame().addWindowListener(this);
 	}
 	
-	@Override
-	public void windowClosing(WindowEvent e)
+	public Vector2DInt getMousePos()
 	{
-		windowClosed(e);
-	}
-	
-	@Override
-	public void windowClosed(WindowEvent e)
-	{
-		// Stops the client properly when being closed
-		try
-		{
-			ClientGame.instance().stopThis();
-			Assets.dispose();
-			System.exit(0);
-		}
-		catch (Exception er)
-		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly", er);
-			System.exit(1);
-		}
+		return mousePos;
 	}
 	
 	@Override
@@ -142,24 +124,32 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		toggleKey(e.getKeyCode(), false);
 	}
 	
-	public void toggleKey(int keyCode, boolean isPressed)
+	@Override
+	public void keyTyped(KeyEvent e)
 	{
-		for (Key key : keys)
-		{
-			key.update(keyCode, isPressed);
-		}
+		// Not needed
 	}
 	
-	public void toggleMouseButton(int buttonID, boolean isPressed)
+	@Override
+	public void mouseClicked(MouseEvent e)
 	{
-		for (MouseButton butt : mouseButtons)
-		{
-			butt.update(buttonID, isPressed);
-		}
+		// Not needed
 	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e)
+	{
+		mouseMoved(e);
+	}
+	
+	@Override
+	public void mouseEntered(MouseEvent e)
+	{
+		mouseMoved(e);
+	}
+	
+	@Override
+	public void mouseExited(MouseEvent e)
 	{
 		mouseMoved(e);
 	}
@@ -176,11 +166,6 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		double yRatio = ClientGame.HEIGHT / (double) ClientGame.instance().getCanvas().getHeight();
 		
 		mousePos.setPosition((int) (e.getX() * xRatio), (int) (e.getY() * yRatio));
-	}
-	
-	public Vector2DInt getMousePos()
-	{
-		return mousePos;
 	}
 	
 	@Override
@@ -202,38 +187,53 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		mouseWheelUp.setPressed((e.getWheelRotation() < 0));
 	}
 	
-	@Override
-	public void mouseEntered(MouseEvent e)
+	public void toggleKey(int keyCode, boolean isPressed)
 	{
-		mouseMoved(e);
+		for (Key key : keys)
+		{
+			key.update(keyCode, isPressed);
+		}
+	}
+	
+	public void toggleMouseButton(int buttonID, boolean isPressed)
+	{
+		for (MouseButton butt : mouseButtons)
+		{
+			butt.update(buttonID, isPressed);
+		}
 	}
 	
 	@Override
-	public void mouseExited(MouseEvent e)
-	{
-		mouseMoved(e);
-	}
-	
-	@Override
-	public void keyTyped(KeyEvent e)
-	{
-		// Not needed
-	}
-	
-	@Override
-	public void mouseClicked(MouseEvent e)
-	{
-		// Not needed
-	}
-	
-	@Override
-	public void windowOpened(WindowEvent e)
+	public void windowActivated(WindowEvent e)
 	{
 		
 	}
 	
 	@Override
-	public void windowIconified(WindowEvent e)
+	public void windowClosed(WindowEvent e)
+	{
+		// Stops the client properly when being closed
+		try
+		{
+			ClientGame.instance().stopThis();
+			Assets.dispose();
+			System.exit(0);
+		}
+		catch (Exception er)
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly", er);
+			System.exit(1);
+		}
+	}
+	
+	@Override
+	public void windowClosing(WindowEvent e)
+	{
+		windowClosed(e);
+	}
+	
+	@Override
+	public void windowDeactivated(WindowEvent e)
 	{
 		
 	}
@@ -245,13 +245,13 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	}
 	
 	@Override
-	public void windowActivated(WindowEvent e)
+	public void windowIconified(WindowEvent e)
 	{
 		
 	}
 	
 	@Override
-	public void windowDeactivated(WindowEvent e)
+	public void windowOpened(WindowEvent e)
 	{
 		
 	}

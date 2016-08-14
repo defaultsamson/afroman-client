@@ -10,19 +10,15 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread
 		super(group, name, ticksPerSecond);
 	}
 	
-	@Override
-	public void onStart()
+	public int getFramesPerSecond()
 	{
-		super.onStart();
-		
-		frames = 0;
-		fps = 0;
+		return fps;
 	}
 	
 	/**
 	 * Runs every time that the thread loops.
 	 */
-	// TODO is zynchronization starts to bread, make this synchronised
+	// DO NOT INVOKE super.onRun()
 	@Override
 	public void onRun()
 	{
@@ -58,10 +54,14 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread
 		}
 	}
 	
-	public abstract void render();
-	
-	public int getFramesPerSecond()
+	@Override
+	public void onStart()
 	{
-		return fps;
+		super.onStart();
+		
+		frames = 0;
+		fps = 0;
 	}
+	
+	public abstract void render();
 }

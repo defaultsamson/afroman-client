@@ -29,24 +29,6 @@ public class FileUtil
 	}
 	
 	/**
-	 * Formats a path to fit the standards.
-	 * 
-	 * @param path
-	 * @return a formatted path.
-	 */
-	public static String formatPath(String path)
-	{
-		for (Entry<String, String> entry : replacements.entrySet())
-		{
-			while (path.contains(entry.getKey()))
-			{
-				path = path.replace(entry.getKey(), entry.getValue());
-			}
-		}
-		return path;
-	}
-	
-	/**
 	 * Gets a file instance from a resource of the running program.
 	 * 
 	 * @param path the path to the resource. e.g. "/assets/levels/sauce.txt"
@@ -90,6 +72,24 @@ public class FileUtil
 		}
 		
 		return tempFile;
+	}
+	
+	/**
+	 * Formats a path to fit the standards.
+	 * 
+	 * @param path
+	 * @return a formatted path.
+	 */
+	public static String formatPath(String path)
+	{
+		for (Entry<String, String> entry : replacements.entrySet())
+		{
+			while (path.contains(entry.getKey()))
+			{
+				path = path.replace(entry.getKey(), entry.getValue());
+			}
+		}
+		return path;
 	}
 	
 	/**

@@ -43,9 +43,6 @@ public class ServerGame extends DynamicTickThread
 {
 	private static ServerGame game = null;
 	
-	private boolean isInGame = false;
-	private boolean isSendingLevels = false;
-	
 	public static ServerGame instance()
 	{
 		return game;
@@ -56,10 +53,22 @@ public class ServerGame extends DynamicTickThread
 		return new ThreadGroup("Server");
 	}
 	
+	private boolean isInGame = false;
+	
+	private boolean isSendingLevels = false;
+	
+	private String password;
+	
 	private List<Level> levels;
 	private List<ServerPlayerEntity> players;
 	
 	private ServerSocketManager socketManager;
+	
+	private boolean stopServer = false;
+	
+	private HashMap<IPConnection, List<Integer>> receivedPackets; // The ID's of all the packets that have been received
+	
+	private List<BytePacket> toProcess;
 	
 	public ServerGame(String password, String port)
 	{
@@ -67,10 +76,84 @@ public class ServerGame extends DynamicTickThread
 		
 		if (game == null) game = this;
 		
-		socketManager = new ServerSocketManager(password, port);
+		this.password = password;
+		socketManager = new ServerSocketManager(port);
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
 		toProcess = new ArrayList<BytePacket>();
 	}
+	
+	public void addConnection(IPConnection connection)
+	{
+		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
+		
+		synchronized (packs)
+		{
+			packs.put(connection, new ArrayList<Integer>());
+		}
+	}
+	
+	public void addPacketToProcess(BytePacket pack)
+	{
+		synchronized (toProcess)
+		{
+			toProcess.add(pack);
+		}
+	}
+	
+	public void beginGame()
+	{
+		isInGame = true;
+	}
+	
+	public Level getLevelByType(LevelType type)
+	{
+		for (Level level : getLevels())
+		{
+			if (level.getType() == type) return level;
+		}
+		return null;
+	}
+	
+	public List<Level> getLevels()
+	{
+		return levels;
+	}
+	
+	/**
+	 * Gets the player with the given role.
+	 * 
+	 * @param role whether it's player 1 or 2
+	 * @return the player.
+	 */
+	public ServerPlayerEntity getPlayer(Role role)
+	{
+		for (ServerPlayerEntity entity : getPlayers())
+		{
+			if (entity.getRole() == role) return entity;
+		}
+		return null;
+	}
+	
+	public List<ServerPlayerEntity> getPlayers()
+	{
+		return players;
+	}
+	
+	public boolean isInGame()
+	{
+		return isInGame;
+	}
+	
+	public boolean isSendingLevels()
+	{
+		return isSendingLevels;
+	}
+	
+	// TODO add server-wide build mode? probably not
+	// public boolean isBuildMode()
+	// {
+	// return buildMode;
+	// }
 	
 	public void loadGame()
 	{
@@ -144,6 +227,12 @@ public class ServerGame extends DynamicTickThread
 	}
 	
 	@Override
+	public void onPause()
+	{
+		isInGame = false;
+	}
+	
+	@Override
 	public void onStart()
 	{
 		super.onStart();
@@ -154,6 +243,8 @@ public class ServerGame extends DynamicTickThread
 	@Override
 	public void onStop()
 	{
+		super.onStop();
+		
 		// TODO save levels?
 		receivedPackets.clear();
 		toProcess.clear();
@@ -166,74 +257,10 @@ public class ServerGame extends DynamicTickThread
 		game = null;
 	}
 	
-	private boolean stopServer = false;
-	
 	@Override
-	public void tick()
+	public void onUnpause()
 	{
-		synchronized (toProcess)
-		{
-			for (BytePacket pack : toProcess)
-			{
-				parsePacket(pack);
-			}
-			
-			toProcess.clear();
-		}
-		
-		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
-		if (stopServer) ServerGame.instance().stopThis();
-		
-		if (isInGame)
-		{
-			if (getLevels() != null)
-			{
-				for (Level level : getLevels())
-				{
-					level.tick();
-				}
-			}
-		}
-	}
-	
-	public Level getLevelByType(LevelType type)
-	{
-		for (Level level : getLevels())
-		{
-			if (level.getType() == type) return level;
-		}
-		return null;
-	}
-	
-	public void addConnection(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
-		
-		synchronized (packs)
-		{
-			packs.put(connection, new ArrayList<Integer>());
-		}
-	}
-	
-	public void removeConnection(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
-		
-		synchronized (packs)
-		{
-			packs.remove(connection);
-		}
-	}
-	
-	private HashMap<IPConnection, List<Integer>> receivedPackets; // The ID's of all the packets that have been received
-	private List<BytePacket> toProcess;
-	
-	public void addPacketToProcess(BytePacket pack)
-	{
-		synchronized (toProcess)
-		{
-			toProcess.add(pack);
-		}
+		isInGame = true;
 	}
 	
 	/**
@@ -683,10 +710,10 @@ public class ServerGame extends DynamicTickThread
 			}
 			
 			// If there's a password
-			if (!sockets().receiver().password.equals(""))
+			if (!password.equals(""))
 			{
 				// If got the correct password, allow the player to join
-				if (pass.equals(sockets().receiver().password))
+				if (pass.equals(password))
 				{
 					sockets().addConnection(connection, name);
 				}
@@ -704,27 +731,14 @@ public class ServerGame extends DynamicTickThread
 		}
 	}
 	
-	// TODO add server-wide build mode? probably not
-	// public boolean isBuildMode()
-	// {
-	// return buildMode;
-	// }
-	
-	@Override
-	public void onPause()
+	public void removeConnection(IPConnection connection)
 	{
-		isInGame = false;
-	}
-	
-	@Override
-	public void onUnpause()
-	{
-		isInGame = true;
-	}
-	
-	public void beginGame()
-	{
-		isInGame = true;
+		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
+		
+		synchronized (packs)
+		{
+			packs.remove(connection);
+		}
 	}
 	
 	public ServerSocketManager sockets()
@@ -732,38 +746,31 @@ public class ServerGame extends DynamicTickThread
 		return socketManager;
 	}
 	
-	public boolean isInGame()
+	@Override
+	public void tick()
 	{
-		return isInGame;
-	}
-	
-	public boolean isSendingLevels()
-	{
-		return isSendingLevels;
-	}
-	
-	/**
-	 * Gets the player with the given role.
-	 * 
-	 * @param role whether it's player 1 or 2
-	 * @return the player.
-	 */
-	public ServerPlayerEntity getPlayer(Role role)
-	{
-		for (ServerPlayerEntity entity : getPlayers())
+		synchronized (toProcess)
 		{
-			if (entity.getRole() == role) return entity;
+			for (BytePacket pack : toProcess)
+			{
+				parsePacket(pack);
+			}
+			
+			toProcess.clear();
 		}
-		return null;
-	}
-	
-	public List<Level> getLevels()
-	{
-		return levels;
-	}
-	
-	public List<ServerPlayerEntity> getPlayers()
-	{
-		return players;
+		
+		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
+		if (stopServer) ServerGame.instance().stopThis();
+		
+		if (isInGame)
+		{
+			if (getLevels() != null)
+			{
+				for (Level level : getLevels())
+				{
+					level.tick();
+				}
+			}
+		}
 	}
 }

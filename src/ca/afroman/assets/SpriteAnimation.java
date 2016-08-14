@@ -13,17 +13,67 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	private int ticksPerFrame;
 	private int tickCounter = 0;
 	
-	public SpriteAnimation(AssetType type, int ticksPerFrame, Texture... frames)
-	{
-		this(type, false, ticksPerFrame, frames);
-	}
-	
 	public SpriteAnimation(AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
 		super(type, frames);
 		
 		this.pingPong = pingPong;
 		this.ticksPerFrame = ticksPerFrame;
+	}
+	
+	public SpriteAnimation(AssetType type, int ticksPerFrame, Texture... frames)
+	{
+		this(type, false, ticksPerFrame, frames);
+	}
+	
+	@Override
+	public Asset clone()
+	{
+		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, (Texture[]) getAssets());
+	}
+	
+	@Override
+	public AssetArray cloneWithAllSubAssets()
+	{
+		Texture[] newTextures = new Texture[frameCount()];
+		
+		for (int i = 0; i < newTextures.length; i++)
+		{
+			newTextures[i] = ((Texture[]) getAssets())[i].clone();
+		}
+		
+		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, newTextures);
+	}
+	
+	public int frameCount()
+	{
+		return ((Texture[]) getAssets()).length;
+	}
+	
+	public Texture getCurrentFrame()
+	{
+		return ((Texture[]) getAssets())[currentFrameIndex];
+	}
+	
+	public double getHeight()
+	{
+		return getCurrentFrame().getHeight();
+	}
+	
+	public double getWidth()
+	{
+		return getCurrentFrame().getWidth();
+	}
+	
+	@Override
+	public void render(Texture renderTo, Vector2DInt pos)
+	{
+		renderTo.draw(getCurrentFrame(), pos);
+	}
+	
+	public void setFrame(int frame)
+	{
+		currentFrameIndex = frame;
 	}
 	
 	/**
@@ -78,55 +128,5 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 				}
 			}
 		}
-	}
-	
-	public Texture getCurrentFrame()
-	{
-		return ((Texture[]) getAssets())[currentFrameIndex];
-	}
-	
-	public int frameCount()
-	{
-		return ((Texture[]) getAssets()).length;
-	}
-	
-	public void setFrame(int frame)
-	{
-		currentFrameIndex = frame;
-	}
-	
-	@Override
-	public void render(Texture renderTo, Vector2DInt pos)
-	{
-		renderTo.draw(getCurrentFrame(), pos);
-	}
-	
-	@Override
-	public Asset clone()
-	{
-		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, (Texture[]) getAssets());
-	}
-	
-	@Override
-	public AssetArray cloneWithAllSubAssets()
-	{
-		Texture[] newTextures = new Texture[frameCount()];
-		
-		for (int i = 0; i < newTextures.length; i++)
-		{
-			newTextures[i] = ((Texture[]) getAssets())[i].clone();
-		}
-		
-		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, newTextures);
-	}
-	
-	public double getWidth()
-	{
-		return getCurrentFrame().getWidth();
-	}
-	
-	public double getHeight()
-	{
-		return getCurrentFrame().getHeight();
 	}
 }

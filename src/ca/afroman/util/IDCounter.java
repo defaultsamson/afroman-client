@@ -7,9 +7,17 @@ public class IDCounter
 {
 	public static final int WASTE_ID = -1;
 	
-	private int nextAvailableID = 0;
-	
 	private static List<IDCounter> all = new ArrayList<IDCounter>();
+	
+	public static void resetAll()
+	{
+		for (IDCounter counter : all)
+		{
+			counter.reset();
+		}
+	}
+	
+	private int nextAvailableID = 0;
 	
 	public IDCounter()
 	{
@@ -34,13 +42,5 @@ public class IDCounter
 	public void reset()
 	{
 		nextAvailableID = 0;
-	}
-	
-	public static void resetAll()
-	{
-		for (IDCounter counter : all)
-		{
-			counter.reset();
-		}
 	}
 }

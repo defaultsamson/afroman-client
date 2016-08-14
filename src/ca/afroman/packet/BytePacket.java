@@ -25,6 +25,23 @@ public class BytePacket
 	private List<IPConnection> connections;
 	
 	/**
+	 * Parses a BytePacket from raw byte data.
+	 * 
+	 * @param rawData
+	 * @param sender
+	 */
+	public BytePacket(byte[] rawData, IPConnection sender)
+	{
+		ByteBuffer buf = ByteBuffer.wrap(rawData);
+		
+		type = PacketType.fromOrdinal(buf.getShort(0));
+		id = buf.getInt(2);
+		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT, rawData.length);
+		connections = new ArrayList<IPConnection>(1);
+		connections.add(sender);
+	}
+	
+	/**
 	 * Creates a new BytePacket to send.
 	 * 
 	 * @param type the type of packet being sent
@@ -51,21 +68,14 @@ public class BytePacket
 		}
 	}
 	
-	/**
-	 * Parses a BytePacket from raw byte data.
-	 * 
-	 * @param rawData
-	 * @param sender
-	 */
-	public BytePacket(byte[] rawData, IPConnection sender)
+	public List<IPConnection> getConnections()
 	{
-		ByteBuffer buf = ByteBuffer.wrap(rawData);
-		
-		type = PacketType.fromOrdinal(buf.getShort(0));
-		id = buf.getInt(2);
-		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT, rawData.length);
-		connections = new ArrayList<IPConnection>(1);
-		connections.add(sender);
+		return connections;
+	}
+	
+	public byte[] getContent()
+	{
+		return content;
 	}
 	
 	/**
@@ -86,26 +96,6 @@ public class BytePacket
 		return ArrayUtil.concatByteArrays(type, id, content);
 	}
 	
-	/**
-	 * Gets the data from this Packet in a sendable form.
-	 * 
-	 * @return the data
-	 */
-	public byte[] getUniqueData()
-	{
-		return new byte[] {};
-	}
-	
-	public byte[] getContent()
-	{
-		return content;
-	}
-	
-	public boolean mustSend()
-	{
-		return id != IDCounter.WASTE_ID;
-	}
-	
 	public int getID()
 	{
 		return id;
@@ -116,9 +106,19 @@ public class BytePacket
 		return type;
 	}
 	
-	public List<IPConnection> getConnections()
+	/**
+	 * Gets the data from this Packet in a sendable form.
+	 * 
+	 * @return the data
+	 */
+	public byte[] getUniqueData()
 	{
-		return connections;
+		return new byte[] {};
+	}
+	
+	public boolean mustSend()
+	{
+		return id != IDCounter.WASTE_ID;
 	}
 	
 	public void setConnections(IPConnection... con)

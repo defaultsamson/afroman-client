@@ -96,39 +96,6 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	}
 	
 	@Override
-	public void init()
-	{
-		
-	}
-	
-	@Override
-	public void tick()
-	{
-		super.tick();
-		
-		if (ClientGame.instance().input().escape.isPressedFiltered())
-		{
-			goToParentScreen();
-		}
-		
-		if (ClientGame.instance().input().tab.isPressedFiltered())
-		{
-			if (triggers.isFocussed())
-			{
-				inTriggers.setFocussed();
-			}
-			else if (inTriggers.isFocussed())
-			{
-				outTriggers.setFocussed();
-			}
-			else
-			{
-				triggers.setFocussed();
-			}
-		}
-	}
-	
-	@Override
 	public void drawScreen(Texture renderTo)
 	{
 		nobleFont.render(renderTo, new Vector2DInt(36, 18), "Trigger Types");
@@ -137,58 +104,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	}
 	
 	@Override
-	public void pressAction(int buttonID)
-	{
-		// Rids of the click so that the Level doesn't get it
-		ClientGame.instance().input().mouseLeft.isPressedFiltered();
-		
-		switch (buttonID)
-		{
-			case 202:
-				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(triggerID, level.getType(), LevelObjectType.HITBOX_TRIGGER));
-			case 201:
-				goToParentScreen();
-				break;
-			case 200:
-				String[] trigs = this.triggers.getText().split(",");
-				List<TriggerType> triggers = new ArrayList<TriggerType>(trigs.length);
-				if (!ArrayUtil.isEmpty(trigs))
-				{
-					for (String t : trigs)
-					{
-						triggers.add(TriggerType.fromOrdinal(Integer.parseInt(t)));
-					}
-				}
-				
-				String[] inTrigs = this.inTriggers.getText().split(",");
-				List<Integer> inTriggers = new ArrayList<Integer>(inTrigs.length);
-				if (!ArrayUtil.isEmpty(inTrigs))
-				{
-					for (String t : inTrigs)
-					{
-						inTriggers.add(Integer.parseInt(t));
-					}
-				}
-				
-				String[] outTrigs = this.outTriggers.getText().split(",");
-				List<Integer> outTriggers = new ArrayList<Integer>(outTrigs.length);
-				if (!ArrayUtil.isEmpty(outTrigs))
-				{
-					for (String t : outTrigs)
-					{
-						outTriggers.add(Integer.parseInt(t));
-					}
-				}
-				
-				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), triggerID, triggers, inTriggers, outTriggers);
-				ClientGame.instance().sockets().sender().sendPacket(pack);
-				goToParentScreen();
-				break;
-		}
-	}
-	
-	@Override
-	public void releaseAction(int buttonID)
+	public void init()
 	{
 		
 	}
@@ -283,5 +199,89 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		}
 		
 		finish.setEnabled(finished);
+	}
+	
+	@Override
+	public void pressAction(int buttonID)
+	{
+		// Rids of the click so that the Level doesn't get it
+		ClientGame.instance().input().mouseLeft.isPressedFiltered();
+		
+		switch (buttonID)
+		{
+			case 202:
+				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(triggerID, level.getType(), LevelObjectType.HITBOX_TRIGGER));
+			case 201:
+				goToParentScreen();
+				break;
+			case 200:
+				String[] trigs = this.triggers.getText().split(",");
+				List<TriggerType> triggers = new ArrayList<TriggerType>(trigs.length);
+				if (!ArrayUtil.isEmpty(trigs))
+				{
+					for (String t : trigs)
+					{
+						triggers.add(TriggerType.fromOrdinal(Integer.parseInt(t)));
+					}
+				}
+				
+				String[] inTrigs = this.inTriggers.getText().split(",");
+				List<Integer> inTriggers = new ArrayList<Integer>(inTrigs.length);
+				if (!ArrayUtil.isEmpty(inTrigs))
+				{
+					for (String t : inTrigs)
+					{
+						inTriggers.add(Integer.parseInt(t));
+					}
+				}
+				
+				String[] outTrigs = this.outTriggers.getText().split(",");
+				List<Integer> outTriggers = new ArrayList<Integer>(outTrigs.length);
+				if (!ArrayUtil.isEmpty(outTrigs))
+				{
+					for (String t : outTrigs)
+					{
+						outTriggers.add(Integer.parseInt(t));
+					}
+				}
+				
+				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), triggerID, triggers, inTriggers, outTriggers);
+				ClientGame.instance().sockets().sender().sendPacket(pack);
+				goToParentScreen();
+				break;
+		}
+	}
+	
+	@Override
+	public void releaseAction(int buttonID)
+	{
+		
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
+		
+		if (ClientGame.instance().input().escape.isPressedFiltered())
+		{
+			goToParentScreen();
+		}
+		
+		if (ClientGame.instance().input().tab.isPressedFiltered())
+		{
+			if (triggers.isFocussed())
+			{
+				inTriggers.setFocussed();
+			}
+			else if (inTriggers.isFocussed())
+			{
+				outTriggers.setFocussed();
+			}
+			else
+			{
+				triggers.setFocussed();
+			}
+		}
 	}
 }

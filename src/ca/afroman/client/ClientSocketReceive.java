@@ -50,28 +50,4 @@ public class ClientSocketReceive extends DynamicThread
 			logger().log(ALogType.CRITICAL, "I/O error while reading packet", e);
 		}
 	}
-	
-	@Override
-	public void onStop()
-	{
-		
-	}
-	
-	@Override
-	public void onStart()
-	{
-		
-	}
-	
-	@Override
-	public void onPause()
-	{
-		
-	}
-	
-	@Override
-	public void onUnpause()
-	{
-		
-	}
 }

@@ -40,7 +40,32 @@ public class GuiChooseRole extends GuiScreen
 	}
 	
 	@Override
+	public void drawScreen(Texture renderTo)
+	{
+		renderTo.draw(player1.getCurrentFrame(), p1);
+		renderTo.draw(player2.getCurrentFrame(), p2);
+		
+		if (ClientGame.instance().isLightingOn())
+		{
+			lightmap.clear();
+			light1.renderCentered(lightmap);
+			light2.renderCentered(lightmap);
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
+		}
+		
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Choose a new role for " + player.getUsername());
+	}
+	
+	@Override
 	public void init()
+	{
+		
+	}
+	
+	@Override
+	public void keyTyped()
 	{
 		
 	}
@@ -75,43 +100,6 @@ public class GuiChooseRole extends GuiScreen
 	}
 	
 	@Override
-	public void tick()
-	{
-		super.tick();
-		
-		if (ClientGame.instance().isLightingOn())
-		{
-			light1.tick();
-			light2.tick();
-		}
-	}
-	
-	@Override
-	public void drawScreen(Texture renderTo)
-	{
-		renderTo.draw(player1.getCurrentFrame(), p1);
-		renderTo.draw(player2.getCurrentFrame(), p2);
-		
-		if (ClientGame.instance().isLightingOn())
-		{
-			lightmap.clear();
-			light1.renderCentered(lightmap);
-			light2.renderCentered(lightmap);
-			lightmap.patch();
-			
-			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
-		}
-		
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Choose a new role for " + player.getUsername());
-	}
-	
-	@Override
-	public void keyTyped()
-	{
-		
-	}
-	
-	@Override
 	public void pressAction(int buttonID)
 	{
 		
@@ -135,6 +123,18 @@ public class GuiChooseRole extends GuiScreen
 				ClientGame.instance().sockets().sender().sendPacket(packet2);
 				goToParentScreen();
 				break;
+		}
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
+		
+		if (ClientGame.instance().isLightingOn())
+		{
+			light1.tick();
+			light2.tick();
 		}
 	}
 }

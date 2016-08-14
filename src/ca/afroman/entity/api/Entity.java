@@ -24,6 +24,18 @@ public class Entity implements ITickable, IServerClient
 		return idCounter;
 	}
 	
+	public static Hitbox[] hitBoxListToArray(List<Hitbox> hitboxes)
+	{
+		Hitbox[] toReturn = new Hitbox[hitboxes.size()];
+		
+		for (int i = 0; i < toReturn.length; i++)
+		{
+			toReturn[i] = hitboxes.get(i);
+		}
+		
+		return toReturn;
+	}
+	
 	// All the required variables needed to create an Entity
 	private int id;
 	protected Level level;
@@ -31,15 +43,16 @@ public class Entity implements ITickable, IServerClient
 	protected Vector2DDouble position;
 	protected boolean hasHitbox;
 	protected Hitbox[] hitbox;
+	
 	protected Hitbox[] hitboxInLevel;
 	
 	private boolean serverSide;
-	
 	// All the movement related variables
 	protected double speed;
 	protected final double originalSpeed;
 	protected int numSteps;
 	protected Direction direction;
+	
 	protected Direction lastDirection;
 	
 	/**
@@ -54,21 +67,6 @@ public class Entity implements ITickable, IServerClient
 	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position)
 	{
 		this(isServerSide, id, assetType, position, false, new Hitbox[] { null });
-	}
-	
-	/**
-	 * Creates a new Entity.
-	 * 
-	 * @param id the ID of this Entity
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
-	 * @param width the width of this
-	 * @param height the height of this
-	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
-	 */
-	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position, Hitbox... hitboxes)
-	{
-		this(isServerSide, id, assetType, position, true, hitboxes);
 	}
 	
 	/**
@@ -111,89 +109,19 @@ public class Entity implements ITickable, IServerClient
 		lastDirection = direction;
 	}
 	
-	public static Hitbox[] hitBoxListToArray(List<Hitbox> hitboxes)
-	{
-		Hitbox[] toReturn = new Hitbox[hitboxes.size()];
-		
-		for (int i = 0; i < toReturn.length; i++)
-		{
-			toReturn[i] = hitboxes.get(i);
-		}
-		
-		return toReturn;
-	}
-	
-	public void setPosition(Vector2DDouble position)
-	{
-		this.position = position;
-		updateHitboxInLevel();
-		
-		// TODO separate server-side entity checks
-		if (this instanceof ServerPlayerEntity)
-		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation((ServerPlayerEntity) this));
-		}
-	}
-	
 	/**
-	 * @return the position of this entity.
-	 */
-	public Vector2DDouble getPosition()
-	{
-		return position;
-	}
-	
-	/**
-	 * @return the asset type associated with this Entity.
-	 */
-	public AssetType getAssetType()
-	{
-		return assetType;
-	}
-	
-	/**
-	 * Removes an entity from their current level.
-	 * <p>
-	 * <b>WARNING:</b> If adding a tile, use removeTileFromLevel().
-	 */
-	public void removeFromLevel()
-	{
-		addToLevel(null);
-	}
-	
-	/**
-	 * Removes a tile from their current level.
-	 * <p>
-	 * <b>WARNING:</b> This method will remove this entity from the level. Otherwise, for standard entities, use removeFromLevel()
-	 */
-	public void removeTileFromLevel()
-	{
-		addTileToLevel(null, (byte) 0);
-	}
-	
-	/**
-	 * Removes an entity from their current level and puts them in another level.
-	 * <p>
-	 * <b>WARNING:</b> If adding a tile, use addTileToLevel().
+	 * Creates a new Entity.
 	 * 
-	 * @param level the new level.
+	 * @param id the ID of this Entity
+	 * @param x the x ordinate of this in the level
+	 * @param y the y ordinate of this in the level
+	 * @param width the width of this
+	 * @param height the height of this
+	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public void addToLevel(Level newLevel)
+	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position, Hitbox... hitboxes)
 	{
-		if (level == newLevel) return;
-		
-		if (level != null)
-		{
-			level.getEntities().remove(this);
-		}
-		
-		// Sets the new level
-		level = newLevel;
-		
-		if (level != null)
-		{
-			level.getEntities().add(this);
-		}
+		this(isServerSide, id, assetType, position, true, hitboxes);
 	}
 	
 	/**
@@ -235,9 +163,119 @@ public class Entity implements ITickable, IServerClient
 		}
 	}
 	
+	/**
+	 * Removes an entity from their current level and puts them in another level.
+	 * <p>
+	 * <b>WARNING:</b> If adding a tile, use addTileToLevel().
+	 * 
+	 * @param level the new level.
+	 */
+	public void addToLevel(Level newLevel)
+	{
+		if (level == newLevel) return;
+		
+		if (level != null)
+		{
+			level.getEntities().remove(this);
+		}
+		
+		// Sets the new level
+		level = newLevel;
+		
+		if (level != null)
+		{
+			level.getEntities().add(this);
+		}
+	}
+	
+	/**
+	 * @return the asset type associated with this Entity.
+	 */
+	public AssetType getAssetType()
+	{
+		return assetType;
+	}
+	
+	public Direction getDirection()
+	{
+		return direction;
+	}
+	
+	/**
+	 * @return the hitbox of this Entity relative to itself.
+	 */
+	public Hitbox[] getHitbox()
+	{
+		return hitbox;
+	}
+	
+	/**
+	 * @return this player's ID.
+	 */
+	public int getID()
+	{
+		return id;
+	}
+	
+	public Direction getLastDirection()
+	{
+		return lastDirection;
+	}
+	
 	public Level getLevel()
 	{
 		return level;
+	}
+	
+	/**
+	 * @return the position of this entity.
+	 */
+	public Vector2DDouble getPosition()
+	{
+		return position;
+	}
+	
+	/**
+	 * @return is this Entity has a hitbox.
+	 */
+	public boolean hasHitbox()
+	{
+		return hasHitbox;
+	}
+	
+	/**
+	 * @return hitboxes in a savable form for level saving and sending.
+	 */
+	public String hitboxesAsSaveable()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		if (this.hasHitbox())
+		{
+			for (int i = 0; i < getHitbox().length; i++)
+			{
+				Hitbox box = getHitbox()[i];
+				
+				sb.append(box.getX());
+				sb.append(", ");
+				sb.append(box.getY());
+				sb.append(", ");
+				sb.append(box.getWidth());
+				sb.append(", ");
+				sb.append(box.getHeight());
+				if (i == getHitbox().length - 1) sb.append(", ");
+			}
+		}
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * @return the hitbox with the offset of this Entity's in-level coordinates.
+	 */
+	public Hitbox[] hitboxInLevel()
+	{
+		return hitboxInLevel;
 	}
 	
 	/**
@@ -271,84 +309,18 @@ public class Entity implements ITickable, IServerClient
 		return false;
 	}
 	
-	private void updateHitboxInLevel()
-	{
-		if (hasHitbox)
-		{
-			for (int i = 0; i < hitboxInLevel.length; i++)
-			{
-				hitboxInLevel[i].x = hitbox[i].getX() + position.getX();
-				hitboxInLevel[i].y = hitbox[i].getY() + position.getY();
-			}
-		}
-	}
-	
 	/**
-	 * @return the hitbox with the offset of this Entity's in-level coordinates.
+	 * @return if this Entity is currently in motion.
 	 */
-	public Hitbox[] hitboxInLevel()
+	public boolean isMoving()
 	{
-		return hitboxInLevel;
-	}
-	
-	/**
-	 * @return the hitbox of this Entity relative to itself.
-	 */
-	public Hitbox[] getHitbox()
-	{
-		return hitbox;
+		return direction != Direction.NONE;
 	}
 	
 	@Override
-	public void tick()
+	public boolean isServerSide()
 	{
-		
-	}
-	
-	/**
-	 * @return is this Entity has a hitbox.
-	 */
-	public boolean hasHitbox()
-	{
-		return hasHitbox;
-	}
-	
-	public void onInteract()
-	{
-		
-	}
-	
-	/**
-	 * Sets a new previous direction for this. Useful for
-	 * setting the direction that this Entity is facing when
-	 * its current direction is none.
-	 * 
-	 * @param dir the direction to set
-	 */
-	public void setLastDirection(Direction dir)
-	{
-		lastDirection = dir;
-	}
-	
-	public Direction getLastDirection()
-	{
-		return lastDirection;
-	}
-	
-	/**
-	 * Sets a new direction for this, and sets the previous direction to whatever it was previously.
-	 * 
-	 * @param dir the direction to set
-	 */
-	public void setDirection(Direction dir)
-	{
-		lastDirection = direction;
-		direction = dir;
-	}
-	
-	public Direction getDirection()
-	{
-		return direction;
+		return serverSide;
 	}
 	
 	@SuppressWarnings("unused")
@@ -526,9 +498,77 @@ public class Entity implements ITickable, IServerClient
 		}
 	}
 	
+	public void onInteract()
+	{
+		
+	}
+	
 	public void onMove(byte xa, byte ya)
 	{
 		
+	}
+	
+	/**
+	 * Removes an entity from their current level.
+	 * <p>
+	 * <b>WARNING:</b> If adding a tile, use removeTileFromLevel().
+	 */
+	public void removeFromLevel()
+	{
+		addToLevel(null);
+	}
+	
+	/**
+	 * Removes a tile from their current level.
+	 * <p>
+	 * <b>WARNING:</b> This method will remove this entity from the level. Otherwise, for standard entities, use removeFromLevel()
+	 */
+	public void removeTileFromLevel()
+	{
+		addTileToLevel(null, (byte) 0);
+	}
+	
+	/**
+	 * Puts the speed back to the original speed.
+	 */
+	public void resetSpeed()
+	{
+		speed = originalSpeed;
+	}
+	
+	/**
+	 * Sets a new direction for this, and sets the previous direction to whatever it was previously.
+	 * 
+	 * @param dir the direction to set
+	 */
+	public void setDirection(Direction dir)
+	{
+		lastDirection = direction;
+		direction = dir;
+	}
+	
+	/**
+	 * Sets a new previous direction for this. Useful for
+	 * setting the direction that this Entity is facing when
+	 * its current direction is none.
+	 * 
+	 * @param dir the direction to set
+	 */
+	public void setLastDirection(Direction dir)
+	{
+		lastDirection = dir;
+	}
+	
+	public void setPosition(Vector2DDouble position)
+	{
+		this.position = position;
+		updateHitboxInLevel();
+		
+		// TODO separate server-side entity checks
+		if (this instanceof ServerPlayerEntity)
+		{
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation((ServerPlayerEntity) this));
+		}
 	}
 	
 	/**
@@ -541,60 +581,21 @@ public class Entity implements ITickable, IServerClient
 		this.speed = speed;
 	}
 	
-	/**
-	 * Puts the speed back to the original speed.
-	 */
-	public void resetSpeed()
+	@Override
+	public void tick()
 	{
-		speed = originalSpeed;
-	}
-	
-	/**
-	 * @return if this Entity is currently in motion.
-	 */
-	public boolean isMoving()
-	{
-		return direction != Direction.NONE;
-	}
-	
-	/**
-	 * @return hitboxes in a savable form for level saving and sending.
-	 */
-	public String hitboxesAsSaveable()
-	{
-		StringBuilder sb = new StringBuilder();
 		
-		if (this.hasHitbox())
+	}
+	
+	private void updateHitboxInLevel()
+	{
+		if (hasHitbox)
 		{
-			for (int i = 0; i < getHitbox().length; i++)
+			for (int i = 0; i < hitboxInLevel.length; i++)
 			{
-				Hitbox box = getHitbox()[i];
-				
-				sb.append(box.getX());
-				sb.append(", ");
-				sb.append(box.getY());
-				sb.append(", ");
-				sb.append(box.getWidth());
-				sb.append(", ");
-				sb.append(box.getHeight());
-				if (i == getHitbox().length - 1) sb.append(", ");
+				hitboxInLevel[i].x = hitbox[i].getX() + position.getX();
+				hitboxInLevel[i].y = hitbox[i].getY() + position.getY();
 			}
 		}
-		
-		return sb.toString();
-	}
-	
-	/**
-	 * @return this player's ID.
-	 */
-	public int getID()
-	{
-		return id;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return serverSide;
 	}
 }

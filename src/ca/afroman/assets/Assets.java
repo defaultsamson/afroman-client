@@ -12,6 +12,95 @@ public class Assets
 	
 	private static List<Asset> assets = new ArrayList<Asset>();
 	
+	public static void dispose()
+	{
+		for (AssetArray asset : assetArrays)
+		{
+			asset.dispose();
+		}
+		
+		for (Asset asset : assets)
+		{
+			asset.dispose();
+		}
+	}
+	
+	public static Asset getAsset(AssetType type)
+	{
+		if (type == null) return null;
+		
+		for (Asset asset : assets)
+		{
+			if (asset != null && asset.getAssetType() == type)
+			{
+				return asset;
+			}
+		}
+		return null;
+	}
+	
+	public static AssetArray getAssetArray(AssetType type)
+	{
+		if (type == null) return null;
+		
+		for (AssetArray asset : assetArrays)
+		{
+			if (asset.getAssetType() == type)
+			{
+				return asset;
+			}
+		}
+		return null;
+	}
+	
+	public static AudioClip getAudioClip(AssetType type)
+	{
+		Asset asset = getAsset(type);
+		
+		if (asset != null && asset.getAssetType() == type && asset instanceof AudioClip)
+		{
+			return (AudioClip) asset;
+		}
+		
+		return null;
+	}
+	
+	public static Font getFont(AssetType type)
+	{
+		Asset asset = getAssetArray(type);
+		
+		if (asset != null && asset.getAssetType() == type && asset instanceof Font)
+		{
+			return (Font) asset;
+		}
+		
+		return null;
+	}
+	
+	public static SpriteAnimation getSpriteAnimation(AssetType type)
+	{
+		Asset asset = getAsset(type);
+		
+		if (asset != null && asset.getAssetType() == type && asset instanceof SpriteAnimation)
+		{
+			return (SpriteAnimation) asset;
+		}
+		
+		return null;
+	}
+	
+	public static Texture getTexture(AssetType type)
+	{
+		Asset asset = getAsset(type);
+		
+		if (asset != null && asset.getAssetType() == type && asset instanceof Texture)
+		{
+			return (Texture) asset;
+		}
+		
+		return null;
+	}
+	
 	public static void load()
 	{
 		ClientGame.instance().logger().log(ALogType.DEBUG, "Loading textures...");
@@ -91,94 +180,5 @@ public class Assets
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down"));
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up"));
 		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu"));
-	}
-	
-	public static Font getFont(AssetType type)
-	{
-		Asset asset = getAssetArray(type);
-		
-		if (asset != null && asset.getAssetType() == type && asset instanceof Font)
-		{
-			return (Font) asset;
-		}
-		
-		return null;
-	}
-	
-	public static Texture getTexture(AssetType type)
-	{
-		Asset asset = getAsset(type);
-		
-		if (asset != null && asset.getAssetType() == type && asset instanceof Texture)
-		{
-			return (Texture) asset;
-		}
-		
-		return null;
-	}
-	
-	public static AudioClip getAudioClip(AssetType type)
-	{
-		Asset asset = getAsset(type);
-		
-		if (asset != null && asset.getAssetType() == type && asset instanceof AudioClip)
-		{
-			return (AudioClip) asset;
-		}
-		
-		return null;
-	}
-	
-	public static SpriteAnimation getSpriteAnimation(AssetType type)
-	{
-		Asset asset = getAsset(type);
-		
-		if (asset != null && asset.getAssetType() == type && asset instanceof SpriteAnimation)
-		{
-			return (SpriteAnimation) asset;
-		}
-		
-		return null;
-	}
-	
-	public static AssetArray getAssetArray(AssetType type)
-	{
-		if (type == null) return null;
-		
-		for (AssetArray asset : assetArrays)
-		{
-			if (asset.getAssetType() == type)
-			{
-				return asset;
-			}
-		}
-		return null;
-	}
-	
-	public static Asset getAsset(AssetType type)
-	{
-		if (type == null) return null;
-		
-		for (Asset asset : assets)
-		{
-			if (asset != null && asset.getAssetType() == type)
-			{
-				return asset;
-			}
-		}
-		return null;
-	}
-	
-	public static void dispose()
-	{
-		for (AssetArray asset : assetArrays)
-		{
-			asset.dispose();
-		}
-		
-		for (Asset asset : assets)
-		{
-			asset.dispose();
-		}
 	}
 }

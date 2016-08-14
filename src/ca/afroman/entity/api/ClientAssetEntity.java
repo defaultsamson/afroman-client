@@ -13,11 +13,6 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 {
 	protected Asset asset;
 	
-	public ClientAssetEntity(int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
-	{
-		this(id, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), pos, hitboxes);
-	}
-	
 	public ClientAssetEntity(int id, Asset asset, Vector2DDouble pos, Hitbox... hitboxes)
 	{
 		super(id, (asset != null ? asset.getAssetType() : AssetType.INVALID), pos, hitboxes);
@@ -25,12 +20,14 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 		this.asset = asset;
 	}
 	
-	@Override
-	public void tick()
+	public ClientAssetEntity(int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super.tick();
-		
-		if (asset instanceof ITickable) ((ITickable) asset).tick();
+		this(id, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), pos, hitboxes);
+	}
+	
+	public Asset getAsset()
+	{
+		return asset;
 	}
 	
 	public void render(Texture renderTo)
@@ -51,8 +48,11 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 		if (asset instanceof IRenderable) ((IRenderable) asset).render(renderTo, pos);
 	}
 	
-	public Asset getAsset()
+	@Override
+	public void tick()
 	{
-		return asset;
+		super.tick();
+		
+		if (asset instanceof ITickable) ((ITickable) asset).tick();
 	}
 }

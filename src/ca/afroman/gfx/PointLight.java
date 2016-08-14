@@ -11,15 +11,16 @@ import ca.afroman.util.IDCounter;
 
 public class PointLight extends Entity
 {
-	protected Color colour;
-	private double radius;
-	
 	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
 	{
 		return idCounter;
 	}
+	
+	protected Color colour;
+	
+	private double radius;
 	
 	public PointLight(boolean isServerSide, int id, Vector2DDouble pos, double radius)
 	{
@@ -32,33 +33,6 @@ public class PointLight extends Entity
 		
 		this.colour = colour;
 		this.radius = radius;
-	}
-	
-	@Override
-	public void tick()
-	{
-		
-	}
-	
-	@SuppressWarnings("deprecation")
-	public void renderCentered(LightMap renderTo)
-	{
-		if (level instanceof ClientLevel)
-		{
-			ClientLevel cLevel = (ClientLevel) this.level;
-			
-			renderTo.drawLight(cLevel.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
-		}
-	}
-	
-	public double getRadius()
-	{
-		return radius;
-	}
-	
-	public Color getColour()
-	{
-		return colour;
 	}
 	
 	/**
@@ -83,5 +57,32 @@ public class PointLight extends Entity
 		{
 			level.getLights().add(this);
 		}
+	}
+	
+	public Color getColour()
+	{
+		return colour;
+	}
+	
+	public double getRadius()
+	{
+		return radius;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void renderCentered(LightMap renderTo)
+	{
+		if (level instanceof ClientLevel)
+		{
+			ClientLevel cLevel = (ClientLevel) this.level;
+			
+			renderTo.drawLight(cLevel.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
+		}
+	}
+	
+	@Override
+	public void tick()
+	{
+		
 	}
 }

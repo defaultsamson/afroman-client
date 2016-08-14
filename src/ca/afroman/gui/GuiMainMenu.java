@@ -23,20 +23,6 @@ public class GuiMainMenu extends GuiScreen
 	}
 	
 	@Override
-	public void init()
-	{
-		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
-		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
-		
-		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join"));
-		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 1), 72, blackFont, "Host"));
-		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 2), 72, blackFont, "Quit"));
-	}
-	
-	@Override
 	public void drawScreen(Texture renderTo)
 	{
 		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
@@ -55,16 +41,23 @@ public class GuiMainMenu extends GuiScreen
 	}
 	
 	@Override
-	public void tick()
+	public void init()
 	{
-		super.tick();
+		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
 		
-		if (ClientGame.instance().isLightingOn())
-		{
-			light.tick();
-			afroMan.tick();
-			player2.tick();
-		}
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
+		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
+		
+		buttons.add(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join"));
+		buttons.add(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 1), 72, blackFont, "Host"));
+		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 2), 72, blackFont, "Quit"));
+	}
+	
+	@Override
+	public void keyTyped()
+	{
+		
 	}
 	
 	@Override
@@ -93,8 +86,15 @@ public class GuiMainMenu extends GuiScreen
 	}
 	
 	@Override
-	public void keyTyped()
+	public void tick()
 	{
+		super.tick();
 		
+		if (ClientGame.instance().isLightingOn())
+		{
+			light.tick();
+			afroMan.tick();
+			player2.tick();
+		}
 	}
 }

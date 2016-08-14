@@ -31,13 +31,11 @@ public class ConnectedPlayer
 	}
 	
 	/**
-	 * Sets the role of this player.
-	 * 
-	 * @param newRole the new role
+	 * @return this player's ID.
 	 */
-	public void setRole(Role newRole)
+	public short getID()
 	{
-		this.role = newRole;
+		return id;
 	}
 	
 	/**
@@ -56,16 +54,18 @@ public class ConnectedPlayer
 		return username;
 	}
 	
-	/**
-	 * @return this player's ID.
-	 */
-	public short getID()
-	{
-		return id;
-	}
-	
 	public void setID(short id)
 	{
 		this.id = id;
+	}
+	
+	/**
+	 * Sets the role of this player.
+	 * 
+	 * @param newRole the new role
+	 */
+	public void setRole(Role newRole)
+	{
+		this.role = newRole;
 	}
 }

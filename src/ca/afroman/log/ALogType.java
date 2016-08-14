@@ -9,12 +9,12 @@ public enum ALogType
 	WARNING(Level.WARNING),
 	CRITICAL(Level.SEVERE);
 	
+	private Level level;
+	
 	ALogType(Level level)
 	{
 		this.level = level;
 	}
-	
-	private Level level;
 	
 	public Level getLevel()
 	{

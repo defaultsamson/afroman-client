@@ -59,65 +59,23 @@ public class GuiTileEditor extends GuiGrid
 	}
 	
 	@Override
+	public void drawScreen(Texture renderTo)
+	{
+		super.drawScreen(renderTo);
+		
+		nobleFont.renderCentered(renderTo, new Vector2DInt(28, 6), "Layers");
+	}
+	
+	@Override
 	public void init()
 	{
 		
 	}
 	
 	@Override
-	public void updateButtons()
+	public void keyTyped()
 	{
-		super.updateButtons();
-		
-		if (ClientGame.instance().getCurrentLevel() != null)
-		{
-			ClientLevel level = ClientGame.instance().getCurrentLevel();
-			
-			layer0show.setText("L1 " + (level.showLayer0 ? "O" : "X"));
-			layer1show.setText("L2 " + (level.showLayer1 ? "O" : "X"));
-			layer2show.setText("L3 " + (level.showLayer2 ? "O" : "X"));
-			layer3show.setText("L4 " + (level.showLayer3 ? "O" : "X"));
-			layer4show.setText("L5 " + (level.showLayer4 ? "O" : "X"));
-			layer5show.setText("L6 " + (level.showLayer5 ? "O" : "X"));
-			
-			// Sets everything to false before setting one of them to true
-			layer0edit.setEnabled(true);
-			layer1edit.setEnabled(true);
-			layer2edit.setEnabled(true);
-			layer3edit.setEnabled(true);
-			layer4edit.setEnabled(true);
-			layer5edit.setEnabled(true);
-			
-			switch (level.editLayer)
-			{
-				case 0:
-					layer0edit.setEnabled(false);
-					break;
-				case 1:
-					layer1edit.setEnabled(false);
-					break;
-				case 2:
-					layer2edit.setEnabled(false);
-					break;
-				case 3:
-					layer3edit.setEnabled(false);
-					break;
-				case 4:
-					layer4edit.setEnabled(false);
-					break;
-				case 5:
-					layer5edit.setEnabled(false);
-					break;
-			}
-		}
-	}
-	
-	@Override
-	public void drawScreen(Texture renderTo)
-	{
-		super.drawScreen(renderTo);
-		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(28, 6), "Layers");
+		super.keyTyped();
 	}
 	
 	@Override
@@ -186,8 +144,50 @@ public class GuiTileEditor extends GuiGrid
 	}
 	
 	@Override
-	public void keyTyped()
+	public void updateButtons()
 	{
-		super.keyTyped();
+		super.updateButtons();
+		
+		if (ClientGame.instance().getCurrentLevel() != null)
+		{
+			ClientLevel level = ClientGame.instance().getCurrentLevel();
+			
+			layer0show.setText("L1 " + (level.showLayer0 ? "O" : "X"));
+			layer1show.setText("L2 " + (level.showLayer1 ? "O" : "X"));
+			layer2show.setText("L3 " + (level.showLayer2 ? "O" : "X"));
+			layer3show.setText("L4 " + (level.showLayer3 ? "O" : "X"));
+			layer4show.setText("L5 " + (level.showLayer4 ? "O" : "X"));
+			layer5show.setText("L6 " + (level.showLayer5 ? "O" : "X"));
+			
+			// Sets everything to false before setting one of them to true
+			layer0edit.setEnabled(true);
+			layer1edit.setEnabled(true);
+			layer2edit.setEnabled(true);
+			layer3edit.setEnabled(true);
+			layer4edit.setEnabled(true);
+			layer5edit.setEnabled(true);
+			
+			switch (level.editLayer)
+			{
+				case 0:
+					layer0edit.setEnabled(false);
+					break;
+				case 1:
+					layer1edit.setEnabled(false);
+					break;
+				case 2:
+					layer2edit.setEnabled(false);
+					break;
+				case 3:
+					layer3edit.setEnabled(false);
+					break;
+				case 4:
+					layer4edit.setEnabled(false);
+					break;
+				case 5:
+					layer5edit.setEnabled(false);
+					break;
+			}
+		}
 	}
 }

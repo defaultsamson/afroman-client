@@ -12,11 +12,19 @@ import ca.afroman.resource.Vector2DInt;
 
 public class GuiTextField extends GuiButton
 {
+	private static final int BLINK_SPEED = 20;
 	private Font font;
 	private int maxLength = 18;
 	private StringBuilder text = new StringBuilder();
 	private boolean isFocussed = false;
+	
 	private TypingMode mode = TypingMode.FULL;
+	
+	private boolean drawBlinker = false;
+	
+	private int blinkCounter = 0;
+	
+	private boolean letterTyped = false;
 	
 	public GuiTextField(GuiScreen screen, int x, int y, int width)
 	{
@@ -31,15 +39,71 @@ public class GuiTextField extends GuiButton
 		this.setMakeSound(false);
 	}
 	
+	public String getText()
+	{
+		return text.toString();
+	}
+	
+	public boolean isFocussed()
+	{
+		return isFocussed;
+	}
+	
+	@Override
+	protected void onPressed()
+	{
+		this.setFocussed();
+	}
+	
+	@Override
+	protected void onRelease()
+	{
+		
+	}
+	
+	@Override
+	public void render(Texture drawTo)
+	{
+		super.render(drawTo);
+		
+		String displayText = text + (drawBlinker && text.length() < maxLength ? "_" : "");
+		
+		font.render(drawTo, new Vector2DInt(hitbox.x + 2, hitbox.y + 4), displayText);
+	}
+	
+	public void setFocussed()
+	{
+		this.setFocussed(true);
+	}
+	
+	public void setFocussed(boolean isFocussed)
+	{
+		if (isFocussed) screen.unfocusTextFields();
+		this.isFocussed = isFocussed;
+	}
+	
 	public void setMaxLength(int newMax)
 	{
 		maxLength = newMax;
 	}
 	
-	private boolean drawBlinker = false;
-	private int blinkCounter = 0;
-	private static final int BLINK_SPEED = 20;
-	private boolean letterTyped = false;
+	public void setText(String newText)
+	{
+		if (newText.length() > maxLength)
+		{
+			newText = newText.substring(0, maxLength);
+		}
+		
+		text = new StringBuilder();
+		text.append(newText);
+		
+		// this.text = newText;
+	}
+	
+	public void setTypingMode(TypingMode newMode)
+	{
+		mode = newMode;
+	}
 	
 	@Override
 	public void tick()
@@ -111,66 +175,5 @@ public class GuiTextField extends GuiButton
 			letterTyped = true;
 			if (text.length() < maxLength) text.append(character);
 		}
-	}
-	
-	public void setTypingMode(TypingMode newMode)
-	{
-		mode = newMode;
-	}
-	
-	public void setFocussed()
-	{
-		this.setFocussed(true);
-	}
-	
-	public void setFocussed(boolean isFocussed)
-	{
-		if (isFocussed) screen.unfocusTextFields();
-		this.isFocussed = isFocussed;
-	}
-	
-	public boolean isFocussed()
-	{
-		return isFocussed;
-	}
-	
-	public String getText()
-	{
-		return text.toString();
-	}
-	
-	public void setText(String newText)
-	{
-		if (newText.length() > maxLength)
-		{
-			newText = newText.substring(0, maxLength);
-		}
-		
-		text = new StringBuilder();
-		text.append(newText);
-		
-		// this.text = newText;
-	}
-	
-	@Override
-	protected void onPressed()
-	{
-		this.setFocussed();
-	}
-	
-	@Override
-	protected void onRelease()
-	{
-		
-	}
-	
-	@Override
-	public void render(Texture drawTo)
-	{
-		super.render(drawTo);
-		
-		String displayText = text + (drawBlinker && text.length() < maxLength ? "_" : "");
-		
-		font.render(drawTo, new Vector2DInt(hitbox.x + 2, hitbox.y + 4), displayText);
 	}
 }

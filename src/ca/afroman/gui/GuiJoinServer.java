@@ -34,6 +34,43 @@ public class GuiJoinServer extends GuiScreen
 		super(parent);
 	}
 	
+	private boolean canContinue()
+	{
+		return !this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty() && serverIP.getText().split(":").length <= 2;
+	}
+	
+	@Override
+	public void drawScreen(Texture renderTo)
+	{
+		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
+		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
+		
+		if (ClientGame.instance().isLightingOn())
+		{
+			lightmap.clear();
+			light.renderCentered(lightmap);
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
+		}
+		
+		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Join a Server");
+		
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 50 - 4), "Username");
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 80 - 6), "Password");
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 110 - 8), "Server IP");
+	}
+	
+	@Override
+	public void goToParentScreen()
+	{
+		userText = username.getText();
+		ipText = serverIP.getText();
+		passText = password.getText();
+		
+		super.goToParentScreen();
+	}
+	
 	@Override
 	public void init()
 	{
@@ -73,26 +110,64 @@ public class GuiJoinServer extends GuiScreen
 		buttons.add(new GuiTextButton(this, 200, 144, 90 - 6, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
-	@Override
-	public void drawScreen(Texture renderTo)
+	private void joinServer()
 	{
-		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
-		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
+		userText = username.getText();
+		ipText = serverIP.getText();
+		passText = password.getText();
 		
-		if (ClientGame.instance().isLightingOn())
+		String[] portSplit = ipText.split(":");
+		
+		String port = "";
+		
+		if (portSplit.length > 1)
 		{
-			lightmap.clear();
-			light.renderCentered(lightmap);
-			lightmap.patch();
-			
-			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
+			try
+			{
+				int nPort = Integer.parseInt(portSplit[portSplit.length - 1]);
+				port += nPort;
+			}
+			catch (NumberFormatException e)
+			{
+				ClientGame.instance().logger().log(ALogType.WARNING, "Unable to parse port", e);
+			}
 		}
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Join a Server");
+		ClientGame.instance().setUsername(userText);
+		ClientGame.instance().setServerIP(portSplit[0]);
+		ClientGame.instance().setPort(port);
+		ClientGame.instance().setPassword(passText);
 		
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 50 - 4), "Username");
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 80 - 6), "Password");
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 110 - 8), "Server IP");
+		ClientGame.instance().joinServer();
+	}
+	
+	@Override
+	public void keyTyped()
+	{
+		this.joinButton.setEnabled(canContinue());
+	}
+	
+	@Override
+	public void pressAction(int buttonID)
+	{
+		switch (buttonID)
+		{
+			
+		}
+	}
+	
+	@Override
+	public void releaseAction(int buttonID)
+	{
+		switch (buttonID)
+		{
+			case 1: // Join Server
+				joinServer();
+				break;
+			case 200:
+				goToParentScreen();
+				break;
+		}
 	}
 	
 	@Override
@@ -132,80 +207,5 @@ public class GuiJoinServer extends GuiScreen
 		{
 			goToParentScreen();
 		}
-	}
-	
-	@Override
-	public void goToParentScreen()
-	{
-		userText = username.getText();
-		ipText = serverIP.getText();
-		passText = password.getText();
-		
-		super.goToParentScreen();
-	}
-	
-	@Override
-	public void pressAction(int buttonID)
-	{
-		switch (buttonID)
-		{
-			
-		}
-	}
-	
-	private void joinServer()
-	{
-		userText = username.getText();
-		ipText = serverIP.getText();
-		passText = password.getText();
-		
-		String[] portSplit = ipText.split(":");
-		
-		String port = "";
-		
-		if (portSplit.length > 1)
-		{
-			try
-			{
-				int nPort = Integer.parseInt(portSplit[portSplit.length - 1]);
-				port += nPort;
-			}
-			catch (NumberFormatException e)
-			{
-				ClientGame.instance().logger().log(ALogType.WARNING, "Unable to parse port", e);
-			}
-		}
-		
-		ClientGame.instance().setUsername(userText);
-		ClientGame.instance().setServerIP(portSplit[0]);
-		ClientGame.instance().setPort(port);
-		ClientGame.instance().setPassword(passText);
-		
-		ClientGame.instance().joinServer();
-	}
-	
-	@Override
-	public void releaseAction(int buttonID)
-	{
-		switch (buttonID)
-		{
-			case 1: // Join Server
-				joinServer();
-				break;
-			case 200:
-				goToParentScreen();
-				break;
-		}
-	}
-	
-	private boolean canContinue()
-	{
-		return !this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty() && serverIP.getText().split(":").length <= 2;
-	}
-	
-	@Override
-	public void keyTyped()
-	{
-		this.joinButton.setEnabled(canContinue());
 	}
 }

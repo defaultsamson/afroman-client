@@ -21,6 +21,38 @@ public class LightMap extends Texture
 	private static final Color CHEAP_AMBIENT = new Color(0F, 0F, 0F, 0.5F); // Must be this for the bit shift to work in the multiply
 	private static Texture filter = Assets.getTexture(AssetType.FILTER);
 	
+	public static final Vector2DInt PATCH_POSITION = new Vector2DInt(0, 0);
+	
+	private static int multiplyPixels(int x, int y, Color ambientColour)
+	{
+		// TODO add back RGB for coloured lights?
+		// int xb = (x) & 0xFF;
+		// int yb = (y) & 0xFF;
+		// int b = (xb * yb) / 255;
+		//
+		// int xg = (x >> 8) & 0xFF;
+		// int yg = (y >> 8) & 0xFF;
+		// int g = (xg * yg) / 255;
+		//
+		// int xr = (x >> 16) & 0xFF;
+		// int yr = (y >> 16) & 0xFF;
+		// int r = (xr * yr) / 255;
+		
+		int xa = (x >> 24) & 0xFF;
+		int ya = (y >> 24) & 0xFF;
+		int a;
+		if (ClientGame.instance().getLightingState() == LightMapState.CHEAP)
+		{
+			a = (xa * ya) >> 7; // Math.min(255, xa + ya)
+		}
+		else
+		{
+			a = (xa * ya) / ambientColour.getAlpha(); // Math.min(255, xa + ya)
+		}
+		
+		return (x & 0x00FFFFFF) | (a << 24); // (b) | (g << 8) | (r << 16) | (a << 24)
+	}
+	
 	private Color ambientColour;
 	
 	public LightMap(int width, int height)
@@ -33,6 +65,57 @@ public class LightMap extends Texture
 		super(AssetType.INVALID, new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB));
 		
 		this.ambientColour = ambientColour;
+	}
+	
+	// public void putLight(ClientLightEntity light)
+	// {
+	// // Loop over pixels within light radius
+	// for (int iy = 0; iy < light.getRadius() * 2; iy++)
+	// {
+	// for (int ix = 0; ix < light.getRadius() * 2; ix++)
+	// {
+	// // If it has a level, use the level's worldToScreen() coordinates, otherwise just draw it to the screen with its current coordinates
+	// int lightMapX = (int) (light.getLevel() != null ? light.getLevel().worldToScreenX(light.getX() - light.getRadius()) : light.getX() - light.getRadius()) + ix;
+	// int lightMapY = (int) (light.getLevel() != null ? light.getLevel().worldToScreenY(light.getY() - light.getRadius()) : light.getY() - light.getRadius()) + iy;
+	//
+	// // If it's off-screen, don't try to render it.
+	// if (lightMapX < 0 || lightMapY < 0 || lightMapX >= getImage().getWidth() || lightMapY >= getImage().getHeight()) continue;
+	//
+	// int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
+	// int lightmapPixel = getImage().getRGB(lightMapX, lightMapY);
+	//
+	// if (oldLightMixing)
+	// {
+	// // Only set the pixel to it if the new colour doesn't go below the ambient colour.
+	// if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
+	// {
+	// getImage().setRGB(lightMapX, lightMapY, lightPixel);
+	// }
+	// }
+	// else // New and improved light mixing
+	// {
+	// if (lightmapPixel == ColourUtil.BUFFER_WASTE)
+	// {
+	// getImage().setRGB(lightMapX, lightMapY, lightPixel);
+	// }
+	// else // If it's not a BUFFER, multiply the current value together to get the new pixel
+	// {
+	// getImage().setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
+	// }
+	// }
+	// }
+	// }
+	// }
+	
+	public void clear()
+	{
+		for (int y = 0; y < getImage().getHeight(); ++y)
+		{
+			for (int x = 0; x < getImage().getWidth(); ++x)
+			{
+				getImage().setRGB(x, y, ColourUtil.BUFFER_WASTE);
+			}
+		}
 	}
 	
 	/**
@@ -128,58 +211,10 @@ public class LightMap extends Texture
 		}
 	}
 	
-	// public void putLight(ClientLightEntity light)
-	// {
-	// // Loop over pixels within light radius
-	// for (int iy = 0; iy < light.getRadius() * 2; iy++)
-	// {
-	// for (int ix = 0; ix < light.getRadius() * 2; ix++)
-	// {
-	// // If it has a level, use the level's worldToScreen() coordinates, otherwise just draw it to the screen with its current coordinates
-	// int lightMapX = (int) (light.getLevel() != null ? light.getLevel().worldToScreenX(light.getX() - light.getRadius()) : light.getX() - light.getRadius()) + ix;
-	// int lightMapY = (int) (light.getLevel() != null ? light.getLevel().worldToScreenY(light.getY() - light.getRadius()) : light.getY() - light.getRadius()) + iy;
-	//
-	// // If it's off-screen, don't try to render it.
-	// if (lightMapX < 0 || lightMapY < 0 || lightMapX >= getImage().getWidth() || lightMapY >= getImage().getHeight()) continue;
-	//
-	// int lightPixel = ((Texture) light.getAsset()).getImage().getRGB(ix, iy);
-	// int lightmapPixel = getImage().getRGB(lightMapX, lightMapY);
-	//
-	// if (oldLightMixing)
-	// {
-	// // Only set the pixel to it if the new colour doesn't go below the ambient colour.
-	// if (lightmapPixel == ColourUtil.BUFFER_WASTE || (lightmapPixel >> 24 & 0xFF) > (lightPixel >> 24 & 0xFF))
-	// {
-	// getImage().setRGB(lightMapX, lightMapY, lightPixel);
-	// }
-	// }
-	// else // New and improved light mixing
-	// {
-	// if (lightmapPixel == ColourUtil.BUFFER_WASTE)
-	// {
-	// getImage().setRGB(lightMapX, lightMapY, lightPixel);
-	// }
-	// else // If it's not a BUFFER, multiply the current value together to get the new pixel
-	// {
-	// getImage().setRGB(lightMapX, lightMapY, multiplyPixels(lightPixel, lightmapPixel, getAmbientColour()));
-	// }
-	// }
-	// }
-	// }
-	// }
-	
-	public void clear()
+	public Color getAmbientColour()
 	{
-		for (int y = 0; y < getImage().getHeight(); ++y)
-		{
-			for (int x = 0; x < getImage().getWidth(); ++x)
-			{
-				getImage().setRGB(x, y, ColourUtil.BUFFER_WASTE);
-			}
-		}
+		return ClientGame.instance().getLightingState() == LightMapState.CHEAP ? CHEAP_AMBIENT : ambientColour;
 	}
-	
-	public static final Vector2DInt PATCH_POSITION = new Vector2DInt(0, 0);
 	
 	/**
 	 * Fills all blank spots with ambient colour, and applies the filter.
@@ -198,40 +233,5 @@ public class LightMap extends Texture
 		}
 		
 		if (ClientGame.instance().getLightingState() == LightMapState.ON) this.draw(filter, PATCH_POSITION);
-	}
-	
-	private static int multiplyPixels(int x, int y, Color ambientColour)
-	{
-		// TODO add back RGB for coloured lights?
-		// int xb = (x) & 0xFF;
-		// int yb = (y) & 0xFF;
-		// int b = (xb * yb) / 255;
-		//
-		// int xg = (x >> 8) & 0xFF;
-		// int yg = (y >> 8) & 0xFF;
-		// int g = (xg * yg) / 255;
-		//
-		// int xr = (x >> 16) & 0xFF;
-		// int yr = (y >> 16) & 0xFF;
-		// int r = (xr * yr) / 255;
-		
-		int xa = (x >> 24) & 0xFF;
-		int ya = (y >> 24) & 0xFF;
-		int a;
-		if (ClientGame.instance().getLightingState() == LightMapState.CHEAP)
-		{
-			a = (xa * ya) >> 7; // Math.min(255, xa + ya)
-		}
-		else
-		{
-			a = (xa * ya) / ambientColour.getAlpha(); // Math.min(255, xa + ya)
-		}
-		
-		return (x & 0x00FFFFFF) | (a << 24); // (b) | (g << 8) | (r << 16) | (a << 24)
-	}
-	
-	public Color getAmbientColour()
-	{
-		return ClientGame.instance().getLightingState() == LightMapState.CHEAP ? CHEAP_AMBIENT : ambientColour;
 	}
 }

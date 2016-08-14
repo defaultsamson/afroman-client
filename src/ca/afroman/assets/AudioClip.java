@@ -22,15 +22,6 @@ public class AudioClip extends Asset
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";
 	
-	private Clip clip;
-	
-	public AudioClip(AssetType type, Clip clip)
-	{
-		super(type);
-		
-		this.clip = clip;
-	}
-	
 	public static AudioClip fromResource(AssetType type, String path)
 	{
 		if (initUseMp3)
@@ -125,34 +116,13 @@ public class AudioClip extends Asset
 		return new AudioClip(type, clip);
 	}
 	
-	public void startLoop()
-	{
-		if (ENABLE_AUDIO)
-		{
-			if (clip == null) return;
-			
-			clip.setFramePosition(0);
-			clip.loop(200);
-			clip.start();
-		}
-	}
+	private Clip clip;
 	
-	public void start()
+	public AudioClip(AssetType type, Clip clip)
 	{
-		if (ENABLE_AUDIO)
-		{
-			if (clip == null) return;
-			
-			clip.setFramePosition(0);
-			
-			clip.start();
-		}
-	}
-	
-	public void stop()
-	{
-		if (clip == null) return;
-		clip.stop();
+		super(type);
+		
+		this.clip = clip;
 	}
 	
 	@Override
@@ -168,5 +138,35 @@ public class AudioClip extends Asset
 		clip.stop();
 		clip.flush();
 		clip.close();
+	}
+	
+	public void start()
+	{
+		if (ENABLE_AUDIO)
+		{
+			if (clip == null) return;
+			
+			clip.setFramePosition(0);
+			
+			clip.start();
+		}
+	}
+	
+	public void startLoop()
+	{
+		if (ENABLE_AUDIO)
+		{
+			if (clip == null) return;
+			
+			clip.setFramePosition(0);
+			clip.loop(200);
+			clip.start();
+		}
+	}
+	
+	public void stop()
+	{
+		if (clip == null) return;
+		clip.stop();
 	}
 }

@@ -21,21 +21,19 @@ public class GuiGrid extends GuiScreen
 	}
 	
 	@Override
+	public void drawScreen(Texture renderTo)
+	{
+		
+	}
+	
+	@Override
 	public void init()
 	{
 		
 	}
 	
-	public void updateButtons()
-	{
-		if (ClientGame.instance().getCurrentLevel() != null)
-		{
-			grid.setText("Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
-		}
-	}
-	
 	@Override
-	public void drawScreen(Texture renderTo)
+	public void keyTyped()
 	{
 		
 	}
@@ -67,9 +65,11 @@ public class GuiGrid extends GuiScreen
 		
 	}
 	
-	@Override
-	public void keyTyped()
+	public void updateButtons()
 	{
-		
+		if (ClientGame.instance().getCurrentLevel() != null)
+		{
+			grid.setText("Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
+		}
 	}
 }
