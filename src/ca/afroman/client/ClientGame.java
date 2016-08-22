@@ -3,10 +3,13 @@ package ca.afroman.client;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
@@ -23,6 +26,7 @@ import javax.swing.JFrame;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
+import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.ClientPlayerEntity;
 import ca.afroman.entity.api.ClientAssetEntity;
@@ -106,27 +110,28 @@ public class ClientGame extends DynamicTickRenderThread
 	private boolean hitboxDebug = false; // Shows all hitboxes
 	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
-	
 	private boolean consoleDebug = false; // Shows a console window
-	
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	private InputHandler input;
 	private List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
 	private List<ClientPlayerEntity> players;
-	
 	private HashMap<Role, FlickeringLight> lights;
 	private String username = "";
 	private String password = "";
 	private String port = "";
-	
 	private String typedIP = "";
+	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
 	private byte updateMem = Byte.MAX_VALUE - 1;
 	private long totalMemory = 0;
-	
 	private long usedMemory = 0;
+	
+	private Font debugFont;
+	private Cursor blankCursor;
+	private byte hideCursor = 0;
+	
 	private ClientSocketManager socketManager;
 	/** The ID's of all the packets that have been received. */
 	private List<Integer> receivedPackets;
@@ -484,6 +489,10 @@ public class ClientGame extends DynamicTickRenderThread
 		Assets.load();
 		
 		logger().log(ALogType.DEBUG, "Initializing game variables...");
+		
+		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
+		debugFont = Assets.getFont(AssetType.FONT_BLACK);
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
 		levels = new ArrayList<ClientLevel>();
@@ -514,12 +523,15 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		music.startLoop();
+		
+		updateCursorHiding();
 	}
 	
 	@Override
 	public void onStop()
 	{
-		socketManager.stopThis();
+		// TODO always have socket manager open?
+		if (socketManager != null) socketManager.stopThis();
 		receivedPackets.clear();
 		toSend.clear();
 		
@@ -989,16 +1001,16 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		if (hudDebug)
 		{
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-			Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
+			debugFont.render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
+			debugFont.render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
+			debugFont.render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
+			debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
+			debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
 			
 			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
 			{
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 30), "x: " + getThisPlayer().getPosition().getX());
-				Assets.getFont(AssetType.FONT_BLACK).render(screen, new Vector2DInt(1, 40), "y: " + getThisPlayer().getPosition().getY());
+				debugFont.render(screen, new Vector2DInt(1, 30), "x: " + getThisPlayer().getPosition().getX());
+				debugFont.render(screen, new Vector2DInt(1, 40), "y: " + getThisPlayer().getPosition().getY());
 			}
 		}
 		
@@ -1046,11 +1058,15 @@ public class ClientGame extends DynamicTickRenderThread
 	{
 		// System.out.println("Setting Current Level: " + (newLevel == null ? "null" : newLevel.getType()));
 		currentLevel = newLevel;
+		
+		updateCursorHiding();
 	}
 	
 	public void setCurrentScreen(GuiScreen screen)
 	{
-		this.currentScreen = screen;
+		currentScreen = screen;
+		
+		updateCursorHiding();
 	}
 	
 	public void setFullScreen(boolean isFullScreen)
@@ -1107,6 +1123,8 @@ public class ClientGame extends DynamicTickRenderThread
 		
 		old.removeAll();
 		old.getContentPane().removeAll();
+		
+		updateCursorHiding();
 	}
 	
 	public void setPassword(String newPassword)
@@ -1146,6 +1164,15 @@ public class ClientGame extends DynamicTickRenderThread
 			Runtime rt = Runtime.getRuntime();
 			totalMemory = rt.freeMemory();
 			usedMemory = rt.totalMemory() - rt.freeMemory();
+		}
+		
+		if (hideCursor > 0)
+		{
+			if (hideCursor == 1)
+			{
+				updateCursorHiding();
+			}
+			hideCursor--;
 		}
 		
 		// Parses all packets
@@ -1231,11 +1258,13 @@ public class ClientGame extends DynamicTickRenderThread
 			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
 			
 			this.getPlayer(sockets().getServerConnection().getRole()).setCameraToFollow(!buildMode);
+			
+			updateCursorHiding();
 		}
 		
-		if (currentScreen != null)
+		if (getCurrentScreen() != null)
 		{
-			currentScreen.tick();
+			getCurrentScreen().tick();
 		}
 		
 		if (getCurrentLevel() != null)
@@ -1247,6 +1276,47 @@ public class ClientGame extends DynamicTickRenderThread
 		{
 			hasStartedUpdateList = false;
 			updatePlayerList = false;
+		}
+	}
+	
+	public void updateCursorHiding()
+	{
+		updateCursorHiding(false);
+	}
+	
+	/**
+	 * @deprecated only use updateCursorHiding() unless this is being updated from mouse movement
+	 * 
+	 * @param updateFromMouse
+	 */
+	@Deprecated
+	public void updateCursorHiding(boolean updateFromMouse)
+	{
+		boolean isFocused = input().isGameInFocus();
+		
+		if (updateFromMouse)
+		{
+			if (isFocused)
+			{
+				hideCursor = Byte.MAX_VALUE;
+				frame.setCursor(Cursor.getDefaultCursor());
+			}
+			else
+			{
+				hideCursor = 1;
+			}
+		}
+		else
+		{
+			// Hides the cursor if in game, no GUI, no build mode, and the game is focused
+			if (getCurrentScreen() == null && getCurrentLevel() != null && !isBuildMode() && isFocused)
+			{
+				frame.setCursor(blankCursor);
+			}
+			else
+			{
+				frame.setCursor(Cursor.getDefaultCursor());
+			}
 		}
 	}
 	

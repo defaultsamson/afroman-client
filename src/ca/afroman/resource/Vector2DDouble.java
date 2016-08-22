@@ -61,6 +61,12 @@ public class Vector2DDouble
 		return this;
 	}
 	
+	@Override
+	public Vector2DDouble clone()
+	{
+		return new Vector2DDouble(x, y);
+	}
+	
 	public double getX()
 	{
 		return x;

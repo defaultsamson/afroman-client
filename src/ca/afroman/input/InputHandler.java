@@ -1,5 +1,7 @@
 package ca.afroman.input;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -17,7 +19,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
 import ca.afroman.resource.Vector2DInt;
 
-public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener
+public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener, FocusListener
 {
 	private List<MouseButton> mouseButtons = new ArrayList<MouseButton>();
 	
@@ -98,6 +100,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key y = new Key(keys, KeyEvent.VK_Y);
 	public Key z = new Key(keys, KeyEvent.VK_Z);
 	
+	private boolean isGameFocused = false;
+	
 	public InputHandler(ClientGame game)
 	{
 		game.getCanvas().addKeyListener(this);
@@ -105,11 +109,35 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		game.getCanvas().addMouseMotionListener(this);
 		game.getCanvas().addMouseWheelListener(this);
 		game.getFrame().addWindowListener(this);
+		game.getCanvas().addFocusListener(this);
+	}
+	
+	@SuppressWarnings("deprecation")
+	@Override
+	public void focusGained(FocusEvent arg0)
+	{
+		// TODO pause
+		isGameFocused = true;
+		ClientGame.instance().updateCursorHiding(true);
+	}
+	
+	@SuppressWarnings("deprecation")
+	@Override
+	public void focusLost(FocusEvent arg0)
+	{
+		// TODO pause
+		isGameFocused = false;
+		ClientGame.instance().updateCursorHiding(true);
 	}
 	
 	public Vector2DInt getMousePos()
 	{
 		return mousePos;
+	}
+	
+	public boolean isGameInFocus()
+	{
+		return isGameFocused;
 	}
 	
 	@Override
@@ -154,6 +182,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		mouseMoved(e);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
@@ -166,6 +195,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		double yRatio = ClientGame.HEIGHT / (double) ClientGame.instance().getCanvas().getHeight();
 		
 		mousePos.setPosition((int) (e.getX() * xRatio), (int) (e.getY() * yRatio));
+		
+		ClientGame.instance().updateCursorHiding(true);
 	}
 	
 	@Override

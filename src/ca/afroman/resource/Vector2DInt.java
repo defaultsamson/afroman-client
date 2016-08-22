@@ -61,6 +61,12 @@ public class Vector2DInt
 		return this;
 	}
 	
+	@Override
+	public Vector2DInt clone()
+	{
+		return new Vector2DInt(x, y);
+	}
+	
 	public int getX()
 	{
 		return x;
@@ -98,5 +104,10 @@ public class Vector2DInt
 		this.y = y;
 		
 		return this;
+	}
+	
+	public Vector2DDouble toVector2DDouble()
+	{
+		return new Vector2DDouble(x, y);
 	}
 }

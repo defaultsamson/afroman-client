@@ -326,8 +326,6 @@ public class Entity implements ITickable, IServerClient
 	@SuppressWarnings("unused")
 	public void move(byte xa, byte ya)
 	{
-		if (isServerSide()) System.out.println("Movingsd4");
-		
 		if (getLevel() == null)
 		{
 			return;
@@ -354,7 +352,6 @@ public class Entity implements ITickable, IServerClient
 					// Don't let it collide with itself
 					if (other != this && this.isColliding(other))
 					{
-						if (isServerSide()) System.out.println("1");
 						canMove = false;
 						break;
 					}
@@ -367,7 +364,6 @@ public class Entity implements ITickable, IServerClient
 				{
 					if (this.isColliding(hitbox))
 					{
-						if (isServerSide()) System.out.println("2");
 						canMove = false;
 						break;
 					}
@@ -414,7 +410,6 @@ public class Entity implements ITickable, IServerClient
 					// Don't let it collide with itself
 					if (other != this && this.isColliding(other))
 					{
-						if (isServerSide()) System.out.println("3");
 						canMove = false;
 						break;
 					}
@@ -427,7 +422,6 @@ public class Entity implements ITickable, IServerClient
 				{
 					if (this.isColliding(hitbox))
 					{
-						if (isServerSide()) System.out.println("4");
 						canMove = false;
 						break;
 					}
@@ -481,8 +475,6 @@ public class Entity implements ITickable, IServerClient
 		else
 		{
 			sendPacket = true;
-			
-			if (isServerSide()) System.out.println("Movingsd5");
 			
 			numSteps++;
 			

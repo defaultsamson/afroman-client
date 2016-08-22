@@ -64,7 +64,6 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	@Override
 	public void onMove(byte xa, byte ya)
 	{
-		System.out.println("Shit");
 		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
 	}
 }

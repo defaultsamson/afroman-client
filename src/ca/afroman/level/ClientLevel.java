@@ -56,15 +56,14 @@ public class ClientLevel extends Level
 	public boolean showLayer5 = true;
 	public GridSize grid = GridSize.MEDIUM;
 	public byte editLayer = 0;
+	
 	// Mode 2, PointLights
 	private int currentBuildLightRadius = 10;
+	
 	// Mode 3, HitBoxes
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
-	
 	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
-	
 	private Vector2DDouble hitbox = new Vector2DDouble(0, 0);
-	
 	private double hitboxWidth = 0;
 	private double hitboxHeight = 0;
 	private int hitboxClickCount = 0;
@@ -245,7 +244,7 @@ public class ClientLevel extends Level
 			if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.LIGHT)
 			{
 				int radius = currentBuildLightRadius;
-				Vector2DInt pos = ClientGame.instance().input().getMousePos().add(-radius, -radius);
+				Vector2DInt pos = ClientGame.instance().input().getMousePos().clone().add(-radius, -radius);
 				lightmap.drawLight(pos, radius);
 				
 				if (ClientGame.instance().isHitboxDebugging())
@@ -571,7 +570,7 @@ public class ClientLevel extends Level
 						{
 							if (ClientGame.instance().getCurrentScreen() == null)
 							{
-								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos()));
+								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 								hitboxClickCount = 1;
 							}
 						}
@@ -609,7 +608,7 @@ public class ClientLevel extends Level
 						{
 							if (hitboxClickCount == 0)
 							{
-								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos()));
+								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 								hitboxClickCount = 1;
 							}
 							else if (hitboxClickCount == 1)
@@ -654,30 +653,30 @@ public class ClientLevel extends Level
 			if (hitboxClickCount > 0)
 			{
 				// Sets the new X and Y ordinates for point 2 to that of the mouse
-				hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos()));
+				hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 				
 				// Finds the x, y, and height depending on which ones are greater than the other.
 				// Have to do this because Java doesn't support rectangles with negative width or height
 				if (hitbox1.getX() > hitbox2.getX())
 				{
+					hitboxWidth = hitbox1.getX() - hitbox2.getX();
 					hitbox.setX(hitbox2.getX());
-					hitboxWidth = hitbox1.getX() - hitbox2.getX() + 1;
 				}
 				else
 				{
-					hitbox.setX(hitbox2.getX());
 					hitboxWidth = hitbox2.getX() - hitbox1.getX() + 1;
+					hitbox.setX(hitbox2.getX() - hitboxWidth);
 				}
 				
 				if (hitbox1.getY() > hitbox2.getY())
 				{
+					hitboxHeight = hitbox1.getY() - hitbox2.getY();
 					hitbox.setY(hitbox2.getY());
-					hitboxHeight = hitbox1.getY() - hitbox2.getY() + 1;
 				}
 				else
 				{
-					hitbox.setY(hitbox1.getY());
 					hitboxHeight = hitbox2.getY() - hitbox1.getY() + 1;
+					hitbox.setY(hitbox1.getY() - 1);
 				}
 			}
 		}

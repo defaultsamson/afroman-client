@@ -404,7 +404,6 @@ public class ServerGame extends DynamicTickThread
 						ServerPlayerEntity player = ServerGame.instance().getPlayer(role);
 						if (player != null)
 						{
-							System.out.println("Packet okay");
 							byte x = packet.getContent()[0];
 							byte y = packet.getContent()[1];
 							
