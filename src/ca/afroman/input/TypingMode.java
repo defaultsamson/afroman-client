@@ -23,6 +23,7 @@ public enum TypingMode
 			InputHandler input = ClientGame.instance().input();
 			List<TypingKeyWrapper> keyModes = new ArrayList<TypingKeyWrapper>();
 			keyModes.add(new TypingKeyWrapper(input.space, " ", new TypingModeWrapper(TypingMode.FULL)));
+			keyModes.add(new TypingKeyWrapper(input.period, ">", new TypingModeWrapper(TypingMode.FULL), ".", new TypingModeWrapper(TypingMode.FULL)));
 			keyModes.add(new TypingKeyWrapper(input.comma, "<", new TypingModeWrapper(TypingMode.FULL), ",", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_COMMA)));
 			keyModes.add(new TypingKeyWrapper(input.slash, "?", new TypingModeWrapper(TypingMode.FULL), "/", new TypingModeWrapper(TypingMode.FULL)));
 			keyModes.add(new TypingKeyWrapper(input.backslash, "|", new TypingModeWrapper(TypingMode.FULL), "\\", new TypingModeWrapper(TypingMode.FULL)));
@@ -65,11 +66,6 @@ public enum TypingMode
 			keyModes.add(new TypingKeyWrapper(input.x, "X", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "x", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
 			keyModes.add(new TypingKeyWrapper(input.y, "Y", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "y", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
 			keyModes.add(new TypingKeyWrapper(input.z, "Z", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "z", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
-			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
-			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
-			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
-			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
-			keyModes.add(new TypingKeyWrapper(input.b, "B", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS), "b", new TypingModeWrapper(TypingMode.FULL, TypingMode.ONLY_NUMBERS_AND_LETTERS)));
 			
 			TypingMode.keyModes = keyModes;
 		}

@@ -985,46 +985,51 @@ public class ClientGame extends DynamicTickRenderThread
 	@Override
 	public void render()
 	{
-		// Clears the canvas
-		screen.getGraphics().setColor(Color.WHITE);
-		screen.getGraphics().fillRect(0, 0, (int) screen.getWidth(), (int) screen.getHeight());
-		
-		if (getCurrentLevel() != null)
+		if (input().isGameInFocus())
 		{
-			getCurrentLevel().render(screen);
-		}
-		
-		if (getCurrentScreen() != null)
-		{
-			getCurrentScreen().render(screen);
-		}
-		
-		if (hudDebug)
-		{
-			debugFont.render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
-			debugFont.render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
-			debugFont.render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
-			debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-			debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
+			// Clears the canvas
+			screen.getGraphics().setColor(Color.WHITE);
+			screen.getGraphics().fillRect(0, 0, (int) screen.getWidth(), (int) screen.getHeight());
 			
-			if (getThisPlayer() != null && getThisPlayer().getLevel() != null)
+			if (getCurrentLevel() != null)
 			{
-				debugFont.render(screen, new Vector2DInt(1, 30), "x: " + getThisPlayer().getPosition().getX());
-				debugFont.render(screen, new Vector2DInt(1, 40), "y: " + getThisPlayer().getPosition().getY());
+				getCurrentLevel().render(screen);
 			}
+			
+			if (getCurrentScreen() != null)
+			{
+				getCurrentScreen().render(screen);
+			}
+			
+			if (hudDebug)
+			{
+				debugFont.render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
+				debugFont.render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
+				debugFont.render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
+				debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
+				debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
+				
+				ClientPlayerEntity player = getThisPlayer();
+				
+				if (player != null && player.getLevel() != null)
+				{
+					debugFont.render(screen, new Vector2DInt(1, 30), "x: " + player.getPosition().getX());
+					debugFont.render(screen, new Vector2DInt(1, 40), "y: " + player.getPosition().getY());
+				}
+			}
+			
+			// Renders everything that was just drawn
+			BufferStrategy bs = canvas.getBufferStrategy();
+			if (bs == null)
+			{
+				canvas.createBufferStrategy(2);
+				return;
+			}
+			Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
+			g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+			g.dispose();
+			bs.show();
 		}
-		
-		// Renders everything that was just drawn
-		BufferStrategy bs = canvas.getBufferStrategy();
-		if (bs == null)
-		{
-			canvas.createBufferStrategy(2);
-			return;
-		}
-		Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
-		g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-		g.dispose();
-		bs.show();
 	}
 	
 	/**
@@ -1087,7 +1092,21 @@ public class ClientGame extends DynamicTickRenderThread
 		frame.setUndecorated(isFullScreen);
 		
 		frame.getContentPane().setBackground(Color.black);
-		frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		try
+		{
+			frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		}
+		catch (IllegalArgumentException e)
+		{
+			logger().log(ALogType.CRITICAL, "Fullscreen not supported on the desired monitor, aborting", e);
+			
+			frame.removeAll();
+			frame.getContentPane().removeAll();
+			frame = old;
+			frame.setVisible(true);
+			fullscreen = !fullscreen;
+			return;
+		}
 		frame.pack();
 		frame.setResizable(!isFullScreen);
 		frame.setLocationRelativeTo(null);
@@ -1099,32 +1118,46 @@ public class ClientGame extends DynamicTickRenderThread
 		 */
 		if (isFullScreen)
 		{
-			try
+			GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+			
+			boolean didIt = false;
+			
+			for (int i = 0; i < gds.length; i++)
 			{
-				GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-				
-				gd.setFullScreenWindow(frame);// Makes it full screen
-				
-				// TODO test on Ben's Mac
-				// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
-				// {
-				// this.setVisible(false);
-				// this.setVisible(true);
-				// }
+				try
+				{
+					gds[i].setFullScreenWindow(frame);// Makes it full screen
+					
+					// TODO test on Ben's Mac
+					// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
+					// {
+					// this.setVisible(false);
+					// this.setVisible(true);
+					// }
+					didIt = true;
+					break;
+				}
+				catch (Exception e)
+				{
+					logger().log(ALogType.CRITICAL, "Error fullscreening GraphicsDevice[" + i + "]", e);
+				}
 			}
-			catch (Exception e)
+			
+			if (!didIt)
 			{
+				logger().log(ALogType.CRITICAL, "Fullscreen not supported, attempting to revert back");
 				setFullScreen(false);
-				logger().log(ALogType.CRITICAL, "Fullscreen Mode not supported", e);
 			}
 		}
-		
-		canvas.requestFocus();
-		
-		old.removeAll();
-		old.getContentPane().removeAll();
-		
-		updateCursorHiding();
+		else
+		{
+			canvas.requestFocus();
+			
+			old.removeAll();
+			old.getContentPane().removeAll();
+			
+			updateCursorHiding();
+		}
 	}
 	
 	public void setPassword(String newPassword)

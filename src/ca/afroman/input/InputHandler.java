@@ -100,7 +100,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key y = new Key(keys, KeyEvent.VK_Y);
 	public Key z = new Key(keys, KeyEvent.VK_Z);
 	
-	private boolean isGameFocused = false;
+	private boolean isGameFocused = true;
 	
 	public InputHandler(ClientGame game)
 	{
