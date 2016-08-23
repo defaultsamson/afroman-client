@@ -43,10 +43,7 @@ public class GuiClickNotification extends GuiTextButton
 	@Override
 	public void render(Texture drawTo)
 	{
-		drawTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
-		drawTo.getGraphics().fillRect(hitbox.x - 10, hitbox.y - 35, hitbox.width + 20 - 1, hitbox.height + 40);
-		drawTo.getGraphics().setPaint(new Color(0F, 0F, 0F, 1F));
-		drawTo.getGraphics().drawRect(hitbox.x - 10, hitbox.y - 35, hitbox.width + 20 - 1, hitbox.height + 40);
+		drawTo.drawFillRect(new Color(0F, 0F, 0F, 1F), new Color(1F, 1F, 1F, 1F), new Vector2DInt(hitbox.x - 10, hitbox.y - 35), hitbox.width + 20, hitbox.height + 41);
 		
 		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y - 26), notifText1);
 		font.renderCentered(drawTo, new Vector2DInt(hitbox.x + (hitbox.width / 2), hitbox.y - 14), notifText2);

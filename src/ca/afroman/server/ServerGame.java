@@ -34,10 +34,10 @@ import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.packet.PacketType;
+import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.thread.DynamicTickThread;
 import ca.afroman.util.ByteUtil;
-import ca.afroman.util.IDCounter;
 
 public class ServerGame extends DynamicTickThread
 {

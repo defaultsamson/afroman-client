@@ -1,6 +1,8 @@
 package ca.afroman.assets;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -14,6 +16,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.ColourUtil;
 import ca.afroman.log.ALogType;
 import ca.afroman.resource.Vector2DInt;
+import ca.afroman.util.ShapeUtil;
 
 public class Texture extends DrawableAsset
 {
@@ -104,9 +107,52 @@ public class Texture extends DrawableAsset
 		int y = pos.getY();
 		
 		// Only draw if what's trying to be drawn is within the bounds of this
-		if (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
+		if (ShapeUtil.areColliding(x, y, (int) toDraw.getWidth(), (int) toDraw.getHeight(), 0, 0, (int) getWidth(), (int) getHeight())) // (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
 		{
 			graphics.drawImage(toDraw.image, x, y, null);
+		}
+	}
+	
+	/**
+	 * Superimposes a Texture over this one.
+	 * 
+	 * @param toDraw the image to draw
+	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
+	 */
+	public void drawFillRect(Color outlineColour, Color fillColour, Vector2DInt pos, int width, int height)
+	{
+		// Only draw if what's trying to be drawn is within the bounds of this
+		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, (int) getWidth(), (int) getHeight()))
+		{
+			Paint oldPaint = getGraphics().getPaint();
+			
+			getGraphics().setPaint(fillColour);
+			getGraphics().fillRect(pos.getX() + 1, pos.getY() + 1, width - 2, height - 2);
+			
+			getGraphics().setPaint(outlineColour);
+			getGraphics().drawRect(pos.getX(), pos.getY(), width - 1, height - 1);
+			
+			getGraphics().setPaint(oldPaint);
+		}
+	}
+	
+	/**
+	 * Superimposes a Texture over this one.
+	 * 
+	 * @param toDraw the image to draw
+	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
+	 */
+	public void drawRect(Color colour, Vector2DInt pos, int width, int height)
+	{
+		// Only draw if what's trying to be drawn is within the bounds of this
+		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, (int) getWidth(), (int) getHeight()))
+		{
+			Paint oldPaint = getGraphics().getPaint();
+			
+			getGraphics().setPaint(colour);
+			getGraphics().drawRect(pos.getX(), pos.getY(), width - 1, height - 1);
+			
+			getGraphics().setPaint(oldPaint);
 		}
 	}
 	

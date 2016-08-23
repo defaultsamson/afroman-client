@@ -1,4 +1,4 @@
-package ca.afroman.util;
+package ca.afroman.resource;
 
 import java.util.ArrayList;
 import java.util.List;

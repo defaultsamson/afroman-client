@@ -2,6 +2,7 @@ package ca.afroman.assets;
 
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DInt;
 
 public class SpriteAnimation extends AssetArray implements ITickable, IRenderable
@@ -10,15 +11,14 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	private int currentFrameIndex = 0;
 	private boolean pingPong;
 	private boolean goingUp = true;
-	private int ticksPerFrame;
-	private int tickCounter = 0;
+	private ModulusCounter tickCounter;
 	
 	public SpriteAnimation(AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
 		super(type, frames);
 		
 		this.pingPong = pingPong;
-		this.ticksPerFrame = ticksPerFrame;
+		tickCounter = new ModulusCounter(ticksPerFrame);
 	}
 	
 	public SpriteAnimation(AssetType type, int ticksPerFrame, Texture... frames)
@@ -29,7 +29,7 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	@Override
 	public Asset clone()
 	{
-		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, (Texture[]) getAssets());
+		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), (Texture[]) getAssets());
 	}
 	
 	@Override
@@ -42,7 +42,7 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 			newTextures[i] = ((Texture[]) getAssets())[i].clone();
 		}
 		
-		return new SpriteAnimation(getAssetType(), pingPong, ticksPerFrame, newTextures);
+		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), newTextures);
 	}
 	
 	public int frameCount()
@@ -82,15 +82,11 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	@Override
 	public void tick()
 	{
-		if (ticksPerFrame != 0)
+		if (tickCounter.getInterval() != 0)
 		{
-			tickCounter++;
-			
 			// If it's supposed to progress based on tpf
-			if (tickCounter >= ticksPerFrame)
+			if (tickCounter.isAtInterval())
 			{
-				tickCounter = 0;
-				
 				if (goingUp)
 				{
 					currentFrameIndex++;

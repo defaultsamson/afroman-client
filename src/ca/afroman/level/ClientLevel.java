@@ -2,6 +2,8 @@ package ca.afroman.level;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,7 @@ import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.ListUtil;
+import ca.afroman.util.ShapeUtil;
 
 public class ClientLevel extends Level
 {
@@ -63,9 +66,9 @@ public class ClientLevel extends Level
 	// Mode 3, HitBoxes
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
 	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
-	private Vector2DDouble hitbox = new Vector2DDouble(0, 0);
-	private double hitboxWidth = 0;
-	private double hitboxHeight = 0;
+	// private Vector2DDouble hitbox = new Vector2DDouble(0, 0);
+	// private double hitboxWidth = 0;
+	// private double hitboxHeight = 0;
 	private int hitboxClickCount = 0;
 	private boolean lastIsBuildMode = false;
 	
@@ -93,7 +96,7 @@ public class ClientLevel extends Level
 				ClientGame.instance().setCurrentScreen(null);
 				hitboxClickCount = 0;
 				break;
-			case EVENT:
+			case TRIGGER:
 				hitboxClickCount = 0;
 				break;
 		}
@@ -126,7 +129,7 @@ public class ClientLevel extends Level
 			case HITBOX:
 				
 				break;
-			case EVENT:
+			case TRIGGER:
 				
 				break;
 		}
@@ -222,21 +225,21 @@ public class ClientLevel extends Level
 			
 			List<PointLight> lights = this.getLights();
 			
-			for (PointLight light : lights) // Throws ConcurrentModificationException
+			for (PointLight light : lights)
 			{
 				light.renderCentered(lightmap);
 				
 				if (ClientGame.instance().isHitboxDebugging())
 				{
-					Vector2DInt pos = worldToScreen(light.getPosition());
 					int radius = (int) light.getRadius();
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
-					renderTo.getGraphics().fillRect(pos.getX() - radius, pos.getY() - radius, (radius * 2) - 1, (radius * 2) - 1);
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
-					renderTo.getGraphics().drawRect(pos.getX() - radius, pos.getY() - radius, (radius * 2) - 1, (radius * 2) - 1);
+					Vector2DInt pos = worldToScreen(light.getPosition()).add(-radius, -radius);
 					
-					pos.add(0, -3);
-					lightDebug.renderCentered(renderTo, pos, "" + light.getID());
+					renderTo.drawFillRect(new Color(1F, 1F, 1F, 0.25F), new Color(1F, 1F, 1F, 0.05F), pos, radius * 2, radius * 2);
+					
+					String number = new StringBuilder().append(light.getID()).toString();
+					
+					pos.add(0 + radius, -4 + radius);
+					lightDebug.renderCentered(renderTo, pos, number);
 				}
 			}
 			
@@ -249,10 +252,7 @@ public class ClientLevel extends Level
 				
 				if (ClientGame.instance().isHitboxDebugging())
 				{
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.05F));
-					renderTo.getGraphics().fillRect(pos.getX(), pos.getY(), (radius * 2) - 1, (radius * 2) - 1);
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.25F));
-					renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), (radius * 2) - 1, (radius * 2) - 1);
+					renderTo.drawFillRect(new Color(1F, 1F, 1F, 0.25F), new Color(1F, 1F, 1F, 0.05F), pos, radius * 2, radius * 2);
 				}
 			}
 			
@@ -299,13 +299,7 @@ public class ClientLevel extends Level
 			for (Hitbox box : this.getHitboxes())
 			{
 				Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
-				int width = (int) box.getWidth() - 1;
-				int height = (int) box.getHeight() - 1;
-				
-				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
-				renderTo.getGraphics().fillRect(pos.getX(), pos.getY(), width, height);
-				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
-				renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), width, height);
+				renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
 			}
 			
 			for (Entity entity : this.getEntities())
@@ -313,13 +307,7 @@ public class ClientLevel extends Level
 				for (Hitbox box : entity.hitboxInLevel())
 				{
 					Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
-					int width = (int) box.getWidth() - 1;
-					int height = (int) box.getHeight() - 1;
-					
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
-					renderTo.getGraphics().fillRect(pos.getX(), pos.getY(), width, height);
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
-					renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), width, height);
+					renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
 				}
 			}
 			
@@ -328,38 +316,25 @@ public class ClientLevel extends Level
 				for (Hitbox box : entity.hitboxInLevel())
 				{
 					Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
-					int width = (int) box.getWidth() - 1;
-					int height = (int) box.getHeight() - 1;
-					
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.3F));
-					renderTo.getGraphics().fillRect(pos.getX(), pos.getY(), width, height);
-					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
-					renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), width, height);
+					renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
 				}
 			}
 		}
 		
 		// Draws out scripted events
-		if (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.EVENT && ClientGame.instance().isBuildMode()))
+		if (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.TRIGGER && ClientGame.instance().isBuildMode()))
 		{
-			Paint oldPaint = renderTo.getGraphics().getPaint();
-			renderTo.getGraphics().setPaint(new Color(0.3F, 0.3F, 1F, 1F)); // Blue
-			
 			for (IEvent e : getScriptedEvents())
 			{
 				Vector2DInt pos = worldToScreen(new Vector2DDouble(e.getX(), e.getY()));
-				// TODO add a native drawRect() in Textures which can draw using Vector2D
-				renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), (int) e.getWidth() - 1, (int) e.getHeight() - 1);
+				renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Blue
 			}
 			
-			if (buildMode == BuildMode.EVENT && hitboxClickCount == 1)
+			if (buildMode == BuildMode.TRIGGER && hitboxClickCount == 1)
 			{
-				Vector2DInt pos = worldToScreen(hitbox);
-				renderTo.getGraphics().setPaint(new Color(1F, 0.3F, 0.3F, 1F)); // Red
-				renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
+				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
+				renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Blue
 			}
-			
-			renderTo.getGraphics().setPaint(oldPaint);
 		}
 		
 		// Draws the building hitbox, cursor asset, the grid, and the tooltips
@@ -371,8 +346,9 @@ public class ClientLevel extends Level
 			}
 			else if (buildMode == BuildMode.HITBOX && hitboxClickCount == 1)
 			{
-				Vector2DInt pos = worldToScreen(hitbox);
-				renderTo.getGraphics().drawRect(pos.getX(), pos.getY(), (int) hitboxWidth - 1, (int) hitboxHeight - 1);
+				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
+				
+				renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());
 			}
 			
 			if (timeOnTool < MAX_TOOLTIP_TIME)
@@ -397,8 +373,8 @@ public class ClientLevel extends Level
 						text3 = "Click to place both corners";
 						text4 = "Right click to cancel corner";
 						break;
-					case EVENT:
-						text1 = "Events";
+					case TRIGGER:
+						text1 = "Triggers";
 						text2 = "Click to place both corners";
 						text3 = "Right click to cancel corner";
 						text4 = "Right click box to edit";
@@ -576,7 +552,9 @@ public class ClientLevel extends Level
 						}
 						else if (hitboxClickCount == 1)
 						{
-							PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(hitbox.getX(), hitbox.getY(), hitboxWidth, hitboxHeight));
+							Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+							
+							PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
 							ClientGame.instance().sockets().sender().sendPacket(pack);
 							
 							hitboxClickCount = 0;
@@ -601,7 +579,7 @@ public class ClientLevel extends Level
 						}
 					}
 					break;
-				case EVENT:
+				case TRIGGER:
 					if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 					{
 						if (ClientGame.instance().getCurrentScreen() == null)
@@ -613,7 +591,9 @@ public class ClientLevel extends Level
 							}
 							else if (hitboxClickCount == 1)
 							{
-								PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitboxWidth, (int) hitboxHeight);
+								Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+								
+								PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
 								ClientGame.instance().sockets().sender().sendPacket(pack);
 								
 								hitboxClickCount = 0;
@@ -652,32 +632,7 @@ public class ClientLevel extends Level
 			// Sets up the hitbox when it's been clicked
 			if (hitboxClickCount > 0)
 			{
-				// Sets the new X and Y ordinates for point 2 to that of the mouse
 				hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
-				
-				// Finds the x, y, and height depending on which ones are greater than the other.
-				// Have to do this because Java doesn't support rectangles with negative width or height
-				if (hitbox1.getX() > hitbox2.getX())
-				{
-					hitboxWidth = hitbox1.getX() - hitbox2.getX();
-					hitbox.setX(hitbox2.getX());
-				}
-				else
-				{
-					hitboxWidth = hitbox2.getX() - hitbox1.getX() + 1;
-					hitbox.setX(hitbox2.getX() - hitboxWidth);
-				}
-				
-				if (hitbox1.getY() > hitbox2.getY())
-				{
-					hitboxHeight = hitbox1.getY() - hitbox2.getY();
-					hitbox.setY(hitbox2.getY());
-				}
-				else
-				{
-					hitboxHeight = hitbox2.getY() - hitbox1.getY() + 1;
-					hitbox.setY(hitbox1.getY() - 1);
-				}
 			}
 		}
 		

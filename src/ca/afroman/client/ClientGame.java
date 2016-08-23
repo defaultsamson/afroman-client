@@ -57,6 +57,7 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketLogin;
+import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.DenyJoinReason;
@@ -65,7 +66,6 @@ import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
 import ca.afroman.util.ByteUtil;
-import ca.afroman.util.IDCounter;
 import samson.stream.Console;
 
 public class ClientGame extends DynamicTickRenderThread

@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import ca.afroman.network.IPConnection;
+import ca.afroman.resource.IDCounter;
 import ca.afroman.util.ArrayUtil;
 import ca.afroman.util.ByteUtil;
-import ca.afroman.util.IDCounter;
 
 public class BytePacket
 {

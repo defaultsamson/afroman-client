@@ -1,6 +1,6 @@
 package ca.afroman.events;
 
-import ca.afroman.util.IDCounter;
+import ca.afroman.resource.IDCounter;
 
 public class IEventCounter
 {

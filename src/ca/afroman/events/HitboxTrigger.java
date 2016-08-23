@@ -10,8 +10,8 @@ import ca.afroman.entity.api.IServerClient;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
 import ca.afroman.packet.PacketActivateTrigger;
+import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
-import ca.afroman.util.IDCounter;
 
 public class HitboxTrigger extends InputType implements IEvent, IServerClient
 {
