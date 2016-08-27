@@ -64,6 +64,14 @@ public class ServerPlayerEntity extends Entity implements IRoleEntity
 	@Override
 	public void onMove(byte xa, byte ya)
 	{
+		super.onMove(xa, ya);
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
+	}
+	
+	@Override
+	public void setPosition(Vector2DDouble position)
+	{
+		super.setPosition(position);
 		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
 	}
 }

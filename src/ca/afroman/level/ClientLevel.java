@@ -48,7 +48,7 @@ public class ClientLevel extends Level
 	
 	private int timeOnTool = 0;
 	
-	// Mode 1, Tiles
+	// Tiles
 	private Asset cursorAsset = null;
 	public boolean showLayer0 = true;
 	public boolean showLayer1 = true;
@@ -60,16 +60,15 @@ public class ClientLevel extends Level
 	public GridSize grid = GridSize.MEDIUM;
 	public byte editLayer = 0;
 	
-	// Mode 2, PointLights
+	// PointLights
 	private int currentBuildLightRadius = 10;
 	
-	// Mode 3, HitBoxes
+	// HitBoxes and Triggers
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
 	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
-	// private Vector2DDouble hitbox = new Vector2DDouble(0, 0);
-	// private double hitboxWidth = 0;
-	// private double hitboxHeight = 0;
 	private int hitboxClickCount = 0;
+	
+	// Used for doing cleanup and setup of build modes
 	private boolean lastIsBuildMode = false;
 	
 	public ClientLevel(LevelType type)
@@ -127,7 +126,7 @@ public class ClientLevel extends Level
 				ClientGame.instance().setCurrentScreen(new GuiGrid());
 				break;
 			case HITBOX:
-				
+				ClientGame.instance().setCurrentScreen(new GuiGrid());
 				break;
 			case TRIGGER:
 				
@@ -544,20 +543,19 @@ public class ClientLevel extends Level
 					{
 						if (hitboxClickCount == 0)
 						{
-							if (ClientGame.instance().getCurrentScreen() == null)
-							{
-								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
-								hitboxClickCount = 1;
-							}
+							hitboxClickCount = 1;
+							hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 						}
 						else if (hitboxClickCount == 1)
 						{
+							hitboxClickCount = 0;
+							
 							Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
 							
+							System.out.println("Width: " + box.getWidth());
+							// TODO
 							PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
 							ClientGame.instance().sockets().sender().sendPacket(pack);
-							
-							hitboxClickCount = 0;
 						}
 					}
 					
@@ -582,45 +580,39 @@ public class ClientLevel extends Level
 				case TRIGGER:
 					if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 					{
-						if (ClientGame.instance().getCurrentScreen() == null)
+						if (hitboxClickCount == 0)
 						{
-							if (hitboxClickCount == 0)
-							{
-								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
-								hitboxClickCount = 1;
-							}
-							else if (hitboxClickCount == 1)
-							{
-								Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
-								
-								PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
-								ClientGame.instance().sockets().sender().sendPacket(pack);
-								
-								hitboxClickCount = 0;
-							}
+							hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+							hitboxClickCount = 1;
+						}
+						else if (hitboxClickCount == 1)
+						{
+							Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+							
+							PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
+							ClientGame.instance().sockets().sender().sendPacket(pack);
+							
+							hitboxClickCount = 0;
 						}
 					}
 					
 					if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 					{
-						if (ClientGame.instance().getCurrentScreen() == null)
+						if (hitboxClickCount == 1)
 						{
-							if (hitboxClickCount == 1)
+							hitboxClickCount = 0;
+						}
+						else
+						{
+							IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
+							
+							if (event != null)
 							{
-								hitboxClickCount = 0;
-							}
-							else
-							{
-								IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
-								
-								if (event != null)
+								if (event instanceof HitboxTrigger)
 								{
-									if (event instanceof HitboxTrigger)
+									if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
 									{
-										if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
-										{
-											ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
-										}
+										ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
 									}
 								}
 							}

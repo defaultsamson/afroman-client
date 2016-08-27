@@ -119,7 +119,7 @@ public class Texture extends DrawableAsset
 	 * @param toDraw the image to draw
 	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
 	 */
-	public void drawFillRect(Color outlineColour, Color fillColour, Vector2DInt pos, int width, int height)
+	public void drawFillRect(Color outlineColour, Color fillColour, final Vector2DInt pos, final int width, final int height)
 	{
 		// Only draw if what's trying to be drawn is within the bounds of this
 		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, (int) getWidth(), (int) getHeight()))
@@ -142,7 +142,7 @@ public class Texture extends DrawableAsset
 	 * @param toDraw the image to draw
 	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
 	 */
-	public void drawRect(Color colour, Vector2DInt pos, int width, int height)
+	public void drawRect(Color colour, final Vector2DInt pos, final int width, final int height)
 	{
 		// Only draw if what's trying to be drawn is within the bounds of this
 		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, (int) getWidth(), (int) getHeight()))

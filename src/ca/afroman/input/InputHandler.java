@@ -43,6 +43,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key lightingDebug = new Key(keys, KeyEvent.VK_F3);
 	public Key saveLevel = new Key(keys, KeyEvent.VK_F4);
 	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
+	public Key offFocusRendering = new Key(keys, KeyEvent.VK_F9);
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
 	
 	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);

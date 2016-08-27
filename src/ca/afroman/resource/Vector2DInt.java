@@ -23,30 +23,18 @@ public class Vector2DInt
 	
 	public Vector2DInt alignToGrid(GridSize grid)
 	{
-		// If the grid is on, link to it
-		if (grid.getSize() > 0)
+		int size = grid.getSize();
+		
+		if (size > 0)
 		{
-			// Offsets the clicked position to fall to the nearest grid position
-			if (x < 0 && y < 0)
-			{
-				x = -(Math.abs(x) - (Math.abs(x) % grid.getSize())) - grid.getSize();
-				y = -(Math.abs(y) - (Math.abs(y) % grid.getSize())) - grid.getSize();
-			}
-			else if (x < 0)
-			{
-				x = -(Math.abs(x) - (Math.abs(x) % grid.getSize())) - grid.getSize();
-				y = (y - (y % grid.getSize()));
-			}
-			else if (y < 0)
-			{
-				x = (x - (x % grid.getSize()));
-				y = -(Math.abs(y) - (Math.abs(y) % grid.getSize())) - grid.getSize();
-			}
-			else
-			{
-				x = (x - (x % grid.getSize()));
-				y = (y - (y % grid.getSize()));
-			}
+			// If the number is negative, must offset by the grid size because it will be
+			// subtracting a negative modulus offset, therefore moving it one grid space
+			// to the right. To counteract this, the grid space is subtracted from the ordinate
+			int xOffset = x < 0 ? size : 0;
+			int yOffset = y < 0 ? size : 0;
+			
+			x -= ((x % size) + xOffset);
+			y -= ((y % size) + yOffset);
 		}
 		
 		return this;

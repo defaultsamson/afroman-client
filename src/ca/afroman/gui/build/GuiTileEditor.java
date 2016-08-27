@@ -4,7 +4,6 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.level.GridSize;
 import ca.afroman.resource.Vector2DInt;
 
 public class GuiTileEditor extends GuiGrid
@@ -127,9 +126,6 @@ public class GuiTileEditor extends GuiGrid
 					break;
 				case 51:
 					level.editLayer = 5;
-					break;
-				case 500:
-					level.grid = GridSize.getNext(level.grid);
 					break;
 			}
 			

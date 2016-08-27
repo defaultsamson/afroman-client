@@ -3,13 +3,10 @@ package ca.afroman.entity.api;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.Level;
-import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
-import ca.afroman.server.ServerGame;
 
 public class Entity implements ITickable, IServerClient
 {
@@ -555,12 +552,6 @@ public class Entity implements ITickable, IServerClient
 	{
 		this.position = position;
 		updateHitboxInLevel();
-		
-		// TODO separate server-side entity checks
-		if (this instanceof ServerPlayerEntity)
-		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation((ServerPlayerEntity) this));
-		}
 	}
 	
 	/**

@@ -111,6 +111,7 @@ public class ClientGame extends DynamicTickRenderThread
 	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
+	private boolean canRenderOutOfFocus = false;
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	private InputHandler input;
@@ -985,7 +986,7 @@ public class ClientGame extends DynamicTickRenderThread
 	@Override
 	public void render()
 	{
-		if (input().isGameInFocus())
+		if (input().isGameInFocus() || canRenderOutOfFocus)
 		{
 			// Clears the canvas
 			screen.getGraphics().setColor(Color.WHITE);
@@ -1076,87 +1077,118 @@ public class ClientGame extends DynamicTickRenderThread
 	
 	public void setFullScreen(boolean isFullScreen)
 	{
-		fullscreen = isFullScreen;
-		
-		logger().log(ALogType.DEBUG, "Setting Fullscreen: " + isFullScreen);
-		
-		frame.setVisible(false);
-		// frame.getContentPane().remove(canvas);
-		JFrame old = frame;
-		
-		frame = new JFrame(NAME);
-		
-		frame.setIconImage(ICON);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLayout(new BorderLayout());
-		frame.setUndecorated(isFullScreen);
-		
-		frame.getContentPane().setBackground(Color.black);
-		try
+		if (fullscreen != isFullScreen)
 		{
-			frame.getContentPane().add(canvas, BorderLayout.CENTER);
-		}
-		catch (IllegalArgumentException e)
-		{
-			logger().log(ALogType.CRITICAL, "Fullscreen not supported on the desired monitor, aborting", e);
+			fullscreen = isFullScreen;
 			
-			frame.removeAll();
-			frame.getContentPane().removeAll();
-			frame = old;
+			frame.setVisible(false);
+			// frame.getContentPane().remove(canvas);
+			JFrame old = frame;
+			
+			frame = new JFrame(NAME);
+			
+			frame.setIconImage(ICON);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setLayout(new BorderLayout());
+			frame.setUndecorated(isFullScreen);
+			
+			frame.getContentPane().setBackground(Color.black);
+			try
+			{
+				frame.getContentPane().add(canvas, BorderLayout.CENTER);
+			}
+			catch (IllegalArgumentException e)
+			{
+				logger().log(ALogType.CRITICAL, "Fullscreen not supported on the desired monitor, aborting", e);
+				
+				frame.removeAll();
+				frame.getContentPane().removeAll();
+				frame = old;
+				frame.setVisible(true);
+				fullscreen = !fullscreen;
+				return;
+			}
+			frame.pack();
+			frame.setResizable(!isFullScreen);
+			frame.setLocationRelativeTo(null);
 			frame.setVisible(true);
-			fullscreen = !fullscreen;
-			return;
-		}
-		frame.pack();
-		frame.setResizable(!isFullScreen);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		
-		/*
-		 * This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
-		 * http://stackoverflow.com/questions/13064607/fullscreen-swing-components-fail-to-receive-keyboard-input-on-java-7-on-mac-os-x
-		 */
-		if (isFullScreen)
-		{
-			GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
 			
-			boolean didIt = false;
-			
-			for (int i = 0; i < gds.length; i++)
+			/*
+			 * This StackOverFlow thread was EXTREMELY helpful in getting this to work properly
+			 * http://stackoverflow.com/questions/13064607/fullscreen-swing-components-fail-to-receive-keyboard-input-on-java-7-on-mac-os-x
+			 */
+			if (isFullScreen)
 			{
 				try
 				{
-					gds[i].setFullScreenWindow(frame);// Makes it full screen
-					
-					// TODO test on Ben's Mac
-					// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
-					// {
-					// this.setVisible(false);
-					// this.setVisible(true);
-					// }
-					didIt = true;
-					break;
+					logger().log(ALogType.DEBUG, "Fullscreening on current GraphicsDevice...");
+					frame.getGraphicsConfiguration().getDevice().setFullScreenWindow(frame);
 				}
-				catch (Exception e)
+				catch (Exception e1)
 				{
-					logger().log(ALogType.CRITICAL, "Error fullscreening GraphicsDevice[" + i + "]", e);
+					logger().log(ALogType.WARNING, "Error fullscreening current GraphicsDevice", e1);
+					
+					try
+					{
+						logger().log(ALogType.DEBUG, "Fullscreening on default GraphicsDevice...");
+						GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(frame);
+					}
+					catch (Exception e)
+					{
+						logger().log(ALogType.CRITICAL, "Error fullscreening default GraphicsDevice", e);
+						
+						GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+						
+						boolean didIt = false;
+						
+						for (int i = 0; i < gds.length; i++)
+						{
+							try
+							{
+								logger().log(ALogType.CRITICAL, "Fullscreening on GraphicsDevice[" + i + "]...");
+								gds[i].setFullScreenWindow(frame);// Makes it full screen
+								
+								// TODO test on Ben's Mac
+								// if (System.getProperty("os.name").indexOf("Mac OS X") >= 0)
+								// {
+								// this.setVisible(false);
+								// this.setVisible(true);
+								// }
+								didIt = true;
+								break;
+							}
+							catch (Exception e2)
+							{
+								logger().log(ALogType.CRITICAL, "Error fullscreening GraphicsDevice[" + i + "]", e2);
+							}
+						}
+						
+						if (!didIt)
+						{
+							logger().log(ALogType.CRITICAL, "Fullscreen not supported, attempting to revert back");
+							setFullScreen(false);
+							return;
+						}
+					}
 				}
+				
+				logger().log(ALogType.DEBUG, "Successfully switched to fullscreen mode");
+			}
+			else
+			{
+				logger().log(ALogType.DEBUG, "Successfully switched to windowed mode");
 			}
 			
-			if (!didIt)
-			{
-				logger().log(ALogType.CRITICAL, "Fullscreen not supported, attempting to revert back");
-				setFullScreen(false);
-			}
-		}
-		else
-		{
 			canvas.requestFocus();
 			
 			old.removeAll();
 			old.getContentPane().removeAll();
 			
 			updateCursorHiding();
+		}
+		else
+		{
+			logger().log(ALogType.DEBUG, "Game is already in " + (fullscreen ? "fullscreen" : "windowed") + " mode");
 		}
 	}
 	
@@ -1255,7 +1287,12 @@ public class ClientGame extends DynamicTickRenderThread
 			
 			logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
 		}
-		
+		if (input().offFocusRendering.isPressedFiltered())
+		{
+			canRenderOutOfFocus = !canRenderOutOfFocus;
+			
+			logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + canRenderOutOfFocus);
+		}
 		if (input.hitboxDebug.isPressedFiltered())
 		{
 			hitboxDebug = !hitboxDebug;

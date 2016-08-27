@@ -13,7 +13,7 @@ public class ShapeUtil
 		return inX < outX + outWidth && inX + inWidth > outX && inY < outY + outHeight && inY + inHeight > outY;
 	}
 	
-	public static Rectangle2D.Double pointsToRectangle(Vector2DDouble pos1, Vector2DDouble pos2)
+	public static Rectangle2D.Double pointsToRectangle(final Vector2DDouble pos1, final Vector2DDouble pos2)
 	{
 		double x, y, width, height;
 		
@@ -44,7 +44,7 @@ public class ShapeUtil
 		return new Rectangle2D.Double(x, y, width, height);
 	}
 	
-	public static Rectangle pointsToRectangle(Vector2DInt pos1, Vector2DInt pos2)
+	public static Rectangle pointsToRectangle(final Vector2DInt pos1, final Vector2DInt pos2)
 	{
 		int x, y, width, height;
 		
