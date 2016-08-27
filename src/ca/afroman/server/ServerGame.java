@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.client.ClientGame;
 import ca.afroman.client.Role;
 import ca.afroman.entity.ServerPlayerEntity;
 import ca.afroman.entity.api.Entity;
@@ -38,6 +37,7 @@ import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.thread.DynamicTickThread;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.VersionUtil;
 
 public class ServerGame extends DynamicTickThread
 {
@@ -647,12 +647,12 @@ public class ServerGame extends DynamicTickThread
 		{
 			IPConnection connection = packet.getConnections().get(0);
 			
-			short version = ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 0, 2));
+			int version = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, ByteUtil.INT_BYTE_COUNT));
 			
 			String name = "";
 			int passIndex = 0;
 			
-			for (int i = 2; i < packet.getContent().length - 1; i++)
+			for (int i = ByteUtil.INT_BYTE_COUNT; i < packet.getContent().length - 1; i++)
 			{
 				// The signal. @see PacketLogin
 				if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
@@ -686,14 +686,14 @@ public class ServerGame extends DynamicTickThread
 			}
 			
 			// Checks that the client's game version is not above or below this version
-			if (version > ClientGame.VERSION)
+			if (version > VersionUtil.VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER, connection);
 				sockets().sender().sendPacket(passPacket);
 				return;
 			}
 			
-			if (version < ClientGame.VERSION)
+			if (version < VersionUtil.VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT, connection);
 				sockets().sender().sendPacket(passPacket);

@@ -12,6 +12,7 @@ public class ByteUtil
 	public static final int SHORT_BYTE_COUNT = 2;
 	public static final int INT_BYTE_COUNT = 4;
 	public static final int DOUBLE_BYTE_COUNT = 8;
+	public static final int LONG_BYTE_COUNT = 8;
 	
 	/**
 	 * Converts a double to a byte array for sending over a network
@@ -218,6 +219,79 @@ public class ByteUtil
 	}
 	
 	/**
+	 * Extracts longs from a ByteBuffer until it comes across the signal.
+	 * 
+	 * @param buf
+	 * @param signal an array of bytes which will tell this to stop searching.
+	 * @return
+	 */
+	public static long[] extractLongArray(ByteBuffer buf, byte... signal)
+	{
+		long[] ret = null;
+		
+		// Finds how many bytes there are from the current position until the signal
+		// Then creates an object array based on how many bytes there are per obejct
+		for (int i = 0; buf.position() + i < buf.limit(); i++)
+		{
+			if (isSignal(buf.array(), buf.position() + i, signal))
+			{
+				ret = new long[i / LONG_BYTE_COUNT];
+				break;
+			}
+		}
+		
+		// Populates the byte array
+		if (ret != null)
+		{
+			for (int i = 0; i < ret.length; i++)
+			{
+				ret[i] = buf.getLong();
+			}
+		}
+		
+		buf.position(buf.position() + signal.length);
+		
+		return ret;
+	}
+	
+	/**
+	 * Extracts longs from a ByteBuffer until it comes across the signal.
+	 * 
+	 * @param buf
+	 * @param signal an array of bytes which will tell this to stop searching.
+	 * @return
+	 */
+	public static List<Long> extractLongList(ByteBuffer buf, byte... signal)
+	{
+		List<Long> ret = new ArrayList<Long>();
+		int count = 0;
+		
+		// Finds how many bytes there are from the current position until the signal
+		// Then creates an object array based on how many bytes there are per obejct
+		for (int i = 0; buf.position() + i < buf.limit(); i++)
+		{
+			if (isSignal(buf.array(), buf.position() + i, signal))
+			{
+				count = i / LONG_BYTE_COUNT;
+				break;
+			}
+		}
+		
+		// Populates the byte array
+		if (ret != null)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				ret.add(buf.getLong());
+			}
+		}
+		
+		buf.position(buf.position() + signal.length);
+		
+		return ret;
+	}
+	
+	/**
 	 * Extracts shorts from a ByteBuffer until it comes across the signal.
 	 * 
 	 * @param buf
@@ -254,7 +328,7 @@ public class ByteUtil
 	}
 	
 	/**
-	 * Extracts short from a ByteBuffer until it comes across the signal.
+	 * Extracts shorts from a ByteBuffer until it comes across the signal.
 	 * 
 	 * @param buf
 	 * @param signal an array of bytes which will tell this to stop searching.
@@ -323,6 +397,28 @@ public class ByteUtil
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Converts a double to a byte array for sending over a network
+	 * 
+	 * @param num the double (must be within bounds of LARGEST_DOUBLE)
+	 * @return the double as sendable bytes
+	 */
+	public static byte[] longAsBytes(long num)
+	{
+		return ByteBuffer.allocate(LONG_BYTE_COUNT).putLong(num).array();
+	}
+	
+	public static long longFromBytes(byte[] bytes)
+	{
+		if (bytes.length != LONG_BYTE_COUNT)
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Converting a byte array to a long requires " + LONG_BYTE_COUNT + " bytes (was provided with " + bytes.length + ")");
+			return 0;
+		}
+		
+		return ByteBuffer.wrap(bytes).getLong();
 	}
 	
 	public static byte[] shortAsBytes(short num)

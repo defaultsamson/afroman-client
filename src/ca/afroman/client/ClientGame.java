@@ -66,6 +66,7 @@ import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.thread.DynamicTickRenderThread;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
 
 public class ClientGame extends DynamicTickRenderThread
@@ -74,7 +75,6 @@ public class ClientGame extends DynamicTickRenderThread
 	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	public static final String NAME = "Cancer: The Adventures of Afro Man";
-	public static final short VERSION = 32;
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
 	public static final int RECEIVE_PACKET_BUFFER_LIMIT = 128;
@@ -367,7 +367,7 @@ public class ClientGame extends DynamicTickRenderThread
 		logger().log(ALogType.DEBUG, "Initializing logging streams...");
 		ALogger.initStreams();
 		
-		logger().log(ALogType.DEBUG, "Creating environment...");
+		logger().log(ALogType.DEBUG, "Creating environment... (" + VersionUtil.VERSION_STRING + ")");
 		
 		canvas = new Canvas();
 		frame = new JFrame(NAME);
@@ -1008,7 +1008,7 @@ public class ClientGame extends DynamicTickRenderThread
 				debugFont.render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
 				debugFont.render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
 				debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-				debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VERSION);
+				debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VersionUtil.VERSION_STRING);
 				
 				ClientPlayerEntity player = getThisPlayer();
 				

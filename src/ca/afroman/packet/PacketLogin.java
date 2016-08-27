@@ -3,9 +3,9 @@ package ca.afroman.packet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.VersionUtil;
 
 public class PacketLogin extends BytePacket
 {
@@ -17,7 +17,7 @@ public class PacketLogin extends BytePacket
 		
 		List<Byte> send = new ArrayList<Byte>();
 		
-		for (byte e : ByteUtil.shortAsBytes(ClientGame.VERSION))
+		for (byte e : ByteUtil.intAsBytes(VersionUtil.VERSION))
 		{
 			send.add(e);
 		}
