@@ -18,13 +18,16 @@ public class GuiTextField extends GuiButton
 	private StringBuilder text = new StringBuilder();
 	private boolean isFocussed = false;
 	
+	private int textOffset = 0;
+	private int cursorPosition = 0;
+	
+	Vector2DInt textDrawPos;
+	Vector2DInt cursorDrawPos;
+	
 	private TypingMode mode = TypingMode.FULL;
 	
 	private boolean drawBlinker = false;
-	
 	private int blinkCounter = 0;
-	
-	private boolean letterTyped = false;
 	
 	public GuiTextField(GuiScreen screen, int x, int y, int width)
 	{
@@ -37,6 +40,14 @@ public class GuiTextField extends GuiButton
 		
 		this.font = font;
 		this.setMakeSound(false);
+		
+		textDrawPos = new Vector2DInt(hitbox.x + 2, hitbox.y + 4);
+		cursorDrawPos = new Vector2DInt(hitbox.x + 2, hitbox.y + 4);
+	}
+	
+	public int getCursorPosition()
+	{
+		return cursorPosition;
 	}
 	
 	public String getText()
@@ -44,15 +55,58 @@ public class GuiTextField extends GuiButton
 		return text.toString();
 	}
 	
+	private int isCursorOutsideBox(int xOrdinate)
+	{
+		if (xOrdinate + Font.CHAR_WIDTH + 2 > hitbox.getX() + hitbox.getWidth())
+		{
+			return 1;
+		}
+		else if (xOrdinate - 2 < hitbox.getX())
+		{
+			return -1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
 	public boolean isFocussed()
 	{
 		return isFocussed;
+	}
+	
+	public int maxRenderable()
+	{
+		double modded = (hitbox.getWidth() - 4) % Font.CHAR_WIDTH;
+		return (int) (hitbox.getWidth() - modded) / Font.CHAR_WIDTH;
 	}
 	
 	@Override
 	protected void onPressed()
 	{
 		this.setFocussed();
+		
+		int x = ClientGame.instance().input().getMousePos().getX();
+		for (int i = 0; i < maxRenderable(); i++)
+		{
+			if (x > (i * Font.CHAR_WIDTH) + textDrawPos.getX() && x <= ((i + 1) * Font.CHAR_WIDTH) + textDrawPos.getX())
+			{
+				// Finds what the offset should be
+				if (textOffset + i <= text.length())
+				{
+					setCursorPosition(textOffset + i);
+				}
+				else
+				{
+					// If it can't be found, then that's probably because it's to the right of all the letter.
+					// set the position to the end
+					setCursorPosition(text.length());
+				}
+				pauseBlinker();
+				return;
+			}
+		}
 	}
 	
 	@Override
@@ -61,14 +115,47 @@ public class GuiTextField extends GuiButton
 		
 	}
 	
+	private void pauseBlinker()
+	{
+		blinkCounter = 0;
+		drawBlinker = true;
+	}
+	
 	@Override
 	public void render(Texture drawTo)
 	{
 		super.render(drawTo);
 		
-		String displayText = text + (drawBlinker && text.length() < maxLength ? "_" : "");
+		// Draw blinker
+		if (drawBlinker && text.length() < maxLength)
+		{
+			font.render(drawTo, cursorDrawPos.clone(), "_");
+		}
 		
-		font.render(drawTo, new Vector2DInt(hitbox.x + 2, hitbox.y + 4), displayText);
+		int max = maxRenderable();
+		
+		// Gets the substring of text that is to be displayed
+		String subbedText = new String(text.toString()).substring(textOffset, (text.length() - textOffset) <= max ? text.length() : textOffset + max);
+		font.render(drawTo, textDrawPos, subbedText);
+	}
+	
+	/**
+	 * @param pos
+	 * @return whether the cursor's position was set successfully or not.
+	 */
+	public boolean setCursorPosition(int pos)
+	{
+		if (pos >= 0 && pos <= text.length())
+		{
+			cursorPosition = pos;
+			updateCursorDrawPos();
+			this.screen.keyTyped();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	public void setFocussed()
@@ -96,8 +183,6 @@ public class GuiTextField extends GuiButton
 		
 		text = new StringBuilder();
 		text.append(newText);
-		
-		// this.text = newText;
 	}
 	
 	public void setTypingMode(TypingMode newMode)
@@ -114,7 +199,6 @@ public class GuiTextField extends GuiButton
 		{
 			// Times the blinking of the line at the end
 			blinkCounter++;
-			letterTyped = false;
 			if (blinkCounter > BLINK_SPEED)
 			{
 				blinkCounter = 0;
@@ -128,32 +212,45 @@ public class GuiTextField extends GuiButton
 			{
 				if (t.getKey().isPressedTyping())
 				{
-					typeChar(t.getTypedChar(isShifting, mode));
+					if (typeChar(t.getTypedChar(isShifting, mode)))
+					{
+						pauseBlinker();
+					}
+					this.screen.keyTyped();
 				}
 			}
 			
-			if (input.backspace.isPressedTyping())
+			if (text.length() > 0)
 			{
-				if (text.length() > 0)
+				if (input.backspace.isPressedTyping())
 				{
-					text.deleteCharAt(text.length() - 1);
-					// text = text.substring(0, text.length() - 1);
-					
-					letterTyped = true;
+					if (setCursorPosition(cursorPosition - 1))
+					{
+						text.deleteCharAt(cursorPosition);
+						this.screen.keyTyped();
+					}
+				}
+				if (input.left_arrow.isPressedTyping())
+				{
+					setCursorPosition(cursorPosition - 1);
+				}
+				if (input.right_arrow.isPressedTyping())
+				{
+					setCursorPosition(cursorPosition + 1);
 				}
 			}
+			
 			if (input.backspace.isPressed())
 			{
-				if (text.length() > 0)
-				{
-					letterTyped = true;
-				}
+				pauseBlinker();
 			}
-			
-			if (letterTyped)
+			if (input.left.isPressed())
 			{
-				blinkCounter = 0;
-				drawBlinker = true;
+				pauseBlinker();
+			}
+			if (input.right.isPressed())
+			{
+				pauseBlinker();
 			}
 		}
 		else
@@ -161,19 +258,42 @@ public class GuiTextField extends GuiButton
 			blinkCounter = 0;
 			drawBlinker = false;
 		}
-		
-		if (letterTyped)
-		{
-			this.screen.keyTyped();
-		}
 	}
 	
-	private void typeChar(String character, TypingMode... modes)
+	/**
+	 * @param character
+	 * @param modes
+	 * @return whether the character was successfully typed or not.
+	 */
+	private boolean typeChar(String character, TypingMode... modes)
 	{
 		if (character.length() > 0)
 		{
-			letterTyped = true;
-			if (text.length() < maxLength) text.append(character);
+			if (text.length() < maxLength)
+			{
+				text.insert(cursorPosition, character);
+				setCursorPosition(cursorPosition + 1);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private Vector2DInt updateCursorDrawPos()
+	{
+		cursorDrawPos = textDrawPos.clone().add((cursorPosition - textOffset) * Font.CHAR_WIDTH, 1);
+		
+		switch (isCursorOutsideBox(cursorDrawPos.getX()))
+		{
+			default:
+				return cursorDrawPos;
+			case 1:
+				textOffset += 1;
+				return updateCursorDrawPos();
+			case -1:
+				textOffset -= 1;
+				return updateCursorDrawPos();
 		}
 	}
 }

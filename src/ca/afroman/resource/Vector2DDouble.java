@@ -40,6 +40,15 @@ public class Vector2DDouble
 		return this;
 	}
 	
+	public Vector2DDouble alignToGridCenter(GridSize grid)
+	{
+		alignToGrid(grid);
+		x += (grid.getSize() / 2);
+		y += (grid.getSize() / 2);
+		
+		return this;
+	}
+	
 	@Deprecated
 	public Vector2DDouble alignToGridNearestCorner(GridSize grid)
 	{
@@ -95,15 +104,6 @@ public class Vector2DDouble
 		// }
 		//
 		// System.out.println("Aligned : (" + getX() + ", " + getY() + ")");
-		
-		return this;
-	}
-	
-	public Vector2DDouble alignToGridCenter(GridSize grid)
-	{
-		alignToGrid(grid);
-		x += (grid.getSize() / 2);
-		y += (grid.getSize() / 2);
 		
 		return this;
 	}

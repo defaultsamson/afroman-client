@@ -37,14 +37,19 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key left = new Key(keys, KeyEvent.VK_LEFT, KeyEvent.VK_A);
 	public Key right = new Key(keys, KeyEvent.VK_RIGHT, KeyEvent.VK_D);
 	
-	public Key full_screen = new Key(keys, KeyEvent.VK_F11);
+	public Key up_arrow = new Key(keys, KeyEvent.VK_UP);
+	public Key down_arrow = new Key(keys, KeyEvent.VK_DOWN);
+	public Key left_arrow = new Key(keys, KeyEvent.VK_LEFT);
+	public Key right_arrow = new Key(keys, KeyEvent.VK_RIGHT);
+	
 	public Key hudDebug = new Key(keys, KeyEvent.VK_F1);
 	public Key hitboxDebug = new Key(keys, KeyEvent.VK_F2);
 	public Key lightingDebug = new Key(keys, KeyEvent.VK_F3);
 	public Key saveLevel = new Key(keys, KeyEvent.VK_F4);
-	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	public Key offFocusRendering = new Key(keys, KeyEvent.VK_F9);
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
+	public Key full_screen = new Key(keys, KeyEvent.VK_F11);
+	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	
 	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);
 	public Key enter = new Key(keys, KeyEvent.VK_ENTER);

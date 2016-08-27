@@ -4,6 +4,7 @@ import ca.afroman.resource.Vector2DInt;
 
 public class Font extends AssetArray
 {
+	public static final int CHAR_WIDTH = 6;
 	private static final int ROWS = 4;
 	private static final int COLUMNS = 32;
 	
@@ -23,24 +24,26 @@ public class Font extends AssetArray
 	
 	public void render(Texture renderTo, Vector2DInt pos, String message)
 	{
+		Vector2DInt pos1 = pos.clone();
+		
 		for (int i = 0; i < message.length(); i++)
 		{
 			int charIndex = chars.indexOf(message.charAt(i));
 			if (charIndex >= 0)
 			{
-				renderTo.draw((Texture) getAsset(charIndex), pos);
+				renderTo.draw((Texture) getAsset(charIndex), pos1);
 			}
-			pos.add(6, 0);
+			pos1.add(CHAR_WIDTH, 0);
 		}
 	}
 	
 	public void renderCentered(Texture renderTo, Vector2DInt pos, String message)
 	{
-		render(renderTo, pos.add(-((message.length() * 6) / 2), 0), message);
+		render(renderTo, pos.clone().add(-((message.length() * CHAR_WIDTH) / 2), 0), message);
 	}
 	
 	public void renderRight(Texture renderTo, Vector2DInt pos, String message)
 	{
-		render(renderTo, pos.add(-(message.length() * 6), 0), message);
+		render(renderTo, pos.clone().add(-(message.length() * CHAR_WIDTH), 0), message);
 	}
 }
