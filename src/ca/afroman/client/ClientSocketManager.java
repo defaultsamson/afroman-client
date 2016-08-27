@@ -15,6 +15,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
+import ca.afroman.server.SocketReceive;
 
 public class ClientSocketManager implements IDynamicRunning
 {
@@ -34,7 +35,7 @@ public class ClientSocketManager implements IDynamicRunning
 	private IPConnectedPlayer serverConnection;
 	private DatagramSocket socket;
 	
-	private ClientSocketReceive rSocket;
+	private SocketReceive rSocket;
 	private ClientSocketSend sSocket;
 	
 	public ClientSocketManager()
@@ -52,7 +53,7 @@ public class ClientSocketManager implements IDynamicRunning
 			ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
 		}
 		
-		rSocket = new ClientSocketReceive(this);
+		rSocket = new SocketReceive(socket, false, ClientGame.instance());
 		sSocket = new ClientSocketSend(this);
 	}
 	
@@ -108,7 +109,7 @@ public class ClientSocketManager implements IDynamicRunning
 		return null;
 	}
 	
-	public ClientSocketReceive receiver()
+	public SocketReceive receiver()
 	{
 		return rSocket;
 	}

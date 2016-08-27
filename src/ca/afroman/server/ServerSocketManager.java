@@ -36,7 +36,7 @@ public class ServerSocketManager implements IDynamicRunning
 	private List<IPConnectedPlayer> playerList;
 	private DatagramSocket socket;
 	
-	private ServerSocketReceive rSocket;
+	private SocketReceive rSocket;
 	private ServerSocketSend sSocket;
 	
 	public ServerSocketManager(String port)
@@ -72,7 +72,7 @@ public class ServerSocketManager implements IDynamicRunning
 			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT", e);
 		}
 		
-		rSocket = new ServerSocketReceive(this);
+		rSocket = new SocketReceive(socket, true, ServerGame.instance());
 		sSocket = new ServerSocketSend(this);
 	}
 	
@@ -179,7 +179,7 @@ public class ServerSocketManager implements IDynamicRunning
 		sSocket.pauseThis();
 	}
 	
-	public ServerSocketReceive receiver()
+	public SocketReceive receiver()
 	{
 		return rSocket;
 	}

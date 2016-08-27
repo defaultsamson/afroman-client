@@ -15,6 +15,7 @@ import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
@@ -39,7 +40,7 @@ import ca.afroman.thread.DynamicTickThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.VersionUtil;
 
-public class ServerGame extends DynamicTickThread
+public class ServerGame extends DynamicTickThread implements IPacketParser
 {
 	private static ServerGame game = null;
 	
@@ -92,7 +93,8 @@ public class ServerGame extends DynamicTickThread
 		}
 	}
 	
-	public void addPacketToProcess(BytePacket pack)
+	@Override
+	public void addPacketToParse(BytePacket pack)
 	{
 		synchronized (toProcess)
 		{
@@ -229,6 +231,7 @@ public class ServerGame extends DynamicTickThread
 	@Override
 	public void onPause()
 	{
+		super.onPause();
 		isInGame = false;
 	}
 	
@@ -260,6 +263,7 @@ public class ServerGame extends DynamicTickThread
 	@Override
 	public void onUnpause()
 	{
+		super.onUnpause();
 		isInGame = true;
 	}
 	
@@ -269,6 +273,7 @@ public class ServerGame extends DynamicTickThread
 	 * @param data the of the packet to parse
 	 * @param connection the connection that the packet is being sent from
 	 */
+	@Override
 	public void parsePacket(BytePacket packet)
 	{
 		PacketType type = packet.getType();

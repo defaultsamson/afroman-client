@@ -47,6 +47,7 @@ import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.input.InputHandler;
+import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
@@ -69,7 +70,7 @@ import ca.afroman.util.ByteUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
 
-public class ClientGame extends DynamicTickRenderThread
+public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 {
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
@@ -153,7 +154,8 @@ public class ClientGame extends DynamicTickRenderThread
 		super(newDefaultThreadGroupInstance(), "Game", 60);
 	}
 	
-	public void addPacketToProcess(BytePacket pack)
+	@Override
+	public void addPacketToParse(BytePacket pack)
 	{
 		synchronized (toSend)
 		{
@@ -440,12 +442,6 @@ public class ClientGame extends DynamicTickRenderThread
 		DynamicThread renderLoading = new DynamicThread(this.getThreadGroup(), "Loading-Display")
 		{
 			@Override
-			public void onPause()
-			{
-			
-			}
-			
-			@Override
 			public void onRun()
 			{
 				canvas.getGraphics().drawImage(loading.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
@@ -461,21 +457,10 @@ public class ClientGame extends DynamicTickRenderThread
 			}
 			
 			@Override
-			public void onStart()
-			{
-				
-			}
-			
-			@Override
 			public void onStop()
 			{
+				super.onStop();
 				loading.getImage().flush();
-			}
-			
-			@Override
-			public void onUnpause()
-			{
-				
 			}
 		};
 		renderLoading.startThis();
@@ -531,6 +516,7 @@ public class ClientGame extends DynamicTickRenderThread
 	@Override
 	public void onStop()
 	{
+		super.onStop();
 		// TODO always have socket manager open?
 		if (socketManager != null) socketManager.stopThis();
 		receivedPackets.clear();
@@ -544,6 +530,7 @@ public class ClientGame extends DynamicTickRenderThread
 		if (sockets() != null) sockets().stopThis();
 	}
 	
+	@Override
 	public void parsePacket(BytePacket packet)
 	{
 		IPConnection sender = packet.getConnections().get(0);

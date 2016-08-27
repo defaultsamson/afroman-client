@@ -50,21 +50,10 @@ public class ServerSocketSend extends DynamicTickThread
 	}
 	
 	@Override
-	public void onPause()
-	{
-		
-	}
-	
-	@Override
 	public void onStop()
 	{
+		super.onStop();
 		sendingPackets.clear();
-	}
-	
-	@Override
-	public void onUnpause()
-	{
-		
 	}
 	
 	/**
