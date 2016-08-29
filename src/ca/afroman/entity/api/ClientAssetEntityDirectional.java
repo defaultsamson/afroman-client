@@ -15,9 +15,9 @@ public class ClientAssetEntityDirectional extends ClientAssetEntity
 	protected Asset idleLeft;
 	protected Asset idleRight;
 	
-	public ClientAssetEntityDirectional(int id, AssetType assetType, Asset up, Asset down, Asset left, Asset right, Asset idleUp, Asset idleDown, Asset idleLeft, Asset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
+	public ClientAssetEntityDirectional(boolean isServerSide, int id, AssetType assetType, Asset up, Asset down, Asset left, Asset right, Asset idleUp, Asset idleDown, Asset idleLeft, Asset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(id, assetType, pos, hitboxes);
+		super(isServerSide, id, assetType, pos, hitboxes);
 		
 		this.up = up;
 		this.down = down;
@@ -32,39 +32,42 @@ public class ClientAssetEntityDirectional extends ClientAssetEntity
 	@Override
 	public void tick()
 	{
-		switch (direction)
+		if (!isServerSide())
 		{
-			case UP:
-				asset = up;
-				break;
-			default:
-			case DOWN:
-				asset = down;
-				break;
-			case LEFT:
-				asset = left;
-				break;
-			case RIGHT:
-				asset = right;
-				break;
-			case NONE:
-				switch (lastDirection)
-				{
-					case UP:
-						asset = idleUp;
-						break;
-					default:
-					case DOWN:
-						asset = idleDown;
-						break;
-					case LEFT:
-						asset = idleLeft;
-						break;
-					case RIGHT:
-						asset = idleRight;
-						break;
-				}
-				break;
+			switch (direction)
+			{
+				case UP:
+					asset = up;
+					break;
+				default:
+				case DOWN:
+					asset = down;
+					break;
+				case LEFT:
+					asset = left;
+					break;
+				case RIGHT:
+					asset = right;
+					break;
+				case NONE:
+					switch (lastDirection)
+					{
+						case UP:
+							asset = idleUp;
+							break;
+						default:
+						case DOWN:
+							asset = idleDown;
+							break;
+						case LEFT:
+							asset = idleLeft;
+							break;
+						case RIGHT:
+							asset = idleRight;
+							break;
+					}
+					break;
+			}
 		}
 		
 		super.tick();

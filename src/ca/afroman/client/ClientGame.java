@@ -28,7 +28,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
-import ca.afroman.entity.ClientPlayerEntity;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
@@ -36,6 +36,8 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
+import ca.afroman.game.Game;
+import ca.afroman.game.SocketManager;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMapState;
 import ca.afroman.gfx.PointLight;
@@ -47,8 +49,8 @@ import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.input.InputHandler;
-import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.ClientLevel;
+import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
@@ -63,14 +65,12 @@ import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
-import ca.afroman.server.ServerSocketManager;
 import ca.afroman.thread.DynamicThread;
-import ca.afroman.thread.DynamicTickRenderThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
 
-public class ClientGame extends DynamicTickRenderThread implements IPacketParser
+public class ClientGame extends Game
 {
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
@@ -116,14 +116,15 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	private InputHandler input;
-	private List<ClientLevel> levels;
 	private ClientLevel currentLevel = null;
-	private List<ClientPlayerEntity> players;
 	private HashMap<Role, FlickeringLight> lights;
 	private String username = "";
 	private String password = "";
 	private String port = "";
 	private String typedIP = "";
+	
+	private Role role;
+	private short id;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
 	private byte updateMem = Byte.MAX_VALUE - 1;
@@ -134,11 +135,8 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 	private Cursor blankCursor;
 	private byte hideCursor = 0;
 	
-	private ClientSocketManager socketManager;
 	/** The ID's of all the packets that have been received. */
 	private List<Integer> receivedPackets;
-	/** A list of packets to send */
-	private List<BytePacket> toSend;
 	
 	/** Whether or not to exit from the game and go to the main menu. */
 	private boolean exitGame = false;
@@ -151,26 +149,14 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 	
 	public ClientGame()
 	{
-		super(newDefaultThreadGroupInstance(), "Game", 60);
-	}
-	
-	@Override
-	public void addPacketToParse(BytePacket pack)
-	{
-		synchronized (toSend)
-		{
-			toSend.add(pack);
-		}
+		super(newDefaultThreadGroupInstance(), "Game", false, 60);
 	}
 	
 	public void exitFromGame(ExitGameReason reason)
 	{
 		// TODO let the server know that the client has disconnected
 		// sockets().sender().sendPacket(new PacketPlayerDisconnect());
-		
-		socketManager.stopThis();
 		receivedPackets.clear();
-		toSend.clear();
 		
 		getLevels().clear();
 		setCurrentLevel(null);
@@ -190,7 +176,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 			default:
 				break;
 			case SERVER_CLOSED:
-				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "CLOSED");
+				new GuiClickNotification(getCurrentScreen(), "SERVER", "CLOSED");
 				break;
 		}
 	}
@@ -215,18 +201,9 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		return frame;
 	}
 	
-	public ClientLevel getLevelByType(LevelType type)
+	public short getID()
 	{
-		for (ClientLevel level : getLevels())
-		{
-			if (level.getType() == type) return level;
-		}
-		return null;
-	}
-	
-	public List<ClientLevel> getLevels()
-	{
-		return levels;
+		return id;
 	}
 	
 	public LightMapState getLightingState()
@@ -239,29 +216,14 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		return password;
 	}
 	
-	/**
-	 * Gets the player with the given role.
-	 * 
-	 * @param role whether it's player 1 or 2
-	 * @return the player.
-	 */
-	public ClientPlayerEntity getPlayer(Role role)
-	{
-		for (ClientPlayerEntity entity : getPlayers())
-		{
-			if (entity.getRole() == role) return entity;
-		}
-		return null;
-	}
-	
-	public List<ClientPlayerEntity> getPlayers()
-	{
-		return players;
-	}
-	
 	public String getPort()
 	{
 		return port;
+	}
+	
+	public Role getRole()
+	{
+		return role;
 	}
 	
 	public String getServerIP()
@@ -269,14 +231,11 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		return typedIP;
 	}
 	
-	public ClientPlayerEntity getThisPlayer()
+	public PlayerEntity getThisPlayer()
 	{
-		if (sockets() != null && sockets().getServerConnection() != null)
-		{
-			Role role = sockets().getServerConnection().getRole();
-			if (role != Role.SPECTATOR) return getPlayer(role);
-		}
-		return null;
+		if (role != Role.SPECTATOR) return getPlayer(role);
+		else
+			return null;
 	}
 	
 	public String getUsername()
@@ -330,31 +289,14 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
-		socketManager = new ClientSocketManager();
-		
-		int thyPortholio = ServerSocketManager.DEFAULT_PORT;
-		
-		if (port.length() > 0)
-		{
-			try
-			{
-				int newPort = Integer.parseInt(port);
-				
-				// Checks if the given port is out of range
-				if (!(newPort < 0 || newPort > 0xFFFF)) thyPortholio = newPort;
-			}
-			catch (NumberFormatException e)
-			{
-				logger().log(ALogType.WARNING, "Failed to parse port", e);
-			}
-		}
+		int port = SocketManager.validatedPort(this.port);
 		
 		// Sets the port to whatever is now set
-		setPort("" + thyPortholio);
+		setPort("" + port);
 		
-		socketManager.setServerIP(getServerIP(), thyPortholio);
-		socketManager.startThis();
-		socketManager.sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
+		startSocket(getServerIP(), port);
+		
+		sockets().sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
 	}
 	
 	@Override
@@ -397,7 +339,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 				if (doIt) // Stops it from detecting the resizeGame method from resizing its bounds.
 				{
 					doIt = false;
-					ClientGame.instance().resizeGame(canvas.getWidth(), canvas.getHeight());
+					resizeGame(canvas.getWidth(), canvas.getHeight());
 				}
 				else
 				{
@@ -481,13 +423,10 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		debugFont = Assets.getFont(AssetType.FONT_BLACK);
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
-		levels = new ArrayList<ClientLevel>();
 		receivedPackets = new ArrayList<Integer>();
-		toSend = new ArrayList<BytePacket>();
 		
-		players = new ArrayList<ClientPlayerEntity>(2);
-		getPlayers().add(new ClientPlayerEntity(Role.PLAYER1, new Vector2DDouble(0, 0)));
-		getPlayers().add(new ClientPlayerEntity(Role.PLAYER2, new Vector2DDouble(0, 0)));
+		getPlayers().add(new PlayerEntity(false, Role.PLAYER1, new Vector2DDouble(0, 0)));
+		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
 		
 		lights = new HashMap<Role, FlickeringLight>(2);
 		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
@@ -518,16 +457,13 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 	{
 		super.onStop();
 		// TODO always have socket manager open?
-		if (socketManager != null) socketManager.stopThis();
 		receivedPackets.clear();
-		toSend.clear();
 		
 		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(null);
 		
 		if (this.isHostingServer()) ServerGame.instance().stopThis();
-		if (sockets() != null) sockets().stopThis();
 	}
 	
 	@Override
@@ -536,7 +472,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		IPConnection sender = packet.getConnections().get(0);
 		
 		// If is the server sending the packet
-		if (sockets().getServerConnection().getConnection().equals(sender))
+		if (sockets().getServerConnection().equals(sender))
 		{
 			if (packet.getID() != -1)
 			{
@@ -566,39 +502,39 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					break;
 				case DENY_JOIN:
 				{
-					ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+					setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 					
 					DenyJoinReason reason = DenyJoinReason.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
 					
 					switch (reason)
 					{
 						default:
-							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
+							new GuiClickNotification(getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
 							break;
 						case DUPLICATE_USERNAME:
-							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "DUPLICATE", "USERNAME");
+							new GuiClickNotification(getCurrentScreen(), "DUPLICATE", "USERNAME");
 							break;
 						case FULL_SERVER:
-							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "FULL");
+							new GuiClickNotification(getCurrentScreen(), "SERVER", "FULL");
 							break;
 						case NEED_PASSWORD:
-							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "INVALID", "PASSWORD");
+							new GuiClickNotification(getCurrentScreen(), "INVALID", "PASSWORD");
 							break;
 						case OLD_CLIENT:
-							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "CLIENT", "OUTDATED");
+							new GuiClickNotification(getCurrentScreen(), "CLIENT", "OUTDATED");
 							break;
 						case OLD_SERVER:
-							new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "SERVER", "OUTDATED");
+							new GuiClickNotification(getCurrentScreen(), "SERVER", "OUTDATED");
 							break;
 					}
 				}
 					break;
 				case ASSIGN_CLIENTID:
-					ClientGame.instance().sockets().getServerConnection().setID(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
+					id = ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] });
 					break;
 				case UPDATE_PLAYERLIST:
 				{
-					ClientGame.instance().updatePlayerList();
+					updatePlayerList();
 					List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
@@ -613,11 +549,11 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 						players.add(new ConnectedPlayer(id, role, name));
 					}
 					
-					ClientGame.instance().sockets().updateConnectedPlayer(players);
+					sockets().updateConnectedPlayers(players);
 					
-					if (ClientGame.instance().getCurrentScreen() instanceof GuiConnectToServer)
+					if (getCurrentScreen() instanceof GuiConnectToServer)
 					{
-						ClientGame.instance().setCurrentScreen(new GuiLobby(null));
+						setCurrentScreen(new GuiLobby(null));
 					}
 				}
 					break;
@@ -633,20 +569,20 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					if (sendingLevels)
 					{
 						// Prepare the level storage for new levels to be sent
-						ClientGame.instance().getLevels().clear();
+						getLevels().clear();
 						
 						// Display the loading level screen
-						if (!(ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels))
+						if (!(getCurrentScreen() instanceof GuiSendingLevels))
 						{
-							ClientGame.instance().setCurrentScreen(new GuiSendingLevels(null));
+							setCurrentScreen(new GuiSendingLevels(null));
 						}
 					}
 					else
 					{
 						// Stop displaying the loading level screen
-						if (ClientGame.instance().getCurrentScreen() instanceof GuiSendingLevels)
+						if (getCurrentScreen() instanceof GuiSendingLevels)
 						{
-							ClientGame.instance().setCurrentScreen(ClientGame.instance().getCurrentScreen().getParent());
+							setCurrentScreen(getCurrentScreen().getParent());
 						}
 					}
 				}
@@ -655,9 +591,9 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 				{
 					LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
 					
-					if (ClientGame.instance().getLevelByType(levelType) == null)
+					if (getLevel(levelType) == null)
 					{
-						ClientGame.instance().getLevels().add(new ClientLevel(levelType));
+						getLevels().add(new ClientLevel(levelType));
 					}
 					else
 					{
@@ -670,7 +606,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -737,7 +673,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -748,7 +684,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 						double x = buf.getInt();
 						double y = buf.getInt();
 						
-						ClientAssetEntity tile = new ClientAssetEntity(id, asset, new Vector2DDouble(x, y));
+						ClientAssetEntity tile = new ClientAssetEntity(false, id, asset, new Vector2DDouble(x, y));
 						tile.addTileToLevel(level, layer);
 					}
 					else
@@ -762,7 +698,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -786,7 +722,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -808,19 +744,19 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 				{
 					Role role = Role.fromOrdinal(packet.getContent()[0]);
 					
-					ClientPlayerEntity player = ClientGame.instance().getPlayer(role);
+					PlayerEntity player = getPlayer(role);
 					
 					if (player != null)
 					{
 						LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
-						ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+						Level level = getLevel(levelType);
 						
 						player.addToLevel(level);
 						
 						// If it's adding the player that this player is, center the camera on them
-						if (player.getRole() == ClientGame.instance().sockets().getServerConnection().getRole())
+						if (player.getRole() == getRole())
 						{
-							ClientGame.instance().setCurrentLevel(level);
+							setCurrentLevel(level);
 							player.setCameraToFollow(true);
 						}
 					}
@@ -830,7 +766,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
-					ClientPlayerEntity player = ClientGame.instance().getPlayer(Role.fromOrdinal(buf.get()));
+					PlayerEntity player = getPlayer(Role.fromOrdinal(buf.get()));
 					
 					if (player != null)
 					{
@@ -852,7 +788,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -876,7 +812,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -920,7 +856,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					ClientLevel level = ClientGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -935,7 +871,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 							
 							if (role != null)
 							{
-								ClientPlayerEntity player = getPlayer(role);
+								PlayerEntity player = getPlayer(role);
 								
 								if (player != null)
 								{
@@ -997,7 +933,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 				debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
 				debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VersionUtil.VERSION_STRING);
 				
-				ClientPlayerEntity player = getThisPlayer();
+				PlayerEntity player = getThisPlayer();
 				
 				if (player != null && player.getLevel() != null)
 				{
@@ -1047,10 +983,10 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
 	}
 	
-	public void setCurrentLevel(ClientLevel newLevel)
+	public void setCurrentLevel(Level newLevel)
 	{
 		// System.out.println("Setting Current Level: " + (newLevel == null ? "null" : newLevel.getType()));
-		currentLevel = newLevel;
+		currentLevel = (ClientLevel) newLevel;
 		
 		updateCursorHiding();
 	}
@@ -1179,6 +1115,11 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		}
 	}
 	
+	public void setID(short id)
+	{
+		this.id = id;
+	}
+	
 	public void setPassword(String newPassword)
 	{
 		this.password = newPassword;
@@ -1187,6 +1128,11 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 	public void setPort(String newPort)
 	{
 		this.port = newPort;
+	}
+	
+	public void setRole(Role role)
+	{
+		this.role = role;
 	}
 	
 	public void setServerIP(String newIP)
@@ -1199,15 +1145,10 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		this.username = newUsername;
 	}
 	
-	public ClientSocketManager sockets()
-	{
-		return socketManager;
-	}
-	
 	@Override
 	public void tick()
 	{
-		tickCount++;
+		super.tick();
 		
 		updateMem++;
 		if (updateMem >= ticksPerSecond)
@@ -1227,20 +1168,9 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 			hideCursor--;
 		}
 		
-		// Parses all packets
-		synchronized (toSend)
-		{
-			for (BytePacket pack : toSend)
-			{
-				parsePacket(pack);
-			}
-			
-			toSend.clear();
-		}
-		
 		if (exitGame)
 		{
-			ClientGame.instance().exitFromGame(ExitGameReason.SERVER_CLOSED);
+			exitFromGame(ExitGameReason.SERVER_CLOSED);
 			exitGame = false;
 		}
 		
@@ -1248,7 +1178,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 		
 		for (Entry<Role, FlickeringLight> light : lights.entrySet())
 		{
-			ClientPlayerEntity player = getPlayer(light.getKey());
+			PlayerEntity player = getPlayer(light.getKey());
 			
 			light.getValue().addToLevel(player.getLevel());
 			light.getValue().setPosition(new Vector2DDouble(player.getPosition().getX() + (16 / 2), player.getPosition().getY() + (16 / 2)));
@@ -1314,7 +1244,7 @@ public class ClientGame extends DynamicTickRenderThread implements IPacketParser
 			
 			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
 			
-			this.getPlayer(sockets().getServerConnection().getRole()).setCameraToFollow(!buildMode);
+			this.getThisPlayer().setCameraToFollow(!buildMode);
 			
 			updateCursorHiding();
 		}

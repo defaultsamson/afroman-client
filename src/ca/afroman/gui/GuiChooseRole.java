@@ -76,7 +76,7 @@ public class GuiChooseRole extends GuiScreen
 	 */
 	public void overrideInit()
 	{
-		player = ClientGame.instance().sockets().playerByID(playerID);
+		player = ClientGame.instance().sockets().getPlayerConnection(playerID);
 		
 		Role role = player.getRole();
 		

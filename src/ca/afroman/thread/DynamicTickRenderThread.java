@@ -1,18 +1,29 @@
 package ca.afroman.thread;
 
-public abstract class DynamicTickRenderThread extends DynamicTickThread
+import ca.afroman.entity.api.IServerClient;
+
+public abstract class DynamicTickRenderThread extends DynamicTickThread implements IServerClient
 {
 	protected int frames;
 	protected int fps;
+	private boolean isServerSide;
 	
-	public DynamicTickRenderThread(ThreadGroup group, String name, double ticksPerSecond)
+	public DynamicTickRenderThread(ThreadGroup group, String name, boolean isServerSide, double ticksPerSecond)
 	{
 		super(group, name, ticksPerSecond);
+		
+		this.isServerSide = isServerSide;
 	}
 	
 	public int getFramesPerSecond()
 	{
 		return fps;
+	}
+	
+	@Override
+	public boolean isServerSide()
+	{
+		return isServerSide;
 	}
 	
 	/**
@@ -37,7 +48,7 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread
 		}
 		
 		// Only render when something has been updated
-		if (shouldRender)
+		if (!isServerSide && shouldRender)
 		{
 			frames++;
 			render();

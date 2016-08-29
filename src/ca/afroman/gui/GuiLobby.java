@@ -10,6 +10,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.client.Role;
+import ca.afroman.game.Game;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.log.ALogType;
@@ -19,7 +20,6 @@ import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
-import ca.afroman.server.ServerSocketManager;
 
 public class GuiLobby extends GuiScreen
 {
@@ -65,7 +65,7 @@ public class GuiLobby extends GuiScreen
 			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
 		}
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + ServerSocketManager.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + Game.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
 			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "LAN: " + lanIP + ":" + port);
@@ -144,7 +144,7 @@ public class GuiLobby extends GuiScreen
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer(ClientGame.instance().sockets().getServerConnection().getConnection()));
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer(ClientGame.instance().sockets().getServerConnection()));
 		}
 		else if (buttonID == 2002) // Leave server
 		{
@@ -214,7 +214,7 @@ public class GuiLobby extends GuiScreen
 			}
 			
 			// Only enable the start button if both the player roles are not null
-			startButton.setEnabled(ClientGame.instance().isHostingServer() && ClientGame.instance().sockets().playerByRole(Role.PLAYER1) != null && ClientGame.instance().sockets().playerByRole(Role.PLAYER2) != null);
+			startButton.setEnabled(ClientGame.instance().isHostingServer() && ClientGame.instance().sockets().getPlayerConnection(Role.PLAYER1) != null && ClientGame.instance().sockets().getPlayerConnection(Role.PLAYER2) != null);
 		}
 		
 		super.tick();

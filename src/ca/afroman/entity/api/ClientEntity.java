@@ -8,17 +8,12 @@ public class ClientEntity extends Entity
 {
 	protected boolean cameraFollow;
 	
-	public ClientEntity(int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
+	// TODO remove ClientEntity. Unify server and client entities
+	public ClientEntity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(false, id, assetType, pos, hitboxes);
+		super(isServerSide, id, assetType, pos, hitboxes);
 		
 		cameraFollow = false;
-	}
-	
-	@Override
-	public ClientLevel getLevel()
-	{
-		return (ClientLevel) super.getLevel();
 	}
 	
 	/**
@@ -38,7 +33,10 @@ public class ClientEntity extends Entity
 		
 		if (cameraFollow)
 		{
-			getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
+			if (getLevel() instanceof ClientLevel)
+			{
+				((ClientLevel) getLevel()).setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
+			}
 		}
 	}
 }

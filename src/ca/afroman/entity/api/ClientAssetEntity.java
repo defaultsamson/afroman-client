@@ -6,6 +6,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.level.ClientLevel;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 
@@ -13,16 +14,16 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 {
 	protected Asset asset;
 	
-	public ClientAssetEntity(int id, Asset asset, Vector2DDouble pos, Hitbox... hitboxes)
+	public ClientAssetEntity(boolean isServerSide, int id, Asset asset, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(id, (asset != null ? asset.getAssetType() : AssetType.INVALID), pos, hitboxes);
+		super(isServerSide, id, (asset != null ? asset.getAssetType() : AssetType.INVALID), pos, hitboxes);
 		
 		this.asset = asset;
 	}
 	
-	public ClientAssetEntity(int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
+	public ClientAssetEntity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		this(id, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), pos, hitboxes);
+		this(isServerSide, id, (Assets.getAsset(assetType) != null ? Assets.getAsset(assetType).clone() : null), pos, hitboxes);
 	}
 	
 	public Asset getAsset()
@@ -34,7 +35,7 @@ public class ClientAssetEntity extends ClientEntity implements IRenderable
 	{
 		if (asset != null && getLevel() != null)
 		{
-			if (asset instanceof IRenderable) ((IRenderable) asset).render(renderTo, getLevel().worldToScreen(position));
+			if (asset instanceof IRenderable && getLevel() instanceof ClientLevel) ((IRenderable) asset).render(renderTo, ((ClientLevel) getLevel()).worldToScreen(position));
 		}
 	}
 	

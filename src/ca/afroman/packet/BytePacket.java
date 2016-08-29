@@ -122,7 +122,7 @@ public class BytePacket
 	}
 	
 	public void setConnections(IPConnection... con)
-	{
+	{// TODO use an array
 		this.connections = Arrays.asList(con);
 	}
 	

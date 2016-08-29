@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
@@ -187,7 +188,7 @@ public class Level implements IServerClient
 	private List<Entity> entities;
 	
 	/** Player objects. */
-	private List<Entity> players;
+	private List<PlayerEntity> players;
 	
 	/** Hitbox in this Level. */
 	private List<Hitbox> hitboxes;
@@ -211,7 +212,7 @@ public class Level implements IServerClient
 		tiles.add(new ArrayList<Entity>());
 		
 		entities = new ArrayList<Entity>();
-		players = new ArrayList<Entity>();
+		players = new ArrayList<PlayerEntity>();
 		hitboxes = new ArrayList<Hitbox>();
 		events = new ArrayList<IEvent>();
 	}
@@ -370,7 +371,7 @@ public class Level implements IServerClient
 		return lights;
 	}
 	
-	public List<Entity> getPlayers()
+	public List<PlayerEntity> getPlayers()
 	{
 		return players;
 	}

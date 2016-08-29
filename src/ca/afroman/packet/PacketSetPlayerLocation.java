@@ -2,7 +2,7 @@ package ca.afroman.packet;
 
 import java.nio.ByteBuffer;
 
-import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 
@@ -10,7 +10,7 @@ public class PacketSetPlayerLocation extends BytePacket
 {
 	private byte[] toSend;
 	
-	public PacketSetPlayerLocation(ServerPlayerEntity player, IPConnection... connection)
+	public PacketSetPlayerLocation(PlayerEntity player, IPConnection... connection)
 	{
 		super(PacketType.SET_PLAYER_LOCATION, false, connection);
 		

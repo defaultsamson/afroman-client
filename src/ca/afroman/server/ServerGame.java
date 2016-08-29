@@ -8,18 +8,21 @@ import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.client.Role;
-import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
+import ca.afroman.game.Game;
+import ca.afroman.game.SocketManager;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
+import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
@@ -36,11 +39,10 @@ import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
-import ca.afroman.thread.DynamicTickThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.VersionUtil;
 
-public class ServerGame extends DynamicTickThread implements IPacketParser
+public class ServerGame extends Game implements IPacketParser
 {
 	private static ServerGame game = null;
 	
@@ -54,16 +56,9 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 		return new ThreadGroup("Server");
 	}
 	
-	private boolean isInGame = false;
-	
 	private boolean isSendingLevels = false;
 	
 	private String password;
-	
-	private List<Level> levels;
-	private List<ServerPlayerEntity> players;
-	
-	private ServerSocketManager socketManager;
 	
 	private boolean stopServer = false;
 	
@@ -73,14 +68,15 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 	
 	public ServerGame(String password, String port)
 	{
-		super(newDefaultThreadGroupInstance(), "Game", 60);
+		super(newDefaultThreadGroupInstance(), "Game", true, 60);
 		
 		if (game == null) game = this;
 		
 		this.password = password;
-		socketManager = new ServerSocketManager(port);
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
 		toProcess = new ArrayList<BytePacket>();
+		
+		startSocket(IPv4_LOCALHOST, SocketManager.validatedPort(port));
 	}
 	
 	public void addConnection(IPConnection connection)
@@ -91,59 +87,6 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 		{
 			packs.put(connection, new ArrayList<Integer>());
 		}
-	}
-	
-	@Override
-	public void addPacketToParse(BytePacket pack)
-	{
-		synchronized (toProcess)
-		{
-			toProcess.add(pack);
-		}
-	}
-	
-	public void beginGame()
-	{
-		isInGame = true;
-	}
-	
-	public Level getLevelByType(LevelType type)
-	{
-		for (Level level : getLevels())
-		{
-			if (level.getType() == type) return level;
-		}
-		return null;
-	}
-	
-	public List<Level> getLevels()
-	{
-		return levels;
-	}
-	
-	/**
-	 * Gets the player with the given role.
-	 * 
-	 * @param role whether it's player 1 or 2
-	 * @return the player.
-	 */
-	public ServerPlayerEntity getPlayer(Role role)
-	{
-		for (ServerPlayerEntity entity : getPlayers())
-		{
-			if (entity.getRole() == role) return entity;
-		}
-		return null;
-	}
-	
-	public List<ServerPlayerEntity> getPlayers()
-	{
-		return players;
-	}
-	
-	public boolean isInGame()
-	{
-		return isInGame;
 	}
 	
 	public boolean isSendingLevels()
@@ -162,8 +105,6 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 		isSendingLevels = true;
 		
 		sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
-		
-		levels = new ArrayList<Level>(LevelType.values().length);
 		
 		for (LevelType type : LevelType.values())
 		{
@@ -209,14 +150,13 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 			}
 		}
 		
-		players = new ArrayList<ServerPlayerEntity>(2);
-		getPlayers().add(new ServerPlayerEntity(Role.PLAYER1, new Vector2DDouble(80, 50)));
-		getPlayers().add(new ServerPlayerEntity(Role.PLAYER2, new Vector2DDouble(20, 20)));
+		players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80, 50)));
+		players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(20, 20)));
 		
-		for (int i = 0; i < getPlayers().size(); i++)
+		for (int i = 0; i < players.size(); i++)
 		{
-			ServerPlayerEntity player = getPlayers().get(i);
-			player.addToLevel(this.getLevelByType(LevelType.MAIN));
+			PlayerEntity player = players.get(i);
+			player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
 			player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
 		}
 		
@@ -239,8 +179,6 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 	public void onStart()
 	{
 		super.onStart();
-		
-		sockets().startThis();
 	}
 	
 	@Override
@@ -251,8 +189,6 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 		// TODO save levels?
 		receivedPackets.clear();
 		toProcess.clear();
-		
-		sockets().stopThis();
 		
 		if (getLevels() != null) getLevels().clear();
 		IDCounter.resetAll();
@@ -279,7 +215,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 		PacketType type = packet.getType();
 		
 		// Finds if this packet was send by a connected player and.or the host
-		IPConnectedPlayer sender = sockets().getPlayerByConnection(packet.getConnections().get(0));
+		IPConnectedPlayer sender = sockets().getPlayerConnection(packet.getConnections().get(0));
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 		
@@ -297,12 +233,12 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					if (packID == packetID)
 					{
 						// If the packet with this ID has already been received, tell the client to stop sending it, and don't parse it
-						sockets().sender().sendPacket(new PacketConfirmReceive(packetID, sender.getConnection()));
+						sockets().sender().sendPacketToAllClients(new PacketConfirmReceive(packetID, sender.getConnection()));
 						return;
 					}
 				}
 				
-				sockets().sender().sendPacket(new PacketConfirmReceive(packetID, sender.getConnection()));
+				sockets().sender().sendPacketToAllClients(new PacketConfirmReceive(packetID, sender.getConnection()));
 				receivedBySender.add(packetID);
 			}
 			
@@ -325,11 +261,11 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					{
 						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 						
-						IPConnectedPlayer player = sockets().getPlayerByID(buf.getShort());
+						ConnectedPlayer player = sockets().getPlayerConnection(buf.getShort());
 						
 						// The player who is currently holding that role
 						Role newRole = Role.fromOrdinal(buf.get());
-						IPConnectedPlayer currentPlayerWithRole = sockets().getPlayerByRole(newRole);
+						ConnectedPlayer currentPlayerWithRole = sockets().getPlayerConnection(newRole);
 						
 						if (currentPlayerWithRole != null)
 						{
@@ -347,11 +283,11 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 									break;
 								case PLAYER1:
 									// If the player already had a critical role, set it to the next spectator
-									IPConnectedPlayer newForRole1 = sockets().getPlayerByRole(Role.SPECTATOR);
+									ConnectedPlayer newForRole1 = sockets().getPlayerConnection(Role.SPECTATOR);
 									if (newForRole1 != null) newForRole1.setRole(Role.PLAYER1);
 									break;
 								case PLAYER2:
-									IPConnectedPlayer newForRole2 = sockets().getPlayerByRole(Role.SPECTATOR);
+									ConnectedPlayer newForRole2 = sockets().getPlayerConnection(Role.SPECTATOR);
 									if (newForRole2 != null) newForRole2.setRole(Role.PLAYER2);
 									break;
 							}
@@ -394,7 +330,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 				case START_SERVER:
 					if (sentByHost)
 					{
-						ServerGame.instance().loadGame();
+						loadGame();
 					}
 					else
 					{
@@ -406,7 +342,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					Role role = sender.getRole();
 					if (role != Role.SPECTATOR)
 					{
-						ServerPlayerEntity player = ServerGame.instance().getPlayer(role);
+						PlayerEntity player = getPlayer(role);
 						if (player != null)
 						{
 							byte x = packet.getContent()[0];
@@ -422,7 +358,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -449,7 +385,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -523,7 +459,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -550,7 +486,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -575,7 +511,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -601,7 +537,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 					
 					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-					Level level = ServerGame.instance().getLevelByType(levelType);
+					Level level = getLevel(levelType);
 					
 					if (level != null)
 					{
@@ -683,7 +619,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 			String pass = new String(Arrays.copyOfRange(packet.getContent(), passIndex, passIndex + width)).trim();
 			
 			// Checks if there's space for the user on the server
-			if (sockets().clientConnections().size() >= ServerSocketManager.MAX_PLAYERS)
+			if (sockets().getConnectedPlayers().size() >= Game.MAX_PLAYERS)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER, connection);
 				sockets().sender().sendPacket(passPacket);
@@ -706,7 +642,7 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 			}
 			
 			// Checks that there's no duplicated usernames
-			if (sockets().getPlayerByUsername(name) != null)
+			if (sockets().getPlayerConnection(name) != null)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.DUPLICATE_USERNAME, connection);
 				sockets().sender().sendPacket(passPacket);
@@ -745,26 +681,19 @@ public class ServerGame extends DynamicTickThread implements IPacketParser
 		}
 	}
 	
-	public ServerSocketManager sockets()
+	@Override
+	public void render()
 	{
-		return socketManager;
+		// Is never used because this is server side
 	}
 	
 	@Override
 	public void tick()
 	{
-		synchronized (toProcess)
-		{
-			for (BytePacket pack : toProcess)
-			{
-				parsePacket(pack);
-			}
-			
-			toProcess.clear();
-		}
+		super.tick();
 		
 		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
-		if (stopServer) ServerGame.instance().stopThis();
+		if (stopServer) stopThis();
 		
 		if (isInGame)
 		{

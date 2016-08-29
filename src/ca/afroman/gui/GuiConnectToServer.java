@@ -2,8 +2,8 @@ package ca.afroman.gui;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.game.Game;
 import ca.afroman.resource.Vector2DInt;
-import ca.afroman.server.ServerSocketManager;
 
 public class GuiConnectToServer extends GuiScreen
 {
@@ -55,7 +55,7 @@ public class GuiConnectToServer extends GuiScreen
 		{
 			case 0:
 				goToParentScreen();
-				ClientGame.instance().sockets().setServerIP(null, ServerSocketManager.DEFAULT_PORT);
+				ClientGame.instance().sockets().setServerConnection(null, Game.DEFAULT_PORT);
 				break;
 		}
 	}

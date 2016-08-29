@@ -3,7 +3,7 @@ package ca.afroman.packet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.network.IPConnectedPlayer;
+import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 
@@ -11,13 +11,13 @@ public class PacketUpdatePlayerList extends BytePacket
 {
 	private byte[] toSend;
 	
-	public PacketUpdatePlayerList(List<IPConnectedPlayer> connections, IPConnection... connection)
+	public PacketUpdatePlayerList(List<ConnectedPlayer> connections, IPConnection... connection)
 	{
 		super(PacketType.UPDATE_PLAYERLIST, true, connection);
 		
 		List<Byte> send = new ArrayList<Byte>();
 		
-		for (IPConnectedPlayer con : connections)
+		for (ConnectedPlayer con : connections)
 		{
 			for (byte e : ByteUtil.shortAsBytes(con.getID()))
 			{

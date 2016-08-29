@@ -5,13 +5,13 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.game.Game;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
-import ca.afroman.server.ServerSocketManager;
 
 public class GuiHostServer extends GuiScreen
 {
@@ -92,7 +92,7 @@ public class GuiHostServer extends GuiScreen
 		ClientGame.instance().setUsername(userText);
 		ClientGame.instance().setPassword(passText);
 		ClientGame.instance().setPort(portText);
-		ClientGame.instance().setServerIP(ServerSocketManager.IPv4_LOCALHOST);
+		ClientGame.instance().setServerIP(Game.IPv4_LOCALHOST);
 		
 		// If not already hosting
 		if (!ClientGame.instance().isHostingServer())

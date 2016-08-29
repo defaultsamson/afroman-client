@@ -3,7 +3,7 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.entity.ServerPlayerEntity;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
@@ -184,13 +184,13 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 			
 			if (playerCollide || playerUncollide)
 			{
-				ServerPlayerEntity player = null;
+				PlayerEntity player = null;
 				
-				for (Entity p : this.hitbox.getLevel().getPlayers())
+				for (PlayerEntity p : this.hitbox.getLevel().getPlayers())
 				{
 					if (p.isColliding(this.getHitbox()))
 					{
-						player = (ServerPlayerEntity) p;
+						player = p;
 						break;
 					}
 				}
@@ -205,8 +205,8 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 				
 				if (playerUncollide && this.isReleasedFiltered())
 				{
-					trigger(player);
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(this.getID(), this.getLevel().getType(), ((ServerPlayerEntity) lastHit).getRole()));
+					trigger(lastHit);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(this.getID(), this.getLevel().getType(), ((PlayerEntity) lastHit).getRole()));
 				}
 				
 				lastHit = player;
