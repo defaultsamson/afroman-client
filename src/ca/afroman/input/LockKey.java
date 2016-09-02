@@ -1,13 +1,16 @@
 package ca.afroman.input;
 
-import java.awt.Toolkit;
 import java.util.List;
 
 public class LockKey extends Key
 {
+	private boolean isToggled;
+	
 	public LockKey(List<Key> container, int... keyEvents)
 	{
 		super(container, keyEvents);
+		
+		isToggled = false;
 	}
 	
 	/**
@@ -15,10 +18,21 @@ public class LockKey extends Key
 	 */
 	public boolean isToggled()
 	{
-		for (int event : keyEvents)
+		// for (int event : keyEvents)
+		// {
+		// if (Toolkit.getDefaultToolkit().getLockingKeyState(event)) return true;
+		// }
+		return isToggled;
+	}
+	
+	@Override
+	public void update(int keyCode, boolean isPressed)
+	{
+		super.update(keyCode, isPressed);
+		
+		if (isPressedFiltered())
 		{
-			if (Toolkit.getDefaultToolkit().getLockingKeyState(event)) return true;
+			isToggled = !isToggled;
 		}
-		return false;
 	}
 }

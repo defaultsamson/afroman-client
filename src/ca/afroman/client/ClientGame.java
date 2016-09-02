@@ -156,6 +156,7 @@ public class ClientGame extends Game
 	{
 		// TODO let the server know that the client has disconnected
 		// sockets().sender().sendPacket(new PacketPlayerDisconnect());
+		stopSocket();
 		receivedPackets.clear();
 		
 		getLevels().clear();

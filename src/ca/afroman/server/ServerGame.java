@@ -36,6 +36,7 @@ import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
+import ca.afroman.packet.PacketStopServer;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -184,6 +185,18 @@ public class ServerGame extends Game implements IPacketParser
 	@Override
 	public void onStop()
 	{
+		sockets().sender().sendPacketToAllClients(new PacketStopServer());
+		
+		// TODO make a more surefire way to ensure that all clients got the message
+		try
+		{
+			Thread.sleep(1500);
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		
 		super.onStop();
 		
 		// TODO save levels?

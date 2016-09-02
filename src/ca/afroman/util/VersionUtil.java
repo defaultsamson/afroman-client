@@ -5,8 +5,8 @@ public class VersionUtil
 	// Sub versions are backwards compatible with each other
 	public static final int SUB_VERSION = 0;
 	
-	public static final byte DAY = 27;
-	public static final byte MONTH = 8;
+	public static final byte DAY = 1;
+	public static final byte MONTH = 9;
 	public static final short YEAR = 2016;
 	
 	private static final byte[] YEAR_SPLIT = ByteUtil.shortAsBytes(YEAR);
