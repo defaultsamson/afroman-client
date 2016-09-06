@@ -13,6 +13,8 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.Role;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
@@ -26,6 +28,7 @@ import ca.afroman.gui.build.GuiHitboxTriggerEditor;
 import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
@@ -625,6 +628,34 @@ public class ClientLevel extends Level
 			if (hitboxClickCount > 0)
 			{
 				hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+			}
+		}
+		else if (ClientGame.instance().getRole() == Role.SPECTATOR)
+		{
+			ClientGame game = ClientGame.instance();
+			PlayerEntity pe = game.getPlayer(game.getSpectatingRole());
+			if (pe != null)
+			{
+				setCameraCenterInWorld(pe.getPosition().clone().add(8, 8));
+				
+				if (game.input().right.isPressedFiltered())
+				{
+					Role role = game.getSpectatingRole();
+					while ((role = Role.getNext(role)) == Role.SPECTATOR);
+					
+					game.setSpectatingRole(role);
+				}
+				if (game.input().left.isPressedFiltered())
+				{
+					Role role = game.getSpectatingRole();
+					while ((role = Role.getLast(role)) == Role.SPECTATOR);
+					
+					game.setSpectatingRole(role);
+				}
+			}
+			else
+			{
+				game.logger().log(ALogType.WARNING, "PlayerEntity for role " + game.getSpectatingRole() + " is null");
 			}
 		}
 		

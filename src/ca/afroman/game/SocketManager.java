@@ -274,35 +274,6 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		
 		rSocket.startThis();
 		sSocket.startThis();
-		
-		/*
-		 * int thyPortholio = DEFAULT_PORT;
-		 * if (port.length() > 0)
-		 * {
-		 * try
-		 * {
-		 * int newPort = Integer.parseInt(port);
-		 * // Checks if the given port is out of range
-		 * if (!(newPort < 0 || newPort > 0xFFFF)) thyPortholio = newPort;
-		 * }
-		 * catch (NumberFormatException e)
-		 * {
-		 * ServerGame.instance().logger().log(ALogType.WARNING, "Failed to parse port", e);
-		 * }
-		 * }
-		 * // Sets the port to whatever is now set
-		 * ClientGame.instance().setPort("" + thyPortholio);
-		 * try
-		 * {
-		 * this.socket = new DatagramSocket(thyPortholio);
-		 * }
-		 * catch (SocketException e)
-		 * {
-		 * ServerGame.instance().logger().log(ALogType.CRITICAL, "Server already running on this IP and PORT", e);
-		 * }
-		 * //rSocket = new NetworkReceiver(socket, true, ServerGame.instance());
-		 * sSocket = new ServerSocketSend(this);
-		 */
 	}
 	
 	public DatagramSocket socket()

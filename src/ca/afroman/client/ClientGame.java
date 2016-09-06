@@ -124,6 +124,7 @@ public class ClientGame extends Game
 	private String typedIP = "";
 	
 	private Role role;
+	private Role spectatingRole = Role.PLAYER1;
 	private short id;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
@@ -232,6 +233,11 @@ public class ClientGame extends Game
 		return typedIP;
 	}
 	
+	public Role getSpectatingRole()
+	{
+		return spectatingRole;
+	}
+	
 	public PlayerEntity getThisPlayer()
 	{
 		if (role != Role.SPECTATOR) return getPlayer(role);
@@ -320,7 +326,8 @@ public class ClientGame extends Game
 		// Makes it so that when the window is resized, this ClientGame will resize the canvas accordingly
 		canvas.addComponentListener(new ComponentListener()
 		{
-			private boolean doIt = true;
+			private int lastWidth = 0;
+			private int lastHeight = 0;
 			
 			@Override
 			public void componentHidden(ComponentEvent e)
@@ -337,14 +344,13 @@ public class ClientGame extends Game
 			@Override
 			public void componentResized(ComponentEvent e)
 			{
-				if (doIt) // Stops it from detecting the resizeGame method from resizing its bounds.
+				// Stops it from detecting the resizeGame method from resizing its bounds.
+				if (lastWidth != canvas.getWidth() || lastHeight != canvas.getHeight())
 				{
-					doIt = false;
 					resizeGame(canvas.getWidth(), canvas.getHeight());
-				}
-				else
-				{
-					doIt = true;
+					
+					lastWidth = canvas.getWidth();
+					lastHeight = canvas.getHeight();
 				}
 			}
 			
@@ -356,28 +362,19 @@ public class ClientGame extends Game
 		});
 			
 		canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
-		canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
+		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		
 		frame.setIconImage(ICON);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
-		
 		frame.getContentPane().setBackground(Color.black);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		frame.setResizable(false);
 		frame.pack();
-		frame.setVisible(true);
-		
-		canvas.repaint();
-		
-		// Sets the minimum size to that of the JFrame to that of the JFrame while it has the smallest canvas drawn on it
 		frame.setMinimumSize(frame.getSize());
 		
-		// The width and height added by the JFrame that is not included in the Canvas
-		int eccessWidth = frame.getWidth() - WIDTH;
-		int eccessHeight = frame.getHeight() - HEIGHT;
-		
-		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		frame.setSize(new Dimension(eccessWidth + (WIDTH * SCALE), eccessHeight + (HEIGHT * SCALE)));
+		frame.setVisible(true);
+		frame.setResizable(true);
 		frame.setLocationRelativeTo(null);
 		
 		// Loading screen
@@ -440,7 +437,6 @@ public class ClientGame extends Game
 		// End the loading screen
 		logger().log(ALogType.DEBUG, "Disposing of loading screen...");
 		renderLoading.stopThis();
-		frame.setResizable(true);
 		canvas.repaint();
 		
 		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
@@ -583,7 +579,21 @@ public class ClientGame extends Game
 						// Stop displaying the loading level screen
 						if (getCurrentScreen() instanceof GuiSendingLevels)
 						{
-							setCurrentScreen(getCurrentScreen().getParent());
+							setCurrentScreen(null);
+						}
+						
+						if (getRole() == Role.SPECTATOR)
+						{
+							PlayerEntity pe = getPlayer(spectatingRole);
+							
+							if (pe != null)
+							{
+								setCurrentLevel(pe.getLevel());
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "[CLIENT] Player with type " + spectatingRole + " is null");
+							}
 						}
 					}
 				}
@@ -982,6 +992,9 @@ public class ClientGame extends Game
 		
 		// Resizes the canvas to match the new window size, keeping it centred.
 		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
+		
+		System.out.println("Cur Canvas: " + canvas.getWidth() + ", " + canvas.getHeight());
+		System.out.println("Cur Frame: " + frame.getWidth() + ", " + frame.getHeight());
 	}
 	
 	public void setCurrentLevel(Level newLevel)
@@ -1139,6 +1152,11 @@ public class ClientGame extends Game
 	public void setServerIP(String newIP)
 	{
 		this.typedIP = newIP;
+	}
+	
+	public void setSpectatingRole(Role role)
+	{
+		this.spectatingRole = role;
 	}
 	
 	public void setUsername(String newUsername)
