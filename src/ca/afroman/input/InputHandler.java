@@ -37,6 +37,10 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key left = new Key(keys, KeyEvent.VK_LEFT, KeyEvent.VK_A);
 	public Key right = new Key(keys, KeyEvent.VK_RIGHT, KeyEvent.VK_D);
 	
+	public Key itemPrev = new Key(keys, KeyEvent.VK_Q, KeyEvent.VK_Z);
+	public Key itemNext = new Key(keys, KeyEvent.VK_E, KeyEvent.VK_C);
+	public Key interact = new Key(keys, KeyEvent.VK_X, KeyEvent.VK_SPACE);
+	
 	public Key up_arrow = new Key(keys, KeyEvent.VK_UP);
 	public Key down_arrow = new Key(keys, KeyEvent.VK_DOWN);
 	public Key left_arrow = new Key(keys, KeyEvent.VK_LEFT);

@@ -34,7 +34,8 @@ public enum PacketType
 	
 	REQUEST_PLAYER_MOVE,
 	SET_ENTITY_LOCATION,
-	SET_PLAYER_LOCATION;
+	SET_PLAYER_LOCATION,
+	PLAYER_INTERACT;
 	
 	public static PacketType fromOrdinal(int ordinal)
 	{

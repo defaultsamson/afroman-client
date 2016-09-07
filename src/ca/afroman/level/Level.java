@@ -19,6 +19,7 @@ import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.log.ALogType;
+import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.FileUtil;
@@ -666,5 +667,25 @@ public class Level implements IServerClient
 		clpbrd.setContents(stringSelection, null);
 		
 		return toReturn;
+	}
+	
+	public void tryInteract(PlayerEntity entity)
+	{
+		for (IEvent e : getScriptedEvents())
+		{
+			if (e instanceof HitboxTrigger)
+			{
+				HitboxTrigger t = (HitboxTrigger) e;
+				
+				if (((HitboxTrigger) e).getTriggerTypes().contains(TriggerType.PLAYER_INTERACT))
+				{
+					if (entity.isColliding(t.getHitbox())) 
+					{
+						t.trigger(entity);
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(t.getID(), getType(), entity.getRole()));
+					}
+				}
+			}
+		}
 	}
 }

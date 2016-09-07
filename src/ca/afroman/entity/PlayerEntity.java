@@ -10,6 +10,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
+import ca.afroman.packet.PacketPlayerInteract;
 import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketSetPlayerLevel;
 import ca.afroman.packet.PacketSetPlayerLocation;
@@ -110,6 +111,10 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 				byte xa = 0;
 				byte ya = 0;
 				
+				if (ClientGame.instance().input().interact.isPressedFiltered())
+				{
+					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract());
+				}
 				if (ClientGame.instance().input().up.isPressed())
 				{
 					ya = -1;

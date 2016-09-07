@@ -393,6 +393,21 @@ public class ServerGame extends Game implements IPacketParser
 					}
 				}
 					break;
+				case PLAYER_INTERACT:
+					PlayerEntity pe = getPlayer(sender.getRole());
+					
+					if (pe.getLevel() != null)
+					{
+						Level level = pe.getLevel();
+						
+						level.tryInteract(pe);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "Player is not in a level");
+					}
+					
+					break;
 				case REMOVE_LEVEL_OBJECT:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
