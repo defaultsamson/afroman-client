@@ -396,17 +396,23 @@ public class ServerGame extends Game implements IPacketParser
 				case PLAYER_INTERACT:
 					PlayerEntity pe = getPlayer(sender.getRole());
 					
-					if (pe.getLevel() != null)
+					if (pe != null)
 					{
-						Level level = pe.getLevel();
-						
-						level.tryInteract(pe);
+						if (pe.getLevel() != null)
+						{
+							Level level = pe.getLevel();
+							
+							level.tryInteract(pe);
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "Player is not in a level");
+						}
 					}
 					else
 					{
-						logger().log(ALogType.WARNING, "Player is not in a level");
+						logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
 					}
-					
 					break;
 				case REMOVE_LEVEL_OBJECT:
 				{

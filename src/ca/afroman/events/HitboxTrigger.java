@@ -3,14 +3,12 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
-import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;

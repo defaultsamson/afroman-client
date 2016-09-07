@@ -213,7 +213,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		return sSocket;
 	}
 	
-	public void setServerConnection(String serverIpAddress, int port)
+	public boolean setServerConnection(String serverIpAddress, int port)
 	{
 		port = validatedPort(port);
 		
@@ -222,7 +222,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		if (serverIpAddress == null)
 		{
 			serverConnection.setIPAddress(null);
-			return;
+			return false;
 		}
 		
 		InetAddress ip = null;
@@ -240,7 +240,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "UNKNOWN", "HOST");
 			}
-			return;
+			return false;
 		}
 		
 		serverConnection.setIPAddress(ip);
@@ -254,6 +254,8 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			catch (SocketException e)
 			{
 				game.logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", e);
+				
+				return false;
 			}
 		}
 		else
@@ -266,6 +268,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			catch (SocketException e)
 			{
 				game.logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", e);
+				return false;
 			}
 		}
 		
@@ -274,6 +277,8 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		
 		rSocket.startThis();
 		sSocket.startThis();
+		
+		return true;
 	}
 	
 	public DatagramSocket socket()

@@ -301,9 +301,12 @@ public class ClientGame extends Game
 		// Sets the port to whatever is now set
 		setPort("" + port);
 		
-		startSocket(getServerIP(), port);
+		boolean successful = startSocket(getServerIP(), port);
 		
-		sockets().sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
+		if (successful)
+		{
+			sockets().sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
+		}
 	}
 	
 	@Override
@@ -992,9 +995,6 @@ public class ClientGame extends Game
 		
 		// Resizes the canvas to match the new window size, keeping it centred.
 		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
-		
-		System.out.println("Cur Canvas: " + canvas.getWidth() + ", " + canvas.getHeight());
-		System.out.println("Cur Frame: " + frame.getWidth() + ", " + frame.getHeight());
 	}
 	
 	public void setCurrentLevel(Level newLevel)

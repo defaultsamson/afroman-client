@@ -82,10 +82,15 @@ public class Texture extends DrawableAsset
 	@Override
 	public Texture clone()
 	{
+		return clone(getAssetType());
+	}
+	
+	public Texture clone(AssetType newAssetType)
+	{
 		ColorModel cm = image.getColorModel();
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		WritableRaster raster = image.copyData(image.getRaster().createCompatibleWritableRaster());
-		return new Texture(getAssetType(), new BufferedImage(cm, raster, isAlphaPremultiplied, null));
+		return new Texture(newAssetType, new BufferedImage(cm, raster, isAlphaPremultiplied, null));
 	}
 	
 	@Override
@@ -159,23 +164,27 @@ public class Texture extends DrawableAsset
 	/**
 	 * Flips this horizontally.
 	 */
-	public void flipX()
+	public Texture flipX()
 	{
 		AffineTransform at = AffineTransform.getScaleInstance(-1, 1);
 		at.translate(-image.getWidth(null), 0);
 		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		image = op.filter(image, null);
+		
+		return this;
 	}
 	
 	/**
 	 * Flips this vertically.
 	 */
-	public void flipY()
+	public Texture flipY()
 	{
 		AffineTransform at = AffineTransform.getScaleInstance(1, -1);
 		at.translate(0, -image.getHeight(null));
 		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		image = op.filter(image, null);
+		
+		return this;
 	}
 	
 	public Graphics2D getGraphics()

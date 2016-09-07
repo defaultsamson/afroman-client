@@ -679,7 +679,7 @@ public class Level implements IServerClient
 				
 				if (((HitboxTrigger) e).getTriggerTypes().contains(TriggerType.PLAYER_INTERACT))
 				{
-					if (entity.isColliding(t.getHitbox())) 
+					if (entity.isColliding(t.getHitbox()))
 					{
 						t.trigger(entity);
 						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(t.getID(), getType(), entity.getRole()));
