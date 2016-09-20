@@ -1,5 +1,9 @@
 package ca.afroman.input;
 
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -11,6 +15,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -295,5 +300,27 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void windowOpened(WindowEvent e)
 	{
 		
+	}
+	
+	public static String getClipboard()
+	{
+		try
+		{
+			return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+		}
+		catch (HeadlessException e)
+		{
+			e.printStackTrace();
+		}
+		catch (UnsupportedFlavorException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return "";
 	}
 }

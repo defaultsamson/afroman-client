@@ -55,7 +55,6 @@ public class ClientLevel extends Level
 	private Asset cursorAsset = null;
 	public boolean showLayer0 = true;
 	public boolean showLayer1 = true;
-	
 	public boolean showLayer2 = true;
 	public boolean showLayer3 = true;
 	public boolean showLayer4 = true;
@@ -176,7 +175,12 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		List<Entity> entities = new ArrayList<Entity>(this.getEntities());
+		List<Entity> entities = new ArrayList<Entity>();
+		
+		for (Entity entity : this.getEntities())
+		{
+			entities.add(entity);
+		}
 		for (Entity player : this.getPlayers())
 		{
 			entities.add(player);

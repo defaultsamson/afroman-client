@@ -132,11 +132,12 @@ public class GuiTextField extends GuiButton
 			font.render(drawTo, cursorDrawPos.clone(), "_");
 		}
 		
-		int max = maxRenderable();
-		
-		// Gets the substring of text that is to be displayed
-		String subbedText = new String(text.toString()).substring(textOffset, (text.length() - textOffset) <= max ? text.length() : textOffset + max);
-		font.render(drawTo, textDrawPos, subbedText);
+		font.render(drawTo, textDrawPos, getDisplayText());
+	}
+	
+	public String getDisplayText()
+	{
+		return new String(text.toString()).substring(textOffset, (text.length() - textOffset) <= maxRenderable() ? text.length() : textOffset + maxRenderable());
 	}
 	
 	/**
@@ -208,6 +209,23 @@ public class GuiTextField extends GuiButton
 			InputHandler input = ClientGame.instance().input();
 			boolean isShifting = input.shift.isPressed() || input.capsLock.isToggled();
 			
+			if (input.backspace.isPressed())
+			{
+				pauseBlinker();
+			}
+			if (input.left.isPressed())
+			{
+				pauseBlinker();
+			}
+			if (input.right.isPressed())
+			{
+				pauseBlinker();
+			}
+			if (input.control.isPressed() && input.v.isPressedFiltered())
+			{
+				typeChar(InputHandler.getClipboard());
+			}
+			
 			for (TypingKeyWrapper t : TypingMode.getKeyModes())
 			{
 				if (t.getKey().isPressedTyping())
@@ -239,19 +257,6 @@ public class GuiTextField extends GuiButton
 					setCursorPosition(cursorPosition + 1);
 				}
 			}
-			
-			if (input.backspace.isPressed())
-			{
-				pauseBlinker();
-			}
-			if (input.left.isPressed())
-			{
-				pauseBlinker();
-			}
-			if (input.right.isPressed())
-			{
-				pauseBlinker();
-			}
 		}
 		else
 		{
@@ -262,17 +267,26 @@ public class GuiTextField extends GuiButton
 	
 	/**
 	 * @param character
-	 * @param modes
 	 * @return whether the character was successfully typed or not.
 	 */
-	private boolean typeChar(String character, TypingMode... modes)
+	private boolean typeChar(String character)
 	{
 		if (character.length() > 0)
 		{
 			if (text.length() < maxLength)
 			{
 				text.insert(cursorPosition, character);
-				setCursorPosition(cursorPosition + 1);
+				
+				if (text.length() > maxLength)
+				{
+					text = new StringBuilder(text.substring(0, maxLength));
+					setCursorPosition(text.length());
+				}
+				else
+				{
+					setCursorPosition(cursorPosition + character.length());
+				}
+				
 				return true;
 			}
 		}
