@@ -1,0 +1,15 @@
+package ca.afroman.option;
+
+public enum OptionType
+{
+	MUSIC,
+	SERVER_USERNAME,
+	SERVER_PASSWORD,
+	SERVER_IP,
+	SERVER_PORT,
+	CLIENT_USERNAME,
+	CLIENT_PASSWORD,
+	CLIENT_IP,
+	CLIENT_PORT,
+	FULLSCREEN
+}
