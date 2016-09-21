@@ -15,6 +15,7 @@ import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketBeginGame;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
@@ -110,7 +111,7 @@ public class GuiLobby extends GuiScreen
 				ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not resolve local host address", e);
 			}
 			
-			port = ClientGame.instance().getPort();
+			port = Options.instance().serverPort;
 		}
 		// Draw a leave server button
 		else

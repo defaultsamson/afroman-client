@@ -50,6 +50,11 @@ public class GuiTextField extends GuiButton
 		return cursorPosition;
 	}
 	
+	public String getDisplayText()
+	{
+		return new String(text.toString()).substring(textOffset, (text.length() - textOffset) <= maxRenderable() ? text.length() : textOffset + maxRenderable());
+	}
+	
 	public String getText()
 	{
 		return text.toString();
@@ -133,11 +138,6 @@ public class GuiTextField extends GuiButton
 		}
 		
 		font.render(drawTo, textDrawPos, getDisplayText());
-	}
-	
-	public String getDisplayText()
-	{
-		return new String(text.toString()).substring(textOffset, (text.length() - textOffset) <= maxRenderable() ? text.length() : textOffset + maxRenderable());
 	}
 	
 	/**

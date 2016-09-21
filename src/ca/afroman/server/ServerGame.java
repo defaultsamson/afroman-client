@@ -90,9 +90,9 @@ public class ServerGame extends Game implements IPacketParser
 		}
 	}
 	
-	public boolean isSendingLevels()
+	public String getPassword()
 	{
-		return isSendingLevels;
+		return password;
 	}
 	
 	// TODO add server-wide build mode? probably not
@@ -100,6 +100,11 @@ public class ServerGame extends Game implements IPacketParser
 	// {
 	// return buildMode;
 	// }
+	
+	public boolean isSendingLevels()
+	{
+		return isSendingLevels;
+	}
 	
 	public void loadGame()
 	{

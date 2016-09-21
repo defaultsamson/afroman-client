@@ -26,31 +26,52 @@ import ca.afroman.resource.Vector2DInt;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener, FocusListener
 {
-	private List<MouseButton> mouseButtons = new ArrayList<MouseButton>();
+	public static String getClipboard()
+	{
+		try
+		{
+			return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+		}
+		catch (HeadlessException e)
+		{
+			e.printStackTrace();
+		}
+		catch (UnsupportedFlavorException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return "";
+	}
 	
+	private List<MouseButton> mouseButtons = new ArrayList<MouseButton>();
 	public MouseButton mouseLeft = new MouseButton(mouseButtons, MouseEvent.BUTTON1);
 	public MouseButton mouseMiddle = new MouseButton(mouseButtons, MouseEvent.BUTTON2);
 	public MouseButton mouseRight = new MouseButton(mouseButtons, MouseEvent.BUTTON3);
 	public MouseScroll mouseWheelUp = new MouseScroll();
 	public MouseScroll mouseWheelDown = new MouseScroll();
+	
 	private Vector2DInt mousePos = new Vector2DInt(0, 0);
 	
 	private List<Key> keys = new ArrayList<Key>();
-	
 	public Key up = new Key(keys, KeyEvent.VK_UP, KeyEvent.VK_W);
 	public Key down = new Key(keys, KeyEvent.VK_DOWN, KeyEvent.VK_S);
 	public Key left = new Key(keys, KeyEvent.VK_LEFT, KeyEvent.VK_A);
-	public Key right = new Key(keys, KeyEvent.VK_RIGHT, KeyEvent.VK_D);
 	
+	public Key right = new Key(keys, KeyEvent.VK_RIGHT, KeyEvent.VK_D);
 	public Key itemPrev = new Key(keys, KeyEvent.VK_Q, KeyEvent.VK_Z);
 	public Key itemNext = new Key(keys, KeyEvent.VK_E, KeyEvent.VK_C);
-	public Key interact = new Key(keys, KeyEvent.VK_X, KeyEvent.VK_SPACE);
 	
+	public Key interact = new Key(keys, KeyEvent.VK_X, KeyEvent.VK_SPACE);
 	public Key up_arrow = new Key(keys, KeyEvent.VK_UP);
 	public Key down_arrow = new Key(keys, KeyEvent.VK_DOWN);
 	public Key left_arrow = new Key(keys, KeyEvent.VK_LEFT);
-	public Key right_arrow = new Key(keys, KeyEvent.VK_RIGHT);
 	
+	public Key right_arrow = new Key(keys, KeyEvent.VK_RIGHT);
 	public Key hudDebug = new Key(keys, KeyEvent.VK_F1);
 	public Key hitboxDebug = new Key(keys, KeyEvent.VK_F2);
 	public Key lightingDebug = new Key(keys, KeyEvent.VK_F3);
@@ -58,8 +79,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key offFocusRendering = new Key(keys, KeyEvent.VK_F9);
 	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
 	public Key full_screen = new Key(keys, KeyEvent.VK_F11);
-	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	
+	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);
 	public Key enter = new Key(keys, KeyEvent.VK_ENTER);
 	public Key tab = new Key(keys, KeyEvent.VK_TAB);
@@ -75,8 +96,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key equals = new Key(keys, KeyEvent.VK_EQUALS);
 	public Key shift = new Key(keys, KeyEvent.VK_SHIFT);
 	public Key control = new Key(keys, KeyEvent.VK_CONTROL);
-	public LockKey capsLock = new LockKey(keys, KeyEvent.VK_CAPS_LOCK);
 	
+	public LockKey capsLock = new LockKey(keys, KeyEvent.VK_CAPS_LOCK);
 	public Key zero = new Key(keys, KeyEvent.VK_0);
 	public Key one = new Key(keys, KeyEvent.VK_1);
 	public Key two = new Key(keys, KeyEvent.VK_2);
@@ -86,8 +107,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key six = new Key(keys, KeyEvent.VK_6);
 	public Key seven = new Key(keys, KeyEvent.VK_7);
 	public Key eight = new Key(keys, KeyEvent.VK_8);
-	public Key nine = new Key(keys, KeyEvent.VK_9);
 	
+	public Key nine = new Key(keys, KeyEvent.VK_9);
 	public Key a = new Key(keys, KeyEvent.VK_A);
 	public Key b = new Key(keys, KeyEvent.VK_B);
 	public Key c = new Key(keys, KeyEvent.VK_C);
@@ -113,6 +134,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key w = new Key(keys, KeyEvent.VK_W);
 	public Key x = new Key(keys, KeyEvent.VK_X);
 	public Key y = new Key(keys, KeyEvent.VK_Y);
+	
 	public Key z = new Key(keys, KeyEvent.VK_Z);
 	
 	private boolean isGameFocused = true;
@@ -300,27 +322,5 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void windowOpened(WindowEvent e)
 	{
 		
-	}
-	
-	public static String getClipboard()
-	{
-		try
-		{
-			return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-		}
-		catch (HeadlessException e)
-		{
-			e.printStackTrace();
-		}
-		catch (UnsupportedFlavorException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		return "";
 	}
 }

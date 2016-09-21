@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,5 +121,35 @@ public class FileUtil
 		fileScanner.close();
 		
 		return toReturn;
+	}
+	
+	public static void writeLines(List<String> lines, File file)
+	{
+		if (!file.exists()) try
+		{
+			file.createNewFile();
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
+		
+		PrintWriter pw;
+		
+		try
+		{
+			pw = new PrintWriter(file);
+			
+			for (String s : lines)
+			{
+				pw.println(s);
+			}
+			
+			pw.close();
+		}
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

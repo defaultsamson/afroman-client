@@ -9,16 +9,13 @@ import ca.afroman.game.Game;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
+import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
 
 public class GuiHostServer extends GuiScreen
 {
-	private static String userText = "";
-	private static String passText = "";
-	private static String portText = "";
-	
 	private SpriteAnimation afroMan;
 	private SpriteAnimation player2;
 	private LightMap lightmap;
@@ -76,33 +73,24 @@ public class GuiHostServer extends GuiScreen
 	@Override
 	public void goToParentScreen()
 	{
-		userText = this.username.getText();
-		passText = this.password.getText();
-		portText = this.port.getText();
+		onLeaving();
 		
 		super.goToParentScreen();
 	}
 	
 	private void hostServer()
 	{
-		userText = this.username.getText();
-		passText = this.password.getText();
-		portText = this.port.getText();
-		
-		ClientGame.instance().setUsername(userText);
-		ClientGame.instance().setPassword(passText);
-		ClientGame.instance().setPort(portText);
-		ClientGame.instance().setServerIP(Game.IPv4_LOCALHOST);
+		onLeaving();
 		
 		// If not already hosting
 		if (!ClientGame.instance().isHostingServer())
 		{
-			if (ServerGame.instance() == null) new ServerGame(passText, portText);
+			if (ServerGame.instance() == null) new ServerGame(Options.instance().serverPassword, Options.instance().serverPort);
 			// Start that server thread
 			ServerGame.instance().startThis();
 		}
 		
-		ClientGame.instance().joinServer();
+		ClientGame.instance().joinServer(Options.instance().serverUsername, Options.instance().serverPassword);
 	}
 	
 	@Override
@@ -115,18 +103,18 @@ public class GuiHostServer extends GuiScreen
 		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
-		username.setText(userText);
+		username.setText(Options.instance().serverUsername);
 		username.setMaxLength(11);
 		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		username.setFocussed();
 		
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 72);
-		password.setText(passText);
+		password.setText(Options.instance().serverPassword);
 		password.setMaxLength(11);
 		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		
 		port = new GuiTextField(this, (ClientGame.WIDTH / 2) - 37, 90, 36);
-		port.setText(portText);
+		port.setText(Options.instance().serverPort);
 		port.setMaxLength(5);
 		port.setTypingMode(TypingMode.ONLY_NUMBERS);
 		
@@ -145,6 +133,16 @@ public class GuiHostServer extends GuiScreen
 	public void keyTyped()
 	{
 		this.hostButton.setEnabled(canContinue());
+	}
+	
+	private void onLeaving()
+	{
+		Options.instance().serverUsername = username.getText();
+		Options.instance().serverPassword = password.getText();
+		Options.instance().serverPort = port.getText();
+		Options.instance().serverIP = Game.IPv4_LOCALHOST; // TODO allow manual setting of the IP from the options file
+		
+		Options.instance().save();
 	}
 	
 	@Override

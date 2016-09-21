@@ -8,16 +8,12 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
-import ca.afroman.log.ALogType;
+import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 
 public class GuiJoinServer extends GuiScreen
 {
-	private static String userText = "";
-	private static String ipText = "";
-	private static String passText = "";
-	
 	private SpriteAnimation afroMan;
 	private SpriteAnimation player2;
 	private LightMap lightmap;
@@ -64,9 +60,7 @@ public class GuiJoinServer extends GuiScreen
 	@Override
 	public void goToParentScreen()
 	{
-		userText = username.getText();
-		ipText = serverIP.getText();
-		passText = password.getText();
+		onLeaving();
 		
 		super.goToParentScreen();
 	}
@@ -81,21 +75,21 @@ public class GuiJoinServer extends GuiScreen
 		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4, 112);
-		username.setText(userText);
+		username.setText(Options.instance().clientUsername);
 		username.setMaxLength(11);
 		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		username.setFocussed();
 		
 		// GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
-		password.setText(passText);
+		password.setText(Options.instance().clientPassword);
 		password.setMaxLength(11);
 		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		
 		// new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 112);
 		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 224);
 		serverIP.setMaxLength(64);
-		serverIP.setText(ipText);
+		serverIP.setText(Options.instance().clientIP + (Options.instance().clientPort.length() > 0 ? ":" + Options.instance().clientPort : ""));
 		
 		buttons.add(username);
 		buttons.add(serverIP);
@@ -112,39 +106,28 @@ public class GuiJoinServer extends GuiScreen
 	
 	private void joinServer()
 	{
-		userText = username.getText();
-		ipText = serverIP.getText();
-		passText = password.getText();
+		onLeaving();
 		
-		String[] portSplit = ipText.split(":");
-		
-		String port = "";
-		
-		if (portSplit.length > 1)
-		{
-			try
-			{
-				int nPort = Integer.parseInt(portSplit[portSplit.length - 1]);
-				port += nPort;
-			}
-			catch (NumberFormatException e)
-			{
-				ClientGame.instance().logger().log(ALogType.WARNING, "Unable to parse port", e);
-			}
-		}
-		
-		ClientGame.instance().setUsername(userText);
-		ClientGame.instance().setServerIP(portSplit[0]);
-		ClientGame.instance().setPort(port);
-		ClientGame.instance().setPassword(passText);
-		
-		ClientGame.instance().joinServer();
+		ClientGame.instance().joinServer(Options.instance().clientUsername, Options.instance().clientPassword);
 	}
 	
 	@Override
 	public void keyTyped()
 	{
 		this.joinButton.setEnabled(canContinue());
+	}
+	
+	private void onLeaving()
+	{
+		String[] portSplit = serverIP.getText().split(":");
+		String port = portSplit.length > 1 ? portSplit[portSplit.length - 1] : "";
+		
+		Options.instance().clientUsername = username.getText();
+		Options.instance().clientPassword = password.getText();
+		Options.instance().clientPort = port;
+		Options.instance().clientIP = portSplit[0];
+		
+		Options.instance().save();
 	}
 	
 	@Override

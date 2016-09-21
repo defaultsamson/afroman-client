@@ -3,6 +3,7 @@ package ca.afroman.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.client.Role;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.IPacketParser;
@@ -10,6 +11,7 @@ import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.resource.IDCounter;
+import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicTickRenderThread;
 
 public abstract class Game extends DynamicTickRenderThread implements IPacketParser
@@ -18,12 +20,17 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	public static final int DEFAULT_PORT = 2143;
 	public static final String IPv4_LOCALHOST = "127.0.0.1";
 	
+	public static Game instance(boolean serverSide)
+	{
+		return serverSide ? ServerGame.instance() : ClientGame.instance();
+	}
+	
 	protected boolean isInGame;
-	
 	protected List<Level> levels;
-	protected List<PlayerEntity> players;
 	
+	protected List<PlayerEntity> players;
 	private SocketManager socketManager;
+	
 	private List<BytePacket> toProcess;
 	
 	public Game(ThreadGroup threadGroup, String name, boolean isServerSide, int ticks)

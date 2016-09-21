@@ -57,6 +57,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
+import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketLogin;
@@ -118,10 +119,6 @@ public class ClientGame extends Game
 	private InputHandler input;
 	private ClientLevel currentLevel = null;
 	private HashMap<Role, FlickeringLight> lights;
-	private String username = "";
-	private String password = "";
-	private String port = "";
-	private String typedIP = "";
 	
 	private Role role;
 	private Role spectatingRole = Role.PLAYER1;
@@ -213,24 +210,9 @@ public class ClientGame extends Game
 		return lightingDebug;
 	}
 	
-	public String getPassword()
-	{
-		return password;
-	}
-	
-	public String getPort()
-	{
-		return port;
-	}
-	
 	public Role getRole()
 	{
 		return role;
-	}
-	
-	public String getServerIP()
-	{
-		return typedIP;
 	}
 	
 	public Role getSpectatingRole()
@@ -243,11 +225,6 @@ public class ClientGame extends Game
 		if (role != Role.SPECTATOR) return getPlayer(role);
 		else
 			return null;
-	}
-	
-	public String getUsername()
-	{
-		return username;
 	}
 	
 	public boolean hasServerListBeenUpdated()
@@ -290,22 +267,22 @@ public class ClientGame extends Game
 		return lightingDebug != LightMapState.OFF;
 	}
 	
-	public void joinServer()
+	public void joinServer(String username, String password)
 	{
 		music.stop();
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
-		int port = SocketManager.validatedPort(this.port);
+		int port = SocketManager.validatedPort(Options.instance().clientPort);
 		
 		// Sets the port to whatever is now set
-		setPort("" + port);
+		Options.instance().clientPort = new StringBuilder().append(port).toString();
 		
-		boolean successful = startSocket(getServerIP(), port);
+		boolean successful = startSocket(Options.instance().clientIP, port);
 		
 		if (successful)
 		{
-			sockets().sender().sendPacket(new PacketLogin(getUsername(), getPassword()));
+			sockets().sender().sendPacket(new PacketLogin(username, password));
 		}
 	}
 	
@@ -414,6 +391,12 @@ public class ClientGame extends Game
 		// DO THE LOADING
 		
 		logger().log(ALogType.DEBUG, "Loading game...");
+		
+		logger().log(ALogType.DEBUG, "Loading options...");
+		
+		Options.instance().load();
+		
+		logger().log(ALogType.DEBUG, "Loading assets...");
 		
 		Assets.load();
 		
@@ -920,6 +903,13 @@ public class ClientGame extends Game
 		}
 	}
 	
+	public void quit()
+	{
+		ClientGame.instance().stopThis();
+		Assets.dispose();
+		System.exit(0);
+	}
+	
 	@Override
 	public void render()
 	{
@@ -1134,34 +1124,14 @@ public class ClientGame extends Game
 		this.id = id;
 	}
 	
-	public void setPassword(String newPassword)
-	{
-		this.password = newPassword;
-	}
-	
-	public void setPort(String newPort)
-	{
-		this.port = newPort;
-	}
-	
 	public void setRole(Role role)
 	{
 		this.role = role;
 	}
 	
-	public void setServerIP(String newIP)
-	{
-		this.typedIP = newIP;
-	}
-	
 	public void setSpectatingRole(Role role)
 	{
 		this.spectatingRole = role;
-	}
-	
-	public void setUsername(String newUsername)
-	{
-		this.username = newUsername;
 	}
 	
 	@Override
@@ -1263,9 +1233,14 @@ public class ClientGame extends Game
 			
 			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
 			
-			this.getThisPlayer().setCameraToFollow(!buildMode);
+			if (getThisPlayer() != null) getThisPlayer().setCameraToFollow(!buildMode);
 			
 			updateCursorHiding();
+		}
+		
+		if (input.o.isPressed() && input.delete.isPressedFiltered())
+		{
+			quit();
 		}
 		
 		if (getCurrentScreen() != null)

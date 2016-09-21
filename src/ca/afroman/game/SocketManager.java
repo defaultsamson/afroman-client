@@ -18,6 +18,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
 import ca.afroman.server.ServerGame;
@@ -247,6 +248,8 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		
 		if (isServerSide())
 		{
+			Options.instance().serverPort = "" + port;
+			
 			try
 			{
 				socket = new DatagramSocket(serverConnection.getPort());
@@ -260,6 +263,8 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		}
 		else
 		{
+			Options.instance().clientPort = "" + port;
+			
 			try
 			{
 				socket = new DatagramSocket();

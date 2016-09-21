@@ -18,7 +18,7 @@ public class GuiConnectToServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Connecting to Server: " + ClientGame.instance().getServerIP() + (ClientGame.instance().getPort().length() > 0 ? ":" + ClientGame.instance().getPort() : ""));
+		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Connecting to Server....");
 		
 		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 45), "Waiting for server response");
 		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 55), "for " + (millsPassed / 1000) + " seconds...");
