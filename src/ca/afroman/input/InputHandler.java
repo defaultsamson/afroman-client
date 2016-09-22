@@ -70,17 +70,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key up_arrow = new Key(keys, KeyEvent.VK_UP);
 	public Key down_arrow = new Key(keys, KeyEvent.VK_DOWN);
 	public Key left_arrow = new Key(keys, KeyEvent.VK_LEFT);
-	
 	public Key right_arrow = new Key(keys, KeyEvent.VK_RIGHT);
-	public Key hudDebug = new Key(keys, KeyEvent.VK_F1);
-	public Key hitboxDebug = new Key(keys, KeyEvent.VK_F2);
-	public Key lightingDebug = new Key(keys, KeyEvent.VK_F3);
-	public Key saveLevel = new Key(keys, KeyEvent.VK_F4);
-	public Key offFocusRendering = new Key(keys, KeyEvent.VK_F9);
-	public Key consoleDebug = new Key(keys, KeyEvent.VK_F10);
-	public Key full_screen = new Key(keys, KeyEvent.VK_F11);
 	
-	public Key levelBuilder = new Key(keys, KeyEvent.VK_F12);
 	public Key escape = new Key(keys, KeyEvent.VK_ESCAPE);
 	public Key enter = new Key(keys, KeyEvent.VK_ENTER);
 	public Key tab = new Key(keys, KeyEvent.VK_TAB);
@@ -134,8 +125,20 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key w = new Key(keys, KeyEvent.VK_W);
 	public Key x = new Key(keys, KeyEvent.VK_X);
 	public Key y = new Key(keys, KeyEvent.VK_Y);
-	
 	public Key z = new Key(keys, KeyEvent.VK_Z);
+	
+	public Key f1 = new Key(keys, KeyEvent.VK_F1);
+	public Key f2 = new Key(keys, KeyEvent.VK_F2);
+	public Key f3 = new Key(keys, KeyEvent.VK_F3);
+	public Key f4 = new Key(keys, KeyEvent.VK_F4);
+	public Key f5 = new Key(keys, KeyEvent.VK_F5);
+	public Key f6 = new Key(keys, KeyEvent.VK_F6);
+	public Key f7 = new Key(keys, KeyEvent.VK_F7);
+	public Key f8 = new Key(keys, KeyEvent.VK_F8);
+	public Key f9 = new Key(keys, KeyEvent.VK_F9);
+	public Key f10 = new Key(keys, KeyEvent.VK_F10);
+	public Key f11 = new Key(keys, KeyEvent.VK_F11);
+	public Key f12 = new Key(keys, KeyEvent.VK_F12);
 	
 	private boolean isGameFocused = true;
 	

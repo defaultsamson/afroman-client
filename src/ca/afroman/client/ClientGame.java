@@ -1173,74 +1173,77 @@ public class ClientGame extends Game
 			light.getValue().setPosition(new Vector2DDouble(player.getPosition().getX() + (16 / 2), player.getPosition().getY() + (16 / 2)));
 		}
 		
-		if (input.consoleDebug.isReleasedFiltered())
-		{
-			consoleDebug = !consoleDebug;
-			
-			Console.setVisible(consoleDebug);
-			
-			logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
-		}
-		
-		if (input.full_screen.isPressedFiltered())
+		if (input.f11.isPressedFiltered())
 		{
 			setFullScreen(!fullscreen);
 		}
 		
-		if (input.hudDebug.isPressedFiltered())
+		// Debug keys
+		if (input.o.isPressed())
 		{
-			hudDebug = !hudDebug;
-			
-			logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
-		}
-		if (input().offFocusRendering.isPressedFiltered())
-		{
-			canRenderOutOfFocus = !canRenderOutOfFocus;
-			
-			logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + canRenderOutOfFocus);
-		}
-		if (input.hitboxDebug.isPressedFiltered())
-		{
-			hitboxDebug = !hitboxDebug;
-			
-			logger().log(ALogType.DEBUG, "Show Hitboxes: " + hitboxDebug);
-		}
-		if (input.lightingDebug.isPressedFiltered())
-		{
-			int currentOrdinal = lightingDebug.ordinal();
-			
-			currentOrdinal++;
-			
-			// Roll over
-			if (currentOrdinal >= LightMapState.values().length)
+			if (input.nine.isReleasedFiltered())
 			{
-				currentOrdinal = 0;
+				consoleDebug = !consoleDebug;
+				
+				Console.setVisible(consoleDebug);
+				
+				logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
+			}
+			if (input.one.isPressedFiltered())
+			{
+				hudDebug = !hudDebug;
+				
+				logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
+			}
+			if (input().eight.isPressedFiltered())
+			{
+				canRenderOutOfFocus = !canRenderOutOfFocus;
+				
+				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + canRenderOutOfFocus);
+			}
+			if (input.two.isPressedFiltered())
+			{
+				hitboxDebug = !hitboxDebug;
+				
+				logger().log(ALogType.DEBUG, "Show Hitboxes: " + hitboxDebug);
+			}
+			if (input.three.isPressedFiltered())
+			{
+				int currentOrdinal = lightingDebug.ordinal();
+				
+				currentOrdinal++;
+				
+				// Roll over
+				if (currentOrdinal >= LightMapState.values().length)
+				{
+					currentOrdinal = 0;
+				}
+				
+				lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
+				
+				logger().log(ALogType.DEBUG, "Lighting: " + lightingDebug.toString());
+			}
+			if (input.four.isPressedFiltered())
+			{
+				if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
+				logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
 			}
 			
-			lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
+			if (input.zero.isPressedFiltered())
+			{
+				buildMode = !buildMode;
+				
+				logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
+				
+				if (getThisPlayer() != null) getThisPlayer().setCameraToFollow(!buildMode);
+				
+				updateCursorHiding();
+			}
 			
-			logger().log(ALogType.DEBUG, "Lighting: " + lightingDebug.toString());
-		}
-		if (input.saveLevel.isPressedFiltered())
-		{
-			if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
-			logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
-		}
-		
-		if (input.levelBuilder.isPressedFiltered())
-		{
-			buildMode = !buildMode;
-			
-			logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
-			
-			if (getThisPlayer() != null) getThisPlayer().setCameraToFollow(!buildMode);
-			
-			updateCursorHiding();
-		}
-		
-		if (input.o.isPressed() && input.delete.isPressedFiltered())
-		{
-			quit();
+			if (input.o.isPressed() && input.delete.isPressedFiltered())
+			{
+				quit();
+			}
 		}
 		
 		if (getCurrentScreen() != null)
