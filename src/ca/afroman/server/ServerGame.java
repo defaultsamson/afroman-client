@@ -11,6 +11,7 @@ import ca.afroman.client.Role;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.HitboxToggleReceiver;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
@@ -27,12 +28,14 @@ import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketAddHitbox;
+import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddLevel;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketDenyJoin;
+import ca.afroman.packet.PacketEditHitboxToggle;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
@@ -152,6 +155,12 @@ public class ServerGame extends Game implements IPacketParser
 					HitboxTrigger e = (HitboxTrigger) event;
 					sockets().sender().sendPacketToAllClients(new PacketAddTrigger(level.getType(), e));
 					sockets().sender().sendPacketToAllClients(new PacketEditTrigger(level.getType(), e.getID(), e.getTriggerTypes(), e.getInTriggers(), e.getOutTriggers()));
+				}
+				else if (event instanceof HitboxToggleReceiver)
+				{
+					HitboxToggleReceiver e = (HitboxToggleReceiver) event;
+					sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(level.getType(), e));
+					sockets().sender().sendPacketToAllClients(new PacketEditHitboxToggle(level.getType(), e.isEnabled(), e.getID(), e.getInTriggers(), e.getOutTriggers()));
 				}
 			}
 		}
@@ -608,6 +617,78 @@ public class ServerGame extends Game implements IPacketParser
 							else
 							{
 								logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No event with ID " + id);
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case ADD_EVENT_HITBOX_TOGGLE:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					Level level = getLevel(levelType);
+					
+					if (level != null)
+					{
+						int id = HitboxTrigger.getIDCounter().getNext();
+						buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
+						int x = buf.getInt();
+						int y = buf.getInt();
+						int width = buf.getInt();
+						int height = buf.getInt();
+						
+						HitboxToggleReceiver trig = new HitboxToggleReceiver(true, id, x, y, width, height, null, null);
+						trig.addToLevel(level);
+						sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(levelType, id, x, y, width, height));
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case EDIT_EVENT_HITBOX_TOGGLE:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					Level level = getLevel(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						
+						IEvent eHitbox = level.getScriptedEvent(id);
+						
+						if (eHitbox != null)
+						{
+							if (eHitbox instanceof HitboxToggleReceiver)
+							{
+								HitboxToggleReceiver hitbox = (HitboxToggleReceiver) eHitbox;
+								
+								boolean enabled = buf.get() == 1;
+								List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
+								List<Integer> triggersOut = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
+								
+								hitbox.setEnabled(enabled);
+								hitbox.setInTriggers(triggersIn);
+								hitbox.setOutTriggers(triggersOut);
+								
+								// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
+								sockets().sender().sendPacketToAllClients(new PacketEditHitboxToggle(levelType, enabled, id, triggersIn, triggersOut));
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "Event found is not an instance of HitboxToggleReceiver");
 							}
 						}
 						else

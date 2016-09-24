@@ -90,7 +90,7 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 		
 		if (isServerSide())
 		{
-			ServerGame.instance().sockets().sender().sendPacket(new PacketSetPlayerLocation(this));
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
 		}
 	}
 	

@@ -166,7 +166,14 @@ public class GuiTextField extends GuiButton
 	
 	public void setFocussed(boolean isFocussed)
 	{
-		if (isFocussed) screen.unfocusTextFields();
+		if (isFocussed)
+		{
+			// When becoming focussed, will automatically go to the end
+			cursorPosition = text.length();
+			updateCursorDrawPos();
+			
+			screen.unfocusTextFields();
+		}
 		this.isFocussed = isFocussed;
 	}
 	

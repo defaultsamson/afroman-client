@@ -105,6 +105,11 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 		return hitbox.getY();
 	}
 	
+	public boolean isEnabled()
+	{
+		return hitbox.getLevel() != null;
+	}
+	
 	@Override
 	public boolean isServerSide()
 	{
@@ -114,7 +119,18 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 	@Override
 	public void onTrigger(Entity triggerer)
 	{
-		if (hitbox.getLevel() == null)
+		setEnabled(!isEnabled());
+	}
+	
+	@Override
+	public void removeFromLevel()
+	{
+		addToLevel(null);
+	}
+	
+	public void setEnabled(boolean isActive)
+	{
+		if (isActive)
 		{
 			hitbox.addToLevel(level);
 		}
@@ -122,12 +138,6 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 		{
 			hitbox.removeFromLevel();
 		}
-	}
-	
-	@Override
-	public void removeFromLevel()
-	{
-		addToLevel(null);
 	}
 	
 	public void setInTriggers(List<Integer> trigs)

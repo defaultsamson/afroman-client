@@ -33,6 +33,7 @@ import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.HitboxToggleReceiver;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
@@ -895,6 +896,73 @@ public class ClientGame extends Game
 					}
 				}
 					break;
+				case ADD_EVENT_HITBOX_TOGGLE:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					Level level = getLevel(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						int x = buf.getInt();
+						int y = buf.getInt();
+						int width = buf.getInt();
+						int height = buf.getInt();
+						
+						HitboxToggleReceiver trig = new HitboxToggleReceiver(true, id, x, y, width, height, null, null);
+						trig.addToLevel(level);
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
+				case EDIT_EVENT_HITBOX_TOGGLE:
+				{
+					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					
+					LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+					Level level = getLevel(levelType);
+					
+					if (level != null)
+					{
+						int id = buf.getInt();
+						
+						IEvent eHitbox = level.getScriptedEvent(id);
+						
+						if (eHitbox != null)
+						{
+							if (eHitbox instanceof HitboxToggleReceiver)
+							{
+								HitboxToggleReceiver hitbox = (HitboxToggleReceiver) eHitbox;
+								
+								boolean enabled = buf.get() == 1;
+								List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
+								List<Integer> triggersOut = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
+								
+								hitbox.setEnabled(enabled);
+								hitbox.setInTriggers(triggersIn);
+								hitbox.setOutTriggers(triggersOut);
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "Event found is not an instance of HitboxToggleReceiver");
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No event with ID " + id);
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No level with type " + levelType);
+					}
+				}
+					break;
 			}
 		}
 		else
@@ -1179,7 +1247,7 @@ public class ClientGame extends Game
 		}
 		
 		// Debug keys
-		if (input.o.isPressed())
+		if (input.control.isPressed())
 		{
 			if (input.nine.isReleasedFiltered())
 			{
@@ -1240,7 +1308,7 @@ public class ClientGame extends Game
 				updateCursorHiding();
 			}
 			
-			if (input.o.isPressed() && input.delete.isPressedFiltered())
+			if (input.shift.isPressed() && input.delete.isPressedFiltered())
 			{
 				quit();
 			}

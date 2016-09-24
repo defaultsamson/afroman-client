@@ -5,33 +5,33 @@ import java.util.List;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.TriggerType;
+import ca.afroman.events.HitboxToggleReceiver;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.gui.GuiTextField;
 import ca.afroman.input.TypingMode;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelObjectType;
-import ca.afroman.packet.PacketEditTrigger;
+import ca.afroman.packet.PacketEditHitboxToggle;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.ArrayUtil;
 
-public class GuiHitboxTriggerEditor extends GuiScreen
+public class GuiHitboxToggleEditor extends GuiScreen
 {
-	private GuiTextField triggers;
 	private GuiTextField inTriggers;
 	private GuiTextField outTriggers;
 	
 	private GuiTextButton finish;
 	private GuiTextButton cancel;
 	private GuiTextButton delete;
+	private GuiTextButton enabled;
+	private boolean isEnabled;
 	
 	private ClientLevel level;
 	private int triggerID;
 	
-	public GuiHitboxTriggerEditor(ClientLevel level, int triggerID)
+	public GuiHitboxToggleEditor(ClientLevel level, int triggerID)
 	{
 		super(null);
 		
@@ -40,22 +40,9 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		int width = (ClientGame.WIDTH - 40);
 		
-		HitboxTrigger trigger = (HitboxTrigger) level.getScriptedEvent(triggerID);
+		HitboxToggleReceiver trigger = (HitboxToggleReceiver) level.getScriptedEvent(triggerID);
 		
-		StringBuilder sb = new StringBuilder();
-		
-		for (TriggerType t : trigger.getTriggerTypes())
-		{
-			sb.append(t.ordinal());
-			sb.append(',');
-		}
-		
-		triggers = new GuiTextField(this, 20, 28, width);
-		triggers.setFocussed();
-		triggers.setText(sb.toString());
-		triggers.setMaxLength(5000);
-		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
-		buttons.add(triggers);
+		isEnabled = trigger.isEnabled();
 		
 		StringBuilder sb2 = new StringBuilder();
 		
@@ -88,17 +75,18 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		cancel = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
 		delete = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 46, 6, 54, blackFont, "Delete");
 		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
+		enabled = new GuiTextButton(this, 203, (ClientGame.WIDTH / 2) - 33, 26, 66, blackFont, (isEnabled ? "0" : "X") + " Enabled");
 		
 		buttons.add(cancel);
 		buttons.add(delete);
 		buttons.add(finish);
+		buttons.add(enabled);
 		keyTyped();
 	}
 	
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		nobleFont.render(renderTo, new Vector2DInt(36, 18), "Trigger Types");
 		nobleFont.render(renderTo, new Vector2DInt(36, 48), "In Triggers");
 		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
 	}
@@ -113,31 +101,6 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	public void keyTyped()
 	{
 		boolean finished = true;
-		
-		{
-			String[] trigs = this.triggers.getText().split(",");
-			
-			if (!ArrayUtil.isEmpty(trigs))
-			{
-				for (String t : trigs)
-				{
-					try
-					{
-						int ord = Integer.parseInt(t);
-						if (TriggerType.fromOrdinal(ord) == null)
-						{
-							finished = false;
-							break;
-						}
-					}
-					catch (NumberFormatException e)
-					{
-						finished = false;
-						break;
-					}
-				}
-			}
-		}
 		
 		if (finished)
 		{
@@ -196,16 +159,6 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 				goToParentScreen();
 				break;
 			case 200:
-				String[] trigs = this.triggers.getText().split(",");
-				List<TriggerType> triggers = new ArrayList<TriggerType>(trigs.length);
-				if (!ArrayUtil.isEmpty(trigs))
-				{
-					for (String t : trigs)
-					{
-						triggers.add(TriggerType.fromOrdinal(Integer.parseInt(t)));
-					}
-				}
-				
 				String[] inTrigs = this.inTriggers.getText().split(",");
 				List<Integer> inTriggers = new ArrayList<Integer>(inTrigs.length);
 				if (!ArrayUtil.isEmpty(inTrigs))
@@ -226,9 +179,13 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 					}
 				}
 				
-				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), triggerID, triggers, inTriggers, outTriggers);
+				PacketEditHitboxToggle pack = new PacketEditHitboxToggle(level.getType(), isEnabled, triggerID, inTriggers, outTriggers);
 				ClientGame.instance().sockets().sender().sendPacket(pack);
 				goToParentScreen();
+				break;
+			case 203:
+				isEnabled = !isEnabled;
+				enabled.setText((isEnabled ? "0" : "X") + " Enabled");
 				break;
 		}
 	}
@@ -251,17 +208,13 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		if (ClientGame.instance().input().tab.isPressedFiltered())
 		{
-			if (triggers.isFocussed())
-			{
-				inTriggers.setFocussed();
-			}
-			else if (inTriggers.isFocussed())
+			if (inTriggers.isFocussed())
 			{
 				outTriggers.setFocussed();
 			}
 			else
 			{
-				triggers.setFocussed();
+				inTriggers.setFocussed();
 			}
 		}
 	}

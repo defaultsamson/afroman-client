@@ -19,17 +19,20 @@ import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.YComparator;
+import ca.afroman.events.HitboxToggleReceiver;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.build.GuiGrid;
+import ca.afroman.gui.build.GuiHitboxToggleEditor;
 import ca.afroman.gui.build.GuiHitboxTriggerEditor;
 import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketAddHitbox;
+import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
@@ -98,6 +101,11 @@ public class ClientLevel extends Level
 				hitboxClickCount = 0;
 				break;
 			case TRIGGER:
+				ClientGame.instance().setCurrentScreen(null);
+				hitboxClickCount = 0;
+				break;
+			case HITBOX_TOGGLE:
+				ClientGame.instance().setCurrentScreen(null);
 				hitboxClickCount = 0;
 				break;
 		}
@@ -111,6 +119,83 @@ public class ClientLevel extends Level
 	public LightMap getLightMap()
 	{
 		return lightmap;
+	}
+	
+	// Deals with generic hitbox behaviour for build modes that use it
+	private void hitboxBehaviour(BuildMode mode, boolean leftClick)
+	{
+		switch (mode)
+		{
+			default:
+				break;
+			case HITBOX:
+				if (leftClick)
+				{
+					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+					
+					PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
+					ClientGame.instance().sockets().sender().sendPacket(pack);
+				}
+				else
+				{
+					Hitbox box = this.getHitbox(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (box != null)
+					{
+						PacketRemoveLevelObject pack = new PacketRemoveLevelObject(box.getID(), this.getType(), LevelObjectType.HITBOX);
+						ClientGame.instance().sockets().sender().sendPacket(pack);
+					}
+				}
+				break;
+			case TRIGGER:
+				if (leftClick)
+				{
+					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+					
+					PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
+					ClientGame.instance().sockets().sender().sendPacket(pack);
+				}
+				else
+				{
+					IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (event != null)
+					{
+						if (event instanceof HitboxTrigger)
+						{
+							if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
+							{
+								ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
+							}
+						}
+					}
+				}
+				break;
+			case HITBOX_TOGGLE:
+				if (leftClick)
+				{
+					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+					
+					PacketAddHitboxToggle pack = new PacketAddHitboxToggle(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
+					ClientGame.instance().sockets().sender().sendPacket(pack);
+				}
+				else
+				{
+					IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (event != null)
+					{
+						if (event instanceof HitboxToggleReceiver)
+						{
+							if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxToggleEditor))
+							{
+								ClientGame.instance().setCurrentScreen(new GuiHitboxToggleEditor(this, event.getID()));
+							}
+						}
+					}
+				}
+				break;
+		}
 	}
 	
 	private void loadBuildMode(BuildMode mode)
@@ -131,6 +216,9 @@ public class ClientLevel extends Level
 				ClientGame.instance().setCurrentScreen(new GuiGrid());
 				break;
 			case TRIGGER:
+				
+				break;
+			case HITBOX_TOGGLE:
 				
 				break;
 		}
@@ -328,18 +416,34 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out scripted events
-		if (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.TRIGGER && ClientGame.instance().isBuildMode()))
+		if (ClientGame.instance().isHitboxDebugging() || ((buildMode == BuildMode.TRIGGER || buildMode == BuildMode.HITBOX_TOGGLE) && ClientGame.instance().isBuildMode()))
 		{
 			for (IEvent e : getScriptedEvents())
 			{
 				Vector2DInt pos = worldToScreen(new Vector2DDouble(e.getX(), e.getY()));
-				renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Blue
+				
+				if (e instanceof HitboxTrigger && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.TRIGGER)))
+				{
+					renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Blue
+				}
+				else if (e instanceof HitboxToggleReceiver && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX_TOGGLE)))
+				{
+					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Red
+				}
 			}
 			
-			if (buildMode == BuildMode.TRIGGER && hitboxClickCount == 1)
+			if (hitboxClickCount == 1)
 			{
 				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
-				renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Blue
+				
+				if (buildMode == BuildMode.TRIGGER)
+				{
+					renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Blue
+				}
+				else if (buildMode == BuildMode.HITBOX_TOGGLE)
+				{
+					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Red
+				}
 			}
 		}
 		
@@ -364,33 +468,46 @@ public class ClientLevel extends Level
 				String text3 = "";
 				String text4 = "";
 				
+				int lines = 0;
+				
 				switch (buildMode)
 				{
 					case TILE:
+						lines = 3;
 						text2 = "Tiles";
 						text3 = "Scroll to switch texture";
 						break;
 					case LIGHT:
+						lines = 3;
 						text2 = "Lights";
 						text3 = "Scroll to change size";
 						break;
 					case HITBOX:
+						lines = 3;
 						text2 = "Hitboxes";
 						text3 = "Click to place both corners";
 						text4 = "Right click to cancel corner";
 						break;
 					case TRIGGER:
+						lines = 4;
 						text1 = "Triggers";
+						text2 = "Click to place both corners";
+						text3 = "Right click to cancel corner";
+						text4 = "Right click box to edit";
+						break;
+					case HITBOX_TOGGLE:
+						lines = 4;
+						text1 = "Hitbox Toggle Revievers";
 						text2 = "Click to place both corners";
 						text3 = "Right click to cancel corner";
 						text4 = "Right click box to edit";
 						break;
 				}
 				
-				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46), text1);
-				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36), text2);
-				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26), text3);
-				Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16), text4);
+				if (lines == 4) Assets.getFont(AssetType.FONT_NOBLE).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46), text1);
+				if (lines >= 3) Assets.getFont(lines == 3 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36), text2);
+				if (lines >= 2) Assets.getFont(lines == 2 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26), text3);
+				if (lines >= 1) Assets.getFont(lines == 1 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16), text4);
 			}
 		}
 	}
@@ -546,60 +663,19 @@ public class ClientLevel extends Level
 					}
 					break;
 				case HITBOX:
-					if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
-					{
-						if (hitboxClickCount == 0)
-						{
-							hitboxClickCount = 1;
-							hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
-						}
-						else if (hitboxClickCount == 1)
-						{
-							hitboxClickCount = 0;
-							
-							Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
-							
-							System.out.println("Width: " + box.getWidth());
-							// TODO
-							PacketAddHitbox pack = new PacketAddHitbox(this.getType(), new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
-							ClientGame.instance().sockets().sender().sendPacket(pack);
-						}
-					}
-					
-					if (ClientGame.instance().input().mouseRight.isPressedFiltered())
-					{
-						if (hitboxClickCount == 1)
-						{
-							hitboxClickCount = 0;
-						}
-						else
-						{
-							Hitbox box = this.getHitbox(screenToWorld(ClientGame.instance().input().getMousePos()));
-							
-							if (box != null)
-							{
-								PacketRemoveLevelObject pack = new PacketRemoveLevelObject(box.getID(), this.getType(), LevelObjectType.HITBOX);
-								ClientGame.instance().sockets().sender().sendPacket(pack);
-							}
-						}
-					}
-					break;
 				case TRIGGER:
+				case HITBOX_TOGGLE:
 					if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 					{
 						if (hitboxClickCount == 0)
 						{
-							hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 							hitboxClickCount = 1;
+							hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 						}
 						else if (hitboxClickCount == 1)
 						{
-							Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
-							
-							PacketAddTrigger pack = new PacketAddTrigger(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
-							ClientGame.instance().sockets().sender().sendPacket(pack);
-							
 							hitboxClickCount = 0;
+							hitboxBehaviour(buildMode, true);
 						}
 					}
 					
@@ -611,18 +687,7 @@ public class ClientLevel extends Level
 						}
 						else
 						{
-							IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
-							
-							if (event != null)
-							{
-								if (event instanceof HitboxTrigger)
-								{
-									if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
-									{
-										ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
-									}
-								}
-							}
+							hitboxBehaviour(buildMode, false);
 						}
 					}
 					break;

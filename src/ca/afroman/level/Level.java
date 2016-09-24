@@ -13,6 +13,7 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
+import ca.afroman.events.HitboxToggleReceiver;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
@@ -134,6 +135,41 @@ public class Level implements IServerClient
 							}
 							
 							new HitboxTrigger(isServerSide, HitboxTrigger.getIDCounter().getNext(), x, y, width, height, triggerTypes, inTriggers, outTriggers).addToLevel(level);;
+						}
+							break;
+						case HITBOX_TOGGLE:
+						{
+							boolean isEnabled = Boolean.parseBoolean(parameters[0]);
+							double x = Double.parseDouble(parameters[1]);
+							double y = Double.parseDouble(parameters[2]);
+							double width = Double.parseDouble(parameters[3]);
+							double height = Double.parseDouble(parameters[4]);
+							
+							String[] rSubParameters = getRawSubParameters(rawParameters);
+							
+							List<Integer> inTriggers = new ArrayList<Integer>();
+							String[] inTriggerP = getParameters(rSubParameters[0]);
+							if (inTriggerP != null)
+							{
+								for (String e : inTriggerP)
+								{
+									inTriggers.add(Integer.parseInt(e));
+								}
+							}
+							
+							List<Integer> outTriggers = new ArrayList<Integer>();
+							String[] outTriggerP = getParameters(rSubParameters[1]);
+							if (outTriggerP != null)
+							{
+								for (String e : outTriggerP)
+								{
+									outTriggers.add(Integer.parseInt(e));
+								}
+							}
+							
+							HitboxToggleReceiver r = new HitboxToggleReceiver(isServerSide, HitboxTrigger.getIDCounter().getNext(), x, y, width, height, inTriggers, outTriggers);
+							r.addToLevel(level);
+							r.setEnabled(isEnabled);
 						}
 							break;
 					}
@@ -632,6 +668,53 @@ public class Level implements IServerClient
 				}
 				
 				sb.append("}, {");
+				
+				// Saves in triggers
+				for (int k = 0; k < t.getInTriggers().size(); k++)
+				{
+					sb.append(t.getInTriggers().get(k));
+					if (k != t.getInTriggers().size() - 1) sb.append(", ");
+				}
+				
+				sb.append("}, {");
+				
+				// Saves out triggers
+				for (int k = 0; k < t.getOutTriggers().size(); k++)
+				{
+					sb.append(t.getOutTriggers().get(k));
+					if (k != t.getOutTriggers().size() - 1) sb.append(", ");
+				}
+				
+				sb.append("})");
+				
+				toReturn.add(sb.toString());
+			}
+		}
+		
+		toReturn.add("");
+		toReturn.add("");
+		toReturn.add("// The HitboxToggleReceivers. HitboxToggleReceiver(isEnabled, x, y, width, height, inTriggers, outTriggers)");
+		toReturn.add("");
+		
+		for (IEvent e : getScriptedEvents())
+		{
+			if (e instanceof HitboxToggleReceiver)
+			{
+				HitboxToggleReceiver t = (HitboxToggleReceiver) e;
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append(LevelObjectType.HITBOX_TOGGLE.toString());
+				sb.append('(');
+				sb.append(t.isEnabled() ? "true" : "false");
+				sb.append(", ");
+				sb.append(e.getX());
+				sb.append(", ");
+				sb.append(e.getY());
+				sb.append(", ");
+				sb.append(e.getWidth());
+				sb.append(", ");
+				sb.append(e.getHeight());
+				sb.append(", {");
 				
 				// Saves in triggers
 				for (int k = 0; k < t.getInTriggers().size(); k++)

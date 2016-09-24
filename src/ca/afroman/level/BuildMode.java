@@ -5,7 +5,8 @@ public enum BuildMode
 	TILE,
 	LIGHT,
 	HITBOX,
-	TRIGGER;
+	TRIGGER,
+	HITBOX_TOGGLE;
 	
 	public static BuildMode fromOrdinal(int ordinal)
 	{
