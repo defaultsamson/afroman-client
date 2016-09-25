@@ -2,7 +2,7 @@ package ca.afroman.packet;
 
 import java.nio.ByteBuffer;
 
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
@@ -11,7 +11,7 @@ public class PacketAddHitboxToggle extends BytePacket
 {
 	private byte[] toSend;
 	
-	public PacketAddHitboxToggle(LevelType level, HitboxToggleReceiver hitbox, IPConnection... connection)
+	public PacketAddHitboxToggle(LevelType level, HitboxToggle hitbox, IPConnection... connection)
 	{
 		this(level, hitbox.getID(), (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), connection);
 	}

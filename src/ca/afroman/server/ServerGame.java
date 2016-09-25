@@ -11,7 +11,7 @@ import ca.afroman.client.Role;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
@@ -156,9 +156,9 @@ public class ServerGame extends Game implements IPacketParser
 					sockets().sender().sendPacketToAllClients(new PacketAddTrigger(level.getType(), e));
 					sockets().sender().sendPacketToAllClients(new PacketEditTrigger(level.getType(), e.getID(), e.getTriggerTypes(), e.getInTriggers(), e.getOutTriggers()));
 				}
-				else if (event instanceof HitboxToggleReceiver)
+				else if (event instanceof HitboxToggle)
 				{
-					HitboxToggleReceiver e = (HitboxToggleReceiver) event;
+					HitboxToggle e = (HitboxToggle) event;
 					sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(level.getType(), e));
 					sockets().sender().sendPacketToAllClients(new PacketEditHitboxToggle(level.getType(), e.isEnabled(), e.getID(), e.getInTriggers(), e.getOutTriggers()));
 				}
@@ -646,7 +646,7 @@ public class ServerGame extends Game implements IPacketParser
 						int width = buf.getInt();
 						int height = buf.getInt();
 						
-						HitboxToggleReceiver trig = new HitboxToggleReceiver(true, id, x, y, width, height, null, null);
+						HitboxToggle trig = new HitboxToggle(true, id, x, y, width, height, null, null);
 						trig.addToLevel(level);
 						sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(levelType, id, x, y, width, height));
 					}
@@ -671,9 +671,9 @@ public class ServerGame extends Game implements IPacketParser
 						
 						if (eHitbox != null)
 						{
-							if (eHitbox instanceof HitboxToggleReceiver)
+							if (eHitbox instanceof HitboxToggle)
 							{
-								HitboxToggleReceiver hitbox = (HitboxToggleReceiver) eHitbox;
+								HitboxToggle hitbox = (HitboxToggle) eHitbox;
 								
 								boolean enabled = buf.get() == 1;
 								List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);

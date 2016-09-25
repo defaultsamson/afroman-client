@@ -6,13 +6,16 @@ import java.util.List;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.HitboxTriggerWrapper;
 import ca.afroman.events.TriggerType;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.gui.GuiTextField;
+import ca.afroman.input.InputHandler;
 import ca.afroman.input.TypingMode;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelObjectType;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.resource.Vector2DInt;
@@ -26,73 +29,44 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	
 	private GuiTextButton finish;
 	private GuiTextButton cancel;
-	private GuiTextButton delete;
 	
 	private ClientLevel level;
-	private int triggerID;
+	private HitboxTrigger trigger;
 	
 	public GuiHitboxTriggerEditor(ClientLevel level, int triggerID)
 	{
 		super(null);
 		
 		this.level = level;
-		this.triggerID = triggerID;
 		
 		int width = (ClientGame.WIDTH - 40);
 		
-		HitboxTrigger trigger = (HitboxTrigger) level.getScriptedEvent(triggerID);
-		
-		StringBuilder sb = new StringBuilder();
-		
-		for (TriggerType t : trigger.getTriggerTypes())
-		{
-			sb.append(t.ordinal());
-			sb.append(',');
-		}
+		trigger = (HitboxTrigger) level.getScriptedEvent(triggerID);
 		
 		triggers = new GuiTextField(this, 20, 28, width);
-		triggers.setFocussed();
-		triggers.setText(sb.toString());
 		triggers.setMaxLength(5000);
 		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		addButton(triggers);
 		
-		StringBuilder sb2 = new StringBuilder();
-		
-		for (int e : trigger.getInTriggers())
-		{
-			sb2.append(e);
-			sb2.append(',');
-		}
-		
 		inTriggers = new GuiTextField(this, 20, 58, width);
-		inTriggers.setText(sb2.toString());
+		
 		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		inTriggers.setMaxLength(5000);
 		addButton(inTriggers);
 		
-		StringBuilder sb3 = new StringBuilder();
-		
-		for (int e : trigger.getOutTriggers())
-		{
-			sb3.append(e);
-			sb3.append(',');
-		}
-		
 		outTriggers = new GuiTextField(this, 20, 88, width);
-		outTriggers.setText(sb3.toString());
 		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		outTriggers.setMaxLength(5000);
 		addButton(outTriggers);
 		
 		cancel = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
-		delete = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 46, 6, 54, blackFont, "Delete");
 		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
 		
 		addButton(cancel);
-		addButton(delete);
 		addButton(finish);
-		keyTyped();
+		addButton(new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 60, 6, 54, blackFont, "Delete"));
+		addButton(new GuiTextButton(this, 204, (ClientGame.WIDTH / 2) + 14, 6, 42, blackFont, "Copy"));
+		initInfo(trigger.getTriggerTypes(), trigger.getInTriggers(), trigger.getOutTriggers());
 	}
 	
 	@Override
@@ -101,6 +75,41 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		nobleFont.render(renderTo, new Vector2DInt(36, 18), "Trigger Types");
 		nobleFont.render(renderTo, new Vector2DInt(36, 48), "In Triggers");
 		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
+	}
+	
+	private void initInfo(List<TriggerType> triggers, List<Integer> inTriggers, List<Integer> outTriggers)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		for (TriggerType t : triggers)
+		{
+			sb.append(t.ordinal());
+			sb.append(',');
+		}
+		
+		this.triggers.setText(sb.toString());
+		
+		StringBuilder sb2 = new StringBuilder();
+		
+		for (int e : inTriggers)
+		{
+			sb2.append(e);
+			sb2.append(',');
+		}
+		
+		this.inTriggers.setText(sb2.toString());
+		
+		StringBuilder sb3 = new StringBuilder();
+		
+		for (int e : outTriggers)
+		{
+			sb3.append(e);
+			sb3.append(',');
+		}
+		
+		this.outTriggers.setText(sb3.toString());
+		
+		keyTyped();
 	}
 	
 	@Override
@@ -184,8 +193,11 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		switch (buttonID)
 		{
+			case 204: // COPY
+				ClientGame.instance().input().setClipboard(trigger.toString());
+				break;
 			case 202:
-				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(triggerID, level.getType(), LevelObjectType.HITBOX_TRIGGER));
+				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(trigger.getID(), level.getType(), LevelObjectType.HITBOX_TRIGGER));
 			case 201:
 				goToParentScreen();
 				break;
@@ -220,7 +232,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 					}
 				}
 				
-				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), triggerID, triggers, inTriggers, outTriggers);
+				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), trigger.getID(), triggers, inTriggers, outTriggers);
 				ClientGame.instance().sockets().sender().sendPacket(pack);
 				goToParentScreen();
 				break;
@@ -237,6 +249,27 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	public void tick()
 	{
 		super.tick();
+		
+		if (ClientGame.instance().input().control.isPressed() && ClientGame.instance().input().v.isPressedFiltered())
+		{
+			try
+			{
+				HitboxTriggerWrapper w = HitboxTriggerWrapper.fromString(InputHandler.getClipboard());
+				
+				if (w != null)
+				{
+					initInfo(w.getTriggers(), w.getInTriggers(), w.getOutTriggers());
+				}
+				else
+				{
+					ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiHitboxTriggerEditor");
+				}
+			}
+			catch (Exception e)
+			{
+				ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiHitboxTriggerEditor");
+			}
+		}
 		
 		if (ClientGame.instance().input().escape.isPressedFiltered())
 		{

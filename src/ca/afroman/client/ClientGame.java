@@ -33,7 +33,7 @@ import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
@@ -762,14 +762,19 @@ public class ClientGame extends Game
 				case SET_PLAYER_LOCATION:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+					Role role = Role.fromOrdinal(buf.get());
 					
-					PlayerEntity player = getPlayer(Role.fromOrdinal(buf.get()));
+					PlayerEntity player = getPlayer(role);
 					
 					if (player != null)
 					{
 						player.setDirection(Direction.fromOrdinal(buf.get()));
 						player.setLastDirection(Direction.fromOrdinal(buf.get()));
 						player.setPosition(new Vector2DDouble(buf.getInt(), buf.getInt()));
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "No player with role " + role);
 					}
 				}
 					break;
@@ -910,7 +915,7 @@ public class ClientGame extends Game
 						int width = buf.getInt();
 						int height = buf.getInt();
 						
-						HitboxToggleReceiver trig = new HitboxToggleReceiver(true, id, x, y, width, height, null, null);
+						HitboxToggle trig = new HitboxToggle(true, id, x, y, width, height, null, null);
 						trig.addToLevel(level);
 					}
 					else
@@ -934,9 +939,9 @@ public class ClientGame extends Game
 						
 						if (eHitbox != null)
 						{
-							if (eHitbox instanceof HitboxToggleReceiver)
+							if (eHitbox instanceof HitboxToggle)
 							{
-								HitboxToggleReceiver hitbox = (HitboxToggleReceiver) eHitbox;
+								HitboxToggle hitbox = (HitboxToggle) eHitbox;
 								
 								boolean enabled = buf.get() == 1;
 								List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);

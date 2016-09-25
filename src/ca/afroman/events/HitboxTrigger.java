@@ -9,6 +9,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.input.InputType;
 import ca.afroman.level.Level;
+import ca.afroman.level.LevelObjectType;
 import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
@@ -212,6 +213,51 @@ public class HitboxTrigger extends InputType implements IEvent, IServerClient
 				lastHit = player;
 			}
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(LevelObjectType.HITBOX_TRIGGER.toString());
+		sb.append('(');
+		sb.append(getX());
+		sb.append(", ");
+		sb.append(getY());
+		sb.append(", ");
+		sb.append(getWidth());
+		sb.append(", ");
+		sb.append(getHeight());
+		sb.append(", {");
+		
+		// Saves trigger types
+		for (int k = 0; k < getTriggerTypes().size(); k++)
+		{
+			sb.append(getTriggerTypes().get(k).toString());
+			if (k != getTriggerTypes().size() - 1) sb.append(", ");
+		}
+		
+		sb.append("}, {");
+		
+		// Saves in triggers
+		for (int k = 0; k < getInTriggers().size(); k++)
+		{
+			sb.append(getInTriggers().get(k));
+			if (k != getInTriggers().size() - 1) sb.append(", ");
+		}
+		
+		sb.append("}, {");
+		
+		// Saves out triggers
+		for (int k = 0; k < getOutTriggers().size(); k++)
+		{
+			sb.append(getOutTriggers().get(k));
+			if (k != getOutTriggers().size() - 1) sb.append(", ");
+		}
+		
+		sb.append("})");
+		
+		return sb.toString();
 	}
 	
 	@Override

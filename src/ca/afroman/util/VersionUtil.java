@@ -3,7 +3,7 @@ package ca.afroman.util;
 public class VersionUtil
 {
 	// Sub versions are backwards compatible with each other
-	public static final int SUB_VERSION = 0;
+	public static final int SUB_VERSION = 1;
 	
 	public static final byte DAY = 24;
 	public static final byte MONTH = 9;

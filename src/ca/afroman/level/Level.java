@@ -1,19 +1,19 @@
 package ca.afroman.level;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
+import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
+import ca.afroman.events.HitboxToggleWrapper;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.HitboxTriggerWrapper;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.FlickeringLight;
@@ -23,6 +23,7 @@ import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.FileUtil;
+import ca.afroman.util.ParamUtil;
 
 public class Level implements IServerClient
 {
@@ -45,7 +46,7 @@ public class Level implements IServerClient
 					LevelObjectType objectType = LevelObjectType.valueOf(split[0]);
 					String[] split2 = split[1].split("\\)");
 					String rawParameters = split2.length > 0 ? split2[0] : "";
-					String[] parameters = getParameters(rawParameters);
+					String[] parameters = ParamUtil.getParameters(rawParameters);
 					
 					switch (objectType)
 					{
@@ -96,79 +97,18 @@ public class Level implements IServerClient
 							break;
 						case HITBOX_TRIGGER:
 						{
-							double x = Double.parseDouble(parameters[0]);
-							double y = Double.parseDouble(parameters[1]);
-							double width = Double.parseDouble(parameters[2]);
-							double height = Double.parseDouble(parameters[3]);
+							HitboxTriggerWrapper w = HitboxTriggerWrapper.fromString(line);
 							
-							String[] rSubParameters = getRawSubParameters(rawParameters);
-							
-							List<TriggerType> triggerTypes = new ArrayList<TriggerType>();
-							String[] triggerParameters = getParameters(rSubParameters[0]);
-							if (triggerParameters != null)
-							{
-								for (String e : triggerParameters)
-								{
-									triggerTypes.add(TriggerType.valueOf(e));
-								}
-							}
-							
-							List<Integer> inTriggers = new ArrayList<Integer>();
-							String[] inTriggerP = getParameters(rSubParameters[1]);
-							if (inTriggerP != null)
-							{
-								for (String e : inTriggerP)
-								{
-									inTriggers.add(Integer.parseInt(e));
-								}
-							}
-							
-							List<Integer> outTriggers = new ArrayList<Integer>();
-							String[] outTriggerP = getParameters(rSubParameters[2]);
-							if (outTriggerP != null)
-							{
-								for (String e : outTriggerP)
-								{
-									outTriggers.add(Integer.parseInt(e));
-								}
-							}
-							
-							new HitboxTrigger(isServerSide, HitboxTrigger.getIDCounter().getNext(), x, y, width, height, triggerTypes, inTriggers, outTriggers).addToLevel(level);;
+							new HitboxTrigger(isServerSide, HitboxTrigger.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getTriggers(), w.getInTriggers(), w.getOutTriggers()).addToLevel(level);;
 						}
 							break;
 						case HITBOX_TOGGLE:
 						{
-							boolean isEnabled = Boolean.parseBoolean(parameters[0]);
-							double x = Double.parseDouble(parameters[1]);
-							double y = Double.parseDouble(parameters[2]);
-							double width = Double.parseDouble(parameters[3]);
-							double height = Double.parseDouble(parameters[4]);
+							HitboxToggleWrapper w = HitboxToggleWrapper.fromString(line);
 							
-							String[] rSubParameters = getRawSubParameters(rawParameters);
-							
-							List<Integer> inTriggers = new ArrayList<Integer>();
-							String[] inTriggerP = getParameters(rSubParameters[0]);
-							if (inTriggerP != null)
-							{
-								for (String e : inTriggerP)
-								{
-									inTriggers.add(Integer.parseInt(e));
-								}
-							}
-							
-							List<Integer> outTriggers = new ArrayList<Integer>();
-							String[] outTriggerP = getParameters(rSubParameters[1]);
-							if (outTriggerP != null)
-							{
-								for (String e : outTriggerP)
-								{
-									outTriggers.add(Integer.parseInt(e));
-								}
-							}
-							
-							HitboxToggleReceiver r = new HitboxToggleReceiver(isServerSide, HitboxTrigger.getIDCounter().getNext(), x, y, width, height, inTriggers, outTriggers);
+							HitboxToggle r = new HitboxToggle(isServerSide, HitboxTrigger.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getInTriggers(), w.getOutTriggers());
 							r.addToLevel(level);
-							r.setEnabled(isEnabled);
+							r.setEnabled(w.isEnabled());
 						}
 							break;
 					}
@@ -183,34 +123,6 @@ public class Level implements IServerClient
 		}
 		
 		return level;
-	}
-	
-	public static String[] getParameters(String in)
-	{
-		return in.length() > 0 ? in.split(", ") : null;
-	}
-	
-	public static String[] getRawSubParameters(String in)
-	{
-		int count = in.split("\\{").length - 1;
-		
-		if (count >= 1)
-		{
-			String[] ret = new String[count];
-			
-			// isolates all the sub-parameters
-			for (int i = 0; i < count; i++)
-			{
-				String[] r1 = in.split("\\{")[1 + i].split("\\}");
-				ret[i] = r1.length > 0 ? r1[0] : "";
-			}
-			
-			return ret;
-		}
-		else
-		{
-			return null;
-		}
 	}
 	
 	private boolean isServerSide;
@@ -633,48 +545,7 @@ public class Level implements IServerClient
 		{
 			if (e instanceof HitboxTrigger)
 			{
-				HitboxTrigger t = (HitboxTrigger) e;
-				
-				StringBuilder sb = new StringBuilder();
-				sb.append(LevelObjectType.HITBOX_TRIGGER.toString());
-				sb.append('(');
-				sb.append(e.getX());
-				sb.append(", ");
-				sb.append(e.getY());
-				sb.append(", ");
-				sb.append(e.getWidth());
-				sb.append(", ");
-				sb.append(e.getHeight());
-				sb.append(", {");
-				
-				// Saves trigger types
-				for (int k = 0; k < t.getTriggerTypes().size(); k++)
-				{
-					sb.append(t.getTriggerTypes().get(k).toString());
-					if (k != t.getTriggerTypes().size() - 1) sb.append(", ");
-				}
-				
-				sb.append("}, {");
-				
-				// Saves in triggers
-				for (int k = 0; k < t.getInTriggers().size(); k++)
-				{
-					sb.append(t.getInTriggers().get(k));
-					if (k != t.getInTriggers().size() - 1) sb.append(", ");
-				}
-				
-				sb.append("}, {");
-				
-				// Saves out triggers
-				for (int k = 0; k < t.getOutTriggers().size(); k++)
-				{
-					sb.append(t.getOutTriggers().get(k));
-					if (k != t.getOutTriggers().size() - 1) sb.append(", ");
-				}
-				
-				sb.append("})");
-				
-				toReturn.add(sb.toString());
+				toReturn.add(e.toString());
 			}
 		}
 		
@@ -685,56 +556,14 @@ public class Level implements IServerClient
 		
 		for (IEvent e : getScriptedEvents())
 		{
-			if (e instanceof HitboxToggleReceiver)
+			if (e instanceof HitboxToggle)
 			{
-				HitboxToggleReceiver t = (HitboxToggleReceiver) e;
-				
-				StringBuilder sb = new StringBuilder();
-				sb.append(LevelObjectType.HITBOX_TOGGLE.toString());
-				sb.append('(');
-				sb.append(t.isEnabled() ? "true" : "false");
-				sb.append(", ");
-				sb.append(e.getX());
-				sb.append(", ");
-				sb.append(e.getY());
-				sb.append(", ");
-				sb.append(e.getWidth());
-				sb.append(", ");
-				sb.append(e.getHeight());
-				sb.append(", {");
-				
-				// Saves in triggers
-				for (int k = 0; k < t.getInTriggers().size(); k++)
-				{
-					sb.append(t.getInTriggers().get(k));
-					if (k != t.getInTriggers().size() - 1) sb.append(", ");
-				}
-				
-				sb.append("}, {");
-				
-				// Saves out triggers
-				for (int k = 0; k < t.getOutTriggers().size(); k++)
-				{
-					sb.append(t.getOutTriggers().get(k));
-					if (k != t.getOutTriggers().size() - 1) sb.append(", ");
-				}
-				
-				sb.append("})");
-				
-				toReturn.add(sb.toString());
+				toReturn.add(e.toString());
 			}
 		}
 		
 		// Copies the level data to the clipboard
-		StringBuilder sb = new StringBuilder();
-		for (String copy : toReturn)
-		{
-			sb.append(copy);
-			sb.append("\n");
-		}
-		StringSelection stringSelection = new StringSelection(sb.toString());
-		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
-		clpbrd.setContents(stringSelection, null);
+		ClientGame.instance().input().setClipboard(toReturn);
 		
 		return toReturn;
 	}

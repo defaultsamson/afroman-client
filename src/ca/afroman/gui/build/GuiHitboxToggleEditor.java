@@ -5,13 +5,16 @@ import java.util.List;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
+import ca.afroman.events.HitboxToggleWrapper;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.gui.GuiTextField;
+import ca.afroman.input.InputHandler;
 import ca.afroman.input.TypingMode;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelObjectType;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketEditHitboxToggle;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.resource.Vector2DInt;
@@ -24,64 +27,44 @@ public class GuiHitboxToggleEditor extends GuiScreen
 	
 	private GuiTextButton finish;
 	private GuiTextButton cancel;
-	private GuiTextButton delete;
 	private GuiTextButton enabled;
 	private boolean isEnabled;
 	
 	private ClientLevel level;
-	private int triggerID;
+	private HitboxToggle trigger;
 	
 	public GuiHitboxToggleEditor(ClientLevel level, int triggerID)
 	{
 		super(null);
 		
 		this.level = level;
-		this.triggerID = triggerID;
 		
 		int width = (ClientGame.WIDTH - 40);
 		
-		HitboxToggleReceiver trigger = (HitboxToggleReceiver) level.getScriptedEvent(triggerID);
+		trigger = (HitboxToggle) level.getScriptedEvent(triggerID);
 		
 		isEnabled = trigger.isEnabled();
 		
-		StringBuilder sb2 = new StringBuilder();
-		
-		for (int e : trigger.getInTriggers())
-		{
-			sb2.append(e);
-			sb2.append(',');
-		}
-		
 		inTriggers = new GuiTextField(this, 20, 58, width);
-		inTriggers.setText(sb2.toString());
 		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		inTriggers.setMaxLength(5000);
 		addButton(inTriggers);
 		
-		StringBuilder sb3 = new StringBuilder();
-		
-		for (int e : trigger.getOutTriggers())
-		{
-			sb3.append(e);
-			sb3.append(',');
-		}
-		
 		outTriggers = new GuiTextField(this, 20, 88, width);
-		outTriggers.setText(sb3.toString());
 		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		outTriggers.setMaxLength(5000);
 		addButton(outTriggers);
 		
 		cancel = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
-		delete = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 46, 6, 54, blackFont, "Delete");
 		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
-		enabled = new GuiTextButton(this, 203, (ClientGame.WIDTH / 2) - 33, 26, 66, blackFont, (isEnabled ? "0" : "X") + " Enabled");
+		enabled = new GuiTextButton(this, 203, (ClientGame.WIDTH / 2) - 33, 26, 66, blackFont, " Enabled");
 		
 		addButton(cancel);
-		addButton(delete);
 		addButton(finish);
 		addButton(enabled);
-		keyTyped();
+		addButton(new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 60, 6, 54, blackFont, "Delete"));
+		addButton(new GuiTextButton(this, 204, (ClientGame.WIDTH / 2) + 14, 6, 42, blackFont, "Copy"));
+		initInfo(isEnabled, trigger.getInTriggers(), trigger.getOutTriggers());
 	}
 	
 	@Override
@@ -89,6 +72,34 @@ public class GuiHitboxToggleEditor extends GuiScreen
 	{
 		nobleFont.render(renderTo, new Vector2DInt(36, 48), "In Triggers");
 		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
+	}
+	
+	private void initInfo(boolean isEnabled, List<Integer> inTriggers, List<Integer> outTriggers)
+	{
+		this.isEnabled = isEnabled;
+		enabled.setText((isEnabled ? "0" : "X") + " Enabled");
+		
+		StringBuilder sb2 = new StringBuilder();
+		
+		for (int e : inTriggers)
+		{
+			sb2.append(e);
+			sb2.append(',');
+		}
+		
+		this.inTriggers.setText(sb2.toString());
+		
+		StringBuilder sb3 = new StringBuilder();
+		
+		for (int e : outTriggers)
+		{
+			sb3.append(e);
+			sb3.append(',');
+		}
+		
+		this.outTriggers.setText(sb3.toString());
+		
+		keyTyped();
 	}
 	
 	@Override
@@ -147,8 +158,11 @@ public class GuiHitboxToggleEditor extends GuiScreen
 		
 		switch (buttonID)
 		{
+			case 204:// COPY
+				ClientGame.instance().input().setClipboard(trigger.toString());
+				break;
 			case 202:
-				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(triggerID, level.getType(), LevelObjectType.HITBOX_TRIGGER));
+				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(trigger.getID(), level.getType(), LevelObjectType.HITBOX_TRIGGER));
 			case 201:
 				goToParentScreen();
 				break;
@@ -173,7 +187,7 @@ public class GuiHitboxToggleEditor extends GuiScreen
 					}
 				}
 				
-				PacketEditHitboxToggle pack = new PacketEditHitboxToggle(level.getType(), isEnabled, triggerID, inTriggers, outTriggers);
+				PacketEditHitboxToggle pack = new PacketEditHitboxToggle(level.getType(), isEnabled, trigger.getID(), inTriggers, outTriggers);
 				ClientGame.instance().sockets().sender().sendPacket(pack);
 				goToParentScreen();
 				break;
@@ -194,6 +208,27 @@ public class GuiHitboxToggleEditor extends GuiScreen
 	public void tick()
 	{
 		super.tick();
+		
+		if (ClientGame.instance().input().control.isPressed() && ClientGame.instance().input().v.isPressedFiltered())
+		{
+			try
+			{
+				HitboxToggleWrapper w = HitboxToggleWrapper.fromString(InputHandler.getClipboard());
+				
+				if (w != null)
+				{
+					initInfo(w.isEnabled(), w.getInTriggers(), w.getOutTriggers());
+				}
+				else
+				{
+					ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiHitboxTriggerEditor");
+				}
+			}
+			catch (Exception e)
+			{
+				ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiHitboxTriggerEditor");
+			}
+		}
 		
 		if (ClientGame.instance().input().escape.isPressedFiltered())
 		{

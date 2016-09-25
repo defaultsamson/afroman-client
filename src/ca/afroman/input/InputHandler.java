@@ -2,7 +2,9 @@ package ca.afroman.input;
 
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -256,6 +258,26 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	{
 		mouseWheelDown.setPressed((e.getWheelRotation() > 0));
 		mouseWheelUp.setPressed((e.getWheelRotation() < 0));
+	}
+	
+	public void setClipboard(List<String> toAdd)
+	{
+		setClipboard((String[]) toAdd.toArray());
+	}
+	
+	public void setClipboard(String... toAdd)
+	{
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < toAdd.length - 1; i++)
+		{
+			sb.append(toAdd[i]);
+			sb.append("\n");
+		}
+		sb.append(toAdd[toAdd.length - 1]);
+		
+		StringSelection stringSelection = new StringSelection(sb.toString());
+		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clpbrd.setContents(stringSelection, null);
 	}
 	
 	public void toggleKey(int keyCode, boolean isPressed)

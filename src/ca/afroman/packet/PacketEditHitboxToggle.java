@@ -3,7 +3,7 @@ package ca.afroman.packet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
@@ -65,7 +65,7 @@ public class PacketEditHitboxToggle extends BytePacket
 		}
 	}
 	
-	public PacketEditHitboxToggle(LevelType level, HitboxToggleReceiver hitbox, IPConnection... connection)
+	public PacketEditHitboxToggle(LevelType level, HitboxToggle hitbox, IPConnection... connection)
 	{
 		this(level, hitbox.isEnabled(), hitbox.getID(), hitbox.getInTriggers(), hitbox.getOutTriggers(), connection);
 	}

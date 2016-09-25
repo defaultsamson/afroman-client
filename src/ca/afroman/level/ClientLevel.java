@@ -19,7 +19,7 @@ import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.YComparator;
-import ca.afroman.events.HitboxToggleReceiver;
+import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.gfx.LightMap;
@@ -117,13 +117,13 @@ public class ClientLevel extends Level
 	}
 	
 	// Only used for right clicks in Build Mode
-	private HitboxToggleReceiver getHitboxToggle(Vector2DDouble pos)
+	private HitboxToggle getHitboxToggle(Vector2DDouble pos)
 	{
 		for (IEvent event : getScriptedEvents())
 		{
-			if (event instanceof HitboxToggleReceiver)
+			if (event instanceof HitboxToggle)
 			{
-				if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return (HitboxToggleReceiver) event;
+				if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return (HitboxToggle) event;
 			}
 		}
 		return null;
@@ -204,7 +204,7 @@ public class ClientLevel extends Level
 				}
 				else
 				{
-					HitboxToggleReceiver event = getHitboxToggle(screenToWorld(ClientGame.instance().input().getMousePos()));
+					HitboxToggle event = getHitboxToggle(screenToWorld(ClientGame.instance().input().getMousePos()));
 					
 					if (event != null)
 					{
@@ -216,6 +216,7 @@ public class ClientLevel extends Level
 				}
 				break;
 		}
+		
 	}
 	
 	private void loadBuildMode(BuildMode mode)
@@ -446,7 +447,7 @@ public class ClientLevel extends Level
 				{
 					renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Blue
 				}
-				else if (e instanceof HitboxToggleReceiver && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX_TOGGLE)))
+				else if (e instanceof HitboxToggle && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX_TOGGLE)))
 				{
 					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Red
 				}
@@ -685,29 +686,32 @@ public class ClientLevel extends Level
 				case HITBOX:
 				case TRIGGER:
 				case HITBOX_TOGGLE:
-					if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
+					if (ClientGame.instance().getCurrentScreen() instanceof GuiGrid || ClientGame.instance().getCurrentScreen() == null)
 					{
-						if (hitboxClickCount == 0)
+						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							hitboxClickCount = 1;
-							hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+							if (hitboxClickCount == 0)
+							{
+								hitboxClickCount = 1;
+								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+							}
+							else if (hitboxClickCount == 1)
+							{
+								hitboxClickCount = 0;
+								hitboxBehaviour(buildMode, true);
+							}
 						}
-						else if (hitboxClickCount == 1)
+						
+						if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 						{
-							hitboxClickCount = 0;
-							hitboxBehaviour(buildMode, true);
-						}
-					}
-					
-					if (ClientGame.instance().input().mouseRight.isPressedFiltered())
-					{
-						if (hitboxClickCount == 1)
-						{
-							hitboxClickCount = 0;
-						}
-						else
-						{
-							hitboxBehaviour(buildMode, false);
+							if (hitboxClickCount == 1)
+							{
+								hitboxClickCount = 0;
+							}
+							else
+							{
+								hitboxBehaviour(buildMode, false);
+							}
 						}
 					}
 					break;

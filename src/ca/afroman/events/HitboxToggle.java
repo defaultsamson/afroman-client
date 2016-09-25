@@ -7,8 +7,9 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.level.Level;
+import ca.afroman.level.LevelObjectType;
 
-public class HitboxToggleReceiver implements IEvent, IServerClient
+public class HitboxToggle implements IEvent, IServerClient
 {
 	private boolean isServerSide;
 	
@@ -17,12 +18,12 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 	private List<Integer> outTriggers;
 	private Hitbox hitbox;
 	
-	public HitboxToggleReceiver(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxToggle(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
 		this(isServerSide, id, new Hitbox(id, x, y, width, height), inTriggers, outTriggers);
 	}
 	
-	public HitboxToggleReceiver(boolean isServerSide, int id, Hitbox box, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxToggle(boolean isServerSide, int id, Hitbox box, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
 		this.isServerSide = isServerSide;
 		level = null;
@@ -154,6 +155,44 @@ public class HitboxToggleReceiver implements IEvent, IServerClient
 	public void tick()
 	{
 		
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(LevelObjectType.HITBOX_TOGGLE.toString());
+		sb.append('(');
+		sb.append(isEnabled() ? "true" : "false");
+		sb.append(", ");
+		sb.append(getX());
+		sb.append(", ");
+		sb.append(getY());
+		sb.append(", ");
+		sb.append(getWidth());
+		sb.append(", ");
+		sb.append(getHeight());
+		sb.append(", {");
+		
+		// Saves in triggers
+		for (int k = 0; k < getInTriggers().size(); k++)
+		{
+			sb.append(getInTriggers().get(k));
+			if (k != getInTriggers().size() - 1) sb.append(", ");
+		}
+		
+		sb.append("}, {");
+		
+		// Saves out triggers
+		for (int k = 0; k < getOutTriggers().size(); k++)
+		{
+			sb.append(getOutTriggers().get(k));
+			if (k != getOutTriggers().size() - 1) sb.append(", ");
+		}
+		
+		sb.append("})");
+		
+		return sb.toString();
 	}
 	
 	@Override
