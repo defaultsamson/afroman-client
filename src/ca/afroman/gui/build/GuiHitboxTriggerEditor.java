@@ -55,7 +55,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		triggers.setText(sb.toString());
 		triggers.setMaxLength(5000);
 		triggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
-		buttons.add(triggers);
+		addButton(triggers);
 		
 		StringBuilder sb2 = new StringBuilder();
 		
@@ -69,7 +69,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		inTriggers.setText(sb2.toString());
 		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		inTriggers.setMaxLength(5000);
-		buttons.add(inTriggers);
+		addButton(inTriggers);
 		
 		StringBuilder sb3 = new StringBuilder();
 		
@@ -83,15 +83,15 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		outTriggers.setText(sb3.toString());
 		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		outTriggers.setMaxLength(5000);
-		buttons.add(outTriggers);
+		addButton(outTriggers);
 		
 		cancel = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
 		delete = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 46, 6, 54, blackFont, "Delete");
 		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
 		
-		buttons.add(cancel);
-		buttons.add(delete);
-		buttons.add(finish);
+		addButton(cancel);
+		addButton(delete);
+		addButton(finish);
 		keyTyped();
 	}
 	
@@ -101,12 +101,6 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		nobleFont.render(renderTo, new Vector2DInt(36, 18), "Trigger Types");
 		nobleFont.render(renderTo, new Vector2DInt(36, 48), "In Triggers");
 		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
-	}
-	
-	@Override
-	public void init()
-	{
-		
 	}
 	
 	@Override

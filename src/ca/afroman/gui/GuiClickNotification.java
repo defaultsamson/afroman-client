@@ -25,7 +25,7 @@ public class GuiClickNotification extends GuiTextButton
 		this.notifText1 = text1;
 		this.notifText2 = text2;
 		
-		screen.buttons.add(this);
+		screen.addButton(this);
 	}
 	
 	@Override

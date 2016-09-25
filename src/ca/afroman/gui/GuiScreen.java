@@ -1,7 +1,6 @@
 package ca.afroman.gui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
@@ -17,7 +16,7 @@ public abstract class GuiScreen
 	protected static Font blackFont = Assets.getFont(AssetType.FONT_BLACK);
 	
 	protected GuiScreen parentScreen;
-	protected List<GuiButton> buttons;
+	private List<GuiButton> buttons;
 	private List<GuiButton> buttonToRemove;
 	
 	private GuiButton listening = null;
@@ -27,13 +26,17 @@ public abstract class GuiScreen
 		this.parentScreen = parentScreen;
 		this.buttons = new ArrayList<GuiButton>();
 		this.buttonToRemove = new ArrayList<GuiButton>();
-		
-		init();
 	}
 	
-	public void addButton(GuiButton button)
+	public void addButton(GuiButton but)
 	{
-		buttons.add(button);
+		// to invoke the top-most button to the buttom-most
+		buttons.add(0, but);
+	}
+	
+	public void clearButtons()
+	{
+		buttons.clear();
 	}
 	
 	/**
@@ -57,8 +60,6 @@ public abstract class GuiScreen
 	{
 		ClientGame.instance().setCurrentScreen(this.parentScreen);
 	}
-	
-	public abstract void init();
 	
 	public abstract void keyTyped();
 	
@@ -90,9 +91,10 @@ public abstract class GuiScreen
 	{
 		drawScreen(renderTo);
 		
-		for (GuiButton button : buttons)
+		// Render the list backwards so that it draws buttons from top to bottom properly
+		for (int i = buttons.size() - 1; i >= 0; i--)
 		{
-			button.render(renderTo);
+			buttons.get(i).render(renderTo);
 		}
 	}
 	
@@ -117,14 +119,11 @@ public abstract class GuiScreen
 		
 		this.buttonToRemove.clear();
 		
-		// Reverses to invoke the top-most button to the buttom-most
-		Collections.reverse(buttons);
 		// Ticks all the buttons
 		for (GuiButton button : this.buttons)
 		{
 			button.tick();
 		}
-		Collections.reverse(buttons);
 	}
 	
 	public void unfocusTextFields()

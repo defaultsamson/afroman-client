@@ -56,7 +56,7 @@ public class GuiHitboxToggleEditor extends GuiScreen
 		inTriggers.setText(sb2.toString());
 		inTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		inTriggers.setMaxLength(5000);
-		buttons.add(inTriggers);
+		addButton(inTriggers);
 		
 		StringBuilder sb3 = new StringBuilder();
 		
@@ -70,17 +70,17 @@ public class GuiHitboxToggleEditor extends GuiScreen
 		outTriggers.setText(sb3.toString());
 		outTriggers.setTypingMode(TypingMode.ONLY_NUMBERS_AND_COMMA);
 		outTriggers.setMaxLength(5000);
-		buttons.add(outTriggers);
+		addButton(outTriggers);
 		
 		cancel = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) + 8, 112, 84, blackFont, "Cancel");
 		delete = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 46, 6, 54, blackFont, "Delete");
 		finish = new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - 84 - 8, 112, 84, blackFont, "Finished");
 		enabled = new GuiTextButton(this, 203, (ClientGame.WIDTH / 2) - 33, 26, 66, blackFont, (isEnabled ? "0" : "X") + " Enabled");
 		
-		buttons.add(cancel);
-		buttons.add(delete);
-		buttons.add(finish);
-		buttons.add(enabled);
+		addButton(cancel);
+		addButton(delete);
+		addButton(finish);
+		addButton(enabled);
 		keyTyped();
 	}
 	
@@ -89,12 +89,6 @@ public class GuiHitboxToggleEditor extends GuiScreen
 	{
 		nobleFont.render(renderTo, new Vector2DInt(36, 48), "In Triggers");
 		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
-	}
-	
-	@Override
-	public void init()
-	{
-		
 	}
 	
 	@Override

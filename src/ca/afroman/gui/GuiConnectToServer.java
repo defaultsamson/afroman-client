@@ -13,6 +13,11 @@ public class GuiConnectToServer extends GuiScreen
 	public GuiConnectToServer(GuiScreen parent)
 	{
 		super(parent);
+		
+		addButton(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 110, 72, blackFont, "Cancel"));
+		
+		startTime = System.currentTimeMillis();
+		millsPassed = 0;
 	}
 	
 	@Override
@@ -25,15 +30,6 @@ public class GuiConnectToServer extends GuiScreen
 		
 		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 80), "If nothing happens for a while,");
 		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 90), "cancel and try rejoining.");
-	}
-	
-	@Override
-	public void init()
-	{
-		buttons.add(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 110, 72, blackFont, "Cancel"));
-		
-		startTime = System.currentTimeMillis();
-		millsPassed = 0;
 	}
 	
 	@Override

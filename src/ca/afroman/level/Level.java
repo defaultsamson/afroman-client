@@ -5,7 +5,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
@@ -333,18 +332,16 @@ public class Level implements IServerClient
 	 */
 	public Hitbox getHitbox(Vector2DDouble pos)
 	{
-		Collections.reverse(getHitboxes());
-		
-		for (Hitbox hitbox : getHitboxes())
+		for (int i = getHitboxes().size() - 1; i >= 0; i--)
 		{
+			Hitbox hitbox = getHitboxes().get(i);
+			
 			if (hitbox.contains(pos.getX(), pos.getY()))
 			{
-				Collections.reverse(getHitboxes());
 				return hitbox;
 			}
 		}
 		
-		Collections.reverse(getHitboxes());
 		return null;
 	}
 	
@@ -376,10 +373,10 @@ public class Level implements IServerClient
 	 */
 	public PointLight getLight(Vector2DDouble pos)
 	{
-		Collections.reverse(lights);
-		
-		for (PointLight light : lights)
+		for (int i = getLights().size() - 1; i >= 0; i--)
 		{
+			PointLight light = getLights().get(i);
+			
 			double radius = light.getRadius();
 			
 			double xa = (pos.getX() - light.getPosition().getX());
@@ -393,13 +390,11 @@ public class Level implements IServerClient
 				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
 				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
 				{
-					Collections.reverse(lights);
 					return light;
 				}
 			}
 		}
 		
-		Collections.reverse(lights);
 		return null;
 	}
 	
@@ -444,13 +439,6 @@ public class Level implements IServerClient
 		return null;
 	}
 	
-	// public void addEntityBehind(Entity entity)
-	// {
-	// Collections.reverse(entities);
-	// entities.add(entity);
-	// Collections.reverse(entities);
-	// }
-	
 	public List<IEvent> getScriptedEvents()
 	{
 		return events;
@@ -467,21 +455,20 @@ public class Level implements IServerClient
 	{
 		List<Entity> tiles = getTiles(layer);
 		
-		Collections.reverse(tiles);
-		
-		for (Entity tile : tiles)
+		for (int i = tiles.size() - 1; i >= 0; i--)
 		{
+			Entity tile = tiles.get(i);
+			
 			// TODO generate removable hitboxes for tiles based on asset
 			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
 			
 			if (surrounding.contains(pos.getX(), pos.getY()))
 			{
-				Collections.reverse(tiles);
 				return tile;
 			}
 		}
-		Collections.reverse(tiles);
 		return null;
+		
 	}
 	
 	/**

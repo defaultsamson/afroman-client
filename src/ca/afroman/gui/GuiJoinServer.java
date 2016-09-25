@@ -28,6 +28,41 @@ public class GuiJoinServer extends GuiScreen
 	public GuiJoinServer(GuiScreen parent)
 	{
 		super(parent);
+		
+		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
+		
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
+		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
+		
+		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4, 112);
+		username.setText(Options.instance().clientUsername);
+		username.setMaxLength(11);
+		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
+		username.setFocussed();
+		
+		// GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
+		password.setText(Options.instance().clientPassword);
+		password.setMaxLength(11);
+		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
+		
+		// new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 112);
+		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 224);
+		serverIP.setMaxLength(64);
+		serverIP.setText(Options.instance().clientIP + (Options.instance().clientPort.length() > 0 ? ":" + Options.instance().clientPort : ""));
+		
+		addButton(username);
+		addButton(serverIP);
+		addButton(password);
+		
+		joinButton = new GuiTextButton(this, 1, 144, 60 - 4, 72, Assets.getFont(AssetType.FONT_BLACK), "Join Server");
+		this.joinButton.setEnabled(!this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty());
+		
+		keyTyped();
+		
+		addButton(joinButton);
+		addButton(new GuiTextButton(this, 200, 144, 90 - 6, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	private boolean canContinue()
@@ -63,45 +98,6 @@ public class GuiJoinServer extends GuiScreen
 		onLeaving();
 		
 		super.goToParentScreen();
-	}
-	
-	@Override
-	public void init()
-	{
-		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
-		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
-		
-		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4, 112);
-		username.setText(Options.instance().clientUsername);
-		username.setMaxLength(11);
-		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
-		username.setFocussed();
-		
-		// GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
-		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
-		password.setText(Options.instance().clientPassword);
-		password.setMaxLength(11);
-		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
-		
-		// new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 112);
-		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 224);
-		serverIP.setMaxLength(64);
-		serverIP.setText(Options.instance().clientIP + (Options.instance().clientPort.length() > 0 ? ":" + Options.instance().clientPort : ""));
-		
-		buttons.add(username);
-		buttons.add(serverIP);
-		buttons.add(password);
-		
-		joinButton = new GuiTextButton(this, 1, 144, 60 - 4, 72, Assets.getFont(AssetType.FONT_BLACK), "Join Server");
-		this.joinButton.setEnabled(!this.username.getText().isEmpty() && !this.serverIP.getText().isEmpty());
-		
-		keyTyped();
-		
-		buttons.add(joinButton);
-		buttons.add(new GuiTextButton(this, 200, 144, 90 - 6, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	private void joinServer()

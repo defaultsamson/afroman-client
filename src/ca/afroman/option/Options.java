@@ -34,6 +34,7 @@ public class Options
 	public String clientPassword;
 	public String clientIP;
 	public String clientPort;
+	public boolean renderOffFocus;
 	public boolean fullscreen;
 	
 	private void append(List<String> list, OptionType type, boolean value)
@@ -57,6 +58,7 @@ public class Options
 		clientPassword = "";
 		clientIP = "";
 		clientPort = "";
+		renderOffFocus = true;
 		fullscreen = false;
 	}
 	
@@ -137,6 +139,7 @@ public class Options
 		append(op, OptionType.CLIENT_PASSWORD, clientPassword);
 		append(op, OptionType.CLIENT_IP, clientIP);
 		append(op, OptionType.CLIENT_PORT, clientPort);
+		append(op, OptionType.RENDER_OFF_FOCUS, renderOffFocus);
 		append(op, OptionType.FULLSCREEN, fullscreen);
 		
 		FileUtil.writeLines(op, new File(OPTIONS_FILE));

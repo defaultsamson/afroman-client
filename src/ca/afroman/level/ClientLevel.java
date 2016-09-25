@@ -116,6 +116,32 @@ public class ClientLevel extends Level
 		return offset;
 	}
 	
+	// Only used for right clicks in Build Mode
+	private HitboxToggleReceiver getHitboxToggle(Vector2DDouble pos)
+	{
+		for (IEvent event : getScriptedEvents())
+		{
+			if (event instanceof HitboxToggleReceiver)
+			{
+				if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return (HitboxToggleReceiver) event;
+			}
+		}
+		return null;
+	}
+	
+	// Only used for right clicks in Build Mode
+	private HitboxTrigger getHitboxTrigger(Vector2DDouble pos)
+	{
+		for (IEvent event : getScriptedEvents())
+		{
+			if (event instanceof HitboxTrigger)
+			{
+				if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return (HitboxTrigger) event;
+			}
+		}
+		return null;
+	}
+	
 	public LightMap getLightMap()
 	{
 		return lightmap;
@@ -157,16 +183,13 @@ public class ClientLevel extends Level
 				}
 				else
 				{
-					IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
+					HitboxTrigger event = getHitboxTrigger(screenToWorld(ClientGame.instance().input().getMousePos()));
 					
 					if (event != null)
 					{
-						if (event instanceof HitboxTrigger)
+						if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
 						{
-							if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxTriggerEditor))
-							{
-								ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
-							}
+							ClientGame.instance().setCurrentScreen(new GuiHitboxTriggerEditor(this, event.getID()));
 						}
 					}
 				}
@@ -181,16 +204,13 @@ public class ClientLevel extends Level
 				}
 				else
 				{
-					IEvent event = this.getScriptedEvent(screenToWorld(ClientGame.instance().input().getMousePos()));
+					HitboxToggleReceiver event = getHitboxToggle(screenToWorld(ClientGame.instance().input().getMousePos()));
 					
 					if (event != null)
 					{
-						if (event instanceof HitboxToggleReceiver)
+						if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxToggleEditor))
 						{
-							if (!(ClientGame.instance().getCurrentScreen() instanceof GuiHitboxToggleEditor))
-							{
-								ClientGame.instance().setCurrentScreen(new GuiHitboxToggleEditor(this, event.getID()));
-							}
+							ClientGame.instance().setCurrentScreen(new GuiHitboxToggleEditor(this, event.getID()));
 						}
 					}
 				}

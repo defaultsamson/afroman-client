@@ -33,12 +33,12 @@ public class GuiTileEditor extends GuiGrid
 		layer4show = new GuiTextButton(this, 40, 5, 24 + (18 * 4), 32, blackFont, "L5 X");
 		layer5show = new GuiTextButton(this, 50, 5, 24 + (18 * 5), 32, blackFont, "L6 X");
 		
-		buttons.add(layer0show);
-		buttons.add(layer1show);
-		buttons.add(layer2show);
-		buttons.add(layer3show);
-		buttons.add(layer4show);
-		buttons.add(layer5show);
+		addButton(layer0show);
+		addButton(layer1show);
+		addButton(layer2show);
+		addButton(layer3show);
+		addButton(layer4show);
+		addButton(layer5show);
 		
 		layer0edit = new GuiTextButton(this, 01, 39, 18 + (18 * 0), 13, blackFont, "E");
 		layer1edit = new GuiTextButton(this, 11, 39, 18 + (18 * 1), 13, blackFont, "E");
@@ -47,12 +47,12 @@ public class GuiTileEditor extends GuiGrid
 		layer4edit = new GuiTextButton(this, 41, 39, 24 + (18 * 4), 13, blackFont, "E");
 		layer5edit = new GuiTextButton(this, 51, 39, 24 + (18 * 5), 13, blackFont, "E");
 		
-		buttons.add(layer0edit);
-		buttons.add(layer1edit);
-		buttons.add(layer2edit);
-		buttons.add(layer3edit);
-		buttons.add(layer4edit);
-		buttons.add(layer5edit);
+		addButton(layer0edit);
+		addButton(layer1edit);
+		addButton(layer2edit);
+		addButton(layer3edit);
+		addButton(layer4edit);
+		addButton(layer5edit);
 		
 		updateButtons();
 	}
@@ -63,12 +63,6 @@ public class GuiTileEditor extends GuiGrid
 		super.drawScreen(renderTo);
 		
 		nobleFont.renderCentered(renderTo, new Vector2DInt(28, 6), "Layers");
-	}
-	
-	@Override
-	public void init()
-	{
-		
 	}
 	
 	@Override

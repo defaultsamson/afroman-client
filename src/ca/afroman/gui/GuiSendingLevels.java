@@ -19,6 +19,25 @@ public class GuiSendingLevels extends GuiScreen
 	public GuiSendingLevels(GuiScreen parent)
 	{
 		super(parent);
+		
+		resendButton = new GuiTextButton(this, 2000, 20 + 20, 116, 72, blackFont, "Resend Levels");
+		resendButton.setEnabled(ClientGame.instance().isHostingServer());
+		addButton(resendButton);
+		
+		// Draw a stop server button
+		if (ClientGame.instance().isHostingServer())
+		{
+			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, 72, blackFont, "Stop Server");
+		}
+		// Draw a leave server button
+		else
+		{
+			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, 72, blackFont, "Disconnect");
+		}
+		addButton(stopButton);
+		
+		startTime = System.currentTimeMillis();
+		millsPassed = 0;
 	}
 	
 	@Override
@@ -39,29 +58,6 @@ public class GuiSendingLevels extends GuiScreen
 		{
 			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Recieving levels...");
 		}
-	}
-	
-	@Override
-	public void init()
-	{
-		resendButton = new GuiTextButton(this, 2000, 20 + 20, 116, 72, blackFont, "Resend Levels");
-		resendButton.setEnabled(ClientGame.instance().isHostingServer());
-		buttons.add(resendButton);
-		
-		// Draw a stop server button
-		if (ClientGame.instance().isHostingServer())
-		{
-			stopButton = new GuiTextButton(this, 2001, 148 - 20, 116, 72, blackFont, "Stop Server");
-		}
-		// Draw a leave server button
-		else
-		{
-			stopButton = new GuiTextButton(this, 2002, 148 - 20, 116, 72, blackFont, "Disconnect");
-		}
-		buttons.add(stopButton);
-		
-		startTime = System.currentTimeMillis();
-		millsPassed = 0;
 	}
 	
 	@Override

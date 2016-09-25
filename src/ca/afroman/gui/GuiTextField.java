@@ -92,6 +92,8 @@ public class GuiTextField extends GuiButton
 	{
 		this.setFocussed();
 		
+		ClientGame.instance().input().mouseLeft.isPressedFiltered();
+		
 		int x = ClientGame.instance().input().getMousePos().getX();
 		for (int i = 0; i < maxRenderable(); i++)
 		{

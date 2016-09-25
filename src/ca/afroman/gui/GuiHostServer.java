@@ -30,6 +30,38 @@ public class GuiHostServer extends GuiScreen
 	public GuiHostServer(GuiScreen parent)
 	{
 		super(parent);
+		
+		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
+		
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
+		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
+		
+		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
+		username.setText(Options.instance().serverUsername);
+		username.setMaxLength(11);
+		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
+		username.setFocussed();
+		
+		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 72);
+		password.setText(Options.instance().serverPassword);
+		password.setMaxLength(11);
+		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
+		
+		port = new GuiTextField(this, (ClientGame.WIDTH / 2) - 37, 90, 36);
+		port.setText(Options.instance().serverPort);
+		port.setMaxLength(5);
+		port.setTypingMode(TypingMode.ONLY_NUMBERS);
+		
+		addButton(username);
+		addButton(password);
+		addButton(port);
+		
+		hostButton = new GuiTextButton(this, 1, 144, 62, 72, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
+		hostButton.setEnabled(!this.username.getText().isEmpty());
+		
+		addButton(hostButton);
+		addButton(new GuiTextButton(this, 200, 144, 90, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	private boolean canContinue()
@@ -91,42 +123,6 @@ public class GuiHostServer extends GuiScreen
 		}
 		
 		ClientGame.instance().joinServer(Options.instance().serverUsername, Options.instance().serverPassword);
-	}
-	
-	@Override
-	public void init()
-	{
-		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
-		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
-		
-		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
-		username.setText(Options.instance().serverUsername);
-		username.setMaxLength(11);
-		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
-		username.setFocussed();
-		
-		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 72);
-		password.setText(Options.instance().serverPassword);
-		password.setMaxLength(11);
-		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
-		
-		port = new GuiTextField(this, (ClientGame.WIDTH / 2) - 37, 90, 36);
-		port.setText(Options.instance().serverPort);
-		port.setMaxLength(5);
-		port.setTypingMode(TypingMode.ONLY_NUMBERS);
-		
-		buttons.add(username);
-		buttons.add(password);
-		buttons.add(port);
-		
-		hostButton = new GuiTextButton(this, 1, 144, 62, 72, Assets.getFont(AssetType.FONT_BLACK), "Host Server");
-		hostButton.setEnabled(!this.username.getText().isEmpty());
-		
-		buttons.add(hostButton);
-		buttons.add(new GuiTextButton(this, 200, 144, 90, 72, Assets.getFont(AssetType.FONT_BLACK), "Back"));
 	}
 	
 	@Override

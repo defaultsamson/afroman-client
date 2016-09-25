@@ -17,17 +17,11 @@ public class GuiGrid extends GuiScreen
 		
 		grid = new GuiTextButton(this, 500, 200 - 4 - 12, 3, 41 + 12, blackFont, "Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
 		
-		buttons.add(grid);
+		addButton(grid);
 	}
 	
 	@Override
 	public void drawScreen(Texture renderTo)
-	{
-		
-	}
-	
-	@Override
-	public void init()
 	{
 		
 	}

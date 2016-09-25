@@ -36,7 +36,27 @@ public class GuiChooseRole extends GuiScreen
 		
 		this.playerID = playerID;
 		
-		overrideInit();
+		player = ClientGame.instance().sockets().getPlayerConnection(playerID);
+		
+		Role role = player.getRole();
+		
+		this.addButton(new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - (72 / 2), 98, 72, blackFont, "Cancel"));
+		player1b = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) - (72 / 2) - 54, 68, 72, blackFont, "Player 1");
+		player1b.setEnabled(role != Role.PLAYER1);
+		
+		player2b = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) - (72 / 2) + 54, 68, 72, blackFont, "Player 2");
+		player2b.setEnabled(role != Role.PLAYER2);
+		
+		this.addButton(player1b);
+		this.addButton(player2b);
+		
+		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
+		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
+		
+		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
+		
+		light1 = new FlickeringLight(false, -1, new Vector2DDouble(p1.getX() + 8, p1.getY() + 8), 42, 44, 6);
+		light2 = new FlickeringLight(false, -1, new Vector2DDouble(p2.getX() + 8, p2.getY() + 8), 42, 44, 6);
 	}
 	
 	@Override
@@ -59,44 +79,9 @@ public class GuiChooseRole extends GuiScreen
 	}
 	
 	@Override
-	public void init()
-	{
-		
-	}
-	
-	@Override
 	public void keyTyped()
 	{
 		
-	}
-	
-	/**
-	 * A new initialisation. Specifically for this class so that
-	 * all the player data stuff happens after the rest of the screen has been initialised.
-	 */
-	public void overrideInit()
-	{
-		player = ClientGame.instance().sockets().getPlayerConnection(playerID);
-		
-		Role role = player.getRole();
-		
-		this.buttons.add(new GuiTextButton(this, 200, (ClientGame.WIDTH / 2) - (72 / 2), 98, 72, blackFont, "Cancel"));
-		player1b = new GuiTextButton(this, 201, (ClientGame.WIDTH / 2) - (72 / 2) - 54, 68, 72, blackFont, "Player 1");
-		player1b.setEnabled(role != Role.PLAYER1);
-		
-		player2b = new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) - (72 / 2) + 54, 68, 72, blackFont, "Player 2");
-		player2b.setEnabled(role != Role.PLAYER2);
-		
-		this.buttons.add(player1b);
-		this.buttons.add(player2b);
-		
-		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
-		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		
-		light1 = new FlickeringLight(false, -1, new Vector2DDouble(p1.getX() + 8, p1.getY() + 8), 42, 44, 6);
-		light2 = new FlickeringLight(false, -1, new Vector2DDouble(p2.getX() + 8, p2.getY() + 8), 42, 44, 6);
 	}
 	
 	@Override

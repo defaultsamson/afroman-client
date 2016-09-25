@@ -114,7 +114,6 @@ public class ClientGame extends Game
 	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
-	private boolean canRenderOutOfFocus = false;
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	
 	private InputHandler input;
@@ -981,7 +980,7 @@ public class ClientGame extends Game
 	@Override
 	public void render()
 	{
-		if (input().isGameInFocus() || canRenderOutOfFocus)
+		if (input().isGameInFocus() || Options.instance().renderOffFocus)
 		{
 			// Clears the canvas
 			screen.getGraphics().setColor(Color.WHITE);
@@ -1265,9 +1264,9 @@ public class ClientGame extends Game
 			}
 			if (input().eight.isPressedFiltered())
 			{
-				canRenderOutOfFocus = !canRenderOutOfFocus;
+				Options.instance().renderOffFocus = !Options.instance().renderOffFocus;
 				
-				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + canRenderOutOfFocus);
+				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + Options.instance().renderOffFocus);
 			}
 			if (input.two.isPressedFiltered())
 			{
