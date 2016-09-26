@@ -5,7 +5,6 @@ import ca.afroman.level.BuildMode;
 public enum PacketType
 {
 	INVALID,
-	CONFIRM_RECEIVED,
 	
 	REQUEST_CONNECTION,
 	DENY_JOIN,

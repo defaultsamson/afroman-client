@@ -2,8 +2,11 @@ package ca.afroman.network;
 
 import java.net.InetAddress;
 
+import ca.afroman.util.IPUtil;
+
 public class IPConnection
 {
+	private TCPSocket tcpSocket;
 	private InetAddress address;
 	private int port;
 	
@@ -13,8 +16,9 @@ public class IPConnection
 	 * @param address the IP
 	 * @param port the port
 	 */
-	public IPConnection(InetAddress address, int port)
+	public IPConnection(InetAddress address, int port, TCPSocket tcpSocket)
 	{
+		this.tcpSocket = tcpSocket;
 		this.address = address;
 		this.port = port;
 	}
@@ -29,11 +33,7 @@ public class IPConnection
 	
 	public boolean equals(IPConnection connection)
 	{
-		if (address != null && connection != null && connection.getIPAddress() != null)
-		{
-			return address.getHostAddress().equals(connection.getIPAddress().getHostAddress()) && port == connection.getPort();
-		}
-		return false;
+		return connection != null ? IPUtil.equals(address, port, connection.getIPAddress(), connection.getPort()) : false;
 	}
 	
 	public InetAddress getIPAddress()
@@ -46,6 +46,11 @@ public class IPConnection
 		return port;
 	}
 	
+	public TCPSocket getTCPSocket()
+	{
+		return tcpSocket;
+	}
+	
 	public void setIPAddress(InetAddress address)
 	{
 		this.address = address;
@@ -54,5 +59,10 @@ public class IPConnection
 	public void setPort(int newPort)
 	{
 		this.port = newPort;
+	}
+	
+	public void setTCPSocket(TCPSocket socket)
+	{
+		tcpSocket = socket;
 	}
 }

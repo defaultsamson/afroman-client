@@ -26,6 +26,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
+import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
@@ -33,7 +34,6 @@ import ca.afroman.packet.PacketAddLevel;
 import ca.afroman.packet.PacketAddPointLight;
 import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
-import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketEditHitboxToggle;
 import ca.afroman.packet.PacketEditTrigger;
@@ -237,50 +237,23 @@ public class ServerGame extends Game implements IPacketParser
 	 * @param connection the connection that the packet is being sent from
 	 */
 	@Override
-	public void parsePacket(BytePacket packet)
+	public void parsePacket(IncomingPacketWrapper inPack)
 	{
+		BytePacket packet = inPack.getPacket();
 		PacketType type = packet.getType();
 		
 		// Finds if this packet was send by a connected player and.or the host
-		IPConnectedPlayer sender = sockets().getPlayerConnection(packet.getConnections().get(0));
+		IPConnectedPlayer sender = sockets().getPlayerConnection(inPack.getIPAddress(), inPack.getPort());
 		boolean sentByConnected = sender != null;
 		boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 		
 		if (sentByConnected)
 		{
-			int packetID = packet.getID();
-			
-			if (packetID != -1)
-			{
-				List<Integer> receivedBySender = receivedPackets.get(sender.getConnection());
-				
-				// Gets the packet ID's received from the sender
-				for (Integer packID : receivedBySender)
-				{
-					if (packID == packetID)
-					{
-						// If the packet with this ID has already been received, tell the client to stop sending it, and don't parse it
-						sockets().sender().sendPacketToAllClients(new PacketConfirmReceive(packetID, sender.getConnection()));
-						return;
-					}
-				}
-				
-				sockets().sender().sendPacketToAllClients(new PacketConfirmReceive(packetID, sender.getConnection()));
-				receivedBySender.add(packetID);
-			}
-			
 			switch (type)
 			{
 				default:
 				case INVALID:
 					logger().log(ALogType.CRITICAL, "INVALID PACKET");
-					break;
-				case CONFIRM_RECEIVED:
-				{
-					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
-					
-					sockets().sender().removePacket(sender.getConnection(), sentID);
-				}
 					break;
 				case SETROLE:
 				{
@@ -706,7 +679,7 @@ public class ServerGame extends Game implements IPacketParser
 		}
 		else if (type == PacketType.REQUEST_CONNECTION)
 		{
-			IPConnection connection = packet.getConnections().get(0);
+			IPConnection connection = new IPConnection(inPack.getIPAddress(), inPack.getPort(), null);
 			
 			int version = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, ByteUtil.INT_BYTE_COUNT));
 			
@@ -777,7 +750,7 @@ public class ServerGame extends Game implements IPacketParser
 				{
 					sockets().addConnection(connection, name);
 				}
-				// If got the wrong person, let the client know
+				// If got the wrong password, let the client know
 				else
 				{
 					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD, connection);

@@ -69,6 +69,7 @@ public class HitboxTriggerWrapper
 			return null;
 		}
 	}
+	
 	private double x;
 	private double y;
 	private double width;

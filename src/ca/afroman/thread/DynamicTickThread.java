@@ -19,7 +19,7 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	{
 		super(group, name);
 		
-		if (ticksPerSecond < 1) ticksPerSecond = 1;
+		if (ticksPerSecond < 0) ticksPerSecond = 0;
 		
 		this.ticksPerSecond = ticksPerSecond;
 	}
@@ -41,24 +41,38 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	@Override
 	public void onRun()
 	{
-		long now = System.nanoTime();
-		delta += (now - lastTime) / nsPerTick;
-		lastTime = now;
-		
-		while (delta >= 1)
+		if (ticksPerSecond != 0)
 		{
-			ticks++;
-			tickCount++;
-			tick();
-			delta--;
+			long now = System.nanoTime();
+			delta += (now - lastTime) / nsPerTick;
+			lastTime = now;
+			
+			while (delta >= 1)
+			{
+				ticks++;
+				tickCount++;
+				tick();
+				delta--;
+			}
+			
+			// If current time - the last time we updated is >= 1 second
+			if (System.currentTimeMillis() - lastTimer >= 1000)
+			{
+				tps = ticks;
+				lastTimer += 1000;
+				ticks = 0;
+			}
 		}
-		
-		// If current time - the last time we updated is >= 1 second
-		if (System.currentTimeMillis() - lastTimer >= 1000)
+		else
 		{
-			tps = ticks;
-			lastTimer += 1000;
-			ticks = 0;
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	

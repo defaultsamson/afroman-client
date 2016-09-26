@@ -1,7 +1,10 @@
 package ca.afroman.game;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -18,10 +21,12 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
+import ca.afroman.network.TCPSocket;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
 import ca.afroman.server.ServerGame;
+import ca.afroman.util.IPUtil;
 
 public class SocketManager implements IDynamicRunning, IServerClient
 {
@@ -66,10 +71,12 @@ public class SocketManager implements IDynamicRunning, IServerClient
 	private List<ConnectedPlayer> playerList;
 	private IPConnection serverConnection;
 	
+	private ServerSocket welcomeSocket = null;
 	private DatagramSocket socket = null;
 	private PacketReceiver rSocket = null;
-	
 	private PacketSender sSocket = null;
+	
+	private List<TCPReceiver> tcpSockets = null;
 	
 	public SocketManager(Game game)
 	{
@@ -77,8 +84,9 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		
 		playerList = new ArrayList<ConnectedPlayer>();
 		
-		serverConnection = new IPConnection(null, -1);
+		serverConnection = new IPConnection(null, -1, null);
 		
+		tcpSockets = new ArrayList<TCPReceiver>();
 		// try
 		// {
 		// socket = new DatagramSocket();
@@ -105,7 +113,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			// Gives player a default role based on what critical roles are still required
 			Role role = (getPlayerConnection(Role.PLAYER1) == null ? Role.PLAYER1 : (getPlayerConnection(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
 			
-			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection.getIPAddress(), connection.getPort(), (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
+			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
 			playerList.add(newConnection);
 			
 			ServerGame.instance().addConnection(newConnection.getConnection());
@@ -114,6 +122,27 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));
 			
 			updateClientsPlayerList();
+			
+			if (isServerSide())
+			{
+				try
+				{
+					Socket clientTCP = welcomeSocket().accept();
+					TCPSocket tcp = new TCPSocket(clientTCP);
+					newConnection.getConnection().setTCPSocket(tcp);
+					
+					synchronized (tcpSockets)
+					{
+						TCPReceiver rec = new TCPReceiver(this, tcp);
+						tcpSockets.add(rec);
+						rec.startThis();
+					}
+				}
+				catch (IOException e)
+				{
+					ServerGame.instance().logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
+				}
+			}
 		}
 	}
 	
@@ -127,17 +156,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		return game;
 	}
 	
-	public ConnectedPlayer getPlayerConnection(int id)
-	{
-		for (ConnectedPlayer player : getConnectedPlayers())
-		{
-			if (player.getID() == id) return player;
-		}
-		
-		return null;
-	}
-	
-	public IPConnectedPlayer getPlayerConnection(IPConnection connection)
+	public IPConnectedPlayer getPlayerConnection(InetAddress address, int port)
 	{
 		if (isServerSide())
 		{
@@ -147,11 +166,24 @@ public class SocketManager implements IDynamicRunning, IServerClient
 				{
 					IPConnectedPlayer ipPlayer = (IPConnectedPlayer) player;
 					
-					// If the IP and port equal those that were specified, return the player
-					if (ipPlayer.getConnection().equals(connection)) return ipPlayer;
+					if (ipPlayer.getConnection() != null)
+					{
+						// If the IP and port equal those that were specified, return the player
+						if (IPUtil.equals(address, port, ipPlayer.getConnection())) return ipPlayer;
+					}
 				}
 			}
 		}
+		return null;
+	}
+	
+	public ConnectedPlayer getPlayerConnection(int id)
+	{
+		for (ConnectedPlayer player : getConnectedPlayers())
+		{
+			if (player.getID() == id) return player;
+		}
+		
 		return null;
 	}
 	
@@ -180,6 +212,31 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		return serverConnection;
 	}
 	
+	public void initServerTCPConnection()
+	{
+		if (!isServerSide())
+		{
+			try
+			{
+				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
+				TCPSocket sock = new TCPSocket(clientSocket);
+				getServerConnection().setTCPSocket(sock);
+				
+				TCPReceiver thread = new TCPReceiver(this, sock);
+				tcpSockets.add(thread);
+				thread.startThis();
+			}
+			catch (UnknownHostException e)
+			{
+				game.logger().log(ALogType.WARNING, "Unkonwn host while setting up client TCP connection", e);
+			}
+			catch (IOException e)
+			{
+				game.logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
+			}
+		}
+	}
+	
 	@Override
 	public boolean isServerSide()
 	{
@@ -202,8 +259,41 @@ public class SocketManager implements IDynamicRunning, IServerClient
 	{
 		if (isServerSide())
 		{
+			if (connection.getConnection().getTCPSocket() != null)
+			{
+				try
+				{
+					connection.getConnection().getTCPSocket().getSocket().close();
+				}
+				catch (IOException e)
+				{
+					ServerGame.instance().logger().log(ALogType.WARNING, "Error while closing TCP socket", e);
+				}
+			}
+			
 			playerList.remove(connection);
 			ServerGame.instance().removeConnection(connection.getConnection());
+			
+			int index = -1;
+			
+			synchronized (tcpSockets)
+			{
+				for (int i = 0; i < tcpSockets.size(); i++)
+				{
+					TCPReceiver rec = tcpSockets.get(i);
+					if (rec.getTCPSocket() == connection.getConnection().getTCPSocket())
+					{
+						index = i;
+						break;
+					}
+				}
+				
+				if (index != -1)
+				{
+					tcpSockets.get(index).stopThis();
+					tcpSockets.remove(index);
+				}
+			}
 			
 			updateClientsPlayerList();
 		}
@@ -249,6 +339,16 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		if (isServerSide())
 		{
 			Options.instance().serverPort = "" + port;
+			
+			try
+			{
+				welcomeSocket = new ServerSocket(serverConnection.getPort());
+				welcomeSocket.setSoTimeout(15000);// TODO make gui to display that it's waiting?
+			}
+			catch (IOException e)
+			{
+				game.logger().log(ALogType.CRITICAL, "Failed to create server ServerSocket", e);
+			}
 			
 			try
 			{
@@ -301,6 +401,21 @@ public class SocketManager implements IDynamicRunning, IServerClient
 	@Override
 	public void stopThis()
 	{
+		try
+		{
+			if (welcomeSocket != null) welcomeSocket.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		for (TCPReceiver tcp : tcpSockets)
+		{
+			tcp.stopThis();;
+		}
+		tcpSockets.clear();
+		
 		socket.close();
 		playerList.clear();
 		rSocket.stopThis();
@@ -348,5 +463,10 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			playerList = players;
 			ClientGame.instance().setRole(getPlayerConnection(ClientGame.instance().getID()).getRole());
 		}
+	}
+	
+	public ServerSocket welcomeSocket()
+	{
+		return welcomeSocket;
 	}
 }

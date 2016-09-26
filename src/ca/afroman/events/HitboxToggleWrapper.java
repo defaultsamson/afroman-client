@@ -60,6 +60,7 @@ public class HitboxToggleWrapper
 			return null;
 		}
 	}
+	
 	private boolean isEnabled;
 	private double x;
 	private double y;

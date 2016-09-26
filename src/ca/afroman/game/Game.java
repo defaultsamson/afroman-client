@@ -9,7 +9,7 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
-import ca.afroman.packet.BytePacket;
+import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicTickRenderThread;
@@ -31,7 +31,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	protected List<PlayerEntity> players;
 	private SocketManager socketManager;
 	
-	private List<BytePacket> toProcess;
+	private List<IncomingPacketWrapper> toProcess;
 	
 	public Game(ThreadGroup threadGroup, String name, boolean isServerSide, int ticks)
 	{
@@ -41,12 +41,11 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		levels = new ArrayList<Level>();
 		players = new ArrayList<PlayerEntity>(2);
 		
-		// socketManager = new NetworkManager(this);
-		toProcess = new ArrayList<BytePacket>();
+		toProcess = new ArrayList<IncomingPacketWrapper>();
 	}
 	
 	@Override
-	public void addPacketToParse(BytePacket pack)
+	public void addPacketToParse(IncomingPacketWrapper pack)
 	{
 		synchronized (toProcess)
 		{
@@ -162,7 +161,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	{
 		synchronized (toProcess)
 		{
-			for (BytePacket pack : toProcess)
+			for (IncomingPacketWrapper pack : toProcess)
 			{
 				parsePacket(pack);
 			}

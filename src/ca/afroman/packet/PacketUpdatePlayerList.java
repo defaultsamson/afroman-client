@@ -13,7 +13,7 @@ public class PacketUpdatePlayerList extends BytePacket
 	
 	public PacketUpdatePlayerList(List<ConnectedPlayer> connections, IPConnection... connection)
 	{
-		super(PacketType.UPDATE_PLAYERLIST, true, connection);
+		super(PacketType.UPDATE_PLAYERLIST, false, connection);
 		
 		List<Byte> send = new ArrayList<Byte>();
 		

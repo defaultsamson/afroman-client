@@ -262,7 +262,12 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	
 	public void setClipboard(List<String> toAdd)
 	{
-		setClipboard((String[]) toAdd.toArray());
+		String[] arr = new String[toAdd.size()];
+		
+		for (int i = 0; i < arr.length; i++)
+			arr[i] = toAdd.get(i);
+		
+		setClipboard(arr);
 	}
 	
 	public void setClipboard(String... toAdd)

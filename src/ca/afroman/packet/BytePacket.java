@@ -6,23 +6,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import ca.afroman.network.IPConnection;
-import ca.afroman.resource.IDCounter;
 import ca.afroman.util.ArrayUtil;
 import ca.afroman.util.ByteUtil;
 
 public class BytePacket
 {
-	private static IDCounter idCounter = new IDCounter();
-	
-	public static IDCounter getIDCounter()
-	{
-		return idCounter;
-	}
-	
 	private PacketType type;
-	private int id;
 	private byte[] content;
+	
 	private List<IPConnection> connections;
+	private boolean mustSend;
 	
 	/**
 	 * Parses a BytePacket from raw byte data.
@@ -30,15 +23,13 @@ public class BytePacket
 	 * @param rawData
 	 * @param sender
 	 */
-	public BytePacket(byte[] rawData, IPConnection sender)
+	public BytePacket(byte[] rawData)
 	{
 		ByteBuffer buf = ByteBuffer.wrap(rawData);
 		
 		type = PacketType.fromOrdinal(buf.getShort(0));
-		id = buf.getInt(2);
-		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT, rawData.length);
-		connections = new ArrayList<IPConnection>(1);
-		connections.add(sender);
+		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT, rawData.length);
+		connections = new ArrayList<IPConnection>();
 	}
 	
 	/**
@@ -51,7 +42,7 @@ public class BytePacket
 	public BytePacket(PacketType type, boolean mustSend, IPConnection... receivers)
 	{
 		this.type = type;
-		id = mustSend ? getIDCounter().getNext() : IDCounter.WASTE_ID;
+		this.mustSend = mustSend;
 		
 		if (receivers != null)
 		{
@@ -90,15 +81,9 @@ public class BytePacket
 	public final byte[] getData()
 	{
 		byte[] type = ByteUtil.shortAsBytes((short) getType().ordinal());
-		byte[] id = ByteUtil.intAsBytes(this.id);
 		byte[] content = getUniqueData();
 		
-		return ArrayUtil.concatByteArrays(type, id, content);
-	}
-	
-	public int getID()
-	{
-		return id;
+		return ArrayUtil.concatByteArrays(type, content);
 	}
 	
 	public PacketType getType()
@@ -118,7 +103,7 @@ public class BytePacket
 	
 	public boolean mustSend()
 	{
-		return id != IDCounter.WASTE_ID;
+		return mustSend;
 	}
 	
 	public void setConnections(IPConnection... con)

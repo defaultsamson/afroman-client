@@ -9,7 +9,7 @@ public class PacketAssignClientID extends BytePacket
 	
 	public PacketAssignClientID(short receivedID, IPConnection... connection)
 	{
-		super(PacketType.ASSIGN_CLIENTID, true, connection);
+		super(PacketType.ASSIGN_CLIENTID, false, connection);
 		
 		toSend = ByteUtil.shortAsBytes(receivedID);
 	}

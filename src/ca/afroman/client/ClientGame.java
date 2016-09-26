@@ -57,10 +57,9 @@ import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
-import ca.afroman.network.IPConnection;
+import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
-import ca.afroman.packet.PacketConfirmReceive;
 import ca.afroman.packet.PacketLogin;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -69,6 +68,7 @@ import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.IPUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
 
@@ -450,33 +450,13 @@ public class ClientGame extends Game
 	}
 	
 	@Override
-	public void parsePacket(BytePacket packet)
+	public void parsePacket(IncomingPacketWrapper inPack)
 	{
-		IPConnection sender = packet.getConnections().get(0);
+		BytePacket packet = inPack.getPacket();
 		
 		// If is the server sending the packet
-		if (sockets().getServerConnection().equals(sender))
+		if (IPUtil.equals(inPack.getIPAddress(), inPack.getPort(), sockets().getServerConnection()))
 		{
-			if (packet.getID() != -1)
-			{
-				for (int packID : receivedPackets)
-				{
-					if (packID == packet.getID())
-					{
-						logger().log(ALogType.DEBUG, "Received packet already: " + packID);
-						
-						// If the packet with this ID has already been received, tell the server to stop sending it, and don't parse it
-						sockets().sender().sendPacket(new PacketConfirmReceive(packet.getID()));
-						return;
-					}
-				}
-				
-				// If the packet with the ID has not already been received
-				sockets().sender().sendPacket(new PacketConfirmReceive(packet.getID()));
-				// Add it to the list
-				receivedPackets.add(packet.getID());
-			}
-			
 			switch (packet.getType())
 			{
 				default:
@@ -514,6 +494,8 @@ public class ClientGame extends Game
 					break;
 				case ASSIGN_CLIENTID:
 					id = ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] });
+					
+					sockets().initServerTCPConnection();
 					break;
 				case UPDATE_PLAYERLIST:
 				{
@@ -778,13 +760,6 @@ public class ClientGame extends Game
 					}
 				}
 					break;
-				case CONFIRM_RECEIVED:
-				{
-					int sentID = ByteUtil.intFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1], packet.getContent()[2], packet.getContent()[3] });
-					
-					sockets().sender().removePacket(sentID);
-				}
-					break;
 				case ADD_EVENT_HITBOX_TRIGGER:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
@@ -971,7 +946,7 @@ public class ClientGame extends Game
 		}
 		else
 		{
-			logger().log(ALogType.WARNING, "A server (" + sender.asReadable() + ") is tring to send a packet " + packet.getType().toString() + " to this unlistening client");
+			logger().log(ALogType.WARNING, "A server (" + IPUtil.asReadable(inPack.getIPAddress(), inPack.getPort()) + ") is tring to send a packet " + packet.getType().toString() + " to this unlistening client");
 		}
 	}
 	

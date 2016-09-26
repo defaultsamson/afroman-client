@@ -1,0 +1,42 @@
+package ca.afroman.util;
+
+import java.net.InetAddress;
+
+import ca.afroman.network.IPConnection;
+
+public class IPUtil
+{
+	public static String asReadable(InetAddress address, int port)
+	{
+		return (address != null ? address.getHostAddress() : "null") + ":" + port;
+	}
+	
+	public static boolean equals(InetAddress address, int port, InetAddress address2, int port2)
+	{
+		if (address != null && address2 != null)
+		{
+			return address.getHostAddress().equals(address2.getHostAddress()) && port == port2;
+		}
+		return false;
+	}
+	
+	public static boolean equals(InetAddress address, int port, IPConnection connection)
+	{
+		if (address != null && connection != null && connection.getIPAddress() != null)
+		{
+			boolean ipMatch = address.getHostAddress().equals(connection.getIPAddress().getHostAddress());
+			
+			if (!ipMatch) return false;
+			
+			// First check if the port matches with UDP socket
+			if (port == connection.getPort()) return true;
+			
+			// If not, then check TCP socket
+			if (connection.getTCPSocket() != null && connection.getTCPSocket().getSocket() != null)
+			{
+				if (port == connection.getTCPSocket().getSocket().getPort()) return true;
+			}
+		}
+		return false;
+	}
+}

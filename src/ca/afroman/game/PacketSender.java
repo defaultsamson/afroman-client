@@ -3,8 +3,6 @@ package ca.afroman.game;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.IServerClient;
@@ -19,91 +17,21 @@ import ca.afroman.thread.DynamicTickThread;
 public class PacketSender extends DynamicTickThread implements IServerClient
 {
 	private SocketManager manager;
-	private List<BytePacket> sendingPackets;
 	
 	/**
 	 * A socket that receives BytePackets and parses them through the provided game.
 	 */
 	public PacketSender(SocketManager manager)
 	{
-		super(manager.getGame().getThreadGroup(), "Send", 1 / 5);
+		super(manager.getGame().getThreadGroup(), "Send", 0);
 		
 		this.manager = manager;
-		sendingPackets = new ArrayList<BytePacket>();
-	}
-	
-	private void addPacket(BytePacket packet)
-	{
-		if (!packet.mustSend()) return;
-		
-		synchronized (sendingPackets)
-		{
-			// Don't add it if it's just looping through and trying to add it again
-			if (!sendingPackets.contains(packet))
-			{
-				sendingPackets.add(packet);
-			}
-		}
 	}
 	
 	@Override
 	public boolean isServerSide()
 	{
 		return manager.isServerSide();
-	}
-	
-	@Override
-	public void onStop()
-	{
-		super.onStop();
-		synchronized (sendingPackets)
-		{
-			sendingPackets.clear();
-		}
-	}
-	
-	/**
-	 * For client use
-	 * 
-	 * @param connection
-	 * @param packetID
-	 */
-	public void removePacket(int packetID)
-	{
-		removePacket(manager.getServerConnection(), packetID);
-	}
-	
-	/**
-	 * For server use.
-	 * 
-	 * @param connection
-	 * @param packetID
-	 */
-	public void removePacket(IPConnection connection, int packetID)
-	{
-		synchronized (sendingPackets)
-		{
-			if (isServerSide())
-			{
-				BytePacket toRemove = null;
-				
-				for (BytePacket pack : sendingPackets)
-				{
-					if (pack.getID() == packetID)
-					{
-						if (isServerSide() && pack.getConnections().contains(connection))
-						{
-							pack.getConnections().remove(connection);
-						}
-						
-						toRemove = pack;
-						break;
-					}
-				}
-				
-				if (toRemove != null && (!isServerSide() || toRemove.getConnections().isEmpty())) sendingPackets.remove(toRemove);
-			}
-		}
 	}
 	
 	/**
@@ -142,14 +70,27 @@ public class PacketSender extends DynamicTickThread implements IServerClient
 			packet.setConnections(ClientGame.instance().sockets().getServerConnection());
 		}
 		
-		addPacket(packet);
+		// addPacket(packet);
 		
-		for (IPConnection con : packet.getConnections())
+		if (packet.mustSend()) // TODO Use TCP
 		{
-			if (con != null && con.getIPAddress() != null)
+			for (IPConnection con : packet.getConnections())
 			{
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
-				sendData(packet.getData(), con.getIPAddress(), con.getPort());
+				if (con != null && con.getTCPSocket() != null)
+				{
+					con.getTCPSocket().sendData(packet.getData());
+				}
+			}
+		}
+		else // Use UDP
+		{
+			for (IPConnection con : packet.getConnections())
+			{
+				if (con != null && con.getIPAddress() != null)
+				{
+					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+					sendData(packet.getData(), con.getIPAddress(), con.getPort());
+				}
 			}
 		}
 	}
@@ -181,13 +122,6 @@ public class PacketSender extends DynamicTickThread implements IServerClient
 	@Override
 	public void tick()
 	{
-		synchronized (sendingPackets)
-		{
-			// For each packet queued to send to the connection
-			for (BytePacket pack : sendingPackets)
-			{
-				sendPacket(pack);
-			}
-		}
+		
 	}
 }
