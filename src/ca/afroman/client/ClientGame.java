@@ -647,6 +647,7 @@ public class ClientGame extends Game
 						logger().log(ALogType.WARNING, "No level with type " + levelType);
 					}
 				}
+					break;
 				case ADD_LEVEL_TILE:
 				{
 					ByteBuffer buf = ByteBuffer.wrap(packet.getContent());

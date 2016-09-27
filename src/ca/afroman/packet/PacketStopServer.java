@@ -6,6 +6,6 @@ public class PacketStopServer extends BytePacket
 {
 	public PacketStopServer(IPConnection... connection)
 	{
-		super(PacketType.STOP_SERVER, true, connection);
+		super(PacketType.STOP_SERVER, false, connection);
 	}
 }

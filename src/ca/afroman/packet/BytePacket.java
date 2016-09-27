@@ -25,11 +25,19 @@ public class BytePacket
 	 */
 	public BytePacket(byte[] rawData)
 	{
-		ByteBuffer buf = ByteBuffer.wrap(rawData);
-		
-		type = PacketType.fromOrdinal(buf.getShort(0));
-		content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT, rawData.length);
-		connections = new ArrayList<IPConnection>();
+		try
+		{
+			ByteBuffer buf = ByteBuffer.wrap(rawData);
+			
+			type = PacketType.fromOrdinal(buf.getShort(0));
+			content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT, rawData.length);
+			connections = new ArrayList<IPConnection>();
+		}
+		catch (Exception e)
+		{
+			System.err.println("Well shit, this packet is fucked");
+			e.printStackTrace();
+		}
 	}
 	
 	/**
