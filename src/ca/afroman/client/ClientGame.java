@@ -1033,7 +1033,6 @@ public class ClientGame extends Game
 	
 	public void setCurrentLevel(Level newLevel)
 	{
-		// System.out.println("Setting Current Level: " + (newLevel == null ? "null" : newLevel.getType()));
 		currentLevel = (ClientLevel) newLevel;
 		
 		updateCursorHiding();

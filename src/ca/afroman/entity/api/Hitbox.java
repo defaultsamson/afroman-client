@@ -83,7 +83,6 @@ public class Hitbox extends Rectangle2D.Double
 	 */
 	public void removeFromLevel()
 	{
-		if (level.isServerSide()) System.out.println("hHHHH");
 		addToLevel(null);
 	}
 	
