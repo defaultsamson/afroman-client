@@ -51,12 +51,15 @@ public class TCPReceiver extends DynamicThread implements IServerClient
 		{
 			byte[] buffer = socket.receive();
 			
-			BytePacket pack = new BytePacket(buffer);
-			InetAddress address = socket.getSocket().getInetAddress();
-			int port = socket.getSocket().getPort();
-			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType());
-			
-			manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
+			if (buffer != null)
+			{
+				BytePacket pack = new BytePacket(buffer);
+				InetAddress address = socket.getSocket().getInetAddress();
+				int port = socket.getSocket().getPort();
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType());
+				
+				manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
+			}
 		}
 		catch (PortUnreachableException e)
 		{

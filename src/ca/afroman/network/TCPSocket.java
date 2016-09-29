@@ -41,20 +41,29 @@ public class TCPSocket
 	
 	public byte[] receive() throws IOException
 	{
-		int count = input.read();
+		try
+		{
+			int count = input.read();
+			
+			if (count < 0)
+			{
+				return new byte[0];
+			}
+			else
+			{
+				byte[] bytes = new byte[count];
+				
+				input.read(bytes);
+				
+				return bytes;
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 		
-		if (count < 0)
-		{
-			return new byte[0];
-		}
-		else
-		{
-			byte[] bytes = new byte[count];
-			
-			input.read(bytes);
-			
-			return bytes;
-		}
+		return null;
 	}
 	
 	/**

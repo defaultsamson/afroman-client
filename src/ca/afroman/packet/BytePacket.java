@@ -35,8 +35,7 @@ public class BytePacket
 		}
 		catch (Exception e)
 		{
-			System.err.println("Well shit, this packet is fucked");
-			e.printStackTrace();
+			
 		}
 	}
 	

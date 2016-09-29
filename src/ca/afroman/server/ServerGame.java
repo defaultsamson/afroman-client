@@ -432,9 +432,11 @@ public class ServerGame extends Game implements IPacketParser
 							case HITBOX:
 								Hitbox box = level.getHitbox(id);
 								
+								System.out.println("Removing hitbox iGuess");
 								if (box != null)
 								{
 									box.removeFromLevel();
+									System.out.println("oh shit waddup");
 									removed = true;
 								}
 								break;

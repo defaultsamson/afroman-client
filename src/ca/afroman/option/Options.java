@@ -109,6 +109,9 @@ public class Options
 						case CLIENT_PORT:
 							clientPort = option;
 							break;
+						case RENDER_OFF_FOCUS:
+							renderOffFocus = Boolean.parseBoolean(option);
+							break;
 						case FULLSCREEN:
 							fullscreen = Boolean.parseBoolean(option);
 							break;

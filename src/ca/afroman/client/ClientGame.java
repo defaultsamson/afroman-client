@@ -108,7 +108,6 @@ public class ClientGame extends Game
 	private Canvas canvas;
 	
 	private Texture screen;
-	private boolean fullscreen = false;
 	private boolean hudDebug = false; // Shows debug information on the hud
 	private boolean hitboxDebug = false; // Shows all hitboxes
 	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
@@ -240,11 +239,6 @@ public class ClientGame extends Game
 	public boolean isBuildMode()
 	{
 		return buildMode;
-	}
-	
-	public boolean isFullScreen()
-	{
-		return fullscreen;
 	}
 	
 	public boolean isHitboxDebugging()
@@ -395,6 +389,7 @@ public class ClientGame extends Game
 		logger().log(ALogType.DEBUG, "Loading options...");
 		
 		Options.instance().load();
+		setFullScreen(Options.instance().fullscreen);
 		
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
@@ -998,9 +993,10 @@ public class ClientGame extends Game
 			BufferStrategy bs = canvas.getBufferStrategy();
 			if (bs == null)
 			{
-				canvas.createBufferStrategy(2);
+				canvas.createBufferStrategy(1);
 				return;
 			}
+			
 			Graphics2D g = ((Graphics2D) bs.getDrawGraphics());
 			g.drawImage(screen.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
 			g.dispose();
@@ -1052,9 +1048,9 @@ public class ClientGame extends Game
 	
 	public void setFullScreen(boolean isFullScreen)
 	{
-		if (fullscreen != isFullScreen)
+		if (Options.instance().fullscreen != isFullScreen)
 		{
-			fullscreen = isFullScreen;
+			Options.instance().fullscreen = isFullScreen;
 			
 			frame.setVisible(false);
 			// frame.getContentPane().remove(canvas);
@@ -1080,7 +1076,7 @@ public class ClientGame extends Game
 				frame.getContentPane().removeAll();
 				frame = old;
 				frame.setVisible(true);
-				fullscreen = !fullscreen;
+				Options.instance().fullscreen = !Options.instance().fullscreen;
 				return;
 			}
 			frame.pack();
@@ -1163,7 +1159,7 @@ public class ClientGame extends Game
 		}
 		else
 		{
-			logger().log(ALogType.DEBUG, "Game is already in " + (fullscreen ? "fullscreen" : "windowed") + " mode");
+			logger().log(ALogType.DEBUG, "Game is already in " + (Options.instance().fullscreen ? "fullscreen" : "windowed") + " mode");
 		}
 	}
 	
@@ -1223,7 +1219,7 @@ public class ClientGame extends Game
 		
 		if (input.f11.isPressedFiltered())
 		{
-			setFullScreen(!fullscreen);
+			setFullScreen(!Options.instance().fullscreen);
 		}
 		
 		// Debug keys

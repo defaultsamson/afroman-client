@@ -85,7 +85,9 @@ public class Level implements IServerClient
 						}
 							break;
 						case HITBOX:
-							level.getHitboxes().add(new Hitbox(Hitbox.getIDCounter().getNext(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3])));
+							Hitbox box = new Hitbox(Hitbox.getIDCounter().getNext(), Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]), Double.parseDouble(parameters[2]), Double.parseDouble(parameters[3]));
+							
+							box.addToLevel(level);
 							break;
 						case POINT_LIGHT:
 						{
