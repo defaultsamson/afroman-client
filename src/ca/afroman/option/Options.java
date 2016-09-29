@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
+import ca.afroman.gfx.LightMapState;
 import ca.afroman.log.ALogType;
 import ca.afroman.util.FileUtil;
 
@@ -36,6 +37,7 @@ public class Options
 	public String clientPort;
 	public boolean renderOffFocus;
 	public boolean fullscreen;
+	public LightMapState lighting;
 	
 	private void append(List<String> list, OptionType type, boolean value)
 	{
@@ -60,6 +62,12 @@ public class Options
 		clientPort = "";
 		renderOffFocus = true;
 		fullscreen = false;
+		lighting = LightMapState.ON;
+	}
+	
+	public boolean isLightingOn()
+	{
+		return lighting != LightMapState.OFF;
 	}
 	
 	public void load()
@@ -115,6 +123,9 @@ public class Options
 						case FULLSCREEN:
 							fullscreen = Boolean.parseBoolean(option);
 							break;
+						case LIGHT_MODE:
+							lighting = LightMapState.valueOf(option);
+							break;
 					}
 				}
 				catch (Exception e)
@@ -144,6 +155,7 @@ public class Options
 		append(op, OptionType.CLIENT_PORT, clientPort);
 		append(op, OptionType.RENDER_OFF_FOCUS, renderOffFocus);
 		append(op, OptionType.FULLSCREEN, fullscreen);
+		append(op, OptionType.LIGHT_MODE, lighting.toString());
 		
 		FileUtil.writeLines(op, new File(OPTIONS_FILE));
 	}

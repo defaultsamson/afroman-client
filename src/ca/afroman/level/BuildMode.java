@@ -22,12 +22,11 @@ public enum BuildMode
 	 * index <i>n - 1</i> will be returned, where <i>n</i> is the total
 	 * number of values for this enumerator.
 	 * 
-	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static BuildMode getLast(BuildMode current)
+	public BuildMode getLast()
 	{
-		int newOrdinal = current.ordinal() - 1;
+		int newOrdinal = ordinal() - 1;
 		
 		if (newOrdinal < 0)
 		{
@@ -45,12 +44,11 @@ public enum BuildMode
 	 * If no value is found past the <b>current</b> value, the value at
 	 * index 0 will be returned.
 	 * 
-	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static BuildMode getNext(BuildMode current)
+	public BuildMode getNext()
 	{
-		int newOrdinal = current.ordinal() + 1;
+		int newOrdinal = ordinal() + 1;
 		
 		if (newOrdinal > values().length - 1)
 		{

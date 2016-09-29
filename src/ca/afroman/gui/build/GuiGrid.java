@@ -5,7 +5,6 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.level.ClientLevel;
-import ca.afroman.level.GridSize;
 
 public class GuiGrid extends GuiScreen
 {
@@ -45,7 +44,7 @@ public class GuiGrid extends GuiScreen
 			switch (buttonID)
 			{
 				case 500:
-					level.grid = GridSize.getNext(level.grid);
+					level.grid = level.grid.getNext();
 					break;
 			}
 			

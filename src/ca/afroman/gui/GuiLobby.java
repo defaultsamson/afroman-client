@@ -96,7 +96,7 @@ public class GuiLobby extends GuiScreen
 		renderTo.draw(player1.getCurrentFrame(), new Vector2DInt(player1X, player1Y));
 		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt(player2X, player2Y));
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light1.setPosition(new Vector2DDouble(player1X + 8, player1Y + 8));
 			light2.setPosition(new Vector2DDouble(player2X + 8, player2Y + 8));
@@ -157,7 +157,7 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void tick()
 	{
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light1.tick();
 			light2.tick();

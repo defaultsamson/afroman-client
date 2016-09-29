@@ -31,6 +31,7 @@ import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.log.ALogType;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddPointLight;
@@ -227,7 +228,7 @@ public class ClientLevel extends Level
 		switch (buildMode)
 		{
 			case TILE:
-				if (cursorAsset == null) cursorAsset = Assets.getAsset(AssetType.getNextRenderable(AssetType.fromOrdinal(0))).clone();
+				if (cursorAsset == null) cursorAsset = Assets.getAsset(AssetType.fromOrdinal(0).getNextRenderable()).clone();
 				ClientGame.instance().setCurrentScreen(new GuiTileEditor());
 				break;
 			case LIGHT:
@@ -333,7 +334,7 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			// Draws all the lighting over everything else
 			lightmap.clear();
@@ -571,14 +572,14 @@ public class ClientLevel extends Level
 			{
 				timeOnTool = 0; // On change, reset tooltips
 				
-				buildMode = BuildMode.getNext(buildMode);
+				buildMode = buildMode.getNext();
 			}
 			
 			if (ClientGame.instance().input().q.isPressedFiltered())
 			{
 				timeOnTool = 0; // On change, reset tooltips
 				
-				buildMode = BuildMode.getLast(buildMode);
+				buildMode = buildMode.getLast();
 			}
 			
 			// If the build mode has changed, update the build modes
@@ -642,13 +643,13 @@ public class ClientLevel extends Level
 					if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 					{
 						cursorAsset.dispose();
-						cursorAsset = Assets.getAsset(AssetType.getLastRenderable(cursorAsset.getAssetType())).clone();
+						cursorAsset = Assets.getAsset(cursorAsset.getAssetType().getLastRenderable()).clone();
 					}
 					
 					if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
 					{
 						cursorAsset.dispose();
-						cursorAsset = Assets.getAsset(AssetType.getNextRenderable(cursorAsset.getAssetType())).clone();
+						cursorAsset = Assets.getAsset(cursorAsset.getAssetType().getNextRenderable()).clone();
 					}
 					
 					if (cursorAsset instanceof ITickable) ((ITickable) cursorAsset).tick();
@@ -734,14 +735,14 @@ public class ClientLevel extends Level
 				if (game.input().right.isPressedFiltered())
 				{
 					Role role = game.getSpectatingRole();
-					while ((role = Role.getNext(role)) == Role.SPECTATOR);
+					while ((role = role.getNext()) == Role.SPECTATOR);
 					
 					game.setSpectatingRole(role);
 				}
 				if (game.input().left.isPressedFiltered())
 				{
 					Role role = game.getSpectatingRole();
-					while ((role = Role.getLast(role)) == Role.SPECTATOR);
+					while ((role = role.getLast()) == Role.SPECTATOR);
 					
 					game.setSpectatingRole(role);
 				}
@@ -752,7 +753,7 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			List<PointLight> lights = this.getLights();
 			

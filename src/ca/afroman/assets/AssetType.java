@@ -89,12 +89,11 @@ public enum AssetType
 	 * index <i>n - 1</i> will be returned, where <i>n</i> is the total
 	 * number of values for this enumerator.
 	 * 
-	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static AssetType getLast(AssetType current)
+	public AssetType getLast()
 	{
-		int newOrdinal = current.ordinal() - 1;
+		int newOrdinal = ordinal() - 1;
 		
 		if (newOrdinal < 0)
 		{
@@ -113,13 +112,13 @@ public enum AssetType
 	 * index <i>n - 1</i> will be returned, where <i>n</i> is the total
 	 * number of values for this enumerator.
 	 * 
-	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static AssetType getLastRenderable(AssetType current)
+	public AssetType getLastRenderable()
 	{
+		AssetType current = this;
 		for (int i = 0; i < values().length; i++)
-			if (Assets.getAsset(current = getLast(current)) instanceof IRenderable) return current;
+			if (Assets.getAsset(current = current.getLast()) instanceof IRenderable) return current;
 		return null;
 	}
 	
@@ -129,12 +128,11 @@ public enum AssetType
 	 * If no value is found past the <b>current</b> value, the value at
 	 * index 0 will be returned.
 	 * 
-	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static AssetType getNext(AssetType current)
+	public AssetType getNext()
 	{
-		int newOrdinal = current.ordinal() + 1;
+		int newOrdinal = ordinal() + 1;
 		
 		if (newOrdinal > values().length - 1)
 		{
@@ -152,13 +150,13 @@ public enum AssetType
 	 * If no value is found past the <b>current</b> value, the value at
 	 * index 0 will be returned.
 	 * 
-	 * @param current the current item to check past
 	 * @return the next item on the list of this enumerator.
 	 */
-	public static AssetType getNextRenderable(AssetType current)
+	public AssetType getNextRenderable()
 	{
+		AssetType current = this;
 		for (int i = 0; i < values().length; i++)
-			if (Assets.getAsset(current = getNext(current)) instanceof IRenderable) return current;
+			if (Assets.getAsset(current = current.getNext()) instanceof IRenderable) return current;
 		return null;
 	}
 }

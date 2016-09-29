@@ -9,6 +9,7 @@ import ca.afroman.client.Role;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketSetRole;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
@@ -65,7 +66,7 @@ public class GuiChooseRole extends GuiScreen
 		renderTo.draw(player1.getCurrentFrame(), p1);
 		renderTo.draw(player2.getCurrentFrame(), p2);
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			lightmap.clear();
 			light1.renderCentered(lightmap);
@@ -116,7 +117,7 @@ public class GuiChooseRole extends GuiScreen
 	{
 		super.tick();
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light1.tick();
 			light2.tick();

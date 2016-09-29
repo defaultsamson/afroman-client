@@ -86,7 +86,7 @@ public class GuiHostServer extends GuiScreen
 		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
 		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			lightmap.clear();
 			light.renderCentered(lightmap);
@@ -169,7 +169,7 @@ public class GuiHostServer extends GuiScreen
 	{
 		super.tick();
 		
-		if (ClientGame.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light.tick();
 			afroMan.tick();

@@ -40,7 +40,6 @@ import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
 import ca.afroman.game.SocketManager;
 import ca.afroman.gfx.FlickeringLight;
-import ca.afroman.gfx.LightMapState;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiConnectToServer;
@@ -110,7 +109,6 @@ public class ClientGame extends Game
 	private Texture screen;
 	private boolean hudDebug = false; // Shows debug information on the hud
 	private boolean hitboxDebug = false; // Shows all hitboxes
-	private LightMapState lightingDebug = LightMapState.ON; // Turns off the lighting engine
 	private boolean buildMode = false; // Turns off the lighting engine
 	private boolean consoleDebug = false; // Shows a console window
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
@@ -210,11 +208,6 @@ public class ClientGame extends Game
 		return id;
 	}
 	
-	public LightMapState getLightingState()
-	{
-		return lightingDebug;
-	}
-	
 	public Role getRole()
 	{
 		return role;
@@ -260,11 +253,6 @@ public class ClientGame extends Game
 	public boolean isHudDebugging()
 	{
 		return hudDebug;
-	}
-	
-	public boolean isLightingOn()
-	{
-		return lightingDebug != LightMapState.OFF;
 	}
 	
 	public void joinServer(String username, String password)
@@ -1258,19 +1246,9 @@ public class ClientGame extends Game
 			}
 			if (input.three.isPressedFiltered())
 			{
-				int currentOrdinal = lightingDebug.ordinal();
+				Options.instance().lighting = Options.instance().lighting.getNext();
 				
-				currentOrdinal++;
-				
-				// Roll over
-				if (currentOrdinal >= LightMapState.values().length)
-				{
-					currentOrdinal = 0;
-				}
-				
-				lightingDebug = LightMapState.fromOrdinal(currentOrdinal);
-				
-				logger().log(ALogType.DEBUG, "Lighting: " + lightingDebug.toString());
+				logger().log(ALogType.DEBUG, "Lighting: " + Options.instance().lighting.toString());
 			}
 			if (input.four.isPressedFiltered())
 			{
