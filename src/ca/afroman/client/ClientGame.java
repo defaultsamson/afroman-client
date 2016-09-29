@@ -166,6 +166,12 @@ public class ClientGame extends Game
 			ServerGame.instance().stopThis();
 		}
 		
+		// resets the player entities
+		for (PlayerEntity e : getPlayers())
+		{
+			e.reset();
+		}
+		
 		music.startLoop();
 		setCurrentScreen(new GuiMainMenu());
 		

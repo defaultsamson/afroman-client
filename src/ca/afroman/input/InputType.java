@@ -44,7 +44,7 @@ public class InputType
 			
 			if (spot > INTERVAL)
 			{
-				spot = 28;
+				spot = INTERVAL - 2;
 				
 				return true;
 			}

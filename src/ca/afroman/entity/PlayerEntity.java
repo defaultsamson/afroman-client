@@ -83,6 +83,12 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 		}
 	}
 	
+	public void reset()
+	{
+		setCameraToFollow(false);
+		removeFromLevel();
+	}
+	
 	@Override
 	public void setPosition(Vector2DDouble position)
 	{
