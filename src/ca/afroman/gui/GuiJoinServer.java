@@ -104,7 +104,7 @@ public class GuiJoinServer extends GuiScreen
 	{
 		onLeaving();
 		
-		ClientGame.instance().joinServer(Options.instance().clientUsername, Options.instance().clientPassword);
+		ClientGame.instance().joinServer(Options.instance().clientIP, Options.instance().clientPort, Options.instance().clientUsername, Options.instance().clientPassword);
 	}
 	
 	@Override

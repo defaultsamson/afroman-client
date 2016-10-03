@@ -5,7 +5,6 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.game.Game;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
@@ -119,7 +118,7 @@ public class GuiHostServer extends GuiScreen
 		{
 			if (ServerGame.instance() == null)
 			{
-				new ServerGame(Options.instance().serverPassword, Options.instance().serverPort);
+				new ServerGame(Options.instance().serverIP, Options.instance().serverPassword, Options.instance().serverPort);
 			}
 			else
 			{
@@ -128,7 +127,7 @@ public class GuiHostServer extends GuiScreen
 			}
 		}
 		
-		ClientGame.instance().joinServer(Options.instance().serverUsername, Options.instance().serverPassword);
+		ClientGame.instance().joinServer(Options.instance().serverIP, Options.instance().serverPort, Options.instance().serverUsername, Options.instance().serverPassword);
 	}
 	
 	@Override
@@ -142,7 +141,6 @@ public class GuiHostServer extends GuiScreen
 		Options.instance().serverUsername = username.getText();
 		Options.instance().serverPassword = password.getText();
 		Options.instance().serverPort = port.getText();
-		Options.instance().serverIP = Game.IPv4_LOCALHOST; // TODO allow manual setting of the IP from the options file
 		
 		Options.instance().save();
 	}

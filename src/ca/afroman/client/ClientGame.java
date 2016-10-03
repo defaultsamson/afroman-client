@@ -274,18 +274,17 @@ public class ClientGame extends Game
 		return hudDebug;
 	}
 	
-	public void joinServer(String username, String password)
+	public void joinServer(String ip, String port, String username, String password)
 	{
 		music.stop();
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
-		int port = SocketManager.validatedPort(Options.instance().clientPort);
+		int vPort = SocketManager.validatedPort(port);
 		
 		// Sets the port to whatever is now set
-		Options.instance().clientPort = new StringBuilder().append(port).toString();
 		
-		boolean successful = startSocket(Options.instance().clientIP, port);
+		boolean successful = startSocket(ip, vPort);
 		
 		if (successful)
 		{
