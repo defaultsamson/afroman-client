@@ -74,8 +74,10 @@ public class GuiMainMenu extends GuiScreen
 			case 1: // Join Server
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(this));
 				break;
-			case 0: // Quite game
+			case 0: // Quit game
 				ClientGame.instance().quit();
+				break;
+			case 3: // Update game
 				break;
 		}
 	}
