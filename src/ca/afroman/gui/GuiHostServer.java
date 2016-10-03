@@ -9,8 +9,7 @@ import ca.afroman.game.Game;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
-import ca.afroman.option.ClientOptions;
-import ca.afroman.option.ServerOptions;
+import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
@@ -39,18 +38,18 @@ public class GuiHostServer extends GuiScreen
 		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
-		username.setText(ClientOptions.instance().serverUsername);
+		username.setText(Options.instance().serverUsername);
 		username.setMaxLength(11);
 		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		username.setFocussed();
 		
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90, 72);
-		password.setText(ServerOptions.instance().serverPassword);
+		password.setText(Options.instance().serverPassword);
 		password.setMaxLength(11);
 		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		
 		port = new GuiTextField(this, (ClientGame.WIDTH / 2) - 37, 90, 36);
-		port.setText(ServerOptions.instance().serverPort);
+		port.setText(Options.instance().serverPort);
 		port.setMaxLength(5);
 		port.setTypingMode(TypingMode.ONLY_NUMBERS);
 		
@@ -87,7 +86,7 @@ public class GuiHostServer extends GuiScreen
 		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
 		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
 		
-		if (ClientOptions.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			lightmap.clear();
 			light.renderCentered(lightmap);
@@ -120,7 +119,7 @@ public class GuiHostServer extends GuiScreen
 		{
 			if (ServerGame.instance() == null)
 			{
-				new ServerGame(ServerOptions.instance().serverPassword, ServerOptions.instance().serverPort);
+				new ServerGame(Options.instance().serverPassword, Options.instance().serverPort);
 			}
 			else
 			{
@@ -129,7 +128,7 @@ public class GuiHostServer extends GuiScreen
 			}
 		}
 		
-		ClientGame.instance().joinServer(ClientOptions.instance().serverUsername, ServerOptions.instance().serverPassword);
+		ClientGame.instance().joinServer(Options.instance().serverUsername, Options.instance().serverPassword);
 	}
 	
 	@Override
@@ -140,12 +139,12 @@ public class GuiHostServer extends GuiScreen
 	
 	private void onLeaving()
 	{
-		ClientOptions.instance().serverUsername = username.getText();
-		ServerOptions.instance().serverPassword = password.getText();
-		ServerOptions.instance().serverPort = port.getText();
-		ServerOptions.instance().serverIP = Game.IPv4_LOCALHOST; // TODO allow manual setting of the IP from the options file
+		Options.instance().serverUsername = username.getText();
+		Options.instance().serverPassword = password.getText();
+		Options.instance().serverPort = port.getText();
+		Options.instance().serverIP = Game.IPv4_LOCALHOST; // TODO allow manual setting of the IP from the options file
 		
-		ClientOptions.instance().save();
+		Options.instance().save();
 	}
 	
 	@Override
@@ -176,7 +175,7 @@ public class GuiHostServer extends GuiScreen
 	{
 		super.tick();
 		
-		if (ClientOptions.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light.tick();
 			afroMan.tick();

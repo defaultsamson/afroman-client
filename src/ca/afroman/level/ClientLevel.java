@@ -31,7 +31,7 @@ import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.log.ALogType;
-import ca.afroman.option.ClientOptions;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddPointLight;
@@ -334,7 +334,7 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		if (ClientOptions.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			// Draws all the lighting over everything else
 			lightmap.clear();
@@ -753,7 +753,7 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		if (ClientOptions.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			List<PointLight> lights = this.getLights();
 			

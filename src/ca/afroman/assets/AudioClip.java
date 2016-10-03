@@ -12,7 +12,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
-import ca.afroman.option.ClientOptions;
+import ca.afroman.option.Options;
 
 public class AudioClip extends Asset
 {
@@ -142,7 +142,7 @@ public class AudioClip extends Asset
 	
 	public void start()
 	{
-		if (ClientOptions.instance().enableMusic)
+		if (Options.instance().enableMusic)
 		{
 			if (clip == null) return;
 			
@@ -154,7 +154,7 @@ public class AudioClip extends Asset
 	
 	public void startLoop()
 	{
-		if (ClientOptions.instance().enableMusic)
+		if (Options.instance().enableMusic)
 		{
 			if (clip == null) return;
 			

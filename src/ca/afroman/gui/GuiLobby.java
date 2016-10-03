@@ -15,8 +15,7 @@ import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
-import ca.afroman.option.ClientOptions;
-import ca.afroman.option.ServerOptions;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketBeginGame;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
@@ -78,7 +77,7 @@ public class GuiLobby extends GuiScreen
 				ClientGame.instance().logger().log(ALogType.CRITICAL, "Could not resolve local host address", e);
 			}
 			
-			port = ServerOptions.instance().serverPort;
+			port = Options.instance().serverPort;
 		}
 		// Draw a leave server button
 		else
@@ -97,7 +96,7 @@ public class GuiLobby extends GuiScreen
 		renderTo.draw(player1.getCurrentFrame(), new Vector2DInt(player1X, player1Y));
 		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt(player2X, player2Y));
 		
-		if (ClientOptions.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light1.setPosition(new Vector2DDouble(player1X + 8, player1Y + 8));
 			light2.setPosition(new Vector2DDouble(player2X + 8, player2Y + 8));
@@ -158,7 +157,7 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void tick()
 	{
-		if (ClientOptions.instance().isLightingOn())
+		if (Options.instance().isLightingOn())
 		{
 			light1.tick();
 			light2.tick();

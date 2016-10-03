@@ -58,7 +58,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.option.ClientOptions;
+import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLogin;
 import ca.afroman.resource.IDCounter;
@@ -280,12 +280,12 @@ public class ClientGame extends Game
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
-		int port = SocketManager.validatedPort(ClientOptions.instance().clientPort);
+		int port = SocketManager.validatedPort(Options.instance().clientPort);
 		
 		// Sets the port to whatever is now set
-		ClientOptions.instance().clientPort = new StringBuilder().append(port).toString();
+		Options.instance().clientPort = new StringBuilder().append(port).toString();
 		
-		boolean successful = startSocket(ClientOptions.instance().clientIP, port);
+		boolean successful = startSocket(Options.instance().clientIP, port);
 		
 		if (successful)
 		{
@@ -401,8 +401,8 @@ public class ClientGame extends Game
 		
 		logger().log(ALogType.DEBUG, "Loading options...");
 		
-		ClientOptions.instance();
-		setFullScreen(ClientOptions.instance().fullscreen);
+		Options.instance();
+		setFullScreen(Options.instance().fullscreen);
 		
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
@@ -976,7 +976,7 @@ public class ClientGame extends Game
 	@Override
 	public void render()
 	{
-		if (input().isGameInFocus() || ClientOptions.instance().renderOffFocus)
+		if (input().isGameInFocus() || Options.instance().renderOffFocus)
 		{
 			// Clears the canvas
 			screen.getGraphics().setColor(Color.WHITE);
@@ -1067,9 +1067,9 @@ public class ClientGame extends Game
 	
 	public void setFullScreen(boolean isFullScreen)
 	{
-		if (ClientOptions.instance().fullscreen != isFullScreen)
+		if (Options.instance().fullscreen != isFullScreen)
 		{
-			ClientOptions.instance().fullscreen = isFullScreen;
+			Options.instance().fullscreen = isFullScreen;
 			
 			frame.setVisible(false);
 			// frame.getContentPane().remove(canvas);
@@ -1095,7 +1095,7 @@ public class ClientGame extends Game
 				frame.getContentPane().removeAll();
 				frame = old;
 				frame.setVisible(true);
-				ClientOptions.instance().fullscreen = !ClientOptions.instance().fullscreen;
+				Options.instance().fullscreen = !Options.instance().fullscreen;
 				return;
 			}
 			frame.pack();
@@ -1178,7 +1178,7 @@ public class ClientGame extends Game
 		}
 		else
 		{
-			logger().log(ALogType.DEBUG, "Game is already in " + (ClientOptions.instance().fullscreen ? "fullscreen" : "windowed") + " mode");
+			logger().log(ALogType.DEBUG, "Game is already in " + (Options.instance().fullscreen ? "fullscreen" : "windowed") + " mode");
 		}
 	}
 	
@@ -1238,7 +1238,7 @@ public class ClientGame extends Game
 		
 		if (input.f11.isPressedFiltered())
 		{
-			setFullScreen(!ClientOptions.instance().fullscreen);
+			setFullScreen(!Options.instance().fullscreen);
 		}
 		
 		// Debug keys
@@ -1260,9 +1260,9 @@ public class ClientGame extends Game
 			}
 			if (input().eight.isPressedFiltered())
 			{
-				ClientOptions.instance().renderOffFocus = !ClientOptions.instance().renderOffFocus;
+				Options.instance().renderOffFocus = !Options.instance().renderOffFocus;
 				
-				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + ClientOptions.instance().renderOffFocus);
+				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + Options.instance().renderOffFocus);
 			}
 			if (input.two.isPressedFiltered())
 			{
@@ -1272,9 +1272,9 @@ public class ClientGame extends Game
 			}
 			if (input.three.isPressedFiltered())
 			{
-				ClientOptions.instance().lighting = ClientOptions.instance().lighting.getNext();
+				Options.instance().lighting = Options.instance().lighting.getNext();
 				
-				logger().log(ALogType.DEBUG, "Lighting: " + ClientOptions.instance().lighting.toString());
+				logger().log(ALogType.DEBUG, "Lighting: " + Options.instance().lighting.toString());
 			}
 			if (input.four.isPressedFiltered())
 			{

@@ -27,7 +27,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.option.ServerOptions;
+import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
@@ -73,7 +73,7 @@ public class ServerGame extends Game implements IPacketParser
 	
 	public ServerGame()
 	{
-		this(ServerOptions.instance().serverIP, ServerOptions.instance().serverPassword, ServerOptions.instance().serverPort);
+		this(Options.instance().serverIP, Options.instance().serverPassword, Options.instance().serverPort);
 	}
 	
 	public ServerGame(String password, String port)

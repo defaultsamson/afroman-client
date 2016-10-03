@@ -1,6 +1,6 @@
 package ca.afroman.option;
 
-public enum ClientOptionType
+public enum OptionType
 {
 	MUSIC,
 	SERVER_USERNAME,
@@ -10,5 +10,10 @@ public enum ClientOptionType
 	CLIENT_PORT,
 	RENDER_OFF_FOCUS,
 	FULLSCREEN,
-	LIGHT_MODE
+	LIGHT_MODE,
+	
+	// Used proprietarily by server
+	SERVER_PASSWORD,
+	SERVER_IP,
+	SERVER_PORT,
 }

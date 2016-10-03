@@ -21,8 +21,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.TCPSocket;
-import ca.afroman.option.ClientOptions;
-import ca.afroman.option.ServerOptions;
+import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
 import ca.afroman.server.ServerGame;
@@ -338,7 +337,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		
 		if (isServerSide())
 		{
-			ServerOptions.instance().serverPort = "" + port;
+			Options.instance().serverPort = "" + port;
 			
 			try
 			{
@@ -363,7 +362,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		}
 		else
 		{
-			ClientOptions.instance().clientPort = "" + port;
+			Options.instance().clientPort = "" + port;
 			
 			try
 			{

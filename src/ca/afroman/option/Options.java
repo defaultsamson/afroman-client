@@ -5,22 +5,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
+import ca.afroman.game.Game;
 import ca.afroman.gfx.LightMapState;
 import ca.afroman.log.ALogType;
 import ca.afroman.util.FileUtil;
 
-public class ClientOptions
+public class Options
 {
 	public static final String OPTIONS_FILE = "options.txt";
 	private static final String SPLITTER = ":";
 	
-	private static ClientOptions instance = null;
+	private static Options instance = null;
 	
-	public static ClientOptions instance()
+	public static Options instance()
 	{
 		if (instance == null)
 		{
-			instance = new ClientOptions();
+			instance = new Options();
 			instance.initializeValues();
 			instance.load();
 		}
@@ -37,12 +38,16 @@ public class ClientOptions
 	public boolean fullscreen;
 	public LightMapState lighting;
 	
-	private void append(List<String> list, ClientOptionType type, boolean value)
+	public String serverPassword;
+	public String serverIP;
+	public String serverPort;
+	
+	private void append(List<String> list, OptionType type, boolean value)
 	{
 		list.add(type + SPLITTER + value);
 	}
 	
-	private void append(List<String> list, ClientOptionType type, String value)
+	private void append(List<String> list, OptionType type, String value)
 	{
 		list.add(type + SPLITTER + value);
 	}
@@ -58,6 +63,10 @@ public class ClientOptions
 		renderOffFocus = true;
 		fullscreen = false;
 		lighting = LightMapState.ON;
+		
+		serverPassword = "";
+		serverIP = "" + Game.IPv4_LOCALHOST;
+		serverPort = "" + Game.DEFAULT_PORT;
 	}
 	
 	public boolean isLightingOn()
@@ -77,7 +86,7 @@ public class ClientOptions
 				try
 				{
 					String[] split = line.split("\\" + SPLITTER);
-					ClientOptionType type = ClientOptionType.valueOf(split[0]);
+					OptionType type = OptionType.valueOf(split[0]);
 					String option = split.length > 1 && split[1] != null ? split[1] : "";
 					
 					switch (type)
@@ -112,6 +121,15 @@ public class ClientOptions
 						case LIGHT_MODE:
 							lighting = LightMapState.valueOf(option);
 							break;
+						case SERVER_PASSWORD:
+							serverPassword = option;
+							break;
+						case SERVER_IP:
+							serverIP = option;
+							break;
+						case SERVER_PORT:
+							serverPort = option;
+							break;
 					}
 				}
 				catch (Exception e)
@@ -130,15 +148,18 @@ public class ClientOptions
 	public void save()
 	{
 		List<String> op = new ArrayList<String>();
-		append(op, ClientOptionType.MUSIC, enableMusic);
-		append(op, ClientOptionType.SERVER_USERNAME, serverUsername);
-		append(op, ClientOptionType.CLIENT_USERNAME, clientUsername);
-		append(op, ClientOptionType.CLIENT_PASSWORD, clientPassword);
-		append(op, ClientOptionType.CLIENT_IP, clientIP);
-		append(op, ClientOptionType.CLIENT_PORT, clientPort);
-		append(op, ClientOptionType.RENDER_OFF_FOCUS, renderOffFocus);
-		append(op, ClientOptionType.FULLSCREEN, fullscreen);
-		append(op, ClientOptionType.LIGHT_MODE, lighting.toString());
+		append(op, OptionType.MUSIC, enableMusic);
+		append(op, OptionType.SERVER_USERNAME, serverUsername);
+		append(op, OptionType.CLIENT_USERNAME, clientUsername);
+		append(op, OptionType.CLIENT_PASSWORD, clientPassword);
+		append(op, OptionType.CLIENT_IP, clientIP);
+		append(op, OptionType.CLIENT_PORT, clientPort);
+		append(op, OptionType.RENDER_OFF_FOCUS, renderOffFocus);
+		append(op, OptionType.FULLSCREEN, fullscreen);
+		append(op, OptionType.LIGHT_MODE, lighting.toString());
+		append(op, OptionType.SERVER_PASSWORD, serverPassword);
+		append(op, OptionType.SERVER_IP, serverIP);
+		append(op, OptionType.SERVER_PORT, serverPort);
 		
 		FileUtil.writeLines(op, new File(OPTIONS_FILE));
 	}
