@@ -27,7 +27,6 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
@@ -70,16 +69,6 @@ public class ServerGame extends Game implements IPacketParser
 	private HashMap<IPConnection, List<Integer>> receivedPackets; // The ID's of all the packets that have been received
 	
 	private List<BytePacket> toProcess;
-	
-	public ServerGame()
-	{
-		this(Options.instance().serverIP, Options.instance().serverPassword, Options.instance().serverPort);
-	}
-	
-	public ServerGame(String password, String port)
-	{
-		this(IPv4_LOCALHOST, password, port);
-	}
 	
 	public ServerGame(String ip, String password, String port)
 	{

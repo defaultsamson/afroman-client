@@ -64,6 +64,7 @@ import ca.afroman.packet.PacketLogin;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
+import ca.afroman.server.ConsoleListener;
 import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
@@ -107,8 +108,10 @@ public class ClientGame extends Game
 		
 		if (serverOnly)
 		{
-			new ServerGame();
-			ALogger.initStreams();
+			new ServerGame(Options.instance().serverIP, Options.instance().serverPassword, Options.instance().serverPort);
+			
+			ConsoleListener typeListener = new ConsoleListener();
+			typeListener.startThis();
 		}
 		else
 		{

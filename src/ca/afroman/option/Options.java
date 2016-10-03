@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.game.Game;
 import ca.afroman.gfx.LightMapState;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.util.FileUtil;
 
 public class Options
@@ -92,7 +92,7 @@ public class Options
 					switch (type)
 					{
 						default:
-							ClientGame.instance().logger().log(ALogType.WARNING, "No OptionType found for type: " + type);
+							ALogger.logA(ALogType.WARNING, "No OptionType found for type: " + type);
 							break;
 						case MUSIC:
 							enableMusic = Boolean.parseBoolean(option);
@@ -134,13 +134,13 @@ public class Options
 				}
 				catch (Exception e)
 				{
-					ClientGame.instance().logger().log(ALogType.WARNING, "Failed to load line: " + line);
+					ALogger.logA(ALogType.WARNING, "Failed to load line: " + line);
 				}
 			}
 		}
 		else
 		{
-			ClientGame.instance().logger().log(ALogType.WARNING, "No options file found, creating " + OPTIONS_FILE);
+			ALogger.logA(ALogType.DEBUG, "No options file found, creating " + OPTIONS_FILE);
 			save();
 		}
 	}

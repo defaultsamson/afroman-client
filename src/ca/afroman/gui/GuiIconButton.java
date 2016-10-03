@@ -2,6 +2,7 @@ package ca.afroman.gui;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.interfaces.IRenderable;
+import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.Vector2DInt;
 
 public class GuiIconButton extends GuiButton
@@ -38,5 +39,13 @@ public class GuiIconButton extends GuiButton
 	public void setIcon(IRenderable icon)
 	{
 		this.icon = icon;
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
+		
+		if (icon instanceof ITickable) ((ITickable) icon).tick();
 	}
 }

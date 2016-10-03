@@ -40,6 +40,28 @@ public class ALogger extends Logger
 		Console.getErrorStream().addStream(fil);
 	}
 	
+	/**
+	 * Logs a message anonymously. (Doesn't sign message with thread stamp.)
+	 * 
+	 * @param type
+	 * @param msg
+	 */
+	public static void logA(ALogType type, String msg)
+	{
+		System.out.println("[" + getDateAndTime() + "] [" + type.toString() + "] " + msg);
+	}
+	
+	/**
+	 * Logs a message anonymously. (Doesn't sign message with thread stamp.)
+	 * 
+	 * @param type
+	 * @param msg
+	 */
+	public static void logA(String msg)
+	{
+		System.out.println("[" + getDateAndTime() + "] " + msg);
+	}
+	
 	public ALogger(String name)
 	{
 		this(name, null);
