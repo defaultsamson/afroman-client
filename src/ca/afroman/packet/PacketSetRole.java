@@ -1,6 +1,6 @@
 package ca.afroman.packet;
 
-import ca.afroman.client.Role;
+import ca.afroman.game.Role;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 

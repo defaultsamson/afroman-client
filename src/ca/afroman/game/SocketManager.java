@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.client.Role;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
@@ -22,7 +21,8 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.TCPSocket;
-import ca.afroman.option.Options;
+import ca.afroman.option.ClientOptions;
+import ca.afroman.option.ServerOptions;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
 import ca.afroman.server.ServerGame;
@@ -338,7 +338,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		
 		if (isServerSide())
 		{
-			Options.instance().serverPort = "" + port;
+			ServerOptions.instance().serverPort = "" + port;
 			
 			try
 			{
@@ -363,7 +363,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		}
 		else
 		{
-			Options.instance().clientPort = "" + port;
+			ClientOptions.instance().clientPort = "" + port;
 			
 			try
 			{

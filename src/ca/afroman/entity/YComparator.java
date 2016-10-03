@@ -1,6 +1,8 @@
-package ca.afroman.entity.api;
+package ca.afroman.entity;
 
 import java.util.Comparator;
+
+import ca.afroman.entity.api.Entity;
 
 /**
  * Sorts entities by their Y ordinate value from highest to lowest.

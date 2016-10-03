@@ -1,4 +1,4 @@
-package ca.afroman.client;
+package ca.afroman.game;
 
 public enum Role
 {

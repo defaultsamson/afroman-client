@@ -1,6 +1,6 @@
 package ca.afroman.network;
 
-import ca.afroman.client.Role;
+import ca.afroman.game.Role;
 import ca.afroman.resource.IDCounter;
 
 public class ConnectedPlayer

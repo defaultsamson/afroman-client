@@ -2,7 +2,7 @@ package ca.afroman.network;
 
 import java.net.InetAddress;
 
-import ca.afroman.client.Role;
+import ca.afroman.game.Role;
 
 public class IPConnectedPlayer extends ConnectedPlayer
 {

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
-import ca.afroman.client.Role;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
@@ -16,6 +15,7 @@ import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
+import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.interfaces.IPacketParser;
@@ -27,6 +27,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
+import ca.afroman.option.ServerOptions;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
@@ -70,7 +71,17 @@ public class ServerGame extends Game implements IPacketParser
 	
 	private List<BytePacket> toProcess;
 	
+	public ServerGame()
+	{
+		this(ServerOptions.instance().serverIP, ServerOptions.instance().serverPassword, ServerOptions.instance().serverPort);
+	}
+	
 	public ServerGame(String password, String port)
+	{
+		this(IPv4_LOCALHOST, password, port);
+	}
+	
+	public ServerGame(String ip, String password, String port)
 	{
 		super(newDefaultThreadGroupInstance(), "Game", true, 60);
 		
@@ -80,7 +91,18 @@ public class ServerGame extends Game implements IPacketParser
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
 		toProcess = new ArrayList<BytePacket>();
 		
-		startSocket(IPv4_LOCALHOST, SocketManager.validatedPort(port));
+		int valPort = SocketManager.validatedPort(port);
+		boolean started = startSocket(ip, valPort);
+		
+		if (started)
+		{
+			logger().log(ALogType.DEBUG, "Server connected on " + sockets().getServerConnection().asReadable());
+			super.startThis();
+		}
+		else
+		{
+			logger().log(ALogType.DEBUG, "Failed to connected server on " + ip + ":" + valPort + ", aborting startup");
+		}
 	}
 	
 	public void addConnection(IPConnection connection)
@@ -188,12 +210,6 @@ public class ServerGame extends Game implements IPacketParser
 	{
 		super.onPause();
 		isInGame = false;
-	}
-	
-	@Override
-	public void onStart()
-	{
-		super.onStart();
 	}
 	
 	@Override

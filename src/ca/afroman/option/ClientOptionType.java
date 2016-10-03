@@ -1,12 +1,9 @@
 package ca.afroman.option;
 
-public enum OptionType
+public enum ClientOptionType
 {
 	MUSIC,
 	SERVER_USERNAME,
-	SERVER_PASSWORD,
-	SERVER_IP,
-	SERVER_PORT,
 	CLIENT_USERNAME,
 	CLIENT_PASSWORD,
 	CLIENT_IP,

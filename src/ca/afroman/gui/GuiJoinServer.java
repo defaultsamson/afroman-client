@@ -8,7 +8,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
-import ca.afroman.option.Options;
+import ca.afroman.option.ClientOptions;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 
@@ -36,21 +36,21 @@ public class GuiJoinServer extends GuiScreen
 		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 60 - 4, 112);
-		username.setText(Options.instance().clientUsername);
+		username.setText(ClientOptions.instance().clientUsername);
 		username.setMaxLength(11);
 		username.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		username.setFocussed();
 		
 		// GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
 		password = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 90 - 6, 112);
-		password.setText(Options.instance().clientPassword);
+		password.setText(ClientOptions.instance().clientPassword);
 		password.setMaxLength(11);
 		password.setTypingMode(TypingMode.ONLY_NUMBERS_AND_LETTERS);
 		
 		// new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 112);
 		serverIP = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 120 - 8, 224);
 		serverIP.setMaxLength(64);
-		serverIP.setText(Options.instance().clientIP + (Options.instance().clientPort.length() > 0 ? ":" + Options.instance().clientPort : ""));
+		serverIP.setText(ClientOptions.instance().clientIP + (ClientOptions.instance().clientPort.length() > 0 ? ":" + ClientOptions.instance().clientPort : ""));
 		
 		addButton(username);
 		addButton(serverIP);
@@ -76,7 +76,7 @@ public class GuiJoinServer extends GuiScreen
 		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
 		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
 		
-		if (Options.instance().isLightingOn())
+		if (ClientOptions.instance().isLightingOn())
 		{
 			lightmap.clear();
 			light.renderCentered(lightmap);
@@ -104,7 +104,7 @@ public class GuiJoinServer extends GuiScreen
 	{
 		onLeaving();
 		
-		ClientGame.instance().joinServer(Options.instance().clientUsername, Options.instance().clientPassword);
+		ClientGame.instance().joinServer(ClientOptions.instance().clientUsername, ClientOptions.instance().clientPassword);
 	}
 	
 	@Override
@@ -118,12 +118,12 @@ public class GuiJoinServer extends GuiScreen
 		String[] portSplit = serverIP.getText().split(":");
 		String port = portSplit.length > 1 ? portSplit[portSplit.length - 1] : "";
 		
-		Options.instance().clientUsername = username.getText();
-		Options.instance().clientPassword = password.getText();
-		Options.instance().clientPort = port;
-		Options.instance().clientIP = portSplit[0];
+		ClientOptions.instance().clientUsername = username.getText();
+		ClientOptions.instance().clientPassword = password.getText();
+		ClientOptions.instance().clientPort = port;
+		ClientOptions.instance().clientIP = portSplit[0];
 		
-		Options.instance().save();
+		ClientOptions.instance().save();
 	}
 	
 	@Override
@@ -154,7 +154,7 @@ public class GuiJoinServer extends GuiScreen
 	{
 		super.tick();
 		
-		if (Options.instance().isLightingOn())
+		if (ClientOptions.instance().isLightingOn())
 		{
 			light.tick();
 			afroMan.tick();

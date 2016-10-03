@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.client.Role;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.Level;

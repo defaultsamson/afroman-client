@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
-import ca.afroman.option.Options;
+import ca.afroman.option.ClientOptions;
 import ca.afroman.resource.Vector2DInt;
 
 public class LightMap extends Texture
@@ -41,7 +41,7 @@ public class LightMap extends Texture
 		int xa = (x >> 24) & 0xFF;
 		int ya = (y >> 24) & 0xFF;
 		int a;
-		if (Options.instance().lighting == LightMapState.CHEAP)
+		if (ClientOptions.instance().lighting == LightMapState.CHEAP)
 		{
 			a = (xa * ya) >> 7; // Math.min(255, xa + ya)
 		}
@@ -208,7 +208,7 @@ public class LightMap extends Texture
 	
 	public Color getAmbientColour()
 	{
-		return Options.instance().lighting == LightMapState.CHEAP ? CHEAP_AMBIENT : ambientColour;
+		return ClientOptions.instance().lighting == LightMapState.CHEAP ? CHEAP_AMBIENT : ambientColour;
 	}
 	
 	/**
@@ -227,6 +227,6 @@ public class LightMap extends Texture
 			}
 		}
 		
-		if (Options.instance().lighting == LightMapState.ON) this.draw(filter, PATCH_POSITION);
+		if (ClientOptions.instance().lighting == LightMapState.ON) this.draw(filter, PATCH_POSITION);
 	}
 }

@@ -13,15 +13,15 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.client.Role;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.entity.YComparator;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.entity.api.YComparator;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.IEvent;
+import ca.afroman.game.Role;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.build.GuiGrid;
@@ -31,7 +31,7 @@ import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.log.ALogType;
-import ca.afroman.option.Options;
+import ca.afroman.option.ClientOptions;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddPointLight;
@@ -334,7 +334,7 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		if (Options.instance().isLightingOn())
+		if (ClientOptions.instance().isLightingOn())
 		{
 			// Draws all the lighting over everything else
 			lightmap.clear();
@@ -753,7 +753,7 @@ public class ClientLevel extends Level
 			}
 		}
 		
-		if (Options.instance().isLightingOn())
+		if (ClientOptions.instance().isLightingOn())
 		{
 			List<PointLight> lights = this.getLights();
 			

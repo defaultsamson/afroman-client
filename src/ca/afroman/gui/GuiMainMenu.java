@@ -7,7 +7,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
-import ca.afroman.option.Options;
+import ca.afroman.option.ClientOptions;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 
@@ -39,7 +39,7 @@ public class GuiMainMenu extends GuiScreen
 		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
 		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
 		
-		if (Options.instance().isLightingOn())
+		if (ClientOptions.instance().isLightingOn())
 		{
 			lightmap.clear();
 			light.renderCentered(lightmap);
@@ -85,7 +85,7 @@ public class GuiMainMenu extends GuiScreen
 	{
 		super.tick();
 		
-		if (Options.instance().isLightingOn())
+		if (ClientOptions.instance().isLightingOn())
 		{
 			light.tick();
 			afroMan.tick();
