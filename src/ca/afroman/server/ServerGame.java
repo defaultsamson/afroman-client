@@ -736,14 +736,14 @@ public class ServerGame extends Game implements IPacketParser
 			}
 			
 			// Checks that the client's game version is not above or below this version
-			if (version > VersionUtil.VERSION)
+			if (version > VersionUtil.SERVER_TEST_VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER, connection);
 				sockets().sender().sendPacket(passPacket);
 				return;
 			}
 			
-			if (version < VersionUtil.VERSION)
+			if (version < VersionUtil.SERVER_TEST_VERSION)
 			{
 				PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT, connection);
 				sockets().sender().sendPacket(passPacket);

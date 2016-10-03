@@ -17,7 +17,7 @@ public class PacketLogin extends BytePacket
 		
 		List<Byte> send = new ArrayList<Byte>();
 		
-		for (byte e : ByteUtil.intAsBytes(VersionUtil.VERSION))
+		for (byte e : ByteUtil.intAsBytes(VersionUtil.SERVER_TEST_VERSION))
 		{
 			send.add(e);
 		}

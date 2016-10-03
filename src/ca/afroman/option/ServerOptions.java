@@ -31,6 +31,8 @@ public class ServerOptions
 	public String serverIP;
 	public String serverPort;
 	
+	
+	@SuppressWarnings("unused")
 	private void append(List<String> list, ServerOptionType type, boolean value)
 	{
 		list.add(type + SPLITTER + value);

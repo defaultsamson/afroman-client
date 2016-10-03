@@ -11,9 +11,11 @@ public class VersionUtil
 	
 	private static final byte[] YEAR_SPLIT = ByteUtil.shortAsBytes(YEAR);
 	private static final byte[] SUB_SPLIT = ByteUtil.intAsBytes(SUB_VERSION);
-	public static final int VERSION = ByteUtil.intFromBytes(new byte[] { YEAR_SPLIT[0], YEAR_SPLIT[1], MONTH, DAY });
-	private static final long DISPLAY_VERSION = ByteUtil.longFromBytes(new byte[] { YEAR_SPLIT[0], YEAR_SPLIT[1], MONTH, DAY, SUB_SPLIT[0], SUB_SPLIT[1], SUB_SPLIT[2], SUB_SPLIT[3] });
-	public static final String VERSION_STRING = toString(DISPLAY_VERSION);
+	/** Used for testing against AfroMan servers for compatibility. */
+	public static final int SERVER_TEST_VERSION = ByteUtil.intFromBytes(new byte[] { YEAR_SPLIT[0], YEAR_SPLIT[1], MONTH, DAY });
+	/** The full version name including the sub-version */
+	public static final long FULL_VERSION = ByteUtil.longFromBytes(new byte[] { YEAR_SPLIT[0], YEAR_SPLIT[1], MONTH, DAY, SUB_SPLIT[0], SUB_SPLIT[1], SUB_SPLIT[2], SUB_SPLIT[3] });
+	public static final String VERSION_STRING = toString(FULL_VERSION);
 	
 	public static String toString(long version)
 	{
