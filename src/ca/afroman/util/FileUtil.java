@@ -107,6 +107,31 @@ public class FileUtil
 		return new File(path.substring(0, path.lastIndexOf('!')));
 	}
 	
+	public static FileType getFileType(File file)
+	{
+		return getFileType(file.getName());
+	}
+	
+	public static FileType getFileType(String fileName)
+	{
+		String[] spl = fileName.split(".");
+		
+		if (!ArrayUtil.isEmpty(spl))
+		{
+			String extension = spl[spl.length - 1].toLowerCase();
+			
+			for (FileType file : FileType.values())
+			{
+				if (extension.equalsIgnoreCase(file.getExtension()))
+				{
+					return file;
+				}
+			}
+		}
+		
+		return FileType.INVALID;
+	}
+	
 	/**
 	 * Takes all the lines from a file as Strings.
 	 * 

@@ -26,12 +26,12 @@ public class GuiTileEditor extends GuiGrid
 	{
 		super();
 		
-		layer0show = new GuiTextButton(this, 00, 5, 18 + (18 * 5), 32, blackFont, "L1 X");
-		layer1show = new GuiTextButton(this, 10, 5, 18 + (18 * 4), 32, blackFont, "L2 X");
-		layer2show = new GuiTextButton(this, 20, 5, 18 + (18 * 3), 32, blackFont, "L3 X");
-		layer3show = new GuiTextButton(this, 30, 5, 24 + (18 * 2), 32, blackFont, "L4 X");
-		layer4show = new GuiTextButton(this, 40, 5, 24 + (18 * 1), 32, blackFont, "L5 X");
-		layer5show = new GuiTextButton(this, 50, 5, 24 + (18 * 0), 32, blackFont, "L6 X");
+		layer0show = new GuiTextButton(this, 00, 5, 24 + (18 * 5), 32, blackFont, "L1 X");
+		layer1show = new GuiTextButton(this, 10, 5, 24 + (18 * 4), 32, blackFont, "L2 X");
+		layer2show = new GuiTextButton(this, 20, 5, 24 + (18 * 3), 32, blackFont, "L3 X");
+		layer3show = new GuiTextButton(this, 30, 5, 18 + (18 * 2), 32, blackFont, "L4 X");
+		layer4show = new GuiTextButton(this, 40, 5, 18 + (18 * 1), 32, blackFont, "L5 X");
+		layer5show = new GuiTextButton(this, 50, 5, 18 + (18 * 0), 32, blackFont, "L6 X");
 		
 		addButton(layer0show);
 		addButton(layer1show);
@@ -40,12 +40,12 @@ public class GuiTileEditor extends GuiGrid
 		addButton(layer4show);
 		addButton(layer5show);
 		
-		layer0edit = new GuiTextButton(this, 01, 39, 18 + (18 * 5), 13, blackFont, "E");
-		layer1edit = new GuiTextButton(this, 11, 39, 18 + (18 * 4), 13, blackFont, "E");
-		layer2edit = new GuiTextButton(this, 21, 39, 18 + (18 * 3), 13, blackFont, "E");
-		layer3edit = new GuiTextButton(this, 31, 39, 24 + (18 * 2), 13, blackFont, "E");
-		layer4edit = new GuiTextButton(this, 41, 39, 24 + (18 * 1), 13, blackFont, "E");
-		layer5edit = new GuiTextButton(this, 51, 39, 24 + (18 * 0), 13, blackFont, "E");
+		layer0edit = new GuiTextButton(this, 01, 39, 24 + (18 * 5), 13, blackFont, "E");
+		layer1edit = new GuiTextButton(this, 11, 39, 24 + (18 * 4), 13, blackFont, "E");
+		layer2edit = new GuiTextButton(this, 21, 39, 24 + (18 * 3), 13, blackFont, "E");
+		layer3edit = new GuiTextButton(this, 31, 39, 18 + (18 * 2), 13, blackFont, "E");
+		layer4edit = new GuiTextButton(this, 41, 39, 18 + (18 * 1), 13, blackFont, "E");
+		layer5edit = new GuiTextButton(this, 51, 39, 18 + (18 * 0), 13, blackFont, "E");
 		
 		addButton(layer0edit);
 		addButton(layer1edit);
