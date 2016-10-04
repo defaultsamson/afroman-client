@@ -18,7 +18,9 @@ public class UpdateUtil
 	public static final String RAW_LOCATION = "https://raw.githubusercontent.com/qwertysam/afroman-client/master/version.txt";
 	public static final String RAW_BUILD = "https://github.com/qwertysam/afroman-client/releases/download";
 	public static final String JAR_FILENAME = "AfroMan-mp3-o.jar";
+	public static final String JAR_NEWNAME = "AfroMan-new.jar";
 	public static final String EXE_FILENAME = "AfroMan-mp3.exe";
+	public static final String EXE_NEWNAME = "AfroMan-new.exe";
 	public static final String NEW_UPDATE = "/new/";
 	
 	public static long currentVersion;
@@ -83,7 +85,7 @@ public class UpdateUtil
 		try
 		{
 			String displayVersion = VersionUtil.toString(serverVersion);
-			download(RAW_BUILD + "/" + displayVersion + "/" + EXE_FILENAME, NEW_UPDATE + EXE_FILENAME);
+			download(RAW_BUILD + "/" + displayVersion + "/" + EXE_FILENAME, EXE_NEWNAME);
 		}
 		catch (Exception e)
 		{
@@ -106,7 +108,7 @@ public class UpdateUtil
 		try
 		{
 			String displayVersion = VersionUtil.toString(serverVersion);
-			download(RAW_BUILD + "/" + displayVersion + "/" + JAR_FILENAME, NEW_UPDATE + JAR_FILENAME);
+			download(RAW_BUILD + "/" + displayVersion + "/" + JAR_FILENAME, JAR_NEWNAME);
 		}
 		catch (Exception e)
 		{
@@ -165,36 +167,25 @@ public class UpdateUtil
 		{
 			ALogger.logA(ALogType.WARNING, "Failed to copy " + from + " to " + to, e);
 		}
-		
-		// Path source = Paths.get(from);
-		// Path target = Paths.get(to);
-		//
-		// try
-		// {
-		// Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-		// }
-		// catch (Exception e)
-		// {
-		// ALogger.logA(ALogType.WARNING, "Failed to copy " + source + " to " + target);
-		// }
 	}
 	
-	public static void update()
+	public static Boolean update()
 	{
 		switch (runningFile)
 		{
 			case INVALID:
 				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
-				break;
+				return false;
 			case EXE:
 				newExe();
-				replace(NEW_UPDATE + EXE_FILENAME, self.getName());
-				break;
+				replace(EXE_NEWNAME, self.getName());
+				return true;
 			case JAR:
 				newJar();
-				replace(NEW_UPDATE + JAR_FILENAME, self.getName());
-				break;
+				replace(JAR_NEWNAME, self.getName());
+				return true;
 		}
+		return false;
 	}
 	
 	/**

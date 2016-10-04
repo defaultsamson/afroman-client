@@ -92,7 +92,15 @@ public class GuiMainMenu extends GuiScreen
 				}
 				break;
 			case 30: // Yes, update
-				UpdateUtil.update();
+				if (UpdateUtil.update())
+				{
+					new GuiClickNotification(this, "The game will", "now close");
+					ClientGame.instance().quit();
+				}
+				else
+				{
+					new GuiClickNotification(this, "Failed to", "update");
+				}
 				break;
 			case 31: // No, don't update
 				break;
