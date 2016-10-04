@@ -31,7 +31,10 @@ public class UpdateUtil
 	private static File self;
 	private static FileType runningFile =  FileType.INVALID;
 	
-	public UpdateUtil ()
+	/**
+	 * Checks for, and if there are, updates the game.
+	 */
+	public static void update ()
 	{
 		currentVersion = VersionUtil.SERVER_TEST_VERSION;
 		grabVersion();
@@ -49,6 +52,9 @@ public class UpdateUtil
 		versionCheck();
 	}
 	
+	/**
+	 * Downloads the text file indicating the latest release version.
+	 */
 	public static void grabVersion()
 	{		
 		try
@@ -61,6 +67,10 @@ public class UpdateUtil
 		}		
 	}
 	
+	/**
+	 * Checks all lines in the server version file (should be only one),
+	 * and tests if any are greater than this program's version.
+	 */
 	public static void versionCheck()
 	{
 		File file = new File(SERVER_VERSION);
@@ -91,6 +101,14 @@ public class UpdateUtil
 								break;
 						}
 					}
+					else if (subject.equals(currentVersion))
+					{
+						ALogger.logA(ALogType.DEBUG, "Current version is same as server's, stopping...");
+					}
+					else
+					{
+						ALogger.logA(ALogType.DEBUG, "Current version is newer than server's, server update recommended.");
+					}
 				}
 				catch (Exception e)
 				{
@@ -100,7 +118,11 @@ public class UpdateUtil
 		}
 	}
 	
-	public static File newJar ()
+	/**
+	 * Constructs a URL to grab a jar from the repo server, then downloads it into a new folder.
+	 * @return the file it has downloaded.
+	 */
+	private static File newJar ()
 	{
 		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
 		URL buildLocation = null;
@@ -118,7 +140,11 @@ public class UpdateUtil
 		return new File(JAR_FILENAME);
 	}
 	
-	public static File newExe ()
+	/**
+	 * Constructs a URL to grab a executable from the repo server, then downloads it into a new folder.
+	 * @return the file it has downloaded.
+	 */
+	private static File newExe ()
 	{
 		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
 		URL buildLocation = null;
@@ -137,16 +163,12 @@ public class UpdateUtil
 		return new File(EXE_FILENAME);
 	}
 	
-	public static void sameVersion ()
-	{
-		ALogger.logA(ALogType.DEBUG, "Current version is same as server's, stopping...");
-	}
-	
-	public static void futureVersion ()
-	{
-		ALogger.logA(ALogType.DEBUG, "Current version is newer than server's, server update recommended.");
-	}
-	
+	/**
+	 * Downloads a file from a URL.
+	 * @param location the string version of the URL to download from.
+	 * @param fileName the name that the download should take.
+	 * @return the downloaded file.
+	 */
 	public static File download(String location, String fileName)
 	{
 		URL downloadLocation = null;
@@ -167,6 +189,11 @@ public class UpdateUtil
 		return new File(fileName);
 	}
 	
+	/**
+	 * Replaces one file with another.
+	 * @param from source file to move.
+	 * @param to destination file to remove.
+	 */
 	public static void replace (String from, String to) // Heckign wicked kill file and put replacement laad
 	{
 		Path source = Paths.get(from);
