@@ -1,5 +1,7 @@
 package ca.afroman.gui;
 
+import java.util.Random;
+
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
@@ -10,6 +12,7 @@ import ca.afroman.gfx.LightMap;
 import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
+import ca.afroman.util.VersionUtil;
 
 public class GuiMainMenu extends GuiScreen
 {
@@ -31,6 +34,7 @@ public class GuiMainMenu extends GuiScreen
 		addButton(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join"));
 		addButton(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 1), 72, blackFont, "Host"));
 		addButton(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 2), 72, blackFont, "Quit"));
+		addButton(new GuiIconButton(this, 3, (ClientGame.WIDTH / 2) - (72 / 2) - 16 - 4, 58 + (24 * 2), 16, Assets.getTexture(AssetType.ICON_REFRESH)));
 	}
 	
 	@Override
@@ -77,7 +81,22 @@ public class GuiMainMenu extends GuiScreen
 			case 0: // Quit game
 				ClientGame.instance().quit();
 				break;
-			case 3: // Update game
+			case 3: // Check for updates
+				
+				boolean ye = new Random().nextBoolean();
+				
+				if (ye)
+				{
+					new GuiYesNoPrompt(this, 100, "Update found (" + VersionUtil.toString(123190342347123128L) + ")", "Would you like to update?");
+				}
+				else
+				{
+					new GuiClickNotification(this, "No updates", "found");
+				}
+				break;
+			case 100: // Yes, update
+				break;
+			case 101: // No, don't update
 				break;
 		}
 	}

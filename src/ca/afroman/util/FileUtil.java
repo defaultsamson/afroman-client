@@ -95,18 +95,6 @@ public class FileUtil
 		return path;
 	}
 	
-	public static File getRunningJar() throws FileNotFoundException
-	{
-		String path = ClientGame.class.getResource(ClientGame.class.getSimpleName() + ".class").getFile();
-		if (path.startsWith("/"))
-		{
-			throw new FileNotFoundException("This is not a jar file: \n" + path);
-		}
-		path = ClassLoader.getSystemClassLoader().getResource(path).getFile();
-		
-		return new File(path.substring(0, path.lastIndexOf('!')));
-	}
-	
 	public static FileType getFileType(File file)
 	{
 		return getFileType(file.getName());
@@ -130,6 +118,18 @@ public class FileUtil
 		}
 		
 		return FileType.INVALID;
+	}
+	
+	public static File getRunningJar() throws FileNotFoundException
+	{
+		String path = ClientGame.class.getResource(ClientGame.class.getSimpleName() + ".class").getFile();
+		if (path.startsWith("/"))
+		{
+			throw new FileNotFoundException("This is not a jar file: \n" + path);
+		}
+		path = ClassLoader.getSystemClassLoader().getResource(path).getFile();
+		
+		return new File(path.substring(0, path.lastIndexOf('!')));
 	}
 	
 	/**

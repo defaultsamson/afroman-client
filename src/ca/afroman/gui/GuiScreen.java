@@ -18,6 +18,7 @@ public abstract class GuiScreen
 	protected GuiScreen parentScreen;
 	private List<GuiButton> buttons;
 	private List<GuiButton> buttonToRemove;
+	private List<GuiButton> buttonToAdd;
 	
 	private GuiButton listening = null;
 	
@@ -26,12 +27,12 @@ public abstract class GuiScreen
 		this.parentScreen = parentScreen;
 		this.buttons = new ArrayList<GuiButton>();
 		this.buttonToRemove = new ArrayList<GuiButton>();
+		this.buttonToAdd = new ArrayList<GuiButton>();
 	}
 	
 	public void addButton(GuiButton but)
 	{
-		// to invoke the top-most button to the buttom-most
-		buttons.add(0, but);
+		buttonToAdd.add(but);
 	}
 	
 	public void clearButtons()
@@ -117,7 +118,14 @@ public abstract class GuiScreen
 			buttons.remove(button);
 		}
 		
+		for (GuiButton button : this.buttonToAdd)
+		{
+			// to invoke the top-most button to the buttom-most
+			buttons.add(0, button);
+		}
+		
 		this.buttonToRemove.clear();
+		this.buttonToAdd.clear();
 		
 		// Ticks all the buttons
 		for (GuiButton button : this.buttons)
