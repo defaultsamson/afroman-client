@@ -87,16 +87,16 @@ public class GuiMainMenu extends GuiScreen
 				
 				if (ye)
 				{
-					new GuiYesNoPrompt(this, 100, "Update found (" + VersionUtil.toString(123190342347123128L) + ")", "Would you like to update?");
+					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(123190342347123128L) + ")", "Would you like to update?");
 				}
 				else
 				{
 					new GuiClickNotification(this, "No updates", "found");
 				}
 				break;
-			case 100: // Yes, update
+			case 30: // Yes, update
 				break;
-			case 101: // No, don't update
+			case 31: // No, don't update
 				break;
 		}
 	}
