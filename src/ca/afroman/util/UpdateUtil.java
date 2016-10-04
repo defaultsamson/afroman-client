@@ -7,10 +7,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import ca.afroman.log.ALogType;
@@ -131,7 +127,7 @@ public class UpdateUtil
 		{
 			try
 			{
-				Files.delete(Paths.get(version.getPath()));
+				FileUtil.delete(version);
 			}
 			catch (IOException e)
 			{
@@ -139,11 +135,12 @@ public class UpdateUtil
 			}
 		}
 		
-		if (Files.exists(Paths.get(NEW_UPDATE)))
+		File update = new File(NEW_UPDATE);
+		if (update.exists())
 		{
 			try
 			{
-				Files.delete(Paths.get(NEW_UPDATE));
+				FileUtil.delete(update);
 			}
 			catch (IOException e)
 			{
@@ -160,16 +157,43 @@ public class UpdateUtil
 	 */
 	public static void replace(String from, String to) // Heckign wicked kill file and put replacement laad
 	{
-		Path source = Paths.get(from);
-		Path target = Paths.get(to);
-		
 		try
 		{
-			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+			FileUtil.copyFile(new File(from), new File(to));
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-			ALogger.logA(ALogType.WARNING, "Failed to copy " + source + " to " + target);
+			ALogger.logA(ALogType.WARNING, "Failed to copy " + from + " to " + to, e);
+		}
+		
+		// Path source = Paths.get(from);
+		// Path target = Paths.get(to);
+		//
+		// try
+		// {
+		// Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+		// }
+		// catch (Exception e)
+		// {
+		// ALogger.logA(ALogType.WARNING, "Failed to copy " + source + " to " + target);
+		// }
+	}
+	
+	public static void update()
+	{
+		switch (runningFile)
+		{
+			case INVALID:
+				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
+				break;
+			case EXE:
+				newExe();
+				replace(NEW_UPDATE + EXE_FILENAME, self.getName());
+				break;
+			case JAR:
+				newJar();
+				replace(NEW_UPDATE + JAR_FILENAME, self.getName());
+				break;
 		}
 	}
 	

@@ -55,6 +55,14 @@ public class FileUtil
 		}
 	}
 	
+	public static void delete(File file) throws IOException
+	{
+		if (!file.delete())
+		{
+			throw new IOException();
+		}
+	}
+	
 	/**
 	 * Gets a file instance from a resource of the running program.
 	 * 
