@@ -14,8 +14,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +70,6 @@ import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
-import ca.afroman.util.FileUtil;
 import ca.afroman.util.IPUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
@@ -108,16 +105,6 @@ public class ClientGame extends Game
 				serverOnly = true;
 				break;
 			}
-		}
-		
-		try
-		{
-			File thisJar = FileUtil.getRunningJar();
-			System.out.println("Got Running Jar: " + thisJar.getName());
-		}
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
 		}
 		
 		if (serverOnly)
@@ -453,16 +440,6 @@ public class ClientGame extends Game
 		music.startLoop();
 		
 		updateCursorHiding();
-		
-		try
-		{
-			File thisJar = FileUtil.getRunningJar();
-			System.out.println("Got Running Jar: " + thisJar.getName());
-		}
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		}
 	}
 	
 	@Override

@@ -57,6 +57,18 @@ public class ALogger extends Logger
 	 * @param type
 	 * @param msg
 	 */
+	public static void logA(ALogType type, String msg, Throwable thr)
+	{
+		System.err.println("[" + getDateAndTime() + "] [" + type.toString() + "] " + msg + " (" + thr.getMessage() + ")");
+		thr.printStackTrace();
+	}
+	
+	/**
+	 * Logs a message anonymously. (Doesn't sign message with thread stamp.)
+	 * 
+	 * @param type
+	 * @param msg
+	 */
 	public static void logA(String msg)
 	{
 		System.out.println("[" + getDateAndTime() + "] " + msg);
