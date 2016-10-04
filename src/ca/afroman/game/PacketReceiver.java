@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
+import java.net.SocketException;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.IServerClient;
@@ -64,6 +65,10 @@ public class PacketReceiver extends DynamicThread implements IServerClient
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "PORT", "UNREACHABLE");
 			}
+		}
+		catch (SocketException e)
+		{
+			// TODO this is invisible
 		}
 		catch (IOException e)
 		{

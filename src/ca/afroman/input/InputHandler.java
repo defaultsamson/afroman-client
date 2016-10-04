@@ -314,6 +314,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		try
 		{
 			ClientGame.instance().stopThis();
+			
 			Assets.dispose();
 			System.exit(0);
 		}

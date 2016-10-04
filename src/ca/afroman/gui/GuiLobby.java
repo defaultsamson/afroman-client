@@ -17,7 +17,6 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketBeginGame;
-import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
@@ -145,7 +144,6 @@ public class GuiLobby extends GuiScreen
 		}
 		else if (buttonID == 2002) // Leave server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerDisconnect());
 			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
 		else

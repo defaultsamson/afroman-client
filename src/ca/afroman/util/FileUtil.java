@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import ca.afroman.client.ClientGame;
+
 public class FileUtil
 {
 	private static HashMap<String, String> replacements;
@@ -91,6 +93,18 @@ public class FileUtil
 			}
 		}
 		return path;
+	}
+	
+	public static File getRunningJar() throws FileNotFoundException
+	{
+		String path = ClientGame.class.getResource(ClientGame.class.getSimpleName() + ".class").getFile();
+		if (path.startsWith("/"))
+		{
+			throw new FileNotFoundException("This is not a jar file: \n" + path);
+		}
+		path = ClassLoader.getSystemClassLoader().getResource(path).getFile();
+		
+		return new File(path.substring(0, path.lastIndexOf('!')));
 	}
 	
 	/**

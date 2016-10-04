@@ -222,7 +222,10 @@ public class SocketManager implements IDynamicRunning, IServerClient
 				getServerConnection().setTCPSocket(sock);
 				
 				TCPReceiver thread = new TCPReceiver(this, sock);
-				tcpSockets.add(thread);
+				synchronized (tcpSockets)
+				{
+					tcpSockets.add(thread);
+				}
 				thread.startThis();
 			}
 			catch (UnknownHostException e)
@@ -409,11 +412,14 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			e.printStackTrace();
 		}
 		
-		for (TCPReceiver tcp : tcpSockets)
+		synchronized (tcpSockets)
 		{
-			tcp.stopThis();;
+			for (TCPReceiver tcp : tcpSockets)
+			{
+				tcp.stopThis();
+			}
+			tcpSockets.clear();
 		}
-		tcpSockets.clear();
 		
 		socket.close();
 		playerList.clear();

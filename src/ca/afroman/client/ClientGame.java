@@ -14,6 +14,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +63,7 @@ import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLogin;
+import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
@@ -69,6 +72,7 @@ import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.FileUtil;
 import ca.afroman.util.IPUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
@@ -104,6 +108,16 @@ public class ClientGame extends Game
 				serverOnly = true;
 				break;
 			}
+		}
+		
+		try
+		{
+			File thisJar = FileUtil.getRunningJar();
+			System.out.println("Got Running Jar: " + thisJar.getName());
+		}
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
 		}
 		
 		if (serverOnly)
@@ -152,9 +166,6 @@ public class ClientGame extends Game
 	private Cursor blankCursor;
 	private byte hideCursor = 0;
 	
-	/** The ID's of all the packets that have been received. */
-	private List<Integer> receivedPackets;
-	
 	/** Whether or not to exit from the game and go to the main menu. */
 	private boolean exitGame = false;
 	
@@ -172,9 +183,9 @@ public class ClientGame extends Game
 	public void exitFromGame(ExitGameReason reason)
 	{
 		// TODO let the server know that the client has disconnected
-		// sockets().sender().sendPacket(new PacketPlayerDisconnect());
+		if (sockets() != null && reason == ExitGameReason.DISCONNECT) sockets().sender().sendPacket(new PacketPlayerDisconnect());
+		
 		stopSocket();
-		receivedPackets.clear();
 		
 		getLevels().clear();
 		setCurrentLevel(null);
@@ -417,7 +428,6 @@ public class ClientGame extends Game
 		debugFont = Assets.getFont(AssetType.FONT_BLACK);
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
 		input = new InputHandler(this);
-		receivedPackets = new ArrayList<Integer>();
 		
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER1, new Vector2DDouble(0, 0)));
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
@@ -443,14 +453,24 @@ public class ClientGame extends Game
 		music.startLoop();
 		
 		updateCursorHiding();
+		
+		try
+		{
+			File thisJar = FileUtil.getRunningJar();
+			System.out.println("Got Running Jar: " + thisJar.getName());
+		}
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public void onStop()
 	{
+		exitFromGame(ExitGameReason.DISCONNECT);
+		
 		super.onStop();
-		// TODO always have socket manager open?
-		receivedPackets.clear();
 		
 		getLevels().clear();
 		setCurrentLevel(null);
