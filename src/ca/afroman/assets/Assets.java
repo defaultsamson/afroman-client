@@ -171,8 +171,9 @@ public class Assets
 		Texture lamp = sheet.getSubTexture(AssetType.TILE_LAMP_LEFT, 16 * 8, 16 * 4, 16, 16);
 		assets.add(lamp);
 		assets.add(lamp.clone(AssetType.TILE_LAMP_RIGHT).flipX());
+		assets.add(new SpriteAnimation(AssetType.TILE_LAMP, true, 16, sheet.getSubTexture(AssetType.TILE_LAMP, 16 * 8, 16 * 4, 24, 16).toTextureArray(3, 2) ));
 		
-		assets.add(new SpriteAnimation(AssetType.SLIME, 12, sheet.getSubTexture(AssetType.SLIME, 16 * 0, (16 * 7) + 8, 16 * 2, 16).toTextureArray(2, 1)));
+		assets.add(new SpriteAnimation(AssetType.SLIME, 12, sheet.getSubTexture(AssetType.SLIME, 16 * 0, (16 * 7), 16 * 2, 16).toTextureArray(2, 1)));
 		
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_NORMAL, 0, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));

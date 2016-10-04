@@ -68,6 +68,7 @@ public enum AssetType
 	
 	TILE_LAMP_LEFT,
 	TILE_LAMP_RIGHT,
+	TILE_LAMP,
 	
 	BUTTON_PRESSED,
 	BUTTON_HOVER,
