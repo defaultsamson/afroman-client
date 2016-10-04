@@ -48,7 +48,7 @@ public class UpdateUtil
 		}
 		catch (Exception e)
 		{
-			ALogger.logA(ALogType.WARNING, "Failed to download from URL: " + location);
+			ALogger.logA(ALogType.WARNING, "Failed to download from URL: " + location, e);
 			return null;
 		}
 		
@@ -66,7 +66,7 @@ public class UpdateUtil
 		}
 		catch (Exception e)
 		{
-			ALogger.logA(ALogType.WARNING, "Failed to capture file at: " + RAW_LOCATION);
+			ALogger.logA(ALogType.WARNING, "Failed to capture file at: " + RAW_LOCATION, e);
 		}
 	}
 	
@@ -87,7 +87,7 @@ public class UpdateUtil
 		}
 		catch (Exception e)
 		{
-			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation);
+			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation, e);
 			return null;
 		}
 		
@@ -110,7 +110,7 @@ public class UpdateUtil
 		}
 		catch (Exception e)
 		{
-			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation);
+			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation, e);
 			return null;
 		}
 		
@@ -131,7 +131,7 @@ public class UpdateUtil
 			}
 			catch (IOException e)
 			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete " + version);
+				ALogger.logA(ALogType.WARNING, "Failed to delete " + version, e);
 			}
 		}
 		
@@ -144,7 +144,7 @@ public class UpdateUtil
 			}
 			catch (IOException e)
 			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete" + NEW_UPDATE);
+				ALogger.logA(ALogType.WARNING, "Failed to delete" + NEW_UPDATE, e);
 			}
 		}
 	}
@@ -212,7 +212,7 @@ public class UpdateUtil
 		}
 		catch (FileNotFoundException e)
 		{
-			ALogger.logA(ALogType.WARNING, "Cannot find self!");
+			ALogger.logA(ALogType.WARNING, "Cannot find self!", e);
 		}
 		
 		runningFile = FileUtil.getFileType(self);
@@ -250,7 +250,7 @@ public class UpdateUtil
 				}
 				catch (Exception e)
 				{
-					ALogger.logA(ALogType.WARNING, "Failed to read line: " + line);
+					ALogger.logA(ALogType.WARNING, "Failed to read line: " + line, e);
 				}
 			}
 		}
