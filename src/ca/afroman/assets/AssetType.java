@@ -73,6 +73,8 @@ public enum AssetType
 	BUTTON_HOVER,
 	BUTTON_NORMAL,
 	
+	ICON_REFRESH,
+	
 	TEXT_FIELD,
 	TEXT_FIELD_CLEAR,
 	

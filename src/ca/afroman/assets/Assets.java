@@ -178,6 +178,8 @@ public class Assets
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_PRESSED, 6, 0, 3, 16));
 		
+		assets.add(sheet.getSubTexture(AssetType.ICON_REFRESH, 0, 16 * 2, 16, 16));
+		
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 		
