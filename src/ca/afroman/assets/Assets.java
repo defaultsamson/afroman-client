@@ -159,6 +159,11 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 1, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16));
 		
+		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_CLOSED, 16 * 7, 16 * 5, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_OPEN, 16 * 8, 16 * 5, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_SIDE_CLOSED, 16 * 9, 16 * 5, 16, 32));
+		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_SIDE_OPEN, 16 * 10, 16 * 5, 16, 32));
+		
 		assets.add(new SpriteAnimation(AssetType.TILE_AURA, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
