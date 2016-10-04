@@ -1,7 +1,5 @@
 package ca.afroman.gui;
 
-import java.util.Random;
-
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
@@ -83,7 +81,7 @@ public class GuiMainMenu extends GuiScreen
 				ClientGame.instance().quit();
 				break;
 			case 3: // Check for updates
-								
+				
 				if (UpdateUtil.updateQuery())
 				{
 					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(123190342347123128L) + ")", "Would you like to update?");

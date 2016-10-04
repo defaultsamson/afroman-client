@@ -165,7 +165,6 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_SIDE_OPEN_TOP, 16 * 9, 16 * 5, 16, 24));
 		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_SIDE_OPEN_BOTTOM, 16 * 11, (16 * 6), 16, 16));
 		
-		
 		assets.add(new SpriteAnimation(AssetType.TILE_AURA, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));

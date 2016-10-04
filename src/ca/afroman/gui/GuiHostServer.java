@@ -118,7 +118,7 @@ public class GuiHostServer extends GuiScreen
 		{
 			if (ServerGame.instance() == null)
 			{
-				new ServerGame(Options.instance().serverIP, Options.instance().serverPassword, Options.instance().serverPort);
+				new ServerGame(false, Options.instance().serverIP, Options.instance().serverPassword, Options.instance().serverPort);
 			}
 			else
 			{

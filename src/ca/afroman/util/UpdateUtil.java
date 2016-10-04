@@ -9,7 +9,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 

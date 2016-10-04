@@ -70,11 +70,23 @@ public class ServerGame extends Game implements IPacketParser
 	
 	private List<BytePacket> toProcess;
 	
-	public ServerGame(String ip, String password, String port)
+	private ConsoleListener commandInput;
+	
+	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
 		super(newDefaultThreadGroupInstance(), "Game", true, 60);
 		
 		if (game == null) game = this;
+		
+		if (commandLine)
+		{
+			commandInput = new ConsoleListener();
+			commandInput.startThis();
+		}
+		else
+		{
+			commandInput = null;
+		}
 		
 		this.password = password;
 		receivedPackets = new HashMap<IPConnection, List<Integer>>();
@@ -107,6 +119,11 @@ public class ServerGame extends Game implements IPacketParser
 	public String getPassword()
 	{
 		return password;
+	}
+	
+	public boolean isCommandLine()
+	{
+		return commandInput != null;
 	}
 	
 	// TODO add server-wide build mode? probably not
@@ -204,6 +221,8 @@ public class ServerGame extends Game implements IPacketParser
 	@Override
 	public void onStop()
 	{
+		if (commandInput != null) commandInput.stopThis();
+		
 		sockets().sender().sendPacketToAllClients(new PacketStopServer());
 		
 		// TODO make a more surefire way to ensure that all clients got the message
@@ -322,7 +341,7 @@ public class ServerGame extends Game implements IPacketParser
 						{
 							if (ServerGame.instance() != null)
 							{
-								stopServer = true;
+								safeStop();
 							}
 							else
 							{
@@ -772,9 +791,7 @@ public class ServerGame extends Game implements IPacketParser
 		}
 		catch (Exception e)
 		{
-			logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
-			
-			System.out.println("k");
+			// logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
 	}
 	
@@ -792,6 +809,14 @@ public class ServerGame extends Game implements IPacketParser
 	public void render()
 	{
 		// Is never used because this is server side
+	}
+	
+	/**
+	 * Safely stop the server instad of simply killing the thread.
+	 */
+	public void safeStop()
+	{
+		stopServer = true;
 	}
 	
 	@Override

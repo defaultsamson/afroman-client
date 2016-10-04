@@ -140,7 +140,7 @@ public class GuiLobby extends GuiScreen
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer(ClientGame.instance().sockets().getServerConnection()));
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());
 		}
 		else if (buttonID == 2002) // Leave server
 		{
