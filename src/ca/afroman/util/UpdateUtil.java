@@ -35,7 +35,7 @@ public class UpdateUtil
 	/**
 	 * Checks for, and if there are, updates the game.
 	 */
-	public static void update ()
+	public static void updateQuery ()
 	{
 		purgeOld();
 		currentVersion = VersionUtil.SERVER_TEST_VERSION;
@@ -88,20 +88,6 @@ public class UpdateUtil
 					if (subject > currentVersion)
 					{
 						serverVersion = subject;
-						
-						switch (runningFile)
-						{
-							case INVALID:
-								break;
-							case EXE:
-								newExe();
-								replace(NEW_UPDATE + EXE_FILENAME, self.getName());
-								break;
-							case JAR:
-								newJar();
-								replace(NEW_UPDATE + JAR_FILENAME, self.getName());
-								break;
-						}
 					}
 					else if (subject.equals(currentVersion))
 					{
@@ -117,6 +103,24 @@ public class UpdateUtil
 					ALogger.logA(ALogType.WARNING, "Failed to read line: " + line);
 				}
 			}
+		}
+	}
+	
+	public static void update()
+	{
+		switch (runningFile)
+		{
+			case INVALID:
+				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
+				break;
+			case EXE:
+				newExe();
+				replace(NEW_UPDATE + EXE_FILENAME, self.getName());
+				break;
+			case JAR:
+				newJar();
+				replace(NEW_UPDATE + JAR_FILENAME, self.getName());
+				break;
 		}
 	}
 	
