@@ -197,24 +197,6 @@ public class UpdateUtil
 		}
 	}
 	
-	public static void update()
-	{
-		switch (runningFile)
-		{
-			case INVALID:
-				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
-				break;
-			case EXE:
-				newExe();
-				replace(NEW_UPDATE + EXE_FILENAME, self.getName());
-				break;
-			case JAR:
-				newJar();
-				replace(NEW_UPDATE + JAR_FILENAME, self.getName());
-				break;
-		}
-	}
-	
 	/**
 	 * Checks for, and if there are, updates the game.
 	 */
