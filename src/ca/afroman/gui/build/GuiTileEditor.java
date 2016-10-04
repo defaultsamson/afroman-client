@@ -22,7 +22,7 @@ public class GuiTileEditor extends GuiGrid
 	private GuiTextButton layer4show;
 	private GuiTextButton layer5show;
 	
-	private GuiTextButton tileMenu; 
+	private GuiTextButton tileMenu;
 	
 	public GuiTileEditor()
 	{

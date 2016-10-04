@@ -20,6 +20,7 @@ public class GuiClickNotification extends GuiTextButton
 	private String notifText1;
 	private String notifText2;
 	private Vector2DInt drawLocation;
+	
 	public GuiClickNotification(GuiScreen screen, String text)
 	{
 		this(screen, text, "");

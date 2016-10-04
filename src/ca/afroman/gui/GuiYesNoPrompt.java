@@ -47,6 +47,7 @@ public class GuiYesNoPrompt extends GuiTextButton
 	private String notifText2;
 	private Vector2DInt drawLocation;
 	private GuiNoButton noButt;
+	
 	/**
 	 * Asks the user to confirm or deny something.
 	 * 
