@@ -204,7 +204,7 @@ public class UpdateUtil
 	public static Boolean updateQuery()
 	{
 		purgeOld();
-		currentVersion = VersionUtil.SERVER_TEST_VERSION;
+		currentVersion = VersionUtil.FULL_VERSION;
 		grabVersion();
 		
 		try
@@ -217,8 +217,6 @@ public class UpdateUtil
 		}
 		
 		runningFile = FileUtil.getFileType(self);
-		System.out.println(self);
-		System.out.println(runningFile);
 		return versionCheck();
 	}
 	
@@ -245,7 +243,7 @@ public class UpdateUtil
 					}
 					else if (subject.equals(currentVersion))
 					{
-						ALogger.logA(ALogType.DEBUG, "Current version is same as server's, stopping...");
+						ALogger.logA(ALogType.DEBUG, "Current version is same as server's, refusing to update.");
 						return false;
 					}
 					else
