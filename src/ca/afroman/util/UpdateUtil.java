@@ -30,12 +30,171 @@ public class UpdateUtil
 	public static URL serverLocation;
 	
 	private static File self;
-	private static FileType runningFile =  FileType.INVALID;
+	private static FileType runningFile = FileType.INVALID;
+	
+	/**
+	 * Downloads a file from a URL.
+	 * 
+	 * @param location the string version of the URL to download from.
+	 * @param fileName the name that the download should take.
+	 * @return the downloaded file.
+	 */
+	public static File download(String location, String fileName)
+	{
+		URL downloadLocation = null;
+		try
+		{
+			downloadLocation = new URL(location);
+			ReadableByteChannel rbc = Channels.newChannel(downloadLocation.openStream());
+			FileOutputStream fos = new FileOutputStream(fileName);
+			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+			fos.close();
+		}
+		catch (Exception e)
+		{
+			ALogger.logA(ALogType.WARNING, "Failed to download from URL: " + location);
+			return null;
+		}
+		
+		return new File(fileName);
+	}
+	
+	/**
+	 * Downloads the text file indicating the latest release version.
+	 */
+	public static void grabVersion()
+	{
+		try
+		{
+			download(RAW_LOCATION, SERVER_VERSION);
+		}
+		catch (Exception e)
+		{
+			ALogger.logA(ALogType.WARNING, "Failed to capture file at: " + RAW_LOCATION);
+		}
+	}
+	
+	/**
+	 * Constructs a URL to grab a executable from the repo server, then downloads it into a new folder.
+	 * 
+	 * @return the file it has downloaded.
+	 */
+	private static File newExe()
+	{
+		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
+		URL buildLocation = null;
+		
+		try
+		{
+			String displayVersion = VersionUtil.toString(serverVersion);
+			download(RAW_BUILD + "/" + displayVersion + "/" + EXE_FILENAME, NEW_UPDATE + EXE_FILENAME);
+		}
+		catch (Exception e)
+		{
+			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation);
+			return null;
+		}
+		
+		return new File(EXE_FILENAME);
+	}
+	
+	/**
+	 * Constructs a URL to grab a jar from the repo server, then downloads it into a new folder.
+	 * 
+	 * @return the file it has downloaded.
+	 */
+	private static File newJar()
+	{
+		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
+		URL buildLocation = null;
+		try
+		{
+			String displayVersion = VersionUtil.toString(serverVersion);
+			download(RAW_BUILD + "/" + displayVersion + "/" + JAR_FILENAME, NEW_UPDATE + JAR_FILENAME);
+		}
+		catch (Exception e)
+		{
+			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation);
+			return null;
+		}
+		
+		return new File(JAR_FILENAME);
+	}
+	
+	/**
+	 * Deletes any files that are involved with updating, if they exist.
+	 */
+	public static void purgeOld()
+	{
+		File version = new File(SERVER_VERSION);
+		if (version.exists())
+		{
+			try
+			{
+				Files.delete(Paths.get(version.getPath()));
+			}
+			catch (IOException e)
+			{
+				ALogger.logA(ALogType.WARNING, "Failed to delete " + version);
+			}
+		}
+		
+		if (Files.exists(Paths.get(NEW_UPDATE)))
+		{
+			try
+			{
+				Files.delete(Paths.get(NEW_UPDATE));
+			}
+			catch (IOException e)
+			{
+				ALogger.logA(ALogType.WARNING, "Failed to delete" + NEW_UPDATE);
+			}
+		}
+	}
+	
+	/**
+	 * Replaces one file with another.
+	 * 
+	 * @param from source file to move.
+	 * @param to destination file to remove.
+	 */
+	public static void replace(String from, String to) // Heckign wicked kill file and put replacement laad
+	{
+		Path source = Paths.get(from);
+		Path target = Paths.get(to);
+		
+		try
+		{
+			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+		}
+		catch (Exception e)
+		{
+			ALogger.logA(ALogType.WARNING, "Failed to copy " + source + " to " + target);
+		}
+	}
+	
+	public static void update()
+	{
+		switch (runningFile)
+		{
+			case INVALID:
+				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
+				break;
+			case EXE:
+				newExe();
+				replace(NEW_UPDATE + EXE_FILENAME, self.getName());
+				break;
+			case JAR:
+				newJar();
+				replace(NEW_UPDATE + JAR_FILENAME, self.getName());
+				break;
+		}
+	}
 	
 	/**
 	 * Checks for, and if there are, updates the game.
 	 */
-	public static void updateQuery ()
+	public static void updateQuery()
 	{
 		purgeOld();
 		currentVersion = VersionUtil.SERVER_TEST_VERSION;
@@ -52,21 +211,6 @@ public class UpdateUtil
 		
 		runningFile = FileUtil.getFileType(self);
 		versionCheck();
-	}
-	
-	/**
-	 * Downloads the text file indicating the latest release version.
-	 */
-	public static void grabVersion()
-	{		
-		try
-		{
-			download(RAW_LOCATION, SERVER_VERSION);
-		}
-		catch (Exception e)
-		{
-			ALogger.logA(ALogType.WARNING, "Failed to capture file at: " + RAW_LOCATION);
-		}		
 	}
 	
 	/**
@@ -102,146 +246,6 @@ public class UpdateUtil
 				{
 					ALogger.logA(ALogType.WARNING, "Failed to read line: " + line);
 				}
-			}
-		}
-	}
-	
-	public static void update()
-	{
-		switch (runningFile)
-		{
-			case INVALID:
-				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
-				break;
-			case EXE:
-				newExe();
-				replace(NEW_UPDATE + EXE_FILENAME, self.getName());
-				break;
-			case JAR:
-				newJar();
-				replace(NEW_UPDATE + JAR_FILENAME, self.getName());
-				break;
-		}
-	}
-	
-	/**
-	 * Constructs a URL to grab a jar from the repo server, then downloads it into a new folder.
-	 * @return the file it has downloaded.
-	 */
-	private static File newJar ()
-	{
-		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
-		URL buildLocation = null;
-		try
-		{
-			String displayVersion = VersionUtil.toString(serverVersion);
-			download(RAW_BUILD + "/" + displayVersion + "/" + JAR_FILENAME, NEW_UPDATE + JAR_FILENAME);
-		}
-		catch (Exception e)
-		{
-			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation);
-			return null;
-		}
-		
-		return new File(JAR_FILENAME);
-	}
-	
-	/**
-	 * Constructs a URL to grab a executable from the repo server, then downloads it into a new folder.
-	 * @return the file it has downloaded.
-	 */
-	private static File newExe ()
-	{
-		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
-		URL buildLocation = null;
-		
-		try
-		{
-			String displayVersion = VersionUtil.toString(serverVersion);
-			download(RAW_BUILD + "/" + displayVersion + "/" + EXE_FILENAME, NEW_UPDATE + EXE_FILENAME);
-		}
-		catch (Exception e)
-		{
-			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation);
-			return null;
-		}
-		
-		return new File(EXE_FILENAME);
-	}
-	
-	/**
-	 * Downloads a file from a URL.
-	 * @param location the string version of the URL to download from.
-	 * @param fileName the name that the download should take.
-	 * @return the downloaded file.
-	 */
-	public static File download(String location, String fileName)
-	{
-		URL downloadLocation = null;
-		try
-		{
-			downloadLocation = new URL(location);
-			ReadableByteChannel rbc = Channels.newChannel(downloadLocation.openStream());
-			FileOutputStream fos = new FileOutputStream(fileName);
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			fos.close();
-		}
-		catch (Exception e)
-		{
-			ALogger.logA(ALogType.WARNING, "Failed to download from URL: " + location);
-			return null;
-		}
-		
-		return new File(fileName);
-	}
-	
-	/**
-	 * Replaces one file with another.
-	 * @param from source file to move.
-	 * @param to destination file to remove.
-	 */
-	public static void replace (String from, String to) // Heckign wicked kill file and put replacement laad
-	{
-		Path source = Paths.get(from);
-		Path target = Paths.get(to);
-		
-		try
-		{
-			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-		}
-		catch (Exception e)
-		{
-			ALogger.logA(ALogType.WARNING, "Failed to copy " + source + " to " + target);
-		}
-	}
-	
-	/**
-	 * Deletes any files that are involved with updating, if they exist.
-	 */
-	public static void purgeOld ()
-	{
-		File version = new File(SERVER_VERSION);
-		if (version.exists())
-		{
-			try
-			{
-				Files.delete(Paths.get(version.getPath()));
-			}
-			catch (IOException e)
-			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete " + version);
-			}
-		}
-		
-		if (Files.exists(Paths.get(NEW_UPDATE)))
-		{
-			try
-			{
-				Files.delete(Paths.get(NEW_UPDATE));
-			}
-			catch (IOException e)
-			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete" + NEW_UPDATE);
 			}
 		}
 	}
