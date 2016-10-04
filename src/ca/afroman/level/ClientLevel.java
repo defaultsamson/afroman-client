@@ -63,6 +63,7 @@ public class ClientLevel extends Level
 	public boolean showLayer3 = true;
 	public boolean showLayer4 = true;
 	public boolean showLayer5 = true;
+	public boolean showLayer6 = true;
 	public GridSize grid = GridSize.MEDIUM;
 	public byte editLayer = 0;
 	
@@ -294,6 +295,14 @@ public class ClientLevel extends Level
 		for (Entity player : this.getPlayers())
 		{
 			entities.add(player);
+		}
+		
+		if (showLayer6)
+		{
+			for (Entity dynamicTiles : this.getTiles((byte) 6))
+			{
+				entities.add(dynamicTiles);
+			}
 		}
 		
 		ListUtil.sort(entities, new YComparator());

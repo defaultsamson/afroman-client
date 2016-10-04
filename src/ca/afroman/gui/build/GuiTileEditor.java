@@ -14,6 +14,7 @@ public class GuiTileEditor extends GuiGrid
 	private GuiTextButton layer3edit;
 	private GuiTextButton layer4edit;
 	private GuiTextButton layer5edit;
+	private GuiTextButton layer6edit;
 	
 	private GuiTextButton layer0show;
 	private GuiTextButton layer1show;
@@ -21,6 +22,7 @@ public class GuiTileEditor extends GuiGrid
 	private GuiTextButton layer3show;
 	private GuiTextButton layer4show;
 	private GuiTextButton layer5show;
+	private GuiTextButton layer6show;
 	
 	private GuiTextButton tileMenu;
 	
@@ -28,12 +30,13 @@ public class GuiTileEditor extends GuiGrid
 	{
 		super();
 		
-		layer0show = new GuiTextButton(this, 00, 5, 24 + (18 * 5), 32, blackFont, "L1 X");
-		layer1show = new GuiTextButton(this, 10, 5, 24 + (18 * 4), 32, blackFont, "L2 X");
-		layer2show = new GuiTextButton(this, 20, 5, 24 + (18 * 3), 32, blackFont, "L3 X");
-		layer3show = new GuiTextButton(this, 30, 5, 18 + (18 * 2), 32, blackFont, "L4 X");
-		layer4show = new GuiTextButton(this, 40, 5, 18 + (18 * 1), 32, blackFont, "L5 X");
-		layer5show = new GuiTextButton(this, 50, 5, 18 + (18 * 0), 32, blackFont, "L6 X");
+		layer0show = new GuiTextButton(this, 00, 5, 26 + (18 * 5), 32, blackFont, "L1 X");
+		layer1show = new GuiTextButton(this, 10, 5, 26 + (18 * 4), 32, blackFont, "L2 X");
+		layer2show = new GuiTextButton(this, 20, 5, 26 + (18 * 3), 32, blackFont, "L3 X");
+		layer3show = new GuiTextButton(this, 30, 5, 3 + (18 * 2), 32, blackFont, "L4 X");
+		layer4show = new GuiTextButton(this, 40, 5, 3 + (18 * 1), 32, blackFont, "L5 X");
+		layer5show = new GuiTextButton(this, 50, 5, 3 + (18 * 0), 32, blackFont, "L6 X");
+		layer6show = new GuiTextButton(this, 60, 5, 5 + (18 * 3), 32, blackFont, "LM X");
 		
 		addButton(layer0show);
 		addButton(layer1show);
@@ -41,13 +44,15 @@ public class GuiTileEditor extends GuiGrid
 		addButton(layer3show);
 		addButton(layer4show);
 		addButton(layer5show);
+		addButton(layer6show);
 		
-		layer0edit = new GuiTextButton(this, 01, 39, 24 + (18 * 5), 13, blackFont, "E");
-		layer1edit = new GuiTextButton(this, 11, 39, 24 + (18 * 4), 13, blackFont, "E");
-		layer2edit = new GuiTextButton(this, 21, 39, 24 + (18 * 3), 13, blackFont, "E");
-		layer3edit = new GuiTextButton(this, 31, 39, 18 + (18 * 2), 13, blackFont, "E");
-		layer4edit = new GuiTextButton(this, 41, 39, 18 + (18 * 1), 13, blackFont, "E");
-		layer5edit = new GuiTextButton(this, 51, 39, 18 + (18 * 0), 13, blackFont, "E");
+		layer0edit = new GuiTextButton(this, 01, 39, 26 + (18 * 5), 13, blackFont, "E");
+		layer1edit = new GuiTextButton(this, 11, 39, 26 + (18 * 4), 13, blackFont, "E");
+		layer2edit = new GuiTextButton(this, 21, 39, 26 + (18 * 3), 13, blackFont, "E");
+		layer3edit = new GuiTextButton(this, 31, 39, 3 + (18 * 2), 13, blackFont, "E");
+		layer4edit = new GuiTextButton(this, 41, 39, 3 + (18 * 1), 13, blackFont, "E");
+		layer5edit = new GuiTextButton(this, 51, 39, 3 + (18 * 0), 13, blackFont, "E");
+		layer6edit = new GuiTextButton(this, 61, 39, 5 + (18 * 3), 13, blackFont, "E");
 		
 		addButton(layer0edit);
 		addButton(layer1edit);
@@ -55,6 +60,7 @@ public class GuiTileEditor extends GuiGrid
 		addButton(layer3edit);
 		addButton(layer4edit);
 		addButton(layer5edit);
+		addButton(layer6edit);
 		
 		tileMenu = new GuiTextButton(this, 3, 200 - 4 - 12 - (13 * 6) - 5, 3, 13 * 6, blackFont, "Tile List");
 		
@@ -127,6 +133,12 @@ public class GuiTileEditor extends GuiGrid
 				case 51:
 					level.editLayer = 5;
 					break;
+				case 60:
+					level.showLayer6 = !level.showLayer6;
+					break;
+				case 61:
+					level.editLayer = 6;
+					break;
 			}
 			
 			updateButtons();
@@ -154,14 +166,16 @@ public class GuiTileEditor extends GuiGrid
 			layer3show.setText("L4 " + (level.showLayer3 ? "O" : "X"));
 			layer4show.setText("L5 " + (level.showLayer4 ? "O" : "X"));
 			layer5show.setText("L6 " + (level.showLayer5 ? "O" : "X"));
+			layer6show.setText("LM " + (level.showLayer6 ? "O" : "X"));
 			
-			// Sets everything to false before setting one of them to true
+			// Sets everything to true before setting one of them to false
 			layer0edit.setEnabled(true);
 			layer1edit.setEnabled(true);
 			layer2edit.setEnabled(true);
 			layer3edit.setEnabled(true);
 			layer4edit.setEnabled(true);
 			layer5edit.setEnabled(true);
+			layer6edit.setEnabled(true);
 			
 			switch (level.editLayer)
 			{
@@ -182,6 +196,9 @@ public class GuiTileEditor extends GuiGrid
 					break;
 				case 5:
 					layer5edit.setEnabled(false);
+					break;
+				case 6:
+					layer6edit.setEnabled(false);
 					break;
 			}
 		}

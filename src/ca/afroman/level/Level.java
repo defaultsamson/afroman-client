@@ -161,6 +161,9 @@ public class Level implements IServerClient
 		tiles.add(new ArrayList<Entity>());
 		tiles.add(new ArrayList<Entity>());
 		
+		// tiles 7 are dynamic with entities
+		tiles.add(new ArrayList<Entity>());
+		
 		entities = new ArrayList<Entity>();
 		players = new ArrayList<PlayerEntity>();
 		hitboxes = new ArrayList<Hitbox>();
