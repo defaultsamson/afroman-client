@@ -134,7 +134,7 @@ public class FileUtil
 	
 	public static FileType getFileType(String fileName)
 	{
-		String[] spl = fileName.split(".");
+		String[] spl = fileName.split("[.]");
 		
 		if (!ArrayUtil.isEmpty(spl))
 		{

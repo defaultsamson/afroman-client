@@ -12,6 +12,7 @@ import ca.afroman.gfx.LightMap;
 import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
+import ca.afroman.util.UpdateUtil;
 import ca.afroman.util.VersionUtil;
 
 public class GuiMainMenu extends GuiScreen
@@ -82,10 +83,8 @@ public class GuiMainMenu extends GuiScreen
 				ClientGame.instance().quit();
 				break;
 			case 3: // Check for updates
-				
-				boolean ye = new Random().nextBoolean();
-				
-				if (ye)
+								
+				if (UpdateUtil.updateQuery())
 				{
 					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(123190342347123128L) + ")", "Would you like to update?");
 				}
@@ -95,6 +94,7 @@ public class GuiMainMenu extends GuiScreen
 				}
 				break;
 			case 30: // Yes, update
+				UpdateUtil.update();
 				break;
 			case 31: // No, don't update
 				break;

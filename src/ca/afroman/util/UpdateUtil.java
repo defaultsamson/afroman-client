@@ -9,13 +9,14 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 
 public class UpdateUtil
 {
 	public static final String SERVER_VERSION = "server.txt";
-	public static final String RAW_LOCATION = "https://github.com/qwertysam/afroman-client/version.txt";
+	public static final String RAW_LOCATION = "https://raw.githubusercontent.com/qwertysam/afroman-client/master/version.txt";
 	public static final String RAW_BUILD = "https://github.com/qwertysam/afroman-client/releases/download";
 	public static final String JAR_FILENAME = "AfroMan-mp3-o.jar";
 	public static final String EXE_FILENAME = "AfroMan-mp3.exe";
@@ -200,7 +201,7 @@ public class UpdateUtil
 	/**
 	 * Checks for, and if there are, updates the game.
 	 */
-	public static void updateQuery()
+	public static Boolean updateQuery()
 	{
 		purgeOld();
 		currentVersion = VersionUtil.SERVER_TEST_VERSION;
@@ -216,14 +217,16 @@ public class UpdateUtil
 		}
 		
 		runningFile = FileUtil.getFileType(self);
-		versionCheck();
+		System.out.println(self);
+		System.out.println(runningFile);
+		return versionCheck();
 	}
 	
 	/**
 	 * Checks all lines in the server version file (should be only one),
 	 * and tests if any are greater than this program's version.
 	 */
-	public static void versionCheck()
+	public static Boolean versionCheck()
 	{
 		File file = new File(SERVER_VERSION);
 		if (file.exists())
@@ -238,14 +241,17 @@ public class UpdateUtil
 					if (subject > currentVersion)
 					{
 						serverVersion = subject;
+						return true;
 					}
 					else if (subject.equals(currentVersion))
 					{
 						ALogger.logA(ALogType.DEBUG, "Current version is same as server's, stopping...");
+						return false;
 					}
 					else
 					{
 						ALogger.logA(ALogType.DEBUG, "Current version is newer than server's, server update recommended.");
+						return false;
 					}
 				}
 				catch (Exception e)
@@ -254,5 +260,6 @@ public class UpdateUtil
 				}
 			}
 		}
+		return false;
 	}
 }
