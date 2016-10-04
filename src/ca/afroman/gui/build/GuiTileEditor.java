@@ -22,6 +22,8 @@ public class GuiTileEditor extends GuiGrid
 	private GuiTextButton layer4show;
 	private GuiTextButton layer5show;
 	
+	private GuiTextButton tileMenu; 
+	
 	public GuiTileEditor()
 	{
 		super();
@@ -53,6 +55,10 @@ public class GuiTileEditor extends GuiGrid
 		addButton(layer3edit);
 		addButton(layer4edit);
 		addButton(layer5edit);
+		
+		tileMenu = new GuiTextButton(this, 3, 200 - 4 - 12 - (13 * 6) - 5, 3, 13 * 6, blackFont, "Tile List");
+		
+		addButton(tileMenu);
 		
 		updateButtons();
 	}
