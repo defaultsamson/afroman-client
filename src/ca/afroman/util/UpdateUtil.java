@@ -3,6 +3,7 @@ package ca.afroman.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -36,6 +37,7 @@ public class UpdateUtil
 	 */
 	public static void update ()
 	{
+		purgeOld();
 		currentVersion = VersionUtil.SERVER_TEST_VERSION;
 		grabVersion();
 		
@@ -206,6 +208,37 @@ public class UpdateUtil
 		catch (Exception e)
 		{
 			ALogger.logA(ALogType.WARNING, "Failed to copy " + source + " to " + target);
+		}
+	}
+	
+	/**
+	 * Deletes any files that are involved with updating, if they exist.
+	 */
+	public static void purgeOld ()
+	{
+		File version = new File(SERVER_VERSION);
+		if (version.exists())
+		{
+			try
+			{
+				Files.delete(Paths.get(version.getPath()));
+			}
+			catch (IOException e)
+			{
+				ALogger.logA(ALogType.WARNING, "Failed to delete " + version);
+			}
+		}
+		
+		if (Files.exists(Paths.get(NEW_UPDATE)))
+		{
+			try
+			{
+				Files.delete(Paths.get(NEW_UPDATE));
+			}
+			catch (IOException e)
+			{
+				ALogger.logA(ALogType.WARNING, "Failed to delete" + NEW_UPDATE);
+			}
 		}
 	}
 }
