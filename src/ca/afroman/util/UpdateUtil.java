@@ -17,7 +17,7 @@ public class UpdateUtil
 	public static final String SERVER_VERSION = "server.txt";
 	public static final String RAW_LOCATION = "https://raw.githubusercontent.com/qwertysam/afroman-client/master/version.txt";
 	public static final String RAW_BUILD = "https://github.com/qwertysam/afroman-client/releases/download";
-	public static final String JAR_FILENAME = "AfroMan-mp3-o.jar";
+	public static final String JAR_FILENAME = "AfroMan-mp3.jar";
 	public static final String JAR_NEWNAME = "AfroMan-new.jar";
 	public static final String EXE_FILENAME = "AfroMan-mp3.exe";
 	public static final String EXE_NEWNAME = "AfroMan-new.exe";
