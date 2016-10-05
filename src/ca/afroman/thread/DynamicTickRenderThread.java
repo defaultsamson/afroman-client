@@ -65,14 +65,14 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread implemen
 		}
 	}
 	
+	public abstract void render();
+	
 	@Override
-	public void onStart()
+	public void startThis()
 	{
-		super.onStart();
-		
 		frames = 0;
 		fps = 0;
+		
+		super.startThis();
 	}
-	
-	public abstract void render();
 }

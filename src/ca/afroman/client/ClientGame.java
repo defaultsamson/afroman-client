@@ -180,7 +180,7 @@ public class ClientGame extends Game
 		
 		if (this.isHostingServer())
 		{
-			ServerGame.instance().safeStop();
+			ServerGame.instance().stopThis();
 		}
 		
 		// resets the player entities
@@ -290,169 +290,6 @@ public class ClientGame extends Game
 		{
 			sockets().sender().sendPacket(new PacketLogin(username, password));
 		}
-	}
-	
-	@Override
-	public void onStart()
-	{
-		super.onStart();
-		
-		// Initialises the console output.
-		logger().log(ALogType.DEBUG, "Initializing external console output...");
-		Console.initialize();
-		
-		logger().log(ALogType.DEBUG, "Initializing logging streams...");
-		ALogger.initStreams();
-		
-		logger().log(ALogType.DEBUG, "Creating environment... (" + VersionUtil.VERSION_STRING + ")");
-		
-		canvas = new Canvas();
-		frame = new JFrame(NAME);
-		
-		// Makes it so that when the window is resized, this ClientGame will resize the canvas accordingly
-		canvas.addComponentListener(new ComponentListener()
-		{
-			private int lastWidth = 0;
-			private int lastHeight = 0;
-			
-			@Override
-			public void componentHidden(ComponentEvent e)
-			{
-			
-			}
-			
-			@Override
-			public void componentMoved(ComponentEvent e)
-			{
-				
-			}
-			
-			@Override
-			public void componentResized(ComponentEvent e)
-			{
-				// Stops it from detecting the resizeGame method from resizing its bounds.
-				if (lastWidth != canvas.getWidth() || lastHeight != canvas.getHeight())
-				{
-					resizeGame(canvas.getWidth(), canvas.getHeight());
-					
-					lastWidth = canvas.getWidth();
-					lastHeight = canvas.getHeight();
-				}
-			}
-			
-			@Override
-			public void componentShown(ComponentEvent e)
-			{
-				
-			}
-		});
-			
-		canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
-		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		
-		frame.setIconImage(ICON);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLayout(new BorderLayout());
-		frame.getContentPane().setBackground(Color.black);
-		frame.getContentPane().add(canvas, BorderLayout.CENTER);
-		frame.setResizable(false);
-		frame.pack();
-		frame.setMinimumSize(frame.getSize());
-		
-		frame.setVisible(true);
-		frame.setResizable(true);
-		frame.setLocationRelativeTo(null);
-		
-		// Loading screen
-		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
-		DynamicThread renderLoading = new DynamicThread(this.getThreadGroup(), "Loading-Display")
-		{
-			@Override
-			public void onRun()
-			{
-				canvas.getGraphics().drawImage(loading.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-				
-				try
-				{
-					Thread.sleep(200);
-				}
-				catch (InterruptedException e)
-				{
-					logger().log(ALogType.CRITICAL, "Thread failed to sleep", e);
-				}
-			}
-			
-			@Override
-			public void onStop()
-			{
-				super.onStop();
-				loading.getImage().flush();
-			}
-		};
-		renderLoading.startThis();
-		
-		// Allows key listens for TAB and such
-		canvas.setFocusTraversalKeysEnabled(false);
-		
-		// DO THE LOADING
-		
-		logger().log(ALogType.DEBUG, "Loading game...");
-		
-		logger().log(ALogType.DEBUG, "Loading options...");
-		
-		Options.instance();
-		setFullScreen(Options.instance().fullscreen);
-		
-		logger().log(ALogType.DEBUG, "Loading assets...");
-		
-		Assets.load();
-		
-		logger().log(ALogType.DEBUG, "Initializing game variables...");
-		
-		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-		debugFont = Assets.getFont(AssetType.FONT_BLACK);
-		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
-		input = new InputHandler(this);
-		
-		getPlayers().add(new PlayerEntity(false, Role.PLAYER1, new Vector2DDouble(0, 0)));
-		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
-		
-		lights = new HashMap<Role, FlickeringLight>(2);
-		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
-		
-		setCurrentScreen(new GuiMainMenu());
-		
-		// WHEN FINISHED LOADING
-		
-		// End the loading screen
-		logger().log(ALogType.DEBUG, "Disposing of loading screen...");
-		renderLoading.stopThis();
-		canvas.repaint();
-		
-		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
-		
-		logger().log(ALogType.DEBUG, "Game loaded. Took " + loadTime + " seconds");
-		
-		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
-		music.startLoop();
-		
-		updateCursorHiding();
-	}
-	
-	@Override
-	public void onStop()
-	{
-		exitFromGame(ExitGameReason.DISCONNECT);
-		
-		super.onStop();
-		
-		getLevels().clear();
-		setCurrentLevel(null);
-		setCurrentScreen(null);
-		
-		if (this.isHostingServer()) ServerGame.instance().safeStop();
 	}
 	
 	@Override
@@ -1248,6 +1085,167 @@ public class ClientGame extends Game
 	public void setSpectatingRole(Role role)
 	{
 		this.spectatingRole = role;
+	}
+	
+	@Override
+	public void startThis()
+	{
+		// Initialises the console output.
+		logger().log(ALogType.DEBUG, "Initializing external console output...");
+		Console.initialize();
+		
+		logger().log(ALogType.DEBUG, "Initializing logging streams...");
+		ALogger.initStreams();
+		
+		logger().log(ALogType.DEBUG, "Creating environment... (" + VersionUtil.VERSION_STRING + ")");
+		
+		canvas = new Canvas();
+		frame = new JFrame(NAME);
+		
+		// Makes it so that when the window is resized, this ClientGame will resize the canvas accordingly
+		canvas.addComponentListener(new ComponentListener()
+		{
+			private int lastWidth = 0;
+			private int lastHeight = 0;
+			
+			@Override
+			public void componentHidden(ComponentEvent e)
+			{
+			
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e)
+			{
+				
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent e)
+			{
+				// Stops it from detecting the resizeGame method from resizing its bounds.
+				if (lastWidth != canvas.getWidth() || lastHeight != canvas.getHeight())
+				{
+					resizeGame(canvas.getWidth(), canvas.getHeight());
+					
+					lastWidth = canvas.getWidth();
+					lastHeight = canvas.getHeight();
+				}
+			}
+			
+			@Override
+			public void componentShown(ComponentEvent e)
+			{
+				
+			}
+		});
+			
+		canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
+		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		
+		frame.setIconImage(ICON);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLayout(new BorderLayout());
+		frame.getContentPane().setBackground(Color.black);
+		frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		frame.setResizable(false);
+		frame.pack();
+		frame.setMinimumSize(frame.getSize());
+		
+		frame.setVisible(true);
+		frame.setResizable(true);
+		frame.setLocationRelativeTo(null);
+		
+		// Loading screen
+		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
+		DynamicThread renderLoading = new DynamicThread(this.getThreadGroup(), "Loading-Display")
+		{
+			@Override
+			public void onRun()
+			{
+				canvas.getGraphics().drawImage(loading.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+				
+				try
+				{
+					Thread.sleep(200);
+				}
+				catch (InterruptedException e)
+				{
+					logger().log(ALogType.CRITICAL, "Thread failed to sleep", e);
+				}
+			}
+			
+			@Override
+			public void stopThis()
+			{
+				super.stopThis();
+				loading.getImage().flush();
+			}
+		};
+		renderLoading.startThis();
+		
+		// Allows key listens for TAB and such
+		canvas.setFocusTraversalKeysEnabled(false);
+		
+		// DO THE LOADING
+		
+		logger().log(ALogType.DEBUG, "Loading game...");
+		
+		logger().log(ALogType.DEBUG, "Loading options...");
+		
+		Options.instance();
+		setFullScreen(Options.instance().fullscreen);
+		
+		logger().log(ALogType.DEBUG, "Loading assets...");
+		
+		Assets.load();
+		
+		logger().log(ALogType.DEBUG, "Initializing game variables...");
+		
+		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
+		debugFont = Assets.getFont(AssetType.FONT_BLACK);
+		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
+		input = new InputHandler(this);
+		
+		getPlayers().add(new PlayerEntity(false, Role.PLAYER1, new Vector2DDouble(0, 0)));
+		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
+		
+		lights = new HashMap<Role, FlickeringLight>(2);
+		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
+		
+		setCurrentScreen(new GuiMainMenu());
+		
+		// WHEN FINISHED LOADING
+		
+		// End the loading screen
+		logger().log(ALogType.DEBUG, "Disposing of loading screen...");
+		renderLoading.stopThis();
+		canvas.repaint();
+		
+		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
+		
+		logger().log(ALogType.DEBUG, "Game loaded. Took " + loadTime + " seconds");
+		
+		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
+		music.startLoop();
+		
+		updateCursorHiding();
+		
+		super.startThis();
+	}
+	
+	@Override
+	public void stopThis()
+	{
+		super.stopThis();
+		
+		getLevels().clear();
+		setCurrentLevel(null);
+		setCurrentScreen(null);
+		
+		if (this.isHostingServer()) ServerGame.instance().stopThis();
 	}
 	
 	@Override

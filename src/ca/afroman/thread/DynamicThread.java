@@ -67,22 +67,6 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 	public abstract void onRun();
 	
 	/**
-	 * Runs when this thread initially starts.
-	 */
-	public void onStart()
-	{
-		logger().log(ALogType.DEBUG, "Starting Thread: \"" + getName() + "\"");
-	}
-	
-	/**
-	 * Runs when this thread comes to a stop.
-	 */
-	public void onStop()
-	{
-		logger().log(ALogType.DEBUG, "Stopping Thread: \"" + getName() + "\"");
-	}
-	
-	/**
 	 * Runs when this thread comes back from being paused.
 	 */
 	public void onUnpause()
@@ -146,7 +130,7 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 			// If it's not already started and hasn't been exited, start it
 			if (!this.isAlive())
 			{
-				onStart();
+				logger().log(ALogType.DEBUG, "Starting Thread");
 				super.start();
 			}
 			else
@@ -156,10 +140,17 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		}
 		else
 		{
-			logger().log(ALogType.WARNING, "This thread is already running: " + this.toString());
+			logger().log(ALogType.WARNING, "This thread is already running");
 		}
 	}
 	
+	/**
+	 * Starts this thread, unpausing it if it's only paused,
+	 * and starting it completely if it's not yet been started.
+	 * <p>
+	 * <b>NOTE:</b> When overriding, put <code>super.startThis()</code>
+	 * at the end so that everything is initialised before the thread begins.
+	 */
 	@Override
 	public void startThis()
 	{
@@ -167,13 +158,13 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 	}
 	
 	/**
-	 * Completely stops this thread from running.
+	 * Stops this thread from running, allowing it to finish any operations before quitting.
 	 */
 	@Override
 	public void stopThis()
 	{
 		exit = true;
 		isRunning = false;
-		onStop();
+		logger().log(ALogType.DEBUG, "Stopping Thread");
 	}
 }

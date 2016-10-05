@@ -30,10 +30,18 @@ public class ConsoleListener extends DynamicThread
 	}
 	
 	@Override
-	public void onStart()
+	public void startThis()
 	{
-		super.onStart();
-		
 		sc = new Scanner(System.in);
+		
+		super.startThis();
+	}
+	
+	@Override
+	public void stopThis()
+	{
+		super.stopThis();
+		
+		sc.close();
 	}
 }

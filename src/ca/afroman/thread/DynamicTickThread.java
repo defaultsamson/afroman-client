@@ -77,10 +77,8 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	}
 	
 	@Override
-	public void onStart()
+	public void startThis()
 	{
-		super.onStart();
-		
 		lastTime = System.nanoTime();
 		nsPerTick = 1000000000 / ticksPerSecond;
 		
@@ -90,6 +88,8 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 		
 		lastTimer = System.currentTimeMillis();
 		delta = 0;
+		
+		super.startThis();
 	}
 	
 	@Override

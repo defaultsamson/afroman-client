@@ -120,8 +120,12 @@ public abstract class GuiScreen
 		
 		for (GuiButton button : this.buttonToAdd)
 		{
-			// to invoke the top-most button to the buttom-most
-			buttons.add(0, button);
+			// Prevents buttons from being added more than once
+			if (!buttons.contains(button))
+			{
+				// to invoke the top-most button to the buttom-most
+				buttons.add(0, button);
+			}
 		}
 		
 		this.buttonToRemove.clear();

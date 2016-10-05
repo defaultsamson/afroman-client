@@ -64,7 +64,7 @@ public class CommandUtil
 								if (ServerGame.instance() != null)
 								{
 									ALogger.logA(ALogType.DEBUG, "Stopping server...");
-									ServerGame.instance().safeStop();
+									ServerGame.instance().stopThis();
 								}
 								else
 								{
@@ -79,7 +79,7 @@ public class CommandUtil
 									if (isCommandLine)
 									{
 										ALogger.logA(ALogType.DEBUG, "Rebooting server...");
-										ServerGame.instance().safeStop();
+										ServerGame.instance().stopThis();
 										
 										while (ServerGame.instance() != null)
 										{

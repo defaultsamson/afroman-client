@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
+import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelType;
 import ca.afroman.network.IncomingPacketWrapper;
+import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicTickRenderThread;
@@ -104,29 +106,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	}
 	
 	@Override
-	public void onStart()
-	{
-		super.onStart();
-	}
-	
-	@Override
-	public void onStop()
-	{
-		super.onStop();
-		
-		// TODO save level states
-		synchronized (toProcess)
-		{
-			toProcess.clear();
-		}
-		
-		if (socketManager != null) socketManager.stopThis();
-		
-		if (getLevels() != null) getLevels().clear();
-		IDCounter.resetAll();
-	}
-	
-	@Override
 	public void onUnpause()
 	{
 		super.onUnpause();
@@ -153,6 +132,42 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	{
 		if (socketManager != null) socketManager.stopThis();
 		socketManager = null;
+	}
+	
+	@Override
+	public void stopThis()
+	{
+		super.stopThis();
+		
+		if (isServerSide())
+		{
+			sockets().sender().sendPacketToAllClients(new PacketStopServer());
+			
+			// TODO make a more surefire way to ensure that all clients got the message
+			try
+			{
+				Thread.sleep(1500);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		else
+		{
+			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
+		}
+		
+		// TODO save level states
+		synchronized (toProcess)
+		{
+			toProcess.clear();
+		}
+		
+		if (socketManager != null) socketManager.stopThis();
+		
+		if (getLevels() != null) getLevels().clear();
+		IDCounter.resetAll();
 	}
 	
 	@Override

@@ -77,9 +77,9 @@ public class TCPReceiver extends DynamicThread implements IServerClient
 	}
 	
 	@Override
-	public void onStop()
+	public void stopThis()
 	{
-		super.onStop();
+		super.stopThis();
 		
 		try
 		{

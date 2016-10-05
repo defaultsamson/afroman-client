@@ -39,7 +39,6 @@ import ca.afroman.packet.PacketEditHitboxToggle;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
-import ca.afroman.packet.PacketStopServer;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -216,35 +215,6 @@ public class ServerGame extends Game implements IPacketParser
 	{
 		super.onPause();
 		isInGame = false;
-	}
-	
-	@Override
-	public void onStop()
-	{
-		if (commandInput != null) commandInput.stopThis();
-		
-		sockets().sender().sendPacketToAllClients(new PacketStopServer());
-		
-		// TODO make a more surefire way to ensure that all clients got the message
-		try
-		{
-			Thread.sleep(1500);
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-		
-		super.onStop();
-		
-		// TODO save levels?
-		receivedPackets.clear();
-		toProcess.clear();
-		
-		if (getLevels() != null) getLevels().clear();
-		IDCounter.resetAll();
-		
-		game = null;
 	}
 	
 	@Override
@@ -812,9 +782,28 @@ public class ServerGame extends Game implements IPacketParser
 	}
 	
 	/**
-	 * Safely stop the server instad of simply killing the thread.
+	 * Save the game state etc.
 	 */
-	public void safeStop()
+	private void safeStop()
+	{
+		super.stopThis();
+		
+		// TODO save levels?
+		receivedPackets.clear();
+		toProcess.clear();
+		
+		if (getLevels() != null) getLevels().clear();
+		IDCounter.resetAll();
+		
+		game = null;
+		
+		if (commandInput != null) commandInput.stopThis();
+		
+		stopSocket();
+	}
+	
+	@Override
+	public void stopThis()
 	{
 		stopServer = true;
 	}
@@ -825,7 +814,7 @@ public class ServerGame extends Game implements IPacketParser
 		super.tick();
 		
 		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
-		if (stopServer) stopThis();
+		if (stopServer) safeStop();
 		
 		if (isInGame)
 		{
