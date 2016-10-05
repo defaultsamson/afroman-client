@@ -1270,6 +1270,8 @@ public class ClientGame extends Game
 			{
 				consoleDebug = !consoleDebug;
 				
+				input.control.setPressed(false);
+				
 				Console.setVisible(consoleDebug);
 				
 				logger().log(ALogType.DEBUG, "Show Console: " + consoleDebug);
