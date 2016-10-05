@@ -81,7 +81,6 @@ public class GuiMainMenu extends GuiScreen
 				ClientGame.instance().quit();
 				break;
 			case 3: // Check for updates
-				
 				if (UpdateUtil.updateQuery())
 				{
 					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(UpdateUtil.serverVersion) + ")", "Would you like to update?");

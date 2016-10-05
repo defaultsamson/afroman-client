@@ -8,6 +8,8 @@ import ca.afroman.server.ServerGame;
 
 public class CommandUtil
 {
+	private static boolean wentThroughUpdate = false;
+	
 	private static void displayHelp(ConsoleCommand command)
 	{
 		ALogger.logA("-----------------------------");
@@ -55,6 +57,13 @@ public class CommandUtil
 				{
 					try
 					{
+						boolean isCommandLine = false;
+						
+						if (ServerGame.instance() != null)
+						{
+							isCommandLine = ServerGame.instance().isCommandLine();
+						}
+						
 						switch (command)
 						{
 							default:
@@ -74,8 +83,6 @@ public class CommandUtil
 							case REBOOT:
 								if (ServerGame.instance() != null)
 								{
-									boolean isCommandLine = ServerGame.instance().isCommandLine();
-									
 									if (isCommandLine)
 									{
 										ALogger.logA(ALogType.DEBUG, "Rebooting server...");
@@ -129,6 +136,23 @@ public class CommandUtil
 								}
 								
 								ALogger.logA("");
+								break;
+							case UPDATE:
+								if (wentThroughUpdate)
+								{
+									UpdateUtil.applyUpdate(isCommandLine);
+								}
+								
+								if (UpdateUtil.updateQuery())
+								{
+									ALogger.logA("Update found (" + VersionUtil.toString(UpdateUtil.serverVersion) + ")");
+									ALogger.logA("Type \"update\" again to update");
+									wentThroughUpdate = true;
+								}
+								else
+								{
+									ALogger.logA("No updates found");
+								}
 								break;
 						}
 					}

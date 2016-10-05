@@ -31,6 +31,54 @@ public class UpdateUtil
 	public static String selfName;
 	public static FileType runningFile = FileType.INVALID;
 	
+	public static void applyUpdate()
+	{
+		applyUpdate(false);
+	}
+	
+	public static void applyUpdate(boolean commandLine)
+	{
+		try
+		{
+			// Stops the client properly when being closed
+			boolean successful = UpdateUtil.update();
+			
+			UpdateUtil.purgeOld();
+			
+			if (successful)
+			{
+				System.out.println("Successfully updated");
+				// Relaunches the game
+				if (!commandLine)
+				{
+					switch (UpdateUtil.runningFile)
+					{
+						case EXE:// TODO test on windows
+							Runtime.getRuntime().exec(UpdateUtil.selfName);
+							break;
+						case JAR: // TODO test on mac
+							Runtime.getRuntime().exec("java -jar " + UpdateUtil.selfName);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			else
+			{
+				System.exit(1);
+			}
+			
+			System.exit(0);
+			
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed to update");
+			System.exit(2);
+		}
+	}
+	
 	/**
 	 * Downloads a file from a URL.
 	 * 

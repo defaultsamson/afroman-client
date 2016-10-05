@@ -117,7 +117,6 @@ public class ClientGame extends Game
 			game = new ClientGame();
 			game.startThis();
 		}
-		UpdateUtil.purgeOld();
 	}
 	
 	private static ThreadGroup newDefaultThreadGroupInstance()
@@ -822,45 +821,11 @@ public class ClientGame extends Game
 	
 	public void quit(boolean update)
 	{
-		// Stops the client properly when being closed
-		try
+		if (update)
 		{
-			ClientGame.instance().stopThis();
-			
-			Assets.dispose();
-			
-			if (update)
-			{
-				boolean successful = UpdateUtil.update();
-				
-				if (successful)
-				{
-					System.out.println("Successfully updated");
-					// Relaunches the game
-					switch (UpdateUtil.runningFile)
-					{
-						case EXE:// TODO test on windows
-							Runtime.getRuntime().exec(UpdateUtil.selfName);
-							break;
-						case JAR: // TODO test on mac
-							Runtime.getRuntime().exec("java -jar " + UpdateUtil.selfName);
-							break;
-						default:
-							break;
-					}
-				}
-				else
-				{
-					System.exit(1);
-				}
-			}
-			System.exit(0);
+			UpdateUtil.applyUpdate();
 		}
-		catch (Exception er)
-		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly", er);
-			System.exit(2);
-		}
+		System.exit(0);
 	}
 	
 	@Override
@@ -1246,6 +1211,8 @@ public class ClientGame extends Game
 		setCurrentScreen(null);
 		
 		if (this.isHostingServer()) ServerGame.instance().stopThis();
+		
+		Assets.dispose();
 	}
 	
 	@Override

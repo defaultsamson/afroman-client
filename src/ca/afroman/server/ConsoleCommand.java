@@ -7,7 +7,8 @@ public enum ConsoleCommand
 	DESTROY("Resets the game", "Resets the game to the very beginning, deleting any previous save file.", "destroy"),
 	REBOOT("Reboots the server", "Stops the server and starts it back up immediately", "reboot"),
 	HELP("Displays commands", "Displays a list of commands which can be issued to control the server.", "help [command]", "help save - Displays help information about the save command."),
-	TP("Teleports player", "Teleports a player to a location. Optionally, can be teleported into a different level.", "tp <playerNum> <x> <y> [levelNum]", "tp 0 512 -32 0 - Teleports player 1 to (512, -32) in level 1.", "tp 1 2 444 4 - Teleports player 2 to (2, 444) in level 5.", "tp 1 1 1 - Teleports player 2 to (1, 1) in their current level.");
+	TP("Teleports player", "Teleports a player to a location. Optionally, can be teleported into a different level.", "tp <playerNum> <x> <y> [levelNum]", "tp 0 512 -32 0 - Teleports player 1 to (512, -32) in level 1.", "tp 1 2 444 4 - Teleports player 2 to (2, 444) in level 5.", "tp 1 1 1 - Teleports player 2 to (1, 1) in their current level."),
+	UPDATE("Updates Afro Man", "Downloads and replaces the currently running file with the latest version of Afro Man", "update");
 	
 	private String sh;
 	private String full;
