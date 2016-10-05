@@ -28,7 +28,8 @@ public class UpdateUtil
 	public static URL serverLocation;
 	
 	private static File self;
-	private static FileType runningFile = FileType.INVALID;
+	public static String selfName;
+	public static FileType runningFile = FileType.INVALID;
 	
 	/**
 	 * Downloads a file from a URL.
@@ -169,8 +170,9 @@ public class UpdateUtil
 		}
 	}
 	
-	public static Boolean update()
+	public static boolean update()
 	{
+		selfName = self.getName();
 		switch (runningFile)
 		{
 			case INVALID:
@@ -178,11 +180,11 @@ public class UpdateUtil
 				return false;
 			case EXE:
 				newExe();
-				replace(EXE_NEWNAME, self.getName());
+				replace(EXE_NEWNAME, selfName);
 				return true;
 			case JAR:
 				newJar();
-				replace(JAR_NEWNAME, self.getName());
+				replace(JAR_NEWNAME, selfName);
 				return true;
 		}
 		return false;
@@ -191,7 +193,7 @@ public class UpdateUtil
 	/**
 	 * Checks for, and if there are, updates the game.
 	 */
-	public static Boolean updateQuery()
+	public static boolean updateQuery()
 	{
 		purgeOld();
 		currentVersion = VersionUtil.FULL_VERSION;
@@ -214,7 +216,7 @@ public class UpdateUtil
 	 * Checks all lines in the server version file (should be only one),
 	 * and tests if any are greater than this program's version.
 	 */
-	public static Boolean versionCheck()
+	public static boolean versionCheck()
 	{
 		File file = new File(SERVER_VERSION);
 		if (file.exists())

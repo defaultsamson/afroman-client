@@ -84,25 +84,22 @@ public class GuiMainMenu extends GuiScreen
 				
 				if (UpdateUtil.updateQuery())
 				{
-					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(123190342347123128L) + ")", "Would you like to update?");
+					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(UpdateUtil.serverVersion) + ")", "Would you like to update?");
 				}
 				else
 				{
 					new GuiClickNotification(this, "No updates", "found");
 				}
 				break;
-			case 30: // Yes, update
-				if (UpdateUtil.update())
-				{
-					new GuiClickNotification(this, "The game will", "now close");
-					ClientGame.instance().quit();
-				}
-				else
-				{
-					new GuiClickNotification(this, "Failed to", "update");
-				}
+			case 30: // Confirm update
+				new GuiYesNoPrompt(this, 32, "Doing this will close the game,", "Would you like to continue?");
 				break;
 			case 31: // No, don't update
+				break;
+			case 32:// Yes, update
+				ClientGame.instance().quit(true);
+				break;
+			case 33: // No, don't update
 				break;
 		}
 	}

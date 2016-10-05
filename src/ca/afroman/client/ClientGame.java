@@ -71,6 +71,7 @@ import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.IPUtil;
+import ca.afroman.util.UpdateUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
 
@@ -978,9 +979,50 @@ public class ClientGame extends Game
 	
 	public void quit()
 	{
-		ClientGame.instance().stopThis();
-		Assets.dispose();
-		System.exit(0);
+		quit(false);
+	}
+	
+	public void quit(boolean update)
+	{
+		// Stops the client properly when being closed
+		try
+		{
+			ClientGame.instance().stopThis();
+			
+			Assets.dispose();
+			
+			if (update)
+			{
+				boolean successful = UpdateUtil.update();
+				
+				if (successful)
+				{
+					System.out.println("Successfully updated");
+					// Relaunches the game
+					switch (UpdateUtil.runningFile)
+					{
+						case EXE:// TODO test on windows
+							Runtime.getRuntime().exec(UpdateUtil.selfName);
+							break;
+						case JAR: // TODO test on mac
+							Runtime.getRuntime().exec("java -jar " + UpdateUtil.selfName);
+							break;
+						default:
+							break;
+					}
+				}
+				else
+				{
+					System.exit(1);
+				}
+			}
+			System.exit(0);
+		}
+		catch (Exception er)
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly", er);
+			System.exit(2);
+		}
 	}
 	
 	@Override

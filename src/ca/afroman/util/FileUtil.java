@@ -129,7 +129,7 @@ public class FileUtil
 	
 	public static FileType getFileType(File file)
 	{
-		return getFileType(file.getName());
+		return file == null ? FileType.INVALID : getFileType(file.getName());
 	}
 	
 	public static FileType getFileType(String fileName)

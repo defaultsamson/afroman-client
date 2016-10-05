@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.assets.Assets;
 import ca.afroman.client.ClientGame;
-import ca.afroman.log.ALogType;
 import ca.afroman.resource.Vector2DInt;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener, FocusListener
@@ -310,19 +308,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	@Override
 	public void windowClosed(WindowEvent e)
 	{
-		// Stops the client properly when being closed
-		try
-		{
-			ClientGame.instance().stopThis();
-			
-			Assets.dispose();
-			System.exit(0);
-		}
-		catch (Exception er)
-		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Failed to exit the program properly", er);
-			System.exit(1);
-		}
+		ClientGame.instance().quit();
 	}
 	
 	@Override
