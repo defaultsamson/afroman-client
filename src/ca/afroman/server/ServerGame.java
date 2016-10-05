@@ -3,7 +3,6 @@ package ca.afroman.server;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import ca.afroman.assets.AssetType;
@@ -65,10 +64,6 @@ public class ServerGame extends Game implements IPacketParser
 	
 	private boolean stopServer = false;
 	
-	private HashMap<IPConnection, List<Integer>> receivedPackets; // The ID's of all the packets that have been received
-	
-	private List<BytePacket> toProcess;
-	
 	private ConsoleListener commandInput;
 	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
@@ -88,8 +83,6 @@ public class ServerGame extends Game implements IPacketParser
 		}
 		
 		this.password = password;
-		receivedPackets = new HashMap<IPConnection, List<Integer>>();
-		toProcess = new ArrayList<BytePacket>();
 		
 		int valPort = SocketManager.validatedPort(port);
 		boolean started = startSocket(ip, valPort);
@@ -102,16 +95,6 @@ public class ServerGame extends Game implements IPacketParser
 		else
 		{
 			logger().log(ALogType.DEBUG, "Failed to connected server on " + ip + ":" + valPort + ", aborting startup");
-		}
-	}
-	
-	public void addConnection(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
-		
-		synchronized (packs)
-		{
-			packs.put(connection, new ArrayList<Integer>());
 		}
 	}
 	
@@ -765,16 +748,6 @@ public class ServerGame extends Game implements IPacketParser
 		}
 	}
 	
-	public void removeConnection(IPConnection connection)
-	{
-		HashMap<IPConnection, List<Integer>> packs = receivedPackets;
-		
-		synchronized (packs)
-		{
-			packs.remove(connection);
-		}
-	}
-	
 	@Override
 	public void render()
 	{
@@ -789,8 +762,6 @@ public class ServerGame extends Game implements IPacketParser
 		super.stopThis();
 		
 		// TODO save levels?
-		receivedPackets.clear();
-		toProcess.clear();
 		
 		if (getLevels() != null) getLevels().clear();
 		IDCounter.resetAll();

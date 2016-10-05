@@ -119,7 +119,8 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	
 	public boolean startSocket(String serverIpAddress, int port)
 	{
-		if (socketManager != null) socketManager.stopThis();
+		stopSocket();
+		
 		socketManager = new SocketManager(this);
 		boolean successful = socketManager.setServerConnection(serverIpAddress, SocketManager.validatedPort(port));
 		
@@ -164,7 +165,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 			toProcess.clear();
 		}
 		
-		if (socketManager != null) socketManager.stopThis();
+		stopSocket();
 		
 		if (getLevels() != null) getLevels().clear();
 		IDCounter.resetAll();

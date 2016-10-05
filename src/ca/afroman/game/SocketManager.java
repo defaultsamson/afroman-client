@@ -115,8 +115,6 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
 			playerList.add(newConnection);
 			
-			ServerGame.instance().addConnection(newConnection.getConnection());
-			
 			// Tells the newly added connection their ID
 			sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));
 			
@@ -274,7 +272,6 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			}
 			
 			playerList.remove(connection);
-			ServerGame.instance().removeConnection(connection.getConnection());
 			
 			int index = -1;
 			
