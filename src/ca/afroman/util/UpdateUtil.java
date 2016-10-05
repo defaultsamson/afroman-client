@@ -134,20 +134,33 @@ public class UpdateUtil
 			}
 			catch (IOException e)
 			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete " + version, e);
+				ALogger.logA(ALogType.WARNING, "Failed to delete " + SERVER_VERSION, e);
 			}
 		}
 		
-		File update = new File(NEW_UPDATE);
-		if (update.exists())
+		File jar = new File(JAR_NEWNAME);
+		if (jar.exists())
 		{
 			try
 			{
-				FileUtil.delete(update);
+				FileUtil.delete(jar);
 			}
 			catch (IOException e)
 			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete" + NEW_UPDATE, e);
+				ALogger.logA(ALogType.WARNING, "Failed to delete" + JAR_NEWNAME, e);
+			}
+		}
+		
+		File exe = new File(EXE_NEWNAME);
+		if (exe.exists())
+		{
+			try
+			{
+				FileUtil.delete(exe);
+			}
+			catch (IOException e)
+			{
+				ALogger.logA(ALogType.WARNING, "Failed to delete" + EXE_NEWNAME, e);
 			}
 		}
 	}

@@ -117,6 +117,7 @@ public class ClientGame extends Game
 			game = new ClientGame();
 			game.startThis();
 		}
+		UpdateUtil.purgeOld();
 	}
 	
 	private static ThreadGroup newDefaultThreadGroupInstance()
