@@ -11,6 +11,7 @@ import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
+import ca.afroman.assets.StepSpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
@@ -573,6 +574,17 @@ public class ClientLevel extends Level
 		
 		if (newIsBuildMode)
 		{
+			if (cursorAsset != null)
+			{
+				if (cursorAsset.getAssetType() == AssetType.TILE_PLATE_TEST)
+				{
+					if (ClientGame.instance().input().p.isPressedFiltered())
+					{
+						((StepSpriteAnimation) cursorAsset).progress();
+					}
+				}
+			}
+			
 			if (timeOnTool <= MAX_TOOLTIP_TIME) timeOnTool++;
 			
 			BuildMode lastBuildMode = buildMode;

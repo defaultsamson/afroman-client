@@ -37,4 +37,9 @@ public class ModulusCounter
 	{
 		numCounter = 0;
 	}
+	
+	public void setAtInterval()
+	{
+		numCounter = interval;
+	}
 }

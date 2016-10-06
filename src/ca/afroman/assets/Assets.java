@@ -86,6 +86,18 @@ public class Assets
 		return null;
 	}
 	
+	public static StepSpriteAnimation getStepSpriteAnimation(AssetType type)
+	{
+		Asset asset = getAsset(type);
+		
+		if (asset != null && asset.getAssetType() == type && asset instanceof StepSpriteAnimation)
+		{
+			return (StepSpriteAnimation) asset;
+		}
+		
+		return null;
+	}
+	
 	public static Texture getTexture(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -167,9 +179,9 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_SIDE_OPEN_TOP, 16 * 9, 16 * 5, 16, 24));
 		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_SIDE_OPEN_BOTTOM, 16 * 11, (16 * 6), 16, 16));
 		
-		assets.add(new SpriteAnimation(AssetType.TILE_PLATE_TEST, 30, sheet.getSubTexture(AssetType.TILE_PLATE_TEST, 16 * 10, 16 * 3, 16, 32).toTextureArray(1, 2)));
+		assets.add(new StepSpriteAnimation(new int[] { 0, 1 }, AssetType.TILE_PLATE_TEST, false, 30, sheet.getSubTexture(AssetType.TILE_PLATE_TEST, 16 * 10, 16 * 3, 16, 32).toTextureArray(1, 2)));
 		
-		assets.add(new SpriteAnimation(AssetType.TILE_AURA, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
+		assets.add(new SpriteAnimation(AssetType.TILE_AURA, false, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
 		
@@ -178,7 +190,7 @@ public class Assets
 		assets.add(lamp.clone(AssetType.TILE_LAMP_RIGHT).flipX());
 		assets.add(new SpriteAnimation(AssetType.TILE_LAMP, true, 16, sheet.getSubTexture(AssetType.TILE_LAMP, 16 * 8, 16 * 4, 24, 16).toTextureArray(3, 2)));
 		
-		assets.add(new SpriteAnimation(AssetType.SLIME, 12, sheet.getSubTexture(AssetType.SLIME, 16 * 0, (16 * 7), 16 * 2, 16).toTextureArray(2, 1)));
+		assets.add(new SpriteAnimation(AssetType.SLIME, false, 12, sheet.getSubTexture(AssetType.SLIME, 16 * 0, (16 * 7), 16 * 2, 16).toTextureArray(2, 1)));
 		
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_NORMAL, 0, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));

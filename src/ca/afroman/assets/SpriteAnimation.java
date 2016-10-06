@@ -8,10 +8,10 @@ import ca.afroman.resource.Vector2DInt;
 public class SpriteAnimation extends AssetArray implements ITickable, IRenderable
 {
 	/** Holds the textures for each frame. */
-	private int currentFrameIndex = 0;
-	private boolean pingPong;
+	protected int currentFrameIndex = 0;
+	protected boolean pingPong;
 	private boolean goingUp = true;
-	private ModulusCounter tickCounter;
+	protected ModulusCounter tickCounter;
 	
 	public SpriteAnimation(AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
@@ -19,11 +19,6 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 		
 		this.pingPong = pingPong;
 		tickCounter = new ModulusCounter(ticksPerFrame);
-	}
-	
-	public SpriteAnimation(AssetType type, int ticksPerFrame, Texture... frames)
-	{
-		this(type, false, ticksPerFrame, frames);
 	}
 	
 	@Override
