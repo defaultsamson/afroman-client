@@ -275,7 +275,6 @@ public class ClientGame extends Game
 	
 	public void joinServer(String ip, String port, String username, String password)
 	{
-		music.stop();
 		setCurrentScreen(new GuiConnectToServer(getCurrentScreen()));
 		render();
 		
@@ -365,6 +364,8 @@ public class ClientGame extends Game
 							if (getCurrentScreen() instanceof GuiConnectToServer)
 							{
 								setCurrentScreen(new GuiLobby(null));
+								music.stop();
+								// TODO start lobby music?
 							}
 						}
 							break;
