@@ -177,10 +177,10 @@ public class ClientGame extends Game
 		
 		IDCounter.resetAll();
 		
-		if (this.isHostingServer())
-		{
-			ServerGame.instance().stopThis();
-		}
+		// if (this.isHostingServer())
+		// {
+		// ServerGame.instance().stopThis();
+		// }
 		
 		// resets the player entities
 		for (PlayerEntity e : getPlayers())
@@ -1217,7 +1217,7 @@ public class ClientGame extends Game
 		
 		if (this.isHostingServer()) ServerGame.instance().stopThis();
 		
-		while(ServerGame.instance() != null)
+		while (ServerGame.instance() != null)
 		{
 			try
 			{

@@ -294,7 +294,7 @@ public class ServerGame extends Game implements IPacketParser
 						{
 							if (ServerGame.instance() != null)
 							{
-								safeStop();
+								stopThis();
 							}
 							else
 							{
