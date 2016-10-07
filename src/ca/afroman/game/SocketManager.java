@@ -259,24 +259,10 @@ public class SocketManager implements IDynamicRunning, IServerClient
 	{
 		if (isServerSide())
 		{
-			if (connection.getConnection().getTCPSocket() != null)
-			{
-				try
-				{
-					connection.getConnection().getTCPSocket().getSocket().close();
-				}
-				catch (IOException e)
-				{
-					ServerGame.instance().logger().log(ALogType.WARNING, "Error while closing TCP socket", e);
-				}
-			}
-			
-			playerList.remove(connection);
-			
-			int index = -1;
-			
 			synchronized (tcpSockets)
 			{
+				int index = -1;
+				
 				for (int i = 0; i < tcpSockets.size(); i++)
 				{
 					TCPReceiver rec = tcpSockets.get(i);
@@ -293,6 +279,20 @@ public class SocketManager implements IDynamicRunning, IServerClient
 					tcpSockets.remove(index);
 				}
 			}
+			
+			if (connection.getConnection().getTCPSocket() != null)
+			{
+				try
+				{
+					connection.getConnection().getTCPSocket().getSocket().close();
+				}
+				catch (IOException e)
+				{
+					ServerGame.instance().logger().log(ALogType.WARNING, "Error while closing TCP socket", e);
+				}
+			}
+			
+			playerList.remove(connection);
 			
 			updateClientsPlayerList();
 		}

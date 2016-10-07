@@ -147,7 +147,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 			// TODO make a more surefire way to ensure that all clients got the message
 			try
 			{
-				Thread.sleep(1500);
+				Thread.sleep(500);
 			}
 			catch (InterruptedException e)
 			{
@@ -160,12 +160,13 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		}
 		
 		// TODO save level states
+		
+		stopSocket();
+		
 		synchronized (toProcess)
 		{
 			toProcess.clear();
 		}
-		
-		stopSocket();
 		
 		if (getLevels() != null) getLevels().clear();
 		IDCounter.resetAll();

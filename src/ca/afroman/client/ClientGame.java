@@ -821,6 +821,7 @@ public class ClientGame extends Game
 	
 	public void quit(boolean update)
 	{
+		stopThis();
 		if (update)
 		{
 			UpdateUtil.applyUpdate();
@@ -1210,9 +1211,23 @@ public class ClientGame extends Game
 		setCurrentLevel(null);
 		setCurrentScreen(null);
 		
+		Assets.dispose();
+		
+		game = null;
+		
 		if (this.isHostingServer()) ServerGame.instance().stopThis();
 		
-		Assets.dispose();
+		while(ServerGame.instance() != null)
+		{
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	@Override
