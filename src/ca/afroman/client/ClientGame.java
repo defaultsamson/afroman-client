@@ -364,8 +364,6 @@ public class ClientGame extends Game
 							if (getCurrentScreen() instanceof GuiConnectToServer)
 							{
 								setCurrentScreen(new GuiLobby(null));
-								music.stop();
-								// TODO start lobby music?
 							}
 						}
 							break;
@@ -387,6 +385,7 @@ public class ClientGame extends Game
 								if (!(getCurrentScreen() instanceof GuiSendingLevels))
 								{
 									setCurrentScreen(new GuiSendingLevels(null));
+									music.stop();
 								}
 							}
 							else

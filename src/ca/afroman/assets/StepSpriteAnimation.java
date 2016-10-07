@@ -42,6 +42,7 @@ public class StepSpriteAnimation extends SpriteAnimation implements ITickable, I
 	{
 		progress = true;
 	}
+	
 	@Override
 	public void render(Texture renderTo, Vector2DInt pos)
 	{
