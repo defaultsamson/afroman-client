@@ -197,6 +197,9 @@ public class Assets
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_PRESSED, 6, 0, 3, 16));
 		
+		Texture update = Texture.fromResource(AssetType.INVALID, "update_icon.png");
+		assets.add(new StepSpriteAnimation(new int[] { 0 }, AssetType.ICON_UPDATE, false, 1, update.toTextureArray(25, 1)));
+		
 		assets.add(sheet.getSubTexture(AssetType.ICON_REFRESH, 0, 16 * 2, 16, 16));
 		
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));

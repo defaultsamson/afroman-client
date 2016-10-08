@@ -1,5 +1,6 @@
 package ca.afroman.gui;
 
+import ca.afroman.assets.StepSpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
@@ -26,6 +27,17 @@ public class GuiIconButton extends GuiButton
 	public IRenderable getIcon()
 	{
 		return icon;
+	}
+	
+	@Override
+	public void onHover()
+	{
+		super.onHover();
+		
+		if (icon instanceof StepSpriteAnimation)
+		{
+			((StepSpriteAnimation) icon).progress();
+		}
 	}
 	
 	@Override

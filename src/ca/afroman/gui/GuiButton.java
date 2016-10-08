@@ -19,6 +19,7 @@ public class GuiButton extends InputType
 	private boolean makeSound = true;
 	private AudioClip pushSound;
 	private AudioClip releaseSound;
+	private InputType isHovering;
 	
 	private int id;
 	private boolean canHold = false;
@@ -60,6 +61,7 @@ public class GuiButton extends InputType
 		this.id = id;
 		this.pushSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_PUSH);
 		this.releaseSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_RELEASE);
+		this.isHovering = new InputType();
 	}
 	
 	public boolean canHold()
@@ -83,6 +85,16 @@ public class GuiButton extends InputType
 	public boolean isEnabled()
 	{
 		return isEnabled;
+	}
+	
+	public InputType isHovering()
+	{
+		return isHovering;
+	}
+	
+	public void onHover()
+	{
+		
 	}
 	
 	protected void onPressed()
@@ -144,12 +156,14 @@ public class GuiButton extends InputType
 				if (ClientGame.instance().input().mouseLeft.isPressed())
 				{
 					state = 2; // Down
+					isHovering.setPressed(false);
 					
 					this.setPressed(true);
 				}
 				else
 				{
 					state = 1; // Hovering
+					isHovering.setPressed(true);
 					
 					this.setPressed(false);
 				}
@@ -157,10 +171,15 @@ public class GuiButton extends InputType
 			else
 			{
 				state = 0; // Not on the button at all
+				isHovering.setPressed(false);
 				
 				this.setPressed(false);
 			}
 			
+			if (isHovering.isPressedFiltered())
+			{
+				onHover();
+			}
 			if (this.canHold() && this.isPressed())
 			{
 				onPressed();

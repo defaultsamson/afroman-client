@@ -10,13 +10,14 @@ public class StepSpriteAnimation extends SpriteAnimation implements ITickable, I
 	
 	private int lastFramePaused = -1;
 	
-	private boolean progress = true;
+	private boolean progress;
 	
 	public StepSpriteAnimation(int[] pauseFrames, AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
 		super(type, pingPong, ticksPerFrame, frames);
 		
 		this.pauseFrames = pauseFrames;
+		setFrame(0);
 	}
 	
 	@Override
@@ -47,6 +48,27 @@ public class StepSpriteAnimation extends SpriteAnimation implements ITickable, I
 	public void render(Texture renderTo, Vector2DInt pos)
 	{
 		renderTo.draw(getCurrentFrame(), pos);
+	}
+	
+	@Override
+	public void setFrame(int frame)
+	{
+		super.setFrame(frame);
+		
+		progress = true;
+		
+		// If the frame being set to is a pause frame, then treat it as though it is
+		if (pauseFrames.length > 0)
+		{
+			for (int f : pauseFrames)
+			{
+				if (f == frame)
+				{
+					progress = false;
+					break;
+				}
+			}
+		}
 	}
 	
 	/**

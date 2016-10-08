@@ -80,6 +80,7 @@ public enum AssetType
 	BUTTON_HOVER,
 	BUTTON_NORMAL,
 	
+	ICON_UPDATE,
 	ICON_REFRESH,
 	
 	TEXT_FIELD,

@@ -69,6 +69,7 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	public void setFrame(int frame)
 	{
 		currentFrameIndex = frame;
+		tickCounter.reset();
 	}
 	
 	/**
