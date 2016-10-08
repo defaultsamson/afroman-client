@@ -110,6 +110,24 @@ public class UpdateUtil
 		try
 		{
 			download(RAW_LOCATION, SERVER_VERSION);
+			
+			File file = new File(SERVER_VERSION);
+			if (file.exists())
+			{
+				List<String> lines = FileUtil.readAllLines(file);
+				
+				for (String line : lines)
+				{
+					try
+					{
+						serverVersion = Long.parseLong(line);
+					}
+					catch (Exception e)
+					{
+						ALogger.logA(ALogType.WARNING, "Failed to read line: " + line, e);
+					}
+				}
+			}
 		}
 		catch (Exception e)
 		{
@@ -266,47 +284,15 @@ public class UpdateUtil
 	{
 		purgeOld();
 		grabVersion();
+		purgeOld();
 		return versionCheck(VersionUtil.FULL_VERSION);
 	}
 	
 	/**
-	 * Checks all lines in the server version file (should be only one),
-	 * and tests if any are greater than this program's version.
+	 * Tests if the server version is greater than this program's version.
 	 */
 	private static boolean versionCheck(long currentVersion)
 	{
-		File file = new File(SERVER_VERSION);
-		if (file.exists())
-		{
-			List<String> lines = FileUtil.readAllLines(file);
-			
-			for (String line : lines)
-			{
-				try
-				{
-					Long subject = Long.parseLong(line);
-					if (subject > currentVersion)
-					{
-						serverVersion = subject;
-						return true;
-					}
-					else if (subject.equals(currentVersion))
-					{
-						ALogger.logA(ALogType.DEBUG, "Current version is same as server's, refusing to update.");
-						return false;
-					}
-					else
-					{
-						ALogger.logA(ALogType.DEBUG, "Current version is newer than server's, server update recommended.");
-						return false;
-					}
-				}
-				catch (Exception e)
-				{
-					ALogger.logA(ALogType.WARNING, "Failed to read line: " + line, e);
-				}
-			}
-		}
-		return false;
+		return serverVersion > currentVersion;
 	}
 }
