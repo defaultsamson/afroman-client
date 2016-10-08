@@ -140,6 +140,11 @@ public class AudioClip extends Asset
 		clip.close();
 	}
 	
+	public boolean isRunning()
+	{
+		return clip.isActive();
+	}
+	
 	public void start()
 	{
 		if (Options.instance().enableMusic)

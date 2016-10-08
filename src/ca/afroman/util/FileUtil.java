@@ -55,6 +55,11 @@ public class FileUtil
 		}
 	}
 	
+	public static void copyFile(String from, String to) throws IOException
+	{
+		copyFile(new File(from), new File(to));
+	}
+	
 	public static void delete(File file) throws IOException
 	{
 		if (!file.delete())

@@ -23,12 +23,9 @@ public class UpdateUtil
 	public static final String EXE_NEWNAME = "AfroMan-new.exe";
 	public static final String NEW_UPDATE = "/new/";
 	
-	public static long currentVersion;
-	public static long serverVersion;
-	public static URL serverLocation;
+	public static long serverVersion = 0L;
 	
-	private static File self;
-	public static String selfName;
+	public static String selfName = "";
 	public static FileType runningFile = FileType.INVALID;
 	
 	public static void applyUpdate()
@@ -70,7 +67,6 @@ public class UpdateUtil
 			}
 			
 			System.exit(0);
-			
 		}
 		catch (Exception e)
 		{
@@ -86,7 +82,7 @@ public class UpdateUtil
 	 * @param fileName the name that the download should take.
 	 * @return the downloaded file.
 	 */
-	public static File download(String location, String fileName)
+	private static File download(String location, String fileName)
 	{
 		URL downloadLocation = null;
 		try
@@ -109,7 +105,7 @@ public class UpdateUtil
 	/**
 	 * Downloads the text file indicating the latest release version.
 	 */
-	public static void grabVersion()
+	private static void grabVersion()
 	{
 		try
 		{
@@ -219,11 +215,11 @@ public class UpdateUtil
 	 * @param from source file to move.
 	 * @param to destination file to remove.
 	 */
-	public static void replace(String from, String to) // Heckign wicked kill file and put replacement laad
+	private static void replace(String from, String to) // Heckign wicked kill file and put replacement laad
 	{
 		try
 		{
-			FileUtil.copyFile(new File(from), new File(to));
+			FileUtil.copyFile(from, to);
 		}
 		catch (IOException e)
 		{
@@ -231,23 +227,35 @@ public class UpdateUtil
 		}
 	}
 	
-	public static boolean update()
+	private static boolean update()
 	{
-		selfName = self.getName();
-		switch (runningFile)
+		try
 		{
-			case INVALID:
-				ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
-				return false;
-			case EXE:
-				newExe();
-				replace(EXE_NEWNAME, selfName);
-				return true;
-			case JAR:
-				newJar();
-				replace(JAR_NEWNAME, selfName);
-				return true;
+			File self = FileUtil.getRunningJar();
+			
+			runningFile = FileUtil.getFileType(self);
+			
+			selfName = self.getName();
+			switch (runningFile)
+			{
+				case INVALID:
+					ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
+					return false;
+				case EXE:
+					newExe();
+					replace(EXE_NEWNAME, selfName);
+					return true;
+				case JAR:
+					newJar();
+					replace(JAR_NEWNAME, selfName);
+					return true;
+			}
 		}
+		catch (FileNotFoundException e)
+		{
+			ALogger.logA(ALogType.WARNING, "Cannot find self!", e);
+		}
+		
 		return false;
 	}
 	
@@ -257,27 +265,15 @@ public class UpdateUtil
 	public static boolean updateQuery()
 	{
 		purgeOld();
-		currentVersion = VersionUtil.FULL_VERSION;
 		grabVersion();
-		
-		try
-		{
-			self = FileUtil.getRunningJar();
-		}
-		catch (FileNotFoundException e)
-		{
-			ALogger.logA(ALogType.WARNING, "Cannot find self!", e);
-		}
-		
-		runningFile = FileUtil.getFileType(self);
-		return versionCheck();
+		return versionCheck(VersionUtil.FULL_VERSION);
 	}
 	
 	/**
 	 * Checks all lines in the server version file (should be only one),
 	 * and tests if any are greater than this program's version.
 	 */
-	public static boolean versionCheck()
+	private static boolean versionCheck(long currentVersion)
 	{
 		File file = new File(SERVER_VERSION);
 		if (file.exists())

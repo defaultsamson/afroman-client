@@ -3,5 +3,7 @@ package ca.afroman.client;
 public enum ExitGameReason
 {
 	SERVER_CLOSED,
-	DISCONNECT;
+	DISCONNECT,
+	KICKED,
+	BANNED;
 }

@@ -153,12 +153,12 @@ public class ClientGame extends Game
 	
 	/** Whether or not to exit from the game and go to the main menu. */
 	private boolean exitGame = false;
+	private boolean hasStartedUpdateList = false;
+	private boolean psChanged = false;
+	private ProgramSection ps = ProgramSection.LOADING;
 	
 	private GuiScreen currentScreen = null;
-	
 	private AudioClip music;
-	
-	private boolean hasStartedUpdateList = false;
 	
 	public ClientGame()
 	{
@@ -188,15 +188,21 @@ public class ClientGame extends Game
 			e.reset();
 		}
 		
-		music.startLoop();
 		setCurrentScreen(new GuiMainMenu());
+		setProgramSection(ProgramSection.MAIN_MENU);
 		
 		switch (reason)
 		{
 			default:
 				break;
 			case SERVER_CLOSED:
-				new GuiClickNotification(getCurrentScreen(), "SERVER", "CLOSED");
+				new GuiClickNotification(getCurrentScreen(), "Server", "closed");
+				break;
+			case KICKED:
+				new GuiClickNotification(getCurrentScreen(), "Kicked", "from server");
+				break;
+			case BANNED:
+				new GuiClickNotification(getCurrentScreen(), "Banned", "from server");
 				break;
 		}
 	}
@@ -224,6 +230,11 @@ public class ClientGame extends Game
 	public short getID()
 	{
 		return id;
+	}
+	
+	public ProgramSection getProgramSection()
+	{
+		return ps;
 	}
 	
 	public Role getRole()
@@ -311,6 +322,7 @@ public class ClientGame extends Game
 						case DENY_JOIN:
 						{
 							setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+							setProgramSection(ProgramSection.MAIN_MENU);
 							
 							DenyJoinReason reason = DenyJoinReason.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
 							
@@ -364,6 +376,7 @@ public class ClientGame extends Game
 							if (getCurrentScreen() instanceof GuiConnectToServer)
 							{
 								setCurrentScreen(new GuiLobby(null));
+								setProgramSection(ProgramSection.LOBBY);
 							}
 						}
 							break;
@@ -394,6 +407,7 @@ public class ClientGame extends Game
 								if (getCurrentScreen() instanceof GuiSendingLevels)
 								{
 									setCurrentScreen(null);
+									setProgramSection(ProgramSection.IN_GAME);
 								}
 								
 								if (getRole() == Role.SPECTATOR)
@@ -1043,6 +1057,20 @@ public class ClientGame extends Game
 		this.id = id;
 	}
 	
+	/**
+	 * Lets the program know whether or not to play music.
+	 * 
+	 * @param se
+	 */
+	public void setProgramSection(ProgramSection se)
+	{
+		if (se != ps)
+		{
+			psChanged = true;
+			ps = se;
+		}
+	}
+	
 	public void setRole(Role role)
 	{
 		this.role = role;
@@ -1114,9 +1142,20 @@ public class ClientGame extends Game
 		frame.setLayout(new BorderLayout());
 		frame.getContentPane().setBackground(Color.black);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
-		frame.setResizable(false);
 		frame.pack();
-		frame.setMinimumSize(frame.getSize());
+		frame.setResizable(false);
+		
+		// canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
+		// canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		//
+		// frame.setIconImage(ICON);
+		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// frame.setLayout(new BorderLayout());
+		// frame.getContentPane().setBackground(Color.black);
+		// frame.getContentPane().add(canvas, BorderLayout.CENTER);
+		// frame.setResizable(false);
+		// frame.pack();
+		// frame.setMinimumSize(frame.getSize());
 		
 		frame.setVisible(true);
 		frame.setResizable(true);
@@ -1195,7 +1234,8 @@ public class ClientGame extends Game
 		logger().log(ALogType.DEBUG, "Game loaded. Took " + loadTime + " seconds");
 		
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
-		music.startLoop();
+		
+		setProgramSection(ProgramSection.MAIN_MENU);
 		
 		updateCursorHiding();
 		
@@ -1259,6 +1299,42 @@ public class ClientGame extends Game
 			exitGame = false;
 		}
 		
+		if (psChanged)
+		{
+			psChanged = false;
+			
+			if (ps == ProgramSection.LOBBY || ps == ProgramSection.MAIN_MENU || ps == ProgramSection.MAIN_MENU_OPTIONS)
+			{
+				if (!music.isRunning())
+				{
+					music.startLoop();
+				}
+			}
+			else
+			{
+				if (music.isRunning())
+				{
+					music.stop();
+				}
+			}
+			
+			switch (ps)
+			{
+				case IN_GAME:
+					break;
+				case IN_GAME_MENU:
+					break;
+				case IN_GAME_MENU_OPTIONS:
+					break;
+				case LOADING:
+					break;
+				case LOBBY:
+				case MAIN_MENU:
+				case MAIN_MENU_OPTIONS:
+					break;
+			}
+		}
+		
 		if (updatePlayerList) hasStartedUpdateList = true;
 		
 		for (Entry<Role, FlickeringLight> light : lights.entrySet())
@@ -1281,11 +1357,13 @@ public class ClientGame extends Game
 			{
 				setCurrentScreen(new GuiCommand(getCurrentScreen()));
 			}
-			if (input.nine.isReleasedFiltered())
+			if ((!Console.instance().getJFrame().isVisible() && input.nine.isReleasedFiltered()) || (Console.instance().getJFrame().isVisible() && input.nine.isPressedFiltered()))
 			{
 				consoleDebug = !consoleDebug;
 				
+				// Prevents keys from getting stuck
 				input.control.setPressed(false);
+				input.nine.setPressed(false);
 				
 				Console.setVisible(consoleDebug);
 				
