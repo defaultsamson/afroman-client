@@ -8,5 +8,10 @@ public interface IPacketParser
 	
 	public ThreadGroup getThreadGroup();
 	
+	/**
+	 * Parses incoming packets from their byte data into game information and operations.
+	 * 
+	 * @param packet
+	 */
 	public void parsePacket(IncomingPacketWrapper packet);
 }

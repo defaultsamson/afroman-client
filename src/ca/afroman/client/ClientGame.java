@@ -828,11 +828,19 @@ public class ClientGame extends Game
 		}
 	}
 	
+	/**
+	 * Quits the game.
+	 */
 	public void quit()
 	{
 		quit(false);
 	}
 	
+	/**
+	 * Quits the game.
+	 * 
+	 * @param update whether to apply updates or not
+	 */
 	public void quit(boolean update)
 	{
 		stopThis();
@@ -1052,6 +1060,48 @@ public class ClientGame extends Game
 		}
 	}
 	
+	// public void setFullScreen(boolean isFullscreen)
+	// {
+	// GraphicsDevice device = frame.getGraphicsConfiguration().getDevice();
+	//
+	// if (device.isFullScreenSupported())
+	// {
+	// if (isFullscreen)
+	// {
+	// frame.setUndecorated(true);
+	// frame.setResizable(true);
+	//
+	// frame.addFocusListener(new FocusListener()
+	// {
+	//
+	// @Override
+	// public void focusGained(FocusEvent arg0)
+	// {
+	// frame.setAlwaysOnTop(true);
+	// }
+	//
+	// @Override
+	// public void focusLost(FocusEvent arg0)
+	// {
+	// frame.setAlwaysOnTop(false);
+	// }
+	// });
+	//
+	// frame.pack();
+	//
+	// device.setFullScreenWindow(frame);
+	// }
+	// else
+	// {
+	// device.setFullScreenWindow(null);
+	// }
+	// }
+	// else
+	// {
+	// logger().log(ALogType.WARNING, "Fullscreen mode not supported");
+	// }
+	// }
+	
 	public void setID(short id)
 	{
 		this.id = id;
@@ -1199,7 +1249,6 @@ public class ClientGame extends Game
 		logger().log(ALogType.DEBUG, "Loading options...");
 		
 		Options.instance();
-		setFullScreen(Options.instance().fullscreen);
 		
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
@@ -1223,6 +1272,13 @@ public class ClientGame extends Game
 		setCurrentScreen(new GuiMainMenu());
 		
 		// WHEN FINISHED LOADING
+		
+		if (Options.instance().fullscreen)
+		{
+			// Need to do this to trick game into thinking that it isn't in fullscreen already
+			Options.instance().fullscreen = false;
+			setFullScreen(true);
+		}
 		
 		// End the loading screen
 		logger().log(ALogType.DEBUG, "Disposing of loading screen...");
@@ -1250,6 +1306,8 @@ public class ClientGame extends Game
 		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(null);
+		
+		Options.instance().save();
 		
 		Assets.dispose();
 		

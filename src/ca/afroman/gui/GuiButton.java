@@ -156,7 +156,6 @@ public class GuiButton extends InputType
 				if (ClientGame.instance().input().mouseLeft.isPressed())
 				{
 					state = 2; // Down
-					isHovering.setPressed(false);
 					
 					this.setPressed(true);
 				}
