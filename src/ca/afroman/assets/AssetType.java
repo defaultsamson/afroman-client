@@ -81,6 +81,7 @@ public enum AssetType
 	BUTTON_NORMAL,
 	
 	ICON_UPDATE,
+	ICON_SETTINGS,
 	ICON_REFRESH,
 	
 	TEXT_FIELD,

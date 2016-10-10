@@ -21,13 +21,13 @@ public class StepSpriteAnimation extends SpriteAnimation implements ITickable, I
 	}
 	
 	@Override
-	public Asset clone()
+	public StepSpriteAnimation clone()
 	{
 		return new StepSpriteAnimation(pauseFrames, getAssetType(), pingPong, tickCounter.getInterval(), (Texture[]) getAssets());
 	}
 	
 	@Override
-	public AssetArray cloneWithAllSubAssets()
+	public StepSpriteAnimation cloneWithAllSubAssets()
 	{
 		Texture[] newTextures = new Texture[frameCount()];
 		

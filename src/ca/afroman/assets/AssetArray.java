@@ -15,7 +15,7 @@ public class AssetArray extends Asset
 	}
 	
 	@Override
-	public Asset clone()
+	public AssetArray clone()
 	{
 		return new AssetArray(getAssetType(), assets);
 	}

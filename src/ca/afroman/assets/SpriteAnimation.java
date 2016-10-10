@@ -22,13 +22,13 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 	}
 	
 	@Override
-	public Asset clone()
+	public SpriteAnimation clone()
 	{
 		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), (Texture[]) getAssets());
 	}
 	
 	@Override
-	public AssetArray cloneWithAllSubAssets()
+	public SpriteAnimation cloneWithAllSubAssets()
 	{
 		Texture[] newTextures = new Texture[frameCount()];
 		
