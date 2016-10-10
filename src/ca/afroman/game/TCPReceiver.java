@@ -67,7 +67,7 @@ public class TCPReceiver extends DynamicThread implements IServerClient
 			if (!isServerSide())
 			{
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
-				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "PORT", "UNREACHABLE");
+				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), -1, "PORT", "UNREACHABLE");
 			}
 		}
 		catch (IOException e)

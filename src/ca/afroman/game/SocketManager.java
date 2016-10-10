@@ -328,7 +328,7 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			if (!isServerSide())
 			{
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
-				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), "UNKNOWN", "HOST");
+				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), -1, "UNKNOWN", "HOST");
 			}
 			return false;
 		}

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.List;
+import java.util.Scanner;
 
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
@@ -105,34 +105,55 @@ public class UpdateUtil
 	/**
 	 * Downloads the text file indicating the latest release version.
 	 */
-	private static void grabVersion()
+	private static long grabVersion()
 	{
 		try
 		{
-			download(RAW_LOCATION, SERVER_VERSION);
-			
-			File file = new File(SERVER_VERSION);
-			if (file.exists())
+			URL url = new URL(RAW_LOCATION);
+			Scanner sc = new Scanner(url.openStream());
+			if (sc.hasNextLong())
 			{
-				List<String> lines = FileUtil.readAllLines(file);
-				
-				for (String line : lines)
-				{
-					try
-					{
-						serverVersion = Long.parseLong(line);
-					}
-					catch (Exception e)
-					{
-						ALogger.logA(ALogType.WARNING, "Failed to read line: " + line, e);
-					}
-				}
+				return sc.nextLong();
+			}
+			else
+			{
+				ALogger.logA(ALogType.WARNING, "Server file does not have a long");
+				return 0L;
 			}
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-			ALogger.logA(ALogType.WARNING, "Failed to capture file at: " + RAW_LOCATION, e);
+			ALogger.logA(ALogType.WARNING, "Failed to read website file", e);
+			return 0L;
 		}
+		
+		// Old method, requires downloading of the file
+		// try
+		// {
+		// download(RAW_LOCATION, SERVER_VERSION);
+		//
+		// File file = new File(SERVER_VERSION);
+		// if (file.exists())
+		// {
+		// List<String> lines = FileUtil.readAllLines(file);
+		//
+		// for (String line : lines)
+		// {
+		// try
+		// {
+		// serverVersion = Long.parseLong(line);
+		// }
+		// catch (Exception e)
+		// {
+		// ALogger.logA(ALogType.WARNING, "Failed to read line: " + line, e);
+		// }
+		// }
+		// }
+		// }
+		// catch (Exception e)
+		// {
+		// ALogger.logA(ALogType.WARNING, "Failed to capture file at: " + RAW_LOCATION, e);
+		// }
 	}
 	
 	/**
@@ -283,7 +304,9 @@ public class UpdateUtil
 	public static boolean updateQuery()
 	{
 		purgeOld();
-		grabVersion();
+		serverVersion = grabVersion();
+		ALogger.logA(ALogType.DEBUG, "Server Version: " + serverVersion);
+		ALogger.logA(ALogType.DEBUG, "Client Version: " + VersionUtil.FULL_VERSION);
 		purgeOld();
 		return versionCheck(VersionUtil.FULL_VERSION);
 	}

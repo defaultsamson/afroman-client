@@ -21,14 +21,14 @@ public class GuiClickNotification extends GuiTextButton
 	private String notifText2;
 	private Vector2DInt drawLocation;
 	
-	public GuiClickNotification(GuiScreen screen, String text)
+	public GuiClickNotification(GuiScreen screen, int id, String text)
 	{
-		this(screen, text, "");
+		this(screen, id, text, "");
 	}
 	
-	public GuiClickNotification(GuiScreen screen, String text1, String text2)
+	public GuiClickNotification(GuiScreen screen, int id, String text1, String text2)
 	{
-		super(screen, -1, (ClientGame.WIDTH / 2) - (BUTTON_WIDTH / 2), (ClientGame.HEIGHT / 2) + 8, BUTTON_WIDTH, Assets.getFont(AssetType.FONT_BLACK), "Okay");
+		super(screen, id, (ClientGame.WIDTH / 2) - (BUTTON_WIDTH / 2), (ClientGame.HEIGHT / 2) + 8, BUTTON_WIDTH, Assets.getFont(AssetType.FONT_BLACK), "Okay");
 		
 		this.notifText1 = text1;
 		this.notifText2 = text2;
@@ -41,14 +41,9 @@ public class GuiClickNotification extends GuiTextButton
 	}
 	
 	@Override
-	protected void onPress()
-	{
-		// Need this here, otherwise it will do onPress behaviour from the super method
-	}
-	
-	@Override
 	protected void onRelease()
 	{
+		super.onRelease();
 		screen.removeButton(this);
 	}
 	

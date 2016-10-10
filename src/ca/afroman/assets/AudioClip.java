@@ -137,6 +137,7 @@ public class AudioClip extends Asset
 			}
 		}
 	}
+	
 	private AudioType type;
 	
 	private Clip clip;

@@ -10,6 +10,8 @@ import ca.afroman.util.VersionUtil;
 
 public class GuiMainMenu extends GuiMenuOutline
 {
+	private boolean allowUpdateCheck;
+	
 	public GuiMainMenu()
 	{
 		super(null, true, true);
@@ -19,6 +21,8 @@ public class GuiMainMenu extends GuiMenuOutline
 		addButton(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 2), 72, blackFont, "Quit"));
 		addButton(new GuiIconButton(this, 4, (ClientGame.WIDTH / 2) - (72 / 2) - 16 - 4, 58 + (24 * 1), 16, Assets.getStepSpriteAnimation(AssetType.ICON_SETTINGS).clone()));
 		addButton(new GuiIconButton(this, 3, (ClientGame.WIDTH / 2) - (72 / 2) - 16 - 4, 58 + (24 * 2), 16, Assets.getStepSpriteAnimation(AssetType.ICON_UPDATE).clone()));
+		
+		allowUpdateCheck = true;
 	}
 	
 	@Override
@@ -44,24 +48,33 @@ public class GuiMainMenu extends GuiMenuOutline
 				ClientGame.instance().quit();
 				break;
 			case 3: // Check for updates
-				if (UpdateUtil.updateQuery())
+				if (allowUpdateCheck) // Prevents the update from being checked if a previous update notification still needs to be closed
 				{
-					new GuiYesNoPrompt(this, 30, "Update found (" + VersionUtil.toString(UpdateUtil.serverVersion) + ")", "Would you like to update?");
+					allowUpdateCheck = false;
+					if (UpdateUtil.updateQuery())
+					{
+						new GuiYesNoPrompt(this, 31, "Update found (" + VersionUtil.toString(UpdateUtil.serverVersion) + ")", "Would you like to update?");
+					}
+					else
+					{
+						new GuiClickNotification(this, 30, "No updates", "found");
+					}
 				}
-				else
-				{
-					new GuiClickNotification(this, "No updates", "found");
-				}
 				break;
-			case 30: // Confirm update
-				new GuiYesNoPrompt(this, 32, "Doing this will close the game,", "Would you like to continue?");
+			case 30: // No updates found, okay?
+				allowUpdateCheck = true;
 				break;
-			case 31: // No, don't update
+			case 31: // Confirm update
+				new GuiYesNoPrompt(this, 33, "Doing this will close the game,", "Would you like to continue?");
 				break;
-			case 32:// Yes, update
+			case 32: // No, don't update
+				allowUpdateCheck = true;
+				break;
+			case 33:// Yes, update
 				ClientGame.instance().quit(true);
 				break;
-			case 33: // No, don't update
+			case 34: // No, don't update
+				allowUpdateCheck = true;
 				break;
 			case 4:// Options menu
 				ClientGame.instance().setCurrentScreen(new GuiOptionsMenu(this, false));

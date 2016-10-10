@@ -195,13 +195,13 @@ public class ClientGame extends Game
 			default:
 				break;
 			case SERVER_CLOSED:
-				new GuiClickNotification(getCurrentScreen(), "Server", "closed");
+				new GuiClickNotification(getCurrentScreen(), -1, "Server", "closed");
 				break;
 			case KICKED:
-				new GuiClickNotification(getCurrentScreen(), "Kicked", "from server");
+				new GuiClickNotification(getCurrentScreen(), -1, "Kicked", "from server");
 				break;
 			case BANNED:
-				new GuiClickNotification(getCurrentScreen(), "Banned", "from server");
+				new GuiClickNotification(getCurrentScreen(), -1, "Banned", "from server");
 				break;
 		}
 	}
@@ -328,22 +328,22 @@ public class ClientGame extends Game
 							switch (reason)
 							{
 								default:
-									new GuiClickNotification(getCurrentScreen(), "CAN'T CONNECT", "TO SERVER");
+									new GuiClickNotification(getCurrentScreen(), -1, "CAN'T CONNECT", "TO SERVER");
 									break;
 								case DUPLICATE_USERNAME:
-									new GuiClickNotification(getCurrentScreen(), "DUPLICATE", "USERNAME");
+									new GuiClickNotification(getCurrentScreen(), -1, "DUPLICATE", "USERNAME");
 									break;
 								case FULL_SERVER:
-									new GuiClickNotification(getCurrentScreen(), "SERVER", "FULL");
+									new GuiClickNotification(getCurrentScreen(), -1, "SERVER", "FULL");
 									break;
 								case NEED_PASSWORD:
-									new GuiClickNotification(getCurrentScreen(), "INVALID", "PASSWORD");
+									new GuiClickNotification(getCurrentScreen(), -1, "INVALID", "PASSWORD");
 									break;
 								case OLD_CLIENT:
-									new GuiClickNotification(getCurrentScreen(), "CLIENT", "OUTDATED");
+									new GuiClickNotification(getCurrentScreen(), -1, "CLIENT", "OUTDATED");
 									break;
 								case OLD_SERVER:
-									new GuiClickNotification(getCurrentScreen(), "SERVER", "OUTDATED");
+									new GuiClickNotification(getCurrentScreen(), -1, "SERVER", "OUTDATED");
 									break;
 							}
 						}
