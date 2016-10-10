@@ -21,9 +21,9 @@ class GuiNoButton extends GuiTextButton
 	}
 	
 	@Override
-	protected void onPressed()
+	protected void onPress()
 	{
-		
+		// Need this here, otherwise it will do onPress behaviour from the super method
 	}
 	
 	@Override
@@ -86,9 +86,9 @@ public class GuiYesNoPrompt extends GuiTextButton
 	}
 	
 	@Override
-	protected void onPressed()
+	protected void onPress()
 	{
-		
+		// Need this here, otherwise it will do onPress behaviour from the super method
 	}
 	
 	@Override

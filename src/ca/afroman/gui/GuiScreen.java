@@ -9,7 +9,7 @@ import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 
-public abstract class GuiScreen
+public class GuiScreen
 {
 	protected static Font nobleFont = Assets.getFont(AssetType.FONT_NOBLE);
 	protected static Font whiteFont = Assets.getFont(AssetType.FONT_WHITE);
@@ -41,11 +41,15 @@ public abstract class GuiScreen
 	}
 	
 	/**
-	 * Draws the screen.
+	 * Same function as the render() method, but ensures that buttons are drawn
+	 * overtop of the rest of the screen being drawn.
 	 * 
-	 * @param delta the time between the last time the screen was drawn and the time that this is currently being drawn
+	 * @param renderTo
 	 */
-	public abstract void drawScreen(Texture renderTo);
+	public void drawScreen(Texture renderTo)
+	{
+		
+	}
 	
 	public GuiButton getListeningButton()
 	{
@@ -62,21 +66,33 @@ public abstract class GuiScreen
 		ClientGame.instance().setCurrentScreen(this.parentScreen);
 	}
 	
-	public abstract void keyTyped();
+	/**
+	 * Fires whenever a letter is typed in a GuiTextField
+	 */
+	public void keyTyped()
+	{
+		
+	}
 	
 	/**
 	 * Fires whenever a button is pressed.
 	 * 
 	 * @param buttonID the id of the button
 	 */
-	public abstract void pressAction(int buttonID);
+	public void pressAction(int buttonID)
+	{
+		
+	}
 	
 	/**
 	 * Fires whenever a button is released.
 	 * 
 	 * @param buttonID the id of the button
 	 */
-	public abstract void releaseAction(int buttonID);
+	public void releaseAction(int buttonID)
+	{
+		
+	}
 	
 	public void removeButton(GuiButton button)
 	{
@@ -84,10 +100,13 @@ public abstract class GuiScreen
 	}
 	
 	/**
-	 * Operates in the same way as renderEntries(SpriteBatch batch);
+	 * Renders this GuiScreen to the renderTo Texture.
 	 * 
-	 * @param batch the SpriteBatch to draw the buttons to
+	 * @deprecated use drawScreen when extending
+	 * 
+	 * @param renderTo
 	 */
+	@Deprecated
 	public void render(Texture renderTo)
 	{
 		drawScreen(renderTo);
@@ -147,5 +166,16 @@ public abstract class GuiScreen
 				((GuiTextField) button).setFocussed(false);
 			}
 		}
+	}
+	
+	/**
+	 * Fires whenever the value of a slider is modified
+	 * 
+	 * @param sliderID
+	 * @param newValue
+	 */
+	public void updateValue(int sliderID, int newValue)
+	{
+		
 	}
 }

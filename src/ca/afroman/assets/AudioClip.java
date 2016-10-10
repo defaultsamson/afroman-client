@@ -25,7 +25,7 @@ public class AudioClip extends Asset
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";
 	
-	public static AudioClip fromResource(AssetType type, String path)
+	public static AudioClip fromResource(AssetType type, AudioType audioType, String path)
 	{
 		if (initUseMp3)
 		{
@@ -116,15 +116,36 @@ public class AudioClip extends Asset
 			}
 		}
 		
-		return new AudioClip(type, clip);
+		return new AudioClip(type, audioType, clip);
 	}
+	
+	/**
+	 * Updates the volume of all the AudioClips, whether playing or not, from the
+	 * Options instance values for volume (range is 0-100.
+	 */
+	public static void updateVolumesFromOptions()
+	{
+		for (Asset as : Assets.getAssets())
+		{
+			if (as instanceof AudioClip)
+			{
+				AudioClip audio = (AudioClip) as;
+				
+				int volume = (audio.getAudioType() == AudioType.MUSIC ? Options.instance().musicVolume : (audio.getAudioType() == AudioType.SFX ? Options.instance().sfxVolume : 0));
+				
+				audio.setVolume(volume / 100D);
+			}
+		}
+	}
+	private AudioType type;
 	
 	private Clip clip;
 	
-	public AudioClip(AssetType type, Clip clip)
+	public AudioClip(AssetType type, AudioType audioType, Clip clip)
 	{
 		super(type);
 		
+		this.type = audioType;
 		this.clip = clip;
 	}
 	
@@ -141,6 +162,11 @@ public class AudioClip extends Asset
 		clip.stop();
 		clip.flush();
 		clip.close();
+	}
+	
+	public AudioType getAudioType()
+	{
+		return type;
 	}
 	
 	public boolean isRunning()
@@ -224,26 +250,19 @@ public class AudioClip extends Asset
 	
 	public void start()
 	{
-		if (Options.instance().enableMusic)
-		{
-			if (clip == null) return;
-			
-			clip.setFramePosition(0);
-			
-			clip.start();
-		}
+		if (clip == null) return;
+		
+		clip.setFramePosition(0);
+		clip.start();
 	}
 	
 	public void startLoop()
 	{
-		if (Options.instance().enableMusic)
-		{
-			if (clip == null) return;
-			
-			clip.setFramePosition(0);
-			clip.loop(Clip.LOOP_CONTINUOUSLY);
-			clip.start();
-		}
+		if (clip == null) return;
+		
+		clip.setFramePosition(0);
+		clip.loop(Clip.LOOP_CONTINUOUSLY);
+		clip.start();
 	}
 	
 	public void stop()

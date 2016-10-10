@@ -199,12 +199,6 @@ public class GuiHitboxToggleEditor extends GuiScreen
 	}
 	
 	@Override
-	public void releaseAction(int buttonID)
-	{
-		
-	}
-	
-	@Override
 	public void tick()
 	{
 		super.tick();

@@ -50,6 +50,11 @@ public class Assets
 		return null;
 	}
 	
+	public static List<Asset> getAssets()
+	{
+		return assets;
+	}
+	
 	public static AudioClip getAudioClip(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -208,8 +213,8 @@ public class Assets
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 		
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down"));
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up"));
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, AudioType.SFX, "but_down"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, AudioType.SFX, "but_up"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, AudioType.MUSIC, "music/menu"));
 	}
 }

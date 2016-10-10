@@ -2,24 +2,15 @@ package ca.afroman.gui;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
-import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.gfx.FlickeringLight;
-import ca.afroman.gfx.LightMap;
 import ca.afroman.input.TypingMode;
 import ca.afroman.option.Options;
-import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
 
-public class GuiHostServer extends GuiScreen
+public class GuiHostServer extends GuiMenuOutline
 {
-	private SpriteAnimation afroMan;
-	private SpriteAnimation player2;
-	private LightMap lightmap;
-	private FlickeringLight light;
-	
 	private GuiTextField username;
 	private GuiTextField password;
 	private GuiTextField port;
@@ -28,13 +19,7 @@ public class GuiHostServer extends GuiScreen
 	
 	public GuiHostServer(GuiScreen parent)
 	{
-		super(parent);
-		
-		afroMan = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
-		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
-		
-		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
-		light = new FlickeringLight(false, -1, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 62, 5);
+		super(parent, true, true);
 		
 		username = new GuiTextField(this, (ClientGame.WIDTH / 2) - (112 / 2) - 57, 62, 112);
 		username.setText(Options.instance().serverUsername);
@@ -82,17 +67,7 @@ public class GuiHostServer extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(afroMan.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) - 20, 30));
-		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt((ClientGame.WIDTH / 2) + 4, 30));
-		
-		if (Options.instance().isLightingOn())
-		{
-			lightmap.clear();
-			light.renderCentered(lightmap);
-			lightmap.patch();
-			
-			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
-		}
+		super.drawScreen(renderTo);
 		
 		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Host A Server");
 		
@@ -146,15 +121,6 @@ public class GuiHostServer extends GuiScreen
 	}
 	
 	@Override
-	public void pressAction(int buttonID)
-	{
-		switch (buttonID)
-		{
-			
-		}
-	}
-	
-	@Override
 	public void releaseAction(int buttonID)
 	{
 		switch (buttonID)
@@ -172,13 +138,6 @@ public class GuiHostServer extends GuiScreen
 	public void tick()
 	{
 		super.tick();
-		
-		if (Options.instance().isLightingOn())
-		{
-			light.tick();
-			afroMan.tick();
-			player2.tick();
-		}
 		
 		if (ClientGame.instance().input().tab.isPressedFiltered())
 		{

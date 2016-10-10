@@ -88,7 +88,7 @@ public class GuiTextField extends GuiButton
 	}
 	
 	@Override
-	protected void onPressed()
+	protected void onPress()
 	{
 		this.setFocussed();
 		
@@ -152,7 +152,7 @@ public class GuiTextField extends GuiButton
 		{
 			cursorPosition = pos;
 			updateCursorDrawPos();
-			this.screen.keyTyped();
+			// this.screen.keyTyped();
 			return true;
 		}
 		else

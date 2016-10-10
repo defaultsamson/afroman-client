@@ -45,9 +45,11 @@ import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiCommand;
 import ca.afroman.gui.GuiConnectToServer;
+import ca.afroman.gui.GuiInGameMenu;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiLobby;
 import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.gui.GuiOptionsMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.input.InputHandler;
@@ -79,7 +81,7 @@ public class ClientGame extends Game
 {
 	public static final int WIDTH = 240;
 	public static final int HEIGHT = WIDTH / 16 * 9;
-	public static final int SCALE = 3;
+	public static final int DEFAULT_SCALE = 3;
 	public static final String NAME = "The Adventures of Afro Man";
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
@@ -170,17 +172,14 @@ public class ClientGame extends Game
 		// TODO let the server know that the client has disconnected
 		if (sockets() != null && reason == ExitGameReason.DISCONNECT) sockets().sender().sendPacket(new PacketPlayerDisconnect());
 		
+		setIsInGame(false);
+		
 		stopSocket();
 		
 		getLevels().clear();
 		setCurrentLevel(null);
 		
 		IDCounter.resetAll();
-		
-		// if (this.isHostingServer())
-		// {
-		// ServerGame.instance().stopThis();
-		// }
 		
 		// resets the player entities
 		for (PlayerEntity e : getPlayers())
@@ -408,6 +407,7 @@ public class ClientGame extends Game
 								{
 									setCurrentScreen(null);
 									setProgramSection(ProgramSection.IN_GAME);
+									setIsInGame(true);
 								}
 								
 								if (getRole() == Role.SPECTATOR)
@@ -851,6 +851,7 @@ public class ClientGame extends Game
 		System.exit(0);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void render()
 	{
@@ -908,7 +909,7 @@ public class ClientGame extends Game
 	 * @param windowWidth the new desired width.
 	 * @param windowHeight the new desired height.
 	 */
-	public void resizeGame(int windowWidth, int windowHeight)
+	public void resizeGame(int windowWidth, int windowHeight, boolean wrapCanvas)
 	{
 		int newWidth = 0;
 		int newHeight = 0;
@@ -925,8 +926,23 @@ public class ClientGame extends Game
 			newHeight = windowWidth / 16 * 9;
 		}
 		
+		int oldWidth = canvas.getWidth();
+		int oldHeight = canvas.getHeight();
+		
 		// Resizes the canvas to match the new window size, keeping it centred.
 		canvas.setBounds((windowWidth - newWidth) / 2, (windowHeight - newHeight) / 2, newWidth, newHeight);
+		
+		if (wrapCanvas)
+		{
+			int deltaWidth = oldWidth - canvas.getWidth();
+			int deltaHeight = oldHeight - canvas.getHeight();
+			
+			canvas.setPreferredSize(new Dimension(newWidth, newHeight));
+			frame.setSize(frame.getWidth() - deltaWidth, frame.getHeight() - deltaHeight);
+			frame.pack();
+			
+			frame.setLocationRelativeTo(null);
+		}
 	}
 	
 	public void setCurrentLevel(Level newLevel)
@@ -1170,7 +1186,7 @@ public class ClientGame extends Game
 				// Stops it from detecting the resizeGame method from resizing its bounds.
 				if (lastWidth != canvas.getWidth() || lastHeight != canvas.getHeight())
 				{
-					resizeGame(canvas.getWidth(), canvas.getHeight());
+					resizeGame(canvas.getWidth(), canvas.getHeight(), false);
 					
 					lastWidth = canvas.getWidth();
 					lastHeight = canvas.getHeight();
@@ -1185,7 +1201,7 @@ public class ClientGame extends Game
 		});
 			
 		canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
-		canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
+		canvas.setPreferredSize(new Dimension(WIDTH * DEFAULT_SCALE, HEIGHT * DEFAULT_SCALE));
 		
 		frame.setIconImage(ICON);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -1194,18 +1210,6 @@ public class ClientGame extends Game
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.pack();
 		frame.setResizable(false);
-		
-		// canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
-		// canvas.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		//
-		// frame.setIconImage(ICON);
-		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		// frame.setLayout(new BorderLayout());
-		// frame.getContentPane().setBackground(Color.black);
-		// frame.getContentPane().add(canvas, BorderLayout.CENTER);
-		// frame.setResizable(false);
-		// frame.pack();
-		// frame.setMinimumSize(frame.getSize());
 		
 		frame.setVisible(true);
 		frame.setResizable(true);
@@ -1253,6 +1257,7 @@ public class ClientGame extends Game
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
 		Assets.load();
+		AudioClip.updateVolumesFromOptions();
 		
 		logger().log(ALogType.DEBUG, "Initializing game variables...");
 		
@@ -1272,6 +1277,8 @@ public class ClientGame extends Game
 		setCurrentScreen(new GuiMainMenu());
 		
 		// WHEN FINISHED LOADING
+		
+		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true);
 		
 		if (Options.instance().fullscreen)
 		{
@@ -1439,7 +1446,7 @@ public class ClientGame extends Game
 				
 				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + Options.instance().renderOffFocus);
 			}
-			if (input.two.isPressedFiltered())
+			if (input.two.isPressedFiltered() && isInGame())
 			{
 				hitboxDebug = !hitboxDebug;
 				
@@ -1451,13 +1458,13 @@ public class ClientGame extends Game
 				
 				logger().log(ALogType.DEBUG, "Lighting: " + Options.instance().lighting.toString());
 			}
-			if (input.four.isPressedFiltered())
+			if (input.four.isPressedFiltered() && isInGame())
 			{
 				if (getCurrentLevel() != null) getCurrentLevel().toSaveFile();
 				logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
 			}
 			
-			if (input.zero.isPressedFiltered())
+			if (input.zero.isPressedFiltered() && isInGame())
 			{
 				buildMode = !buildMode;
 				
@@ -1472,6 +1479,11 @@ public class ClientGame extends Game
 			{
 				quit();
 			}
+		}
+		
+		if (isInGame() && !(getCurrentScreen() instanceof GuiInGameMenu) && !(getCurrentScreen() instanceof GuiOptionsMenu) && input.escape.isReleasedFiltered())
+		{
+			setCurrentScreen(new GuiInGameMenu(getCurrentScreen()));
 		}
 		
 		if (getCurrentScreen() != null)

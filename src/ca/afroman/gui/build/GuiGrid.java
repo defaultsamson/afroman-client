@@ -65,4 +65,10 @@ public class GuiGrid extends GuiScreen
 			grid.setText("Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
 		}
 	}
+	
+	@Override
+	public void updateValue(int sliderID, int newValue)
+	{
+		
+	}
 }

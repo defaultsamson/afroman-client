@@ -214,4 +214,10 @@ public class GuiLobby extends GuiScreen
 		
 		super.tick();
 	}
+	
+	@Override
+	public void updateValue(int sliderID, int newValue)
+	{
+		
+	}
 }

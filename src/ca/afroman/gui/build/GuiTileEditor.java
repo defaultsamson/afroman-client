@@ -78,12 +78,6 @@ public class GuiTileEditor extends GuiGrid
 	}
 	
 	@Override
-	public void keyTyped()
-	{
-		super.keyTyped();
-	}
-	
-	@Override
 	public void pressAction(int buttonID)
 	{
 		super.pressAction(buttonID);
@@ -143,12 +137,6 @@ public class GuiTileEditor extends GuiGrid
 			
 			updateButtons();
 		}
-	}
-	
-	@Override
-	public void releaseAction(int buttonID)
-	{
-		super.releaseAction(buttonID);
 	}
 	
 	@Override

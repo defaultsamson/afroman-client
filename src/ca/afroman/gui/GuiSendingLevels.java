@@ -43,6 +43,8 @@ public class GuiSendingLevels extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
+		super.drawScreen(renderTo);
+		
 		if (ClientGame.instance().isHostingServer())
 		{
 			// TODO not just 3 you fucking git
@@ -58,18 +60,6 @@ public class GuiSendingLevels extends GuiScreen
 		{
 			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Recieving levels...");
 		}
-	}
-	
-	@Override
-	public void keyTyped()
-	{
-		
-	}
-	
-	@Override
-	public void pressAction(int buttonID)
-	{
-		
 	}
 	
 	@Override

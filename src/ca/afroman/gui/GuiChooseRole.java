@@ -80,18 +80,6 @@ public class GuiChooseRole extends GuiScreen
 	}
 	
 	@Override
-	public void keyTyped()
-	{
-		
-	}
-	
-	@Override
-	public void pressAction(int buttonID)
-	{
-		
-	}
-	
-	@Override
 	public void releaseAction(int buttonID)
 	{
 		switch (buttonID)

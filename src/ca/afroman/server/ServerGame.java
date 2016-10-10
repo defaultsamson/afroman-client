@@ -187,24 +187,10 @@ public class ServerGame extends Game implements IPacketParser
 		
 		// TODO only start ticking once the game has loaded for all clients
 		
-		isInGame = true;
+		setIsInGame(true);
 		isSendingLevels = false;
 		
 		sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
-	}
-	
-	@Override
-	public void onPause()
-	{
-		super.onPause();
-		isInGame = false;
-	}
-	
-	@Override
-	public void onUnpause()
-	{
-		super.onUnpause();
-		isInGame = true;
 	}
 	
 	/**
@@ -787,7 +773,7 @@ public class ServerGame extends Game implements IPacketParser
 		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
 		if (stopServer) safeStop();
 		
-		if (isInGame)
+		if (isInGame())
 		{
 			if (getLevels() != null)
 			{

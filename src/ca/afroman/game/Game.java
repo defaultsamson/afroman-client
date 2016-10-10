@@ -26,7 +26,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return serverSide ? ServerGame.instance() : ClientGame.instance();
 	}
 	
-	protected boolean isInGame;
+	private boolean isInGame;
 	protected List<Level> levels;
 	
 	protected List<PlayerEntity> players;
@@ -52,11 +52,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		{
 			toProcess.add(pack);
 		}
-	}
-	
-	public void beginGame()
-	{
-		isInGame = true;
 	}
 	
 	public Level getLevel(LevelType type)
@@ -112,6 +107,11 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		isInGame = true;
 	}
 	
+	public void setIsInGame(boolean isInGame)
+	{
+		this.isInGame = isInGame;
+	}
+	
 	public SocketManager sockets()
 	{
 		return socketManager;
@@ -158,8 +158,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		{
 			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
-		
-		// TODO save level states
 		
 		stopSocket();
 		

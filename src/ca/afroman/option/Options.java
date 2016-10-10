@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.game.Game;
 import ca.afroman.gfx.LightMapState;
 import ca.afroman.log.ALogType;
@@ -28,7 +29,8 @@ public class Options
 		return instance;
 	}
 	
-	public boolean enableMusic;
+	public int musicVolume;
+	public int sfxVolume;
 	public String serverUsername;
 	public String clientUsername;
 	public String clientPassword;
@@ -37,12 +39,18 @@ public class Options
 	public boolean renderOffFocus;
 	public boolean fullscreen;
 	public LightMapState lighting;
+	public int scale;
 	
 	public String serverPassword;
 	public String serverIP;
 	public String serverPort;
 	
 	private void append(List<String> list, OptionType type, boolean value)
+	{
+		list.add(type + SPLITTER + value);
+	}
+	
+	private void append(List<String> list, OptionType type, int value)
 	{
 		list.add(type + SPLITTER + value);
 	}
@@ -54,7 +62,8 @@ public class Options
 	
 	public void initializeValues()
 	{
-		enableMusic = true;
+		musicVolume = 100;
+		sfxVolume = 100;
 		serverUsername = "";
 		clientUsername = "";
 		clientPassword = "";
@@ -63,6 +72,7 @@ public class Options
 		renderOffFocus = true;
 		fullscreen = false;
 		lighting = LightMapState.ON;
+		scale = ClientGame.DEFAULT_SCALE;
 		
 		serverPassword = "";
 		serverIP = "" + Game.IPv4_LOCALHOST;
@@ -94,8 +104,10 @@ public class Options
 						default:
 							ALogger.logA(ALogType.WARNING, "No OptionType found for type: " + type);
 							break;
-						case MUSIC:
-							enableMusic = Boolean.parseBoolean(option);
+						case VOLUME_MUSIC:
+							musicVolume = Integer.parseInt(option);
+						case VOLUME_SFX:
+							sfxVolume = Integer.parseInt(option);
 							break;
 						case SERVER_USERNAME:
 							serverUsername = option;
@@ -121,6 +133,10 @@ public class Options
 						case LIGHT_MODE:
 							lighting = LightMapState.valueOf(option);
 							break;
+						case SCALE:
+							scale = Integer.parseInt(option);
+							break;
+						
 						case SERVER_PASSWORD:
 							serverPassword = option;
 							break;
@@ -148,7 +164,8 @@ public class Options
 	public void save()
 	{
 		List<String> op = new ArrayList<String>();
-		append(op, OptionType.MUSIC, enableMusic);
+		append(op, OptionType.VOLUME_MUSIC, musicVolume);
+		append(op, OptionType.VOLUME_SFX, sfxVolume);
 		append(op, OptionType.SERVER_USERNAME, serverUsername);
 		append(op, OptionType.CLIENT_USERNAME, clientUsername);
 		append(op, OptionType.CLIENT_PASSWORD, clientPassword);
@@ -157,6 +174,8 @@ public class Options
 		append(op, OptionType.RENDER_OFF_FOCUS, renderOffFocus);
 		append(op, OptionType.FULLSCREEN, fullscreen);
 		append(op, OptionType.LIGHT_MODE, lighting.toString());
+		append(op, OptionType.SCALE, scale);
+		
 		append(op, OptionType.SERVER_PASSWORD, serverPassword);
 		append(op, OptionType.SERVER_IP, serverIP);
 		append(op, OptionType.SERVER_PORT, serverPort);

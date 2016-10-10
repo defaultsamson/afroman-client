@@ -29,12 +29,6 @@ public class GuiCommand extends GuiScreen
 	}
 	
 	@Override
-	public void drawScreen(Texture renderTo)
-	{
-		
-	}
-	
-	@Override
 	public void keyTyped()
 	{
 		if (browsingIndex == -1)
@@ -43,18 +37,7 @@ public class GuiCommand extends GuiScreen
 		}
 	}
 	
-	@Override
-	public void pressAction(int buttonID)
-	{
-		
-	}
-	
-	@Override
-	public void releaseAction(int buttonID)
-	{
-		
-	}
-	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void render(Texture renderTo)
 	{

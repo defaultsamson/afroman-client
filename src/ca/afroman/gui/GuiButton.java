@@ -19,12 +19,12 @@ public class GuiButton extends InputType
 	private boolean makeSound = true;
 	private AudioClip pushSound;
 	private AudioClip releaseSound;
-	private InputType isHovering;
+	private InputType onHover;
 	
 	private int id;
 	private boolean canHold = false;
 	private boolean isEnabled = true;
-	private int state = 0;
+	private ButtonState state = ButtonState.NONE;
 	private Texture[][] textures;
 	
 	public GuiButton(GuiScreen screen, int id, int x, int y, int width)
@@ -61,7 +61,7 @@ public class GuiButton extends InputType
 		this.id = id;
 		this.pushSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_PUSH);
 		this.releaseSound = Assets.getAudioClip(AssetType.AUDIO_BUTTON_RELEASE);
-		this.isHovering = new InputType();
+		this.onHover = new InputType();
 	}
 	
 	public boolean canHold()
@@ -77,9 +77,9 @@ public class GuiButton extends InputType
 	/**
 	 * @return the texture set to be using based on the state.
 	 */
-	private Texture[] getTexture()
+	protected Texture[] getTexture()
 	{
-		return (isEnabled ? textures[state] : textures[2]);
+		return (isEnabled ? textures[state.ordinal()] : textures[2]);
 	}
 	
 	public boolean isEnabled()
@@ -87,9 +87,20 @@ public class GuiButton extends InputType
 		return isEnabled;
 	}
 	
-	public InputType isHovering()
+	public boolean isHovering()
 	{
-		return isHovering;
+		return state == ButtonState.HOVERING;
+	}
+	
+	public boolean isIdle()
+	{
+		return state == ButtonState.NONE;
+	}
+	
+	@Override
+	public boolean isPressed()
+	{
+		return state == ButtonState.PRESSED;
 	}
 	
 	public void onHover()
@@ -97,7 +108,7 @@ public class GuiButton extends InputType
 		
 	}
 	
-	protected void onPressed()
+	protected void onPress()
 	{
 		if (isEnabled && screen != null) screen.pressAction(id);
 	}
@@ -155,37 +166,37 @@ public class GuiButton extends InputType
 				
 				if (ClientGame.instance().input().mouseLeft.isPressed())
 				{
-					state = 2; // Down
+					state = ButtonState.PRESSED; // Down
 					
 					this.setPressed(true);
 				}
 				else
 				{
-					state = 1; // Hovering
-					isHovering.setPressed(true);
+					state = ButtonState.HOVERING; // Hovering
+					onHover.setPressed(true);
 					
 					this.setPressed(false);
 				}
 			}
 			else
 			{
-				state = 0; // Not on the button at all
-				isHovering.setPressed(false);
+				state = ButtonState.NONE; // Not on the button at all
+				onHover.setPressed(false);
 				
 				this.setPressed(false);
 			}
 			
-			if (isHovering.isPressedFiltered())
+			if (onHover.isPressedFiltered())
 			{
 				onHover();
 			}
 			if (this.canHold() && this.isPressed())
 			{
-				onPressed();
+				onPress();
 			}
 			else if (this.isPressedFiltered())
 			{
-				onPressed();
+				onPress();
 				if (makeSound) pushSound.start();
 			}
 			else if (this.isReleasedFiltered())
