@@ -113,11 +113,13 @@ public class UpdateUtil
 			Scanner sc = new Scanner(url.openStream());
 			if (sc.hasNextLong())
 			{
+				sc.close();
 				return sc.nextLong();
 			}
 			else
 			{
 				ALogger.logA(ALogType.WARNING, "Server file does not have a long");
+				sc.close();
 				return 0L;
 			}
 		}
