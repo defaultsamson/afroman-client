@@ -8,6 +8,8 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread implemen
 	protected int fps;
 	private boolean isServerSide;
 	
+	private boolean tickSync = true;
+	
 	public DynamicTickRenderThread(ThreadGroup group, String name, boolean isServerSide, double ticksPerSecond)
 	{
 		super(group, name, ticksPerSecond);
@@ -36,7 +38,7 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread implemen
 		long now = System.nanoTime();
 		delta += (now - lastTime) / nsPerTick;
 		lastTime = now;
-		boolean shouldRender = true; // true for unlimited frames, false for limited to tick rate
+		boolean shouldRender = tickSync; // true for unlimited frames, false for limited to tick rate
 		
 		while (delta >= 1)
 		{
@@ -66,6 +68,16 @@ public abstract class DynamicTickRenderThread extends DynamicTickThread implemen
 	}
 	
 	public abstract void render();
+	
+	/**
+	 * Tick sync syncs the render rate with the tick rate.
+	 * 
+	 * @param sync
+	 */
+	public void setTickSync(boolean sync)
+	{
+		tickSync = !sync;
+	}
 	
 	@Override
 	public void startThis()

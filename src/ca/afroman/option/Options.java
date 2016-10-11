@@ -37,6 +37,7 @@ public class Options
 	public String clientIP;
 	public String clientPort;
 	public boolean renderOffFocus;
+	private boolean tsync;
 	public boolean fullscreen;
 	public LightMapState lighting;
 	public int scale;
@@ -60,6 +61,11 @@ public class Options
 		list.add(type + SPLITTER + value);
 	}
 	
+	public boolean getTsync()
+	{
+		return tsync;
+	}
+	
 	public void initializeValues()
 	{
 		musicVolume = 100;
@@ -70,6 +76,7 @@ public class Options
 		clientIP = "";
 		clientPort = "";
 		renderOffFocus = true;
+		setTsync(true);
 		fullscreen = false;
 		lighting = LightMapState.ON;
 		scale = ClientGame.DEFAULT_SCALE;
@@ -127,6 +134,9 @@ public class Options
 						case RENDER_OFF_FOCUS:
 							renderOffFocus = Boolean.parseBoolean(option);
 							break;
+						case TSYNC:
+							setTsync(Boolean.parseBoolean(option));
+							break;
 						case FULLSCREEN:
 							fullscreen = Boolean.parseBoolean(option);
 							break;
@@ -172,6 +182,7 @@ public class Options
 		append(op, OptionType.CLIENT_IP, clientIP);
 		append(op, OptionType.CLIENT_PORT, clientPort);
 		append(op, OptionType.RENDER_OFF_FOCUS, renderOffFocus);
+		append(op, OptionType.TSYNC, tsync);
 		append(op, OptionType.FULLSCREEN, fullscreen);
 		append(op, OptionType.LIGHT_MODE, lighting.toString());
 		append(op, OptionType.SCALE, scale);
@@ -181,5 +192,12 @@ public class Options
 		append(op, OptionType.SERVER_PORT, serverPort);
 		
 		FileUtil.writeLines(op, new File(OPTIONS_FILE));
+	}
+	
+	public void setTsync(boolean tSync)
+	{
+		tsync = tSync;
+		
+		ClientGame.instance().setTickSync(tSync);
 	}
 }

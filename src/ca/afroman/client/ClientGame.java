@@ -1440,23 +1440,11 @@ public class ClientGame extends Game
 				
 				logger().log(ALogType.DEBUG, "Debug Hud: " + hudDebug);
 			}
-			if (input().eight.isPressedFiltered())
-			{
-				Options.instance().renderOffFocus = !Options.instance().renderOffFocus;
-				
-				logger().log(ALogType.DEBUG, "Rendering game while out of focus: " + Options.instance().renderOffFocus);
-			}
 			if (input.two.isPressedFiltered() && isInGame())
 			{
 				hitboxDebug = !hitboxDebug;
 				
 				logger().log(ALogType.DEBUG, "Show Hitboxes: " + hitboxDebug);
-			}
-			if (input.three.isPressedFiltered())
-			{
-				Options.instance().lighting = Options.instance().lighting.getNext();
-				
-				logger().log(ALogType.DEBUG, "Lighting: " + Options.instance().lighting.toString());
 			}
 			if (input.four.isPressedFiltered() && isInGame())
 			{
