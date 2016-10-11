@@ -1368,7 +1368,7 @@ public class ClientGame extends Game
 		{
 			psChanged = false;
 			
-			if (ps == ProgramSection.LOBBY || ps == ProgramSection.MAIN_MENU || ps == ProgramSection.MAIN_MENU_OPTIONS)
+			if (ps.ordinal() > ProgramSection.LOADING.ordinal() && ps.ordinal() <= ProgramSection.LOBBY.ordinal())
 			{
 				if (!music.isRunning())
 				{
