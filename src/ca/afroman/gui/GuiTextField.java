@@ -88,7 +88,7 @@ public class GuiTextField extends GuiButton
 	}
 	
 	@Override
-	protected void onPress()
+	protected void onPress(boolean isLeft)
 	{
 		this.setFocussed();
 		
@@ -117,7 +117,7 @@ public class GuiTextField extends GuiButton
 	}
 	
 	@Override
-	protected void onRelease()
+	protected void onRelease(boolean isLeft)
 	{
 		
 	}

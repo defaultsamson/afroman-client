@@ -34,7 +34,7 @@ public class GuiMainMenu extends GuiMenuOutline
 	}
 	
 	@Override
-	public void releaseAction(int buttonID)
+	public void releaseAction(int buttonID, boolean isLeft)
 	{
 		switch (buttonID)
 		{

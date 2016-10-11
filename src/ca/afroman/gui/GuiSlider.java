@@ -56,18 +56,6 @@ public class GuiSlider extends GuiButton
 	}
 	
 	@Override
-	protected void onPress()
-	{
-		// Need this here, otherwise it will do onPress behaviour from the super method
-	}
-	
-	@Override
-	protected void onRelease()
-	{
-		// Need this here, otherwise it will do onPress behaviour from the super method
-	}
-	
-	@Override
 	public void render(Texture drawTo)
 	{
 		super.render(drawTo);
@@ -120,7 +108,7 @@ public class GuiSlider extends GuiButton
 		
 		if (this.isEnabled())
 		{
-			if (isPressed())
+			if (isPressedLeft())
 			{
 				// When it's pressed, get the new value based on the mouse position
 				int clickX = ClientGame.instance().input().getMousePos().getX() - hitbox.x - (EDGE_BOUNDS - 1);

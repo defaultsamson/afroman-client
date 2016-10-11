@@ -41,9 +41,9 @@ public class GuiClickNotification extends GuiTextButton
 	}
 	
 	@Override
-	protected void onRelease()
+	protected void onRelease(boolean isLeft)
 	{
-		super.onRelease();
+		super.onRelease(isLeft);
 		screen.removeButton(this);
 	}
 	

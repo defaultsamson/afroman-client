@@ -79,7 +79,7 @@ public class GuiScreen
 	 * 
 	 * @param buttonID the id of the button
 	 */
-	public void pressAction(int buttonID)
+	public void pressAction(int buttonID, boolean isLeft)
 	{
 		
 	}
@@ -89,7 +89,7 @@ public class GuiScreen
 	 * 
 	 * @param buttonID the id of the button
 	 */
-	public void releaseAction(int buttonID)
+	public void releaseAction(int buttonID, boolean isLeft)
 	{
 		
 	}

@@ -21,15 +21,15 @@ class GuiNoButton extends GuiTextButton
 	}
 	
 	@Override
-	protected void onPress()
+	protected void onPress(boolean isLeft)
 	{
 		// Need this here, otherwise it will do onPress behaviour from the super method
 	}
 	
 	@Override
-	protected void onRelease()
+	protected void onRelease(boolean isLeft)
 	{
-		super.onRelease();
+		super.onRelease(isLeft);
 		prompt.remove();
 	}
 }
@@ -86,15 +86,15 @@ public class GuiYesNoPrompt extends GuiTextButton
 	}
 	
 	@Override
-	protected void onPress()
+	protected void onPress(boolean isLeft)
 	{
 		// Need this here, otherwise it will do onPress behaviour from the super method
 	}
 	
 	@Override
-	protected void onRelease()
+	protected void onRelease(boolean isLeft)
 	{
-		super.onRelease();
+		super.onRelease(isLeft);
 		remove();
 	}
 	

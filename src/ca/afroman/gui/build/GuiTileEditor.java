@@ -78,9 +78,9 @@ public class GuiTileEditor extends GuiGrid
 	}
 	
 	@Override
-	public void pressAction(int buttonID)
+	public void pressAction(int buttonID, boolean isLeft)
 	{
-		super.pressAction(buttonID);
+		super.pressAction(buttonID, isLeft);
 		
 		// Rids of the click so that the Level doesn't get it
 		ClientGame.instance().input().mouseLeft.isPressedFiltered();

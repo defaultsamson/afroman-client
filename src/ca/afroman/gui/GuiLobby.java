@@ -126,13 +126,13 @@ public class GuiLobby extends GuiScreen
 	}
 	
 	@Override
-	public void pressAction(int buttonID)
+	public void pressAction(int buttonID, boolean isLeft)
 	{
 		
 	}
 	
 	@Override
-	public void releaseAction(int buttonID)
+	public void releaseAction(int buttonID, boolean isLeft)
 	{
 		if (buttonID == 2000) // Start Game
 		{

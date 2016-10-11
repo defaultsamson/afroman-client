@@ -3,6 +3,7 @@ package ca.afroman.gui;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
+import ca.afroman.gfx.LightMapState;
 import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DInt;
 
@@ -10,8 +11,15 @@ public class GuiOptionsMenu extends GuiMenuOutline
 {
 	private int tempScale;
 	
+	private GuiSlider musicVolume;
+	private GuiSlider sfxVolume;
+	
+	private GuiSlider scale;
+	private GuiTextButton applyScale;
+	
 	private GuiTextButton lighting;
 	private GuiTextButton renderOOF;
+	
 	private GuiTextButton tsync;
 	
 	public GuiOptionsMenu(GuiScreen parent, boolean inGame)
@@ -22,26 +30,41 @@ public class GuiOptionsMenu extends GuiMenuOutline
 		
 		int width = 102;
 		int spacing = 3;
-		addButton(new GuiSlider(this, 1, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 0) + 6, width, 0, 100, Options.instance().musicVolume, "Music"));
-		addButton(new GuiSlider(this, 2, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 0) + 6, width, 0, 100, Options.instance().sfxVolume, "SFX"));
+		musicVolume = new GuiSlider(this, 1, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 0) + 6, width, 0, 100, Options.instance().musicVolume, "Music");
+		sfxVolume = new GuiSlider(this, 2, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 0) + 6, width, 0, 100, Options.instance().sfxVolume, "SFX");
+		musicVolume.setCanRightClick(true);
+		sfxVolume.setCanRightClick(true);
+		addButton(musicVolume);
+		addButton(sfxVolume);
 		
 		tempScale = Options.instance().scale;
-		addButton(new GuiSlider(this, 3, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 1) + 6, width, 1, 8, tempScale, "Scale"));
-		addButton(new GuiTextButton(this, 4, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 1) + 6, width, blackFont, "Apply Scale"));
+		scale = new GuiSlider(this, 3, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 1) + 6, width, 1, 8, tempScale, "Scale");
+		applyScale = new GuiTextButton(this, 4, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 1) + 6, width, blackFont, "Apply Scale");
+		scale.setCanRightClick(true);
+		applyScale.setCanRightClick(true);
+		addButton(scale);
+		addButton(applyScale);
 		
 		lighting = new GuiTextButton(this, 5, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 2) + 6, width, blackFont, "Lighting: ");
 		renderOOF = new GuiTextButton(this, 6, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 2) + 6, width, blackFont, "Draw OOF: ");
-		
+		lighting.setCanRightClick(true);
+		renderOOF.setCanRightClick(true);
 		addButton(lighting);
 		addButton(renderOOF);
 		
 		tsync = new GuiTextButton(this, 7, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 3) + 6, width, blackFont, "T-Sync: ");
-		
+		tsync.setCanRightClick(true);
 		addButton(tsync);
 		
 		addButton(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 18 + (vSpacing * 4) + 6, 72, blackFont, "Done"));
 		
 		updateButtons();
+		
+		if (!Options.instance().hasShownOptionsTip)
+		{
+			Options.instance().hasShownOptionsTip = true;
+			new GuiClickNotification(this, -1, "You can right click options", "for more info on what they do");
+		}
 	}
 	
 	@Override
@@ -53,7 +76,7 @@ public class GuiOptionsMenu extends GuiMenuOutline
 	}
 	
 	@Override
-	public void releaseAction(int buttonID)
+	public void releaseAction(int buttonID, boolean isLeft)
 	{
 		switch (buttonID)
 		{
@@ -61,21 +84,67 @@ public class GuiOptionsMenu extends GuiMenuOutline
 				Options.instance().save();
 				goToParentScreen();
 				break;
+			case 1:
+				if (!isLeft)
+				{
+					new GuiClickNotification(this, -1, "Changes the output volume", "of all the music.");
+				}
+				break;
+			case 2:
+				if (!isLeft)
+				{
+					new GuiClickNotification(this, -1, "Changes the output volume", "of all the sound effects.");
+				}
+				break;
+			case 3:
+				if (!isLeft)
+				{
+					new GuiClickNotification(this, -1, "Changes the initial scale", "of the game window.");
+				}
+				break;
 			case 4: // Scale apply
-				Options.instance().scale = tempScale;
-				ClientGame.instance().resizeGame(ClientGame.WIDTH * Options.instance().scale, ClientGame.HEIGHT * Options.instance().scale, true);
+				if (isLeft)
+				{
+					Options.instance().scale = tempScale;
+					ClientGame.instance().resizeGame(ClientGame.WIDTH * Options.instance().scale, ClientGame.HEIGHT * Options.instance().scale, true);
+				}
+				else
+				{
+					new GuiClickNotification(this, -1, "Resizes the game screen to the", "size of the selected scale.");
+				}
 				break;
 			case 5: // Lighting
-				Options.instance().lighting = Options.instance().lighting.getNext();
-				updateButtons();
+				if (isLeft)
+				{
+					Options.instance().lighting = Options.instance().lighting.getNext();
+					updateButtons();
+				}
+				else
+				{
+					new GuiClickNotification(this, -1, "Sets the lighting scheme.", LightMapState.CHEAP + " is for slow computers.");
+				}
 				break;
 			case 6: // Render out of focus
-				Options.instance().renderOffFocus = !Options.instance().renderOffFocus;
-				updateButtons();
+				if (isLeft)
+				{
+					Options.instance().renderOffFocus = !Options.instance().renderOffFocus;
+					updateButtons();
+				}
+				else
+				{
+					new GuiClickNotification(this, -1, "Renders the game while the", "window is out of focus.");
+				}
 				break;
 			case 7: // Tick sync
-				Options.instance().setTsync(!Options.instance().getTsync());
-				updateButtons();
+				if (isLeft)
+				{
+					Options.instance().setTsync(!Options.instance().getTsync());
+					updateButtons();
+				}
+				else
+				{
+					new GuiClickNotification(this, -1, "Tick-Sync. Syncs the framerate", "of the game with the tick rate.");
+				}
 				break;
 		}
 	}

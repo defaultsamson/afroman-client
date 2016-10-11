@@ -46,6 +46,8 @@ public class Options
 	public String serverIP;
 	public String serverPort;
 	
+	public boolean hasShownOptionsTip;
+	
 	private void append(List<String> list, OptionType type, boolean value)
 	{
 		list.add(type + SPLITTER + value);
@@ -84,6 +86,8 @@ public class Options
 		serverPassword = "";
 		serverIP = "" + Game.IPv4_LOCALHOST;
 		serverPort = "" + Game.DEFAULT_PORT;
+		
+		hasShownOptionsTip = false;
 	}
 	
 	public boolean isLightingOn()
@@ -156,6 +160,10 @@ public class Options
 						case SERVER_PORT:
 							serverPort = option;
 							break;
+						
+						case HAS_SHOWN_OPTIONS_TIP:
+							hasShownOptionsTip = Boolean.parseBoolean(option);
+							break;
 					}
 				}
 				catch (Exception e)
@@ -190,6 +198,8 @@ public class Options
 		append(op, OptionType.SERVER_PASSWORD, serverPassword);
 		append(op, OptionType.SERVER_IP, serverIP);
 		append(op, OptionType.SERVER_PORT, serverPort);
+		
+		append(op, OptionType.HAS_SHOWN_OPTIONS_TIP, hasShownOptionsTip);
 		
 		FileUtil.writeLines(op, new File(OPTIONS_FILE));
 	}

@@ -19,4 +19,7 @@ public enum OptionType
 	SERVER_PASSWORD,
 	SERVER_IP,
 	SERVER_PORT,
+	
+	// Used only temporarily to remember if the client has done something for the first time before
+	HAS_SHOWN_OPTIONS_TIP,
 }

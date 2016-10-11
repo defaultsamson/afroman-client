@@ -1,6 +1,5 @@
 package ca.afroman.gui.build;
 
-import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
@@ -20,19 +19,7 @@ public class GuiGrid extends GuiScreen
 	}
 	
 	@Override
-	public void drawScreen(Texture renderTo)
-	{
-		
-	}
-	
-	@Override
-	public void keyTyped()
-	{
-		
-	}
-	
-	@Override
-	public void pressAction(int buttonID)
+	public void pressAction(int buttonID, boolean isLeft)
 	{
 		// Rids of the click so that the Level doesn't get it
 		ClientGame.instance().input().mouseLeft.isPressedFiltered();
@@ -52,23 +39,11 @@ public class GuiGrid extends GuiScreen
 		}
 	}
 	
-	@Override
-	public void releaseAction(int buttonID)
-	{
-		
-	}
-	
 	public void updateButtons()
 	{
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
 			grid.setText("Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
 		}
-	}
-	
-	@Override
-	public void updateValue(int sliderID, int newValue)
-	{
-		
 	}
 }

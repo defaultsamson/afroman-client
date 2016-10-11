@@ -33,7 +33,7 @@ public class GuiConnectToServer extends GuiScreen
 	}
 	
 	@Override
-	public void releaseAction(int buttonID)
+	public void releaseAction(int buttonID, boolean isLeft)
 	{
 		switch (buttonID)
 		{

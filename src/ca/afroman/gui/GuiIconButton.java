@@ -42,9 +42,9 @@ public class GuiIconButton extends GuiButton
 	}
 	
 	@Override
-	public void onRelease()
+	public void onRelease(boolean isLeft)
 	{
-		super.onRelease();
+		super.onRelease(isLeft);
 		
 		if (icon instanceof SpriteAnimation)
 		{
