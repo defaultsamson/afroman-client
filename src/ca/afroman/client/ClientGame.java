@@ -132,7 +132,7 @@ public class ClientGame extends Game
 	private Texture screen;
 	private boolean hudDebug = false; // Shows debug information on the hud
 	private boolean hitboxDebug = false; // Shows all hitboxes
-	private boolean buildMode = false; // Turns off the lighting engine
+	private boolean buildMode = false;
 	private boolean consoleDebug = false; // Shows a console window
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
 	

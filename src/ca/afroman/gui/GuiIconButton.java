@@ -35,9 +35,12 @@ public class GuiIconButton extends GuiButton
 	{
 		super.onHover();
 		
-		if (icon instanceof StepSpriteAnimation)
+		if (isEnabled())
 		{
-			((StepSpriteAnimation) icon).progress();
+			if (icon instanceof StepSpriteAnimation)
+			{
+				((StepSpriteAnimation) icon).progress();
+			}
 		}
 	}
 	

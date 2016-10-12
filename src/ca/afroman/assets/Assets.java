@@ -118,8 +118,8 @@ public class Assets
 	public static void load()
 	{
 		Texture sheet = Texture.fromResource(AssetType.INVALID, "spritesheet.png");
-		Texture font = Texture.fromResource(AssetType.INVALID, "fonts.png");
-		Texture buttons = Texture.fromResource(AssetType.INVALID, "buttons.png");
+		Texture font = Texture.fromResource(AssetType.INVALID, "gui/fonts.png");
+		Texture buttons = Texture.fromResource(AssetType.INVALID, "gui/buttons.png");
 		
 		Texture filter = Texture.fromResource(AssetType.FILTER, "filter_opaque.png");
 		filter.setFromGreyscaleToAlphaMask();
@@ -202,11 +202,15 @@ public class Assets
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_PRESSED, 6, 0, 3, 16));
 		
-		Texture update = Texture.fromResource(AssetType.INVALID, "update_icon.png");
+		Texture update = Texture.fromResource(AssetType.INVALID, "gui/icon_update.png");
 		assets.add(new StepSpriteAnimation(new int[] { 0 }, AssetType.ICON_UPDATE, false, 1, update.toTextureArray(25, 1)));
 		
-		Texture settings = Texture.fromResource(AssetType.INVALID, "settings_icon.png");
+		Texture settings = Texture.fromResource(AssetType.INVALID, "gui/icon_settings.png");
 		assets.add(new StepSpriteAnimation(new int[] { 0 }, AssetType.ICON_SETTINGS, false, 1, settings.toTextureArray(24, 1)));
+		
+		Texture next = Texture.fromResource(AssetType.INVALID, "gui/icons.png");
+		
+		assets.add(next.getSubTexture(AssetType.ICON_NEXT, 0, 0, 16, 16));
 		
 		assets.add(sheet.getSubTexture(AssetType.ICON_REFRESH, 0, 16 * 2, 16, 16));
 		

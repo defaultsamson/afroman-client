@@ -1,5 +1,7 @@
 package ca.afroman.gui;
 
+import ca.afroman.assets.AssetType;
+import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
@@ -9,6 +11,9 @@ import ca.afroman.resource.Vector2DInt;
 
 public class GuiOptionsMenu extends GuiMenuOutline
 {
+	private static final int MIN_PAGE = 0;
+	private static final int MAX_PAGE = 0;
+	
 	private int tempScale;
 	
 	private GuiSlider musicVolume;
@@ -22,6 +27,10 @@ public class GuiOptionsMenu extends GuiMenuOutline
 	
 	private GuiTextButton tsync;
 	
+	private GuiIconButton prev;
+	private GuiIconButton next;
+	private GuiTextButton done;
+	
 	public GuiOptionsMenu(GuiScreen parent, boolean inGame)
 	{
 		super(parent, !inGame, false);
@@ -30,41 +39,65 @@ public class GuiOptionsMenu extends GuiMenuOutline
 		
 		int width = 102;
 		int spacing = 3;
+		
+		prev = new GuiIconButton(this, 201, (ClientGame.WIDTH / 2) - (72 / 2) - 16 - 4, 18 + (vSpacing * 4) + 6, 16, Assets.getTexture(AssetType.ICON_NEXT).clone().flipX());
+		next = new GuiIconButton(this, 202, (ClientGame.WIDTH / 2) + (72 / 2) + 4, 18 + (vSpacing * 4) + 6, 16, Assets.getTexture(AssetType.ICON_NEXT).clone());
+		done = new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 18 + (vSpacing * 4) + 6, 72, blackFont, "Done");
+		
 		musicVolume = new GuiSlider(this, 1, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 0) + 6, width, 0, 100, Options.instance().musicVolume, "Music");
 		sfxVolume = new GuiSlider(this, 2, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 0) + 6, width, 0, 100, Options.instance().sfxVolume, "SFX");
 		musicVolume.setCanRightClick(true);
 		sfxVolume.setCanRightClick(true);
-		addButton(musicVolume);
-		addButton(sfxVolume);
 		
 		tempScale = Options.instance().scale;
 		scale = new GuiSlider(this, 3, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 1) + 6, width, 1, 8, tempScale, "Scale");
 		applyScale = new GuiTextButton(this, 4, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 1) + 6, width, blackFont, "Apply Scale");
 		scale.setCanRightClick(true);
 		applyScale.setCanRightClick(true);
-		addButton(scale);
-		addButton(applyScale);
 		
 		lighting = new GuiTextButton(this, 5, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 2) + 6, width, blackFont, "Lighting: ");
 		renderOOF = new GuiTextButton(this, 6, (ClientGame.WIDTH / 2) + spacing, 18 + (vSpacing * 2) + 6, width, blackFont, "Draw OOF: ");
 		lighting.setCanRightClick(true);
 		renderOOF.setCanRightClick(true);
-		addButton(lighting);
-		addButton(renderOOF);
 		
 		tsync = new GuiTextButton(this, 7, (ClientGame.WIDTH / 2) - width - spacing, 18 + (vSpacing * 3) + 6, width, blackFont, "T-Sync: ");
 		tsync.setCanRightClick(true);
-		addButton(tsync);
 		
-		addButton(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 18 + (vSpacing * 4) + 6, 72, blackFont, "Done"));
-		
-		updateButtons();
+		addButtons(0);
 		
 		if (!Options.instance().hasShownOptionsTip)
 		{
 			Options.instance().hasShownOptionsTip = true;
 			new GuiClickNotification(this, -1, "You can right click options", "for more info on what they do");
 		}
+	}
+	
+	private void addButtons(int page)
+	{
+		switch (page)
+		{
+			case 0:
+				addButton(musicVolume);
+				addButton(sfxVolume);
+				
+				addButton(scale);
+				addButton(applyScale);
+				
+				addButton(lighting);
+				addButton(renderOOF);
+				
+				addButton(tsync);
+				break;
+		}
+		
+		addButton(done);
+		addButton(prev);
+		addButton(next);
+		
+		next.setEnabled(page < MAX_PAGE);
+		prev.setEnabled(page > MIN_PAGE);
+		
+		updateButtons();
 	}
 	
 	@Override

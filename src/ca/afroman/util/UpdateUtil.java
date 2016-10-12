@@ -113,8 +113,9 @@ public class UpdateUtil
 			Scanner sc = new Scanner(url.openStream());
 			if (sc.hasNextLong())
 			{
+				long toRet = sc.nextLong();
 				sc.close();
-				return sc.nextLong();
+				return toRet;
 			}
 			else
 			{

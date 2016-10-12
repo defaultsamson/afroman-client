@@ -208,6 +208,9 @@ public class Options
 	{
 		tsync = tSync;
 		
-		ClientGame.instance().setTickSync(tSync);
+		if (ClientGame.instance() != null)
+		{
+			ClientGame.instance().setTickSync(tSync);
+		}
 	}
 }

@@ -40,6 +40,40 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), newTextures);
 	}
 	
+	/**
+	 * Flips this horizontally.
+	 */
+	public SpriteAnimation flipX()
+	{
+		for (Asset as : getAssets())
+		{
+			if (as instanceof Texture)
+			{
+				Texture frame = (Texture) as;
+				frame.flipX();
+			}
+		}
+		
+		return this;
+	}
+	
+	/**
+	 * Flips this horizontally.
+	 */
+	public SpriteAnimation flipY()
+	{
+		for (Asset as : getAssets())
+		{
+			if (as instanceof Texture)
+			{
+				Texture frame = (Texture) as;
+				frame.flipY();
+			}
+		}
+		
+		return this;
+	}
+	
 	public int frameCount()
 	{
 		return ((Texture[]) getAssets()).length;
