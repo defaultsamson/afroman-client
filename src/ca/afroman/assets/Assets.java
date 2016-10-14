@@ -175,7 +175,9 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 1, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_HALF, 16 * 3, 0, 16, 16));
-		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 24));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_OUTCORNER, 16 * 3, 16 * 1, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_INCORNER, 16 * 4, 16 * 1, 16, 16));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BRIDGE_WOOD_SIDE, 16 * 7, 16 * 7, 24, 24));
 		
