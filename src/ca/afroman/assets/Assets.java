@@ -175,9 +175,19 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 1, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16));
-		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_INCORNER_L, 16 * 3, 0, 16, 16));
-		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_INCORNER_R, 16 * 4, 16 * 1, 16, 16));
-		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_OUTCORNER, 16 * 3, 16 * 1, 16, 16));
+		
+		Texture inCornerL = sheet.getSubTexture(AssetType.TILE_WALL_INCORNER_TOP_L, 16 * 3, 16, 16, 16);
+		assets.add(inCornerL);
+		assets.add(inCornerL.clone(AssetType.TILE_WALL_INCORNER_BOTTOM_L).rotate(180));
+		Texture inCornerR = sheet.getSubTexture(AssetType.TILE_WALL_INCORNER_TOP_R, 16 * 3, 16 * 0, 16, 16);
+		assets.add(inCornerR);
+		assets.add(inCornerR.clone(AssetType.TILE_WALL_INCORNER_BOTTOM_R).rotate(180));
+		
+		Texture outCorner = sheet.getSubTexture(AssetType.TILE_WALL_OUTCORNER_N, 16 * 4, 16 * 1, 16, 16);
+		assets.add(outCorner);
+		assets.add(outCorner.clone(AssetType.TILE_WALL_OUTCORNER_E).rotate(90));
+		assets.add(outCorner.clone(AssetType.TILE_WALL_OUTCORNER_S).rotate(180));
+		assets.add(outCorner.clone(AssetType.TILE_WALL_OUTCORNER_W).rotate(270));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BRIDGE_WOOD_SIDE, 16 * 7, 16 * 7, 24, 24));
 		
@@ -193,9 +203,9 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
 		
-		Texture lamp = sheet.getSubTexture(AssetType.TILE_LAMP_LEFT, 16 * 8, 16 * 4, 16, 16);
-		assets.add(lamp);
-		assets.add(lamp.clone(AssetType.TILE_LAMP_RIGHT).flipX());
+		//Texture lamp = sheet.getSubTexture(AssetType.TILE_LAMP_LEFT, 16 * 8, 16 * 4, 16, 16);
+		//assets.add(lamp);
+		//assets.add(lamp.clone(AssetType.TILE_LAMP_RIGHT).flipX());
 		assets.add(new SpriteAnimation(AssetType.TILE_LAMP, true, 16, sheet.getSubTexture(AssetType.TILE_LAMP, 16 * 8, 16 * 4, 24, 16).toTextureArray(3, 2)));
 		
 		assets.add(new SpriteAnimation(AssetType.SLIME, false, 12, sheet.getSubTexture(AssetType.SLIME, 16 * 0, (16 * 7), 16 * 2, 16).toTextureArray(2, 1)));

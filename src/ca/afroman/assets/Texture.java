@@ -233,13 +233,15 @@ public class Texture extends DrawableAsset
 		renderTo.draw(this, pos);
 	}
 	
-	public void rotate(double degrees)
+	public Texture rotate(double degrees)
 	{
 		AffineTransform at = AffineTransform.getTranslateInstance(this.getWidth() / 2, this.getHeight() / 2);
 		at.rotate(Math.toRadians(degrees));
 		at.translate(-this.getWidth() / 2, -this.getHeight() / 2);
 		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		image = op.filter(image, null);
+		
+		return this;
 	}
 	
 	/**
