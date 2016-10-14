@@ -194,6 +194,9 @@ public class Assets
 		assets.add(outCorner.clone(AssetType.TILE_WALL_OUTCORNER_S).rotate(180));
 		assets.add(outCorner.clone(AssetType.TILE_WALL_OUTCORNER_W).rotate(270));
 		
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_PIPE, 16 * 5, 16 * 0, 16, 32));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_PIPE_EDGE, 16 * 6, 16 * 0, 16, 16));
+		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BRIDGE_WOOD_SIDE, 16 * 7, 16 * 7, 24, 24));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_CLOSED, 16 * 7, 16 * 5, 16, 16));
