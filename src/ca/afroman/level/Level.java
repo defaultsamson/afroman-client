@@ -1,6 +1,5 @@
 package ca.afroman.level;
 
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +9,11 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
+import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxToggleWrapper;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.HitboxTriggerWrapper;
-import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
 import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
@@ -144,7 +143,7 @@ public class Level implements IServerClient
 	private List<Hitbox> hitboxes;
 	
 	/** Scripted Events in this level. */
-	private List<IEvent> events;
+	private List<Event> events;
 	
 	public Level(boolean isServerSide, LevelType type)
 	{
@@ -167,13 +166,13 @@ public class Level implements IServerClient
 		entities = new ArrayList<Entity>();
 		players = new ArrayList<PlayerEntity>();
 		hitboxes = new ArrayList<Hitbox>();
-		events = new ArrayList<IEvent>();
+		events = new ArrayList<Event>();
 	}
 	
 	public void chainScriptedEvents(Entity triggerer, int inTrigger)
 	{
 		// TODO detect infinite loops?
-		for (IEvent event : getScriptedEvents())
+		for (Event event : getScriptedEvents())
 		{
 			for (int eventTrigger : event.getInTriggers())
 			{
@@ -331,9 +330,9 @@ public class Level implements IServerClient
 	 * @param id the id of the hitbox
 	 * @return the hitbox. <b>null</b> if there are no hitboxes with the given id.
 	 */
-	public IEvent getScriptedEvent(int id)
+	public Event getScriptedEvent(int id)
 	{
-		for (IEvent box : getScriptedEvents())
+		for (Event box : getScriptedEvents())
 		{
 			if (box.getID() == id) return box;
 		}
@@ -347,16 +346,16 @@ public class Level implements IServerClient
 	 * @param y the y in-level ordinate
 	 * @return the entity. <b>null</b> if there are no entities at that given location.
 	 */
-	public IEvent getScriptedEvent(Vector2DDouble pos)
+	public Event getScriptedEvent(Vector2DDouble pos)
 	{
-		for (IEvent event : getScriptedEvents())
+		for (Event event : getScriptedEvents())
 		{
-			if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return event;
+			if (event.getHitbox().contains(pos.getX(), pos.getY())) return event;
 		}
 		return null;
 	}
 	
-	public List<IEvent> getScriptedEvents()
+	public List<Event> getScriptedEvents()
 	{
 		return events;
 	}
@@ -449,7 +448,7 @@ public class Level implements IServerClient
 			entity.tick();
 		}
 		
-		for (IEvent event : getScriptedEvents())
+		for (Event event : getScriptedEvents())
 		{
 			event.tick();
 		}
@@ -546,7 +545,7 @@ public class Level implements IServerClient
 		toReturn.add("// The HitboxTriggers. HitboxTrigger(x, y, width, height, triggerTypes, inTriggers, outTriggers)");
 		toReturn.add("");
 		
-		for (IEvent e : getScriptedEvents())
+		for (Event e : getScriptedEvents())
 		{
 			if (e instanceof HitboxTrigger)
 			{
@@ -559,7 +558,7 @@ public class Level implements IServerClient
 		toReturn.add("// The HitboxToggleReceivers. HitboxToggleReceiver(isEnabled, x, y, width, height, inTriggers, outTriggers)");
 		toReturn.add("");
 		
-		for (IEvent e : getScriptedEvents())
+		for (Event e : getScriptedEvents())
 		{
 			if (e instanceof HitboxToggle)
 			{
@@ -575,7 +574,7 @@ public class Level implements IServerClient
 	
 	public void tryInteract(PlayerEntity entity)
 	{
-		for (IEvent e : getScriptedEvents())
+		for (Event e : getScriptedEvents())
 		{
 			if (e instanceof HitboxTrigger)
 			{

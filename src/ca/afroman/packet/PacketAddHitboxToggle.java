@@ -13,7 +13,7 @@ public class PacketAddHitboxToggle extends BytePacket
 	
 	public PacketAddHitboxToggle(LevelType level, HitboxToggle hitbox, IPConnection... connection)
 	{
-		this(level, hitbox.getID(), (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), connection);
+		this(level, hitbox.getID(), (int) hitbox.getHitbox().getX(), (int) hitbox.getHitbox().getY(), (int) hitbox.getHitbox().getWidth(), (int) hitbox.getHitbox().getHeight(), connection);
 	}
 	
 	public PacketAddHitboxToggle(LevelType level, int id, int x, int y, int width, int height, IPConnection... connection)

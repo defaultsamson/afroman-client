@@ -13,7 +13,7 @@ public class PacketAddTrigger extends BytePacket
 	
 	public PacketAddTrigger(LevelType level, HitboxTrigger trig, IPConnection... connection)
 	{
-		this(level, trig.getID(), (int) trig.getX(), (int) trig.getY(), (int) trig.getWidth(), (int) trig.getHeight(), connection);
+		this(level, trig.getID(), (int) trig.getHitbox().getX(), (int) trig.getHitbox().getY(), (int) trig.getHitbox().getWidth(), (int) trig.getHitbox().getHeight(), connection);
 	}
 	
 	public PacketAddTrigger(LevelType level, int id, int x, int y, int width, int height, IPConnection... connection)

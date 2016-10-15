@@ -9,9 +9,9 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.IEvent;
 import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -158,7 +158,7 @@ public class ServerGame extends Game implements IPacketParser
 				sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
 			}
 			
-			for (IEvent event : level.getScriptedEvents())
+			for (Event event : level.getScriptedEvents())
 			{
 				if (event instanceof HitboxTrigger)
 				{
@@ -413,7 +413,7 @@ public class ServerGame extends Game implements IPacketParser
 									}
 									break;
 								case HITBOX_TRIGGER:
-									IEvent event = level.getScriptedEvent(id);
+									Event event = level.getScriptedEvent(id);
 									
 									if (event != null)
 									{
@@ -529,7 +529,7 @@ public class ServerGame extends Game implements IPacketParser
 						{
 							int id = buf.getInt();
 							
-							IEvent eHitbox = level.getScriptedEvent(id);
+							Event eHitbox = level.getScriptedEvent(id);
 							
 							if (eHitbox != null)
 							{
@@ -605,7 +605,7 @@ public class ServerGame extends Game implements IPacketParser
 						{
 							int id = buf.getInt();
 							
-							IEvent eHitbox = level.getScriptedEvent(id);
+							Event eHitbox = level.getScriptedEvent(id);
 							
 							if (eHitbox != null)
 							{

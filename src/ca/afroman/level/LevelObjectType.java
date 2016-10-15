@@ -9,7 +9,8 @@ public enum LevelObjectType
 	POINT_LIGHT,
 	FLICKERING_LIGHT,
 	HITBOX_TRIGGER,
-	HITBOX_TOGGLE;
+	HITBOX_TOGGLE,
+	TP_TOGGLE;
 	
 	public static LevelObjectType fromOrdinal(int ordinal)
 	{

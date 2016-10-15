@@ -19,9 +19,9 @@ import ca.afroman.entity.YComparator;
 import ca.afroman.entity.api.ClientAssetEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.IEvent;
 import ca.afroman.game.Role;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
@@ -122,11 +122,11 @@ public class ClientLevel extends Level
 	// Only used for right clicks in Build Mode
 	private HitboxToggle getHitboxToggle(Vector2DDouble pos)
 	{
-		for (IEvent event : getScriptedEvents())
+		for (Event event : getScriptedEvents())
 		{
 			if (event instanceof HitboxToggle)
 			{
-				if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return (HitboxToggle) event;
+				if (event.getHitbox().contains(pos.getX(), pos.getY())) return (HitboxToggle) event;
 			}
 		}
 		return null;
@@ -135,11 +135,11 @@ public class ClientLevel extends Level
 	// Only used for right clicks in Build Mode
 	private HitboxTrigger getHitboxTrigger(Vector2DDouble pos)
 	{
-		for (IEvent event : getScriptedEvents())
+		for (Event event : getScriptedEvents())
 		{
 			if (event instanceof HitboxTrigger)
 			{
-				if (new Rectangle2D.Double(event.getX(), event.getY(), event.getWidth(), event.getHeight()).contains(pos.getX(), pos.getY())) return (HitboxTrigger) event;
+				if (event.getHitbox().contains(pos.getX(), pos.getY())) return (HitboxTrigger) event;
 			}
 		}
 		return null;
@@ -450,17 +450,22 @@ public class ClientLevel extends Level
 		// Draws out scripted events
 		if (ClientGame.instance().isHitboxDebugging() || ((buildMode == BuildMode.TRIGGER || buildMode == BuildMode.HITBOX_TOGGLE) && ClientGame.instance().isBuildMode()))
 		{
-			for (IEvent e : getScriptedEvents())
+			for (Event e : getScriptedEvents())
 			{
-				Vector2DInt pos = worldToScreen(new Vector2DDouble(e.getX(), e.getY()));
+				double x = e.getHitbox().getX();
+				double y = e.getHitbox().getY();
+				int width = (int) e.getHitbox().getWidth();
+				int height = (int) e.getHitbox().getHeight();
+				
+				Vector2DInt pos = worldToScreen(new Vector2DDouble(x, y));
 				
 				if (e instanceof HitboxTrigger && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.TRIGGER)))
 				{
-					renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Blue
+					renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), pos, width, height);// Blue
 				}
 				else if (e instanceof HitboxToggle && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX_TOGGLE)))
 				{
-					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), pos, (int) e.getWidth(), (int) e.getHeight());// Red
+					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), pos, width, height);// Red
 				}
 			}
 			

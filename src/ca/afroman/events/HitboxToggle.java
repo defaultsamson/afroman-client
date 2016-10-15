@@ -1,35 +1,21 @@
 package ca.afroman.events;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.entity.api.IServerClient;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 
-public class HitboxToggle implements IEvent, IServerClient
+public class HitboxToggle extends Event
 {
-	private boolean isServerSide;
-	
-	private Level level;
-	private List<Integer> inTriggers;
-	private List<Integer> outTriggers;
-	private Hitbox hitbox;
+	private boolean enabled;
 	
 	public HitboxToggle(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		this(isServerSide, id, new Hitbox(id, x, y, width, height), inTriggers, outTriggers);
-	}
-	
-	public HitboxToggle(boolean isServerSide, int id, Hitbox box, List<Integer> inTriggers, List<Integer> outTriggers)
-	{
-		this.isServerSide = isServerSide;
-		level = null;
-		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
-		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-		hitbox = box;
+		super(isServerSide, id, x, y, width, height, inTriggers, outTriggers);
+		
+		enabled = false;
 	}
 	
 	@Override
@@ -48,79 +34,29 @@ public class HitboxToggle implements IEvent, IServerClient
 		
 		if (level != null)
 		{
-			hitbox.addToLevel(level);
+			if (enabled)
+			{
+				// hitbox.addToLevel(level);
+			}
 			level.getScriptedEvents().add(this);
 		}
 	}
 	
 	@Override
-	public double getHeight()
-	{
-		return hitbox.getHeight();
-	}
-	
 	public Hitbox getHitbox()
 	{
 		return hitbox;
 	}
 	
-	@Override
-	public int getID()
-	{
-		return hitbox.getID();
-	}
-	
-	@Override
-	public List<Integer> getInTriggers()
-	{
-		return inTriggers;
-	}
-	
-	@Override
-	public Level getLevel()
-	{
-		return hitbox.getLevel();
-	}
-	
-	@Override
-	public List<Integer> getOutTriggers()
-	{
-		return outTriggers;
-	}
-	
-	@Override
-	public double getWidth()
-	{
-		return hitbox.getWidth();
-	}
-	
-	@Override
-	public double getX()
-	{
-		return hitbox.getX();
-	}
-	
-	@Override
-	public double getY()
-	{
-		return hitbox.getY();
-	}
-	
 	public boolean isEnabled()
 	{
-		return hitbox.getLevel() != null;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return isServerSide;
+		return enabled;
 	}
 	
 	@Override
 	public void onTrigger(Entity triggerer)
 	{
-		setEnabled(!isEnabled());
+		setEnabled(!enabled);
 	}
 	
 	@Override
@@ -131,6 +67,12 @@ public class HitboxToggle implements IEvent, IServerClient
 	
 	public void setEnabled(boolean isActive)
 	{
+		// If it's already in the desired state
+		if (isActive == enabled)
+		{
+			return;
+		}
+		
 		if (isActive)
 		{
 			hitbox.addToLevel(level);
@@ -139,13 +81,17 @@ public class HitboxToggle implements IEvent, IServerClient
 		{
 			hitbox.removeFromLevel();
 		}
+		
+		enabled = isActive;
 	}
 	
+	@Override
 	public void setInTriggers(List<Integer> trigs)
 	{
 		inTriggers = trigs;
 	}
 	
+	@Override
 	public void setOutTriggers(List<Integer> trigs)
 	{
 		outTriggers = trigs;
@@ -165,13 +111,13 @@ public class HitboxToggle implements IEvent, IServerClient
 		sb.append('(');
 		sb.append(isEnabled() ? "true" : "false");
 		sb.append(", ");
-		sb.append(getX());
+		sb.append(getHitbox().getX());
 		sb.append(", ");
-		sb.append(getY());
+		sb.append(getHitbox().getY());
 		sb.append(", ");
-		sb.append(getWidth());
+		sb.append(getHitbox().getWidth());
 		sb.append(", ");
-		sb.append(getHeight());
+		sb.append(getHitbox().getHeight());
 		sb.append(", {");
 		
 		// Saves in triggers
@@ -193,17 +139,5 @@ public class HitboxToggle implements IEvent, IServerClient
 		sb.append("})");
 		
 		return sb.toString();
-	}
-	
-	@Override
-	public void trigger(Entity triggerer)
-	{
-		onTrigger(triggerer);
-		
-		for (int out : getOutTriggers())
-		{
-			// TODO chain for all levels
-			getLevel().chainScriptedEvents(triggerer, out);
-		}
 	}
 }
