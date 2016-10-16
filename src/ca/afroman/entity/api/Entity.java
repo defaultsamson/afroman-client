@@ -550,7 +550,7 @@ public class Entity implements ITickable, IServerClient
 	
 	public void setPosition(Vector2DDouble position)
 	{
-		this.position = position;
+		this.position.setPosition(position);
 		updateHitboxInLevel();
 	}
 	

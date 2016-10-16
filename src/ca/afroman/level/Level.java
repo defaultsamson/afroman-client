@@ -96,6 +96,16 @@ public class Level implements IServerClient
 							new PointLight(isServerSide, PointLight.getIDCounter().getNext(), pos, radius).addToLevel(level);
 						}
 							break;
+						case FLICKERING_LIGHT:
+						{
+							Vector2DDouble pos = new Vector2DDouble(Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]));
+							double radius1 = Double.parseDouble(parameters[2]);
+							double radius2 = Double.parseDouble(parameters[3]);
+							int tpf = Integer.parseInt(parameters[4]);
+							
+							new FlickeringLight(isServerSide, PointLight.getIDCounter().getNext(), pos, radius1, radius2, tpf).addToLevel(level);
+						}
+							break;
 						case HITBOX_TRIGGER:
 						{
 							HitboxTriggerWrapper w = HitboxTriggerWrapper.fromString(line);
@@ -226,6 +236,54 @@ public class Level implements IServerClient
 	}
 	
 	/**
+	 * Gets a light with the given id.
+	 * 
+	 * @param id the id of the hitbox
+	 * @return the hitbox. <b>null</b> if there are no lights with the given id.
+	 */
+	public FlickeringLight getFlickeringLight(int id)
+	{
+		for (PointLight light : lights)
+		{
+			if (light instanceof FlickeringLight && light.getID() == id) return (FlickeringLight) light;
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets a PointLight at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
+	 */
+	public FlickeringLight getFlickeringLight(Vector2DDouble pos)
+	{
+		for (int i = getLights().size() - 1; i >= 0; i--)
+		{
+			PointLight light = getLights().get(i);
+			
+			// If the light is not unnamed
+			if (light instanceof FlickeringLight && light.getID() != -1) ;
+			{
+				double radius = light.getRadius();
+				
+				double xa = (pos.getX() - light.getPosition().getX());
+				double ya = (pos.getY() - light.getPosition().getY());
+				
+				// If the light contains the point
+				// Old method, creates a square hitbox to check for collision
+				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
+				{
+					return (FlickeringLight) light;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Gets a hitbox with the given id.
 	 * 
 	 * @param id the id of the hitbox
@@ -293,14 +351,14 @@ public class Level implements IServerClient
 		{
 			PointLight light = getLights().get(i);
 			
-			double radius = light.getRadius();
-			
-			double xa = (pos.getX() - light.getPosition().getX());
-			double ya = (pos.getY() - light.getPosition().getY());
-			
 			// If the light is not unnamed
 			if (light.getID() != -1) ;
 			{
+				double radius = light.getRadius();
+				
+				double xa = (pos.getX() - light.getPosition().getX());
+				double ya = (pos.getY() - light.getPosition().getY());
+				
 				// If the light contains the point
 				// Old method, creates a square hitbox to check for collision
 				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
@@ -530,13 +588,17 @@ public class Level implements IServerClient
 		
 		for (PointLight light : lights)
 		{
-			if (light instanceof FlickeringLight)
+			if (!light.isMicroManaged())
 			{
-				// TODO
-			}
-			else
-			{
-				toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getPosition().getX() + ", " + light.getPosition().getY() + ", " + light.getRadius() + ")");
+				if (light instanceof FlickeringLight)
+				{
+					FlickeringLight flight = (FlickeringLight) light;
+					toReturn.add(LevelObjectType.FLICKERING_LIGHT + "(" + flight.getPosition().getX() + ", " + flight.getPosition().getY() + ", " + flight.getRadius() + ", " + flight.getRadius2() + ", " + flight.getTicksPerFrame() + ")");
+				}
+				else
+				{
+					toReturn.add(LevelObjectType.POINT_LIGHT + "(" + light.getPosition().getX() + ", " + light.getPosition().getY() + ", " + light.getRadius() + ")");
+				}
 			}
 		}
 		

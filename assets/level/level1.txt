@@ -512,6 +512,8 @@ POINT_LIGHT(-66.0, -83.0, 64.0)
 POINT_LIGHT(36.0, -82.0, 64.0)
 POINT_LIGHT(174.0, -33.0, 71.0)
 POINT_LIGHT(-200.0, 104.0, 30.0)
+FLICKERING_LIGHT(-59.0, 177.0, 39.0, 35.0, 4)
+FLICKERING_LIGHT(100.0, 286.0, 117.0, 110.0, 3)
 
 
 // The HitboxTriggers. HitboxTrigger(x, y, width, height, triggerTypes, inTriggers, outTriggers)
@@ -522,5 +524,5 @@ HITBOX_TRIGGER(-16.0, 69.0, 11.0, 11.0, {PLAYER_COLLIDE, PLAYER_UNCOLLIDE}, {}, 
 
 // The HitboxToggleReceivers. HitboxToggleReceiver(isEnabled, x, y, width, height, inTriggers, outTriggers)
 
-HITBOX_TOGGLE(true, 0.0, 85.0, 33.0, 4.0, {22}, {})
+HITBOX_TOGGLE(false, 0.0, 85.0, 33.0, 4.0, {22}, {})
 HITBOX_TOGGLE(false, -1.0, 22.0, 17.0, 11.0, {22}, {})

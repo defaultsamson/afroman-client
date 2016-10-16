@@ -486,6 +486,15 @@ public class ClientGame extends Game
 											removed = true;
 										}
 										break;
+									case FLICKERING_LIGHT:
+										FlickeringLight flight = level.getFlickeringLight(id);
+										
+										if (flight != null)
+										{
+											flight.removeFromLevel();
+											removed = true;
+										}
+										break;
 									case HITBOX_TRIGGER:
 										Event event = level.getScriptedEvent(id);
 										
@@ -572,6 +581,31 @@ public class ClientGame extends Game
 								double radius = buf.getInt();
 								
 								PointLight light = new PointLight(false, id, new Vector2DDouble(x, y), radius);
+								light.addToLevel(level);
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No level with type " + levelType);
+							}
+						}
+							break;
+						case ADD_LEVEL_FLICKERINGLIGHT:
+						{
+							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+							
+							LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+							Level level = getLevel(levelType);
+							
+							if (level != null)
+							{
+								int id = buf.getInt();
+								double x = buf.getInt();
+								double y = buf.getInt();
+								double radius1 = buf.getInt();
+								double radius2 = buf.getInt();
+								int tpf = buf.getInt();
+								
+								FlickeringLight light = new FlickeringLight(false, id, new Vector2DDouble(x, y), radius1, radius2, tpf);
 								light.addToLevel(level);
 							}
 							else

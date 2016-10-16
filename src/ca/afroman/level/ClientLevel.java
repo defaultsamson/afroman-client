@@ -11,7 +11,6 @@ import ca.afroman.assets.Asset;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
-import ca.afroman.assets.StepSpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
@@ -23,8 +22,10 @@ import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.game.Role;
+import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.LightMap;
 import ca.afroman.gfx.PointLight;
+import ca.afroman.gui.build.GuiFlickeringLightEditor;
 import ca.afroman.gui.build.GuiGrid;
 import ca.afroman.gui.build.GuiHitboxToggleEditor;
 import ca.afroman.gui.build.GuiHitboxTriggerEditor;
@@ -33,6 +34,7 @@ import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.log.ALogType;
 import ca.afroman.option.Options;
+import ca.afroman.packet.PacketAddFlickeringLight;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddPointLight;
@@ -70,6 +72,12 @@ public class ClientLevel extends Level
 	
 	// PointLights
 	private int currentBuildLightRadius = 10;
+	
+	// FlickeringLights
+	private int currentFlickerLightFlicker = 4;
+	private double currentFlickerLightRadius = 4;
+	private double lastFlickerLightRadius = currentFlickerLightRadius;
+	public FlickeringLight flickerCursor = null;
 	
 	// HitBoxes and Triggers
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
@@ -110,6 +118,11 @@ public class ClientLevel extends Level
 			case HITBOX_TOGGLE:
 				ClientGame.instance().setCurrentScreen(null);
 				hitboxClickCount = 0;
+				break;
+			case FLICKERING_LIGHT:
+				ClientGame.instance().setCurrentScreen(null);
+				hitboxClickCount = 0;
+				flickerCursor.removeFromLevel();
 				break;
 		}
 	}
@@ -218,6 +231,29 @@ public class ClientLevel extends Level
 					}
 				}
 				break;
+			case FLICKERING_LIGHT:
+				if (leftClick)
+				{
+					PacketAddFlickeringLight pack = new PacketAddFlickeringLight(this.getType(), -1, flickerCursor.getPosition(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
+					ClientGame.instance().sockets().sender().sendPacket(pack);
+					
+					if (buildMode == BuildMode.FLICKERING_LIGHT)
+					{
+						flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
+						flickerCursor.removeFromLevel();
+					}
+				}
+				else
+				{
+					FlickeringLight light = getFlickeringLight(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (light != null)
+					{
+						PacketRemoveLevelObject pack = new PacketRemoveLevelObject(light.getID(), this.getType(), LevelObjectType.FLICKERING_LIGHT);
+						ClientGame.instance().sockets().sender().sendPacket(pack);
+					}
+				}
+				break;
 		}
 		
 	}
@@ -245,12 +281,18 @@ public class ClientLevel extends Level
 			case HITBOX_TOGGLE:
 				
 				break;
+			case FLICKERING_LIGHT:
+				if (flickerCursor == null) flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightRadius = currentFlickerLightFlicker, 10);
+				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor());
+				break;
 		}
 	}
 	
 	@SuppressWarnings("deprecation")
 	public void render(Texture renderTo)
 	{
+		boolean isBuildMode = ClientGame.instance().isBuildMode();
+		
 		List<List<Entity>> tiles = getTiles();
 		
 		// Renders Tiles
@@ -258,7 +300,7 @@ public class ClientLevel extends Level
 		{
 			boolean draw = true;
 			
-			if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.TILE)
+			if (isBuildMode && buildMode == BuildMode.TILE)
 			{
 				switch (i)
 				{
@@ -318,7 +360,7 @@ public class ClientLevel extends Level
 		{
 			boolean draw = true;
 			
-			if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.TILE)
+			if (isBuildMode && buildMode == BuildMode.TILE)
 			{
 				switch (i)
 				{
@@ -370,15 +412,27 @@ public class ClientLevel extends Level
 			}
 			
 			// Draws the light on the cursor if there is one
-			if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.LIGHT)
+			if (isBuildMode)
 			{
-				int radius = currentBuildLightRadius;
-				Vector2DInt pos = ClientGame.instance().input().getMousePos().clone().add(-radius, -radius);
-				lightmap.drawLight(pos, radius);
-				
-				if (ClientGame.instance().isHitboxDebugging())
+				if (buildMode == BuildMode.LIGHT)
 				{
-					renderTo.drawFillRect(new Color(1F, 1F, 1F, 0.25F), new Color(1F, 1F, 1F, 0.05F), pos, radius * 2, radius * 2);
+					int radius = currentBuildLightRadius;
+					Vector2DInt pos = ClientGame.instance().input().getMousePos().clone().add(-radius, -radius);
+					lightmap.drawLight(pos, radius);
+					
+					if (ClientGame.instance().isHitboxDebugging())
+					{
+						renderTo.drawFillRect(new Color(1F, 1F, 1F, 0.25F), new Color(1F, 1F, 1F, 0.05F), pos, radius * 2, radius * 2);
+					}
+				}
+				else if (buildMode == BuildMode.FLICKERING_LIGHT)
+				{
+					flickerCursor.renderCentered(lightmap);
+					
+					// if (ClientGame.instance().isHitboxDebugging())
+					// {
+					// renderTo.drawFillRect(new Color(1F, 1F, 1F, 0.25F), new Color(1F, 1F, 1F, 0.05F), pos, radius * 2, radius * 2);
+					// }
 				}
 			}
 			
@@ -420,7 +474,7 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out the hitboxes
-		if (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX && ClientGame.instance().isBuildMode()))
+		if (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX && isBuildMode))
 		{
 			for (Hitbox box : this.getHitboxes())
 			{
@@ -448,7 +502,7 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out scripted events
-		if (ClientGame.instance().isHitboxDebugging() || ((buildMode == BuildMode.TRIGGER || buildMode == BuildMode.HITBOX_TOGGLE) && ClientGame.instance().isBuildMode()))
+		if (ClientGame.instance().isHitboxDebugging() || ((buildMode == BuildMode.TRIGGER || buildMode == BuildMode.HITBOX_TOGGLE) && isBuildMode))
 		{
 			for (Event e : getScriptedEvents())
 			{
@@ -468,25 +522,12 @@ public class ClientLevel extends Level
 					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), pos, width, height);// Red
 				}
 			}
-			
-			if (hitboxClickCount == 1)
-			{
-				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
-				
-				if (buildMode == BuildMode.TRIGGER)
-				{
-					renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Blue
-				}
-				else if (buildMode == BuildMode.HITBOX_TOGGLE)
-				{
-					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Red
-				}
-			}
 		}
 		
 		// Draws the building hitbox, cursor asset, the grid, and the tooltips
-		if (ClientGame.instance().isBuildMode())
+		if (isBuildMode)
 		{
+			// Draws whatever it is for the specific build mode, whether it be the asset on the cursor, or the hitbox being created
 			if (buildMode == BuildMode.TILE)
 			{
 				if (cursorAsset != null && cursorAsset instanceof IRenderable) ((IRenderable) cursorAsset).render(renderTo, ClientGame.instance().input().getMousePos());
@@ -496,6 +537,50 @@ public class ClientLevel extends Level
 				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
 				
 				renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());
+			}
+			else if (buildMode == BuildMode.TRIGGER && hitboxClickCount == 1)
+			{
+				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
+				
+				renderTo.drawRect(new Color(0.3F, 0.3F, 1F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Blue
+			}
+			else if (buildMode == BuildMode.HITBOX_TOGGLE && hitboxClickCount == 1)
+			{
+				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
+				
+				renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Red
+			}
+			else if (buildMode == BuildMode.FLICKERING_LIGHT && hitboxClickCount == 1)
+			{
+				Vector2DInt pos1 = worldToScreen(hitbox1);
+				Vector2DInt pos2 = worldToScreen(hitbox2);
+				
+				// The change in x and y from first point to the cursor's point
+				int dx = pos2.getX() - pos1.getX();
+				int dy = pos2.getY() - pos1.getY();
+				
+				// Finds the amplitude to modify dx and dy by to achieve the x and y amplitudes for the smaller light flicker line
+				double amp = currentFlickerLightFlicker / currentFlickerLightRadius;
+				
+				// Finds the the x and y amplitudes for the smaller light flicker line
+				int cx = (int) (amp * dx);
+				int cy = (int) (amp * dy);
+				
+				// Finds the x and y ordinates of the intermediate point based on the new cx and cy amplitudes
+				int x = pos2.getX() - cx;
+				int y = pos2.getY() - cy;
+				
+				Vector2DInt intermediatePoint = new Vector2DInt(x, y);
+				
+				Paint oldPaint = renderTo.getGraphics().getPaint();
+				
+				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
+				renderTo.getGraphics().drawLine(pos1.getX(), pos1.getY(), intermediatePoint.getX(), intermediatePoint.getY());
+				
+				renderTo.getGraphics().setPaint(new Color(0.1F, 0.1F, 1F, 1F));
+				renderTo.getGraphics().drawLine(intermediatePoint.getX(), intermediatePoint.getY(), pos2.getX(), pos2.getY());
+				
+				renderTo.getGraphics().setPaint(oldPaint);
 			}
 			
 			if (timeOnTool < MAX_TOOLTIP_TIME)
@@ -539,6 +624,12 @@ public class ClientLevel extends Level
 						text3 = "Right click to cancel corner";
 						text4 = "Right click box to edit";
 						break;
+					case FLICKERING_LIGHT:
+						lines = 3;
+						text2 = "Flickering Lights";
+						text3 = "Click to place center and edge";
+						text4 = "Scroll to adjust flicker";
+						break;
 				}
 				
 				if (lines == 4) Assets.getFont(AssetType.FONT_NOBLE).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46), text1);
@@ -579,17 +670,6 @@ public class ClientLevel extends Level
 		
 		if (newIsBuildMode)
 		{
-			if (cursorAsset != null)
-			{
-				if (cursorAsset.getAssetType() == AssetType.TILE_PLATE_TEST)
-				{
-					if (ClientGame.instance().input().p.isPressedFiltered())
-					{
-						((StepSpriteAnimation) cursorAsset).progress();
-					}
-				}
-			}
-			
 			if (timeOnTool <= MAX_TOOLTIP_TIME) timeOnTool++;
 			
 			BuildMode lastBuildMode = buildMode;
@@ -710,6 +790,45 @@ public class ClientLevel extends Level
 						currentBuildLightRadius += speed;
 					}
 					break;
+				case FLICKERING_LIGHT:
+					if (hitboxClickCount == 1)
+					{
+						flickerCursor.setPosition(hitbox1);
+						boolean flickerLightChange = false;
+						
+						// The change in x and y from first point to the cursor's point
+						double dx = hitbox2.getX() - hitbox1.getX();
+						double dy = hitbox2.getY() - hitbox1.getY();
+						
+						// Finds the length of the line (using pothagorean theorem) based on the given change in x and y
+						currentFlickerLightRadius = Math.sqrt((dx * dx) + (dy * dy));
+						
+						if (currentFlickerLightRadius != lastFlickerLightRadius)
+						{
+							flickerCursor.setRadius(Math.max(currentFlickerLightRadius, 1));
+							lastFlickerLightRadius = currentFlickerLightRadius;
+							
+							flickerLightChange = true;
+						}
+						
+						if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
+						{
+							currentFlickerLightFlicker -= speed;
+							if (currentFlickerLightFlicker < 1) currentFlickerLightFlicker = 1;
+							flickerLightChange = true;
+						}
+						
+						if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
+						{
+							currentFlickerLightFlicker += speed;
+							flickerLightChange = true;
+						}
+						
+						if (flickerLightChange)
+						{
+							flickerCursor.setRadius2(Math.max(currentFlickerLightRadius - currentFlickerLightFlicker, 1));
+						}
+					}
 				case HITBOX:
 				case TRIGGER:
 				case HITBOX_TOGGLE:
@@ -721,6 +840,11 @@ public class ClientLevel extends Level
 							{
 								hitboxClickCount = 1;
 								hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+								
+								if (buildMode == BuildMode.FLICKERING_LIGHT)
+								{
+									flickerCursor.addToLevel(this);
+								}
 							}
 							else if (hitboxClickCount == 1)
 							{
@@ -734,6 +858,12 @@ public class ClientLevel extends Level
 							if (hitboxClickCount == 1)
 							{
 								hitboxClickCount = 0;
+								
+								if (buildMode == BuildMode.FLICKERING_LIGHT)
+								{
+									flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
+									flickerCursor.removeFromLevel();
+								}
 							}
 							else
 							{
@@ -747,7 +877,7 @@ public class ClientLevel extends Level
 			// Sets up the hitbox when it's been clicked
 			if (hitboxClickCount > 0)
 			{
-				hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+				hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())); // .add(1, 1)
 			}
 		}
 		else if (ClientGame.instance().getRole() == Role.SPECTATOR)

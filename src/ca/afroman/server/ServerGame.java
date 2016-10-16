@@ -16,8 +16,8 @@ import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
+import ca.afroman.gfx.FlickeringLight;
 import ca.afroman.gfx.PointLight;
-import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
@@ -27,6 +27,7 @@ import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketAddFlickeringLight;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddLevel;
@@ -44,7 +45,7 @@ import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.VersionUtil;
 
-public class ServerGame extends Game implements IPacketParser
+public class ServerGame extends Game
 {
 	private static ServerGame game = null;
 	
@@ -155,7 +156,15 @@ public class ServerGame extends Game implements IPacketParser
 			
 			for (PointLight light : level.getLights())
 			{
-				sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
+				if (light instanceof FlickeringLight)
+				{
+					FlickeringLight flight = (FlickeringLight) light;
+					sockets().sender().sendPacketToAllClients(new PacketAddFlickeringLight(level.getType(), flight.getID(), flight.getPosition(), flight.getRadius(), flight.getRadius2(), flight.getTicksPerFrame()));
+				}
+				else
+				{
+					sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
+				}
 			}
 			
 			for (Event event : level.getScriptedEvents())
@@ -412,6 +421,15 @@ public class ServerGame extends Game implements IPacketParser
 										removed = true;
 									}
 									break;
+								case FLICKERING_LIGHT:
+									FlickeringLight flight = level.getFlickeringLight(id);
+									
+									if (flight != null)
+									{
+										flight.removeFromLevel();
+										removed = true;
+									}
+									break;
 								case HITBOX_TRIGGER:
 									Event event = level.getScriptedEvent(id);
 									
@@ -485,6 +503,32 @@ public class ServerGame extends Game implements IPacketParser
 							PointLight light = new PointLight(true, PointLight.getIDCounter().getNext(), pos, radius);
 							light.addToLevel(level);
 							sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No level with type " + levelType);
+						}
+					}
+					case ADD_LEVEL_FLICKERINGLIGHT:
+					{
+						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+						
+						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+						Level level = getLevel(levelType);
+						
+						if (level != null)
+						{
+							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
+							// int id = buf.getInt();
+							double x = buf.getInt();
+							double y = buf.getInt();
+							double radius1 = buf.getInt();
+							double radius2 = buf.getInt();
+							int tpf = buf.getInt();
+							
+							FlickeringLight light = new FlickeringLight(false, PointLight.getIDCounter().getNext(), new Vector2DDouble(x, y), radius1, radius2, tpf);
+							light.addToLevel(level);
+							sockets().sender().sendPacketToAllClients(new PacketAddFlickeringLight(level.getType(), light.getID(), light.getPosition(), light.getRadius(), light.getRadius2(), light.getTicksPerFrame()));
 						}
 						else
 						{

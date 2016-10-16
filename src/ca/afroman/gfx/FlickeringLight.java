@@ -30,6 +30,16 @@ public class FlickeringLight extends PointLight
 		this.ticksPerFrame = ticksPerFrame;
 	}
 	
+	public double getRadius2()
+	{
+		return radius2;
+	}
+	
+	public int getTicksPerFrame()
+	{
+		return ticksPerFrame;
+	}
+	
 	public double internalRadiusOffset()
 	{
 		return getRadius() - displayRadius;
@@ -54,6 +64,24 @@ public class FlickeringLight extends PointLight
 		}
 		
 		renderTo.drawLight(offsetPos.add((int) -displayRadius, (int) -displayRadius), displayRadius, colour);
+	}
+	
+	@Override
+	public void setRadius(double radius)
+	{
+		super.setRadius(radius);
+		updateRadius();
+	}
+	
+	public void setRadius2(double radius2)
+	{
+		this.radius2 = radius2;
+		updateRadius();
+	}
+	
+	public void setTicksPerFrame(int newValue)
+	{
+		ticksPerFrame = newValue;
 	}
 	
 	@Override
@@ -95,5 +123,16 @@ public class FlickeringLight extends PointLight
 				}
 			}
 		}
+	}
+	
+	private void updateRadius()
+	{
+		double smaller = (getRadius() <= radius2 ? getRadius() : radius2);
+		double larger = (getRadius() > radius2 ? getRadius() : radius2);
+		
+		radius2 = smaller;
+		radius = larger;
+		
+		this.displayRadius = getRadius(); // Starts at the larger radius
 	}
 }

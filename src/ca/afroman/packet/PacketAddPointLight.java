@@ -15,7 +15,7 @@ public class PacketAddPointLight extends BytePacket
 	{
 		super(PacketType.ADD_LEVEL_POINTLIGHT, true, connection);
 		
-		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + (5 * ByteUtil.INT_BYTE_COUNT));
+		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + (4 * ByteUtil.INT_BYTE_COUNT));
 		
 		// Level Type
 		buf.putShort((short) level.ordinal());

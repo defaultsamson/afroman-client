@@ -4,6 +4,7 @@ public enum BuildMode
 {
 	TILE,
 	LIGHT,
+	FLICKERING_LIGHT,
 	HITBOX,
 	TRIGGER,
 	HITBOX_TOGGLE;

@@ -11,6 +11,8 @@ import ca.afroman.resource.Vector2DDouble;
 
 public class PointLight extends Entity
 {
+	private static final int MICRO_MANAGED_ID = -1;
+	
 	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
@@ -20,7 +22,7 @@ public class PointLight extends Entity
 	
 	protected Color colour;
 	
-	private double radius;
+	protected double radius;
 	
 	public PointLight(boolean isServerSide, int id, Vector2DDouble pos, double radius)
 	{
@@ -69,6 +71,16 @@ public class PointLight extends Entity
 		return radius;
 	}
 	
+	/**
+	 * Tells if this light is managed by a manager such as aa Entity object.
+	 * 
+	 * @return if the id of this light is -1
+	 */
+	public boolean isMicroManaged()
+	{
+		return getID() == MICRO_MANAGED_ID;
+	}
+	
 	@SuppressWarnings("deprecation")
 	public void renderCentered(LightMap renderTo)
 	{
@@ -78,6 +90,11 @@ public class PointLight extends Entity
 			
 			renderTo.drawLight(cLevel.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
 		}
+	}
+	
+	public void setRadius(double radius)
+	{
+		this.radius = radius;
 	}
 	
 	@Override
