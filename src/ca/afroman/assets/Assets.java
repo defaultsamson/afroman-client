@@ -205,14 +205,16 @@ public class Assets
 		
 		Texture openDoor = sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_OPEN, 16 * 7, 16 * 1, 48, 16);
 		Texture closedDoor = sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_CLOSED, 16 * 7, 16 * 0, 48, 16);
+		Texture openDoorSide = sheet.getSubTexture(AssetType.TILE_DOOR_RIGHT_OPEN, 16 * 13, 16 * 0, 16, 48);
+		Texture closedDoorSide = sheet.getSubTexture(AssetType.TILE_DOOR_RIGHT_CLOSED, 16 * 12, 16 * 0, 16, 58);
 		assets.add(openDoor);
 		assets.add(closedDoor);
-		assets.add(openDoor.clone(AssetType.TILE_DOOR_RIGHT_OPEN).rotate(90));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_RIGHT_CLOSED).rotate(90));
-		assets.add(openDoor.clone(AssetType.TILE_DOOR_BOTTOM_OPEN).rotate(180));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_BOTTOM_CLOSED).rotate(180));
-		assets.add(openDoor.clone(AssetType.TILE_DOOR_LEFT_OPEN).rotate(270));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_LEFT_CLOSED).rotate(270));
+		assets.add(openDoorSide);
+		assets.add(closedDoorSide);
+		assets.add(openDoor.clone(AssetType.TILE_DOOR_BOTTOM_OPEN).flipY());
+		assets.add(closedDoor.clone(AssetType.TILE_DOOR_BOTTOM_CLOSED).flipY());
+		assets.add(openDoorSide.clone(AssetType.TILE_DOOR_LEFT_OPEN).flipX());
+		assets.add(closedDoorSide.clone(AssetType.TILE_DOOR_LEFT_CLOSED).flipX());
 		
 		assets.add(new StepSpriteAnimation(new int[] { 0, 1 }, AssetType.TILE_PLATE_TEST, false, 30, sheet.getSubTexture(AssetType.TILE_PLATE_TEST, 16 * 10, 16 * 3, 16, 32).toTextureArray(1, 2)));
 		
