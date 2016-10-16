@@ -100,14 +100,14 @@ public class Level implements IServerClient
 						{
 							HitboxTriggerWrapper w = HitboxTriggerWrapper.fromString(line);
 							
-							new HitboxTrigger(isServerSide, HitboxTrigger.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getTriggers(), w.getInTriggers(), w.getOutTriggers()).addToLevel(level);;
+							new HitboxTrigger(isServerSide, Event.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getTriggers(), w.getInTriggers(), w.getOutTriggers()).addToLevel(level);;
 						}
 							break;
 						case HITBOX_TOGGLE:
 						{
 							HitboxToggleWrapper w = HitboxToggleWrapper.fromString(line);
 							
-							HitboxToggle r = new HitboxToggle(isServerSide, HitboxTrigger.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getInTriggers(), w.getOutTriggers());
+							HitboxToggle r = new HitboxToggle(isServerSide, Event.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getInTriggers(), w.getOutTriggers());
 							r.addToLevel(level);
 							r.setEnabled(w.isEnabled());
 						}
@@ -252,7 +252,7 @@ public class Level implements IServerClient
 		{
 			Hitbox hitbox = getHitboxes().get(i);
 			
-			if (hitbox.contains(pos.getX(), pos.getY()))
+			if (!hitbox.isMicroManaged() && hitbox.contains(pos.getX(), pos.getY()))
 			{
 				return hitbox;
 			}
@@ -500,7 +500,7 @@ public class Level implements IServerClient
 		
 		for (Hitbox box : getHitboxes())
 		{
-			toReturn.add(LevelObjectType.HITBOX + "(" + box.getX() + ", " + box.getY() + ", " + box.getWidth() + ", " + box.getHeight() + ")");
+			if (!box.isMicroManaged()) toReturn.add(LevelObjectType.HITBOX + "(" + box.getX() + ", " + box.getY() + ", " + box.getWidth() + ", " + box.getHeight() + ")");
 		}
 		
 		// TODO

@@ -9,18 +9,10 @@ import ca.afroman.input.InputType;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketActivateTrigger;
-import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
 
 public class HitboxTrigger extends Event
 {
-	private static IDCounter idCounter = new IDCounter();
-	
-	public static IDCounter getIDCounter()
-	{
-		return idCounter;
-	}
-	
 	private List<TriggerType> triggerTypes;
 	private InputType input;
 	

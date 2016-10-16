@@ -10,6 +10,7 @@ public class Hitbox extends Rectangle2D.Double
 	private static IDCounter idCounter = new IDCounter();
 	
 	private static final long serialVersionUID = -318324421701678550L;
+	private static final int MICRO_MANAGED_ID = -1;
 	
 	public static IDCounter getIDCounter()
 	{
@@ -22,11 +23,28 @@ public class Hitbox extends Rectangle2D.Double
 	public Level level = null;
 	
 	// TODO use a Vector2DDouble instead
+	/**
+	 * A micro-managed hitbox. This is invisible to standard hitbox operations such as adding and removing (excluding collision. Collision still is active against this hitbox)
+	 * 
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
 	public Hitbox(double x, double y, double width, double height)
 	{
-		this(-1, x, y, width, height);
+		this(MICRO_MANAGED_ID, x, y, width, height);
 	}
 	
+	/**
+	 * A level hitbox. This is invisible to standard hitbox operations such as adding and removing (excluding collision. Collision still is active against this hitbox)
+	 * 
+	 * @param id
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
 	public Hitbox(int id, double x, double y, double width, double height)
 	{
 		super(x, y, width, height);
@@ -76,6 +94,16 @@ public class Hitbox extends Rectangle2D.Double
 	public Level getLevel()
 	{
 		return level;
+	}
+	
+	/**
+	 * Tells if this Hitbox is managed by a manager such as a HitboxToggle object.
+	 * 
+	 * @return if the id of this hitbox is -1
+	 */
+	public boolean isMicroManaged()
+	{
+		return id == MICRO_MANAGED_ID;
 	}
 	
 	/**

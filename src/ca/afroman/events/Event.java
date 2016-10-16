@@ -33,7 +33,7 @@ public class Event implements IServerClient
 		level = null;
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-		hitbox = new Hitbox(-1, x, y, width, height);
+		hitbox = new Hitbox(x, y, width, height);
 		this.id = id;
 	}
 	

@@ -308,7 +308,14 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	@Override
 	public void windowClosed(WindowEvent e)
 	{
-		ClientGame.instance().quit();
+		if (ClientGame.instance() != null)
+		{
+			ClientGame.instance().quit();
+		}
+		else
+		{
+			System.exit(0);
+		}
 	}
 	
 	@Override

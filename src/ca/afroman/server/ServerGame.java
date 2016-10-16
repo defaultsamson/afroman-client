@@ -150,7 +150,7 @@ public class ServerGame extends Game implements IPacketParser
 			
 			for (Hitbox box : level.getHitboxes())
 			{
-				sockets().sender().sendPacketToAllClients(new PacketAddHitbox(level.getType(), box));
+				if (!box.isMicroManaged()) sockets().sender().sendPacketToAllClients(new PacketAddHitbox(level.getType(), box));
 			}
 			
 			for (PointLight light : level.getLights())
@@ -501,7 +501,7 @@ public class ServerGame extends Game implements IPacketParser
 						
 						if (level != null)
 						{
-							int id = HitboxTrigger.getIDCounter().getNext();
+							int id = Event.getIDCounter().getNext();
 							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
 							int x = buf.getInt();
 							int y = buf.getInt();
@@ -577,7 +577,7 @@ public class ServerGame extends Game implements IPacketParser
 						
 						if (level != null)
 						{
-							int id = HitboxTrigger.getIDCounter().getNext();
+							int id = Event.getIDCounter().getNext();
 							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
 							int x = buf.getInt();
 							int y = buf.getInt();

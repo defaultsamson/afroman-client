@@ -3,7 +3,6 @@ package ca.afroman.events;
 import java.util.List;
 
 import ca.afroman.entity.api.Entity;
-import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 
@@ -23,9 +22,11 @@ public class HitboxToggle extends Event
 	{
 		if (level == newLevel) return;
 		
+		boolean wasEnabled = enabled;
+		
 		if (level != null)
 		{
-			hitbox.removeFromLevel();
+			setEnabled(false);
 			level.getScriptedEvents().remove(this);
 		}
 		
@@ -34,18 +35,9 @@ public class HitboxToggle extends Event
 		
 		if (level != null)
 		{
-			if (enabled)
-			{
-				// hitbox.addToLevel(level);
-			}
+			setEnabled(wasEnabled);
 			level.getScriptedEvents().add(this);
 		}
-	}
-	
-	@Override
-	public Hitbox getHitbox()
-	{
-		return hitbox;
 	}
 	
 	public boolean isEnabled()
@@ -57,12 +49,6 @@ public class HitboxToggle extends Event
 	public void onTrigger(Entity triggerer)
 	{
 		setEnabled(!enabled);
-	}
-	
-	@Override
-	public void removeFromLevel()
-	{
-		addToLevel(null);
 	}
 	
 	public void setEnabled(boolean isActive)
@@ -83,24 +69,6 @@ public class HitboxToggle extends Event
 		}
 		
 		enabled = isActive;
-	}
-	
-	@Override
-	public void setInTriggers(List<Integer> trigs)
-	{
-		inTriggers = trigs;
-	}
-	
-	@Override
-	public void setOutTriggers(List<Integer> trigs)
-	{
-		outTriggers = trigs;
-	}
-	
-	@Override
-	public void tick()
-	{
-		
 	}
 	
 	@Override
