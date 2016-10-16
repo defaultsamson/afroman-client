@@ -195,6 +195,10 @@ public class Assets
 		assets.add(outCorner.clone(AssetType.TILE_WALL_OUTCORNER_W).rotate(270));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_PIPE, 16 * 5, 16 * 0, 16, 32));
+		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_PIPE_SIDE, 16 * 10, 16 * 0, 16, 16));
+		Texture topPipeCorner = sheet.getSubTexture(AssetType.TILE_WALL_PIPE_TLCORNER, 16 * 11, 16 * 0, 16, 32);
+		assets.add(topPipeCorner);
+		assets.add(topPipeCorner.clone(AssetType.TILE_WALL_PIPE_TRCORNER).flipX());
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL_PIPE_EDGE, 16 * 6, 16 * 0, 16, 16));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BRIDGE_WOOD_SIDE, 16 * 7, 16 * 7, 24, 24));
@@ -204,11 +208,11 @@ public class Assets
 		assets.add(openDoor);
 		assets.add(closedDoor);
 		assets.add(openDoor.clone(AssetType.TILE_DOOR_RIGHT_OPEN).rotate(90));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_RIGHT_OPEN).rotate(90));
+		assets.add(closedDoor.clone(AssetType.TILE_DOOR_RIGHT_CLOSED).rotate(90));
 		assets.add(openDoor.clone(AssetType.TILE_DOOR_BOTTOM_OPEN).rotate(180));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_BOTTOM_OPEN).rotate(180));
+		assets.add(closedDoor.clone(AssetType.TILE_DOOR_BOTTOM_CLOSED).rotate(180));
 		assets.add(openDoor.clone(AssetType.TILE_DOOR_LEFT_OPEN).rotate(270));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_LEFT_OPEN).rotate(270));
+		assets.add(closedDoor.clone(AssetType.TILE_DOOR_LEFT_CLOSED).rotate(270));
 		
 		assets.add(new StepSpriteAnimation(new int[] { 0, 1 }, AssetType.TILE_PLATE_TEST, false, 30, sheet.getSubTexture(AssetType.TILE_PLATE_TEST, 16 * 10, 16 * 3, 16, 32).toTextureArray(1, 2)));
 		
