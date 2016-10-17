@@ -233,6 +233,7 @@ public class GuiTPTriggerEditor extends GuiScreen
 					}
 					else
 					{
+						
 						x = Integer.parseInt(trigs[0]);
 						y = Integer.parseInt(trigs[1]);
 					}

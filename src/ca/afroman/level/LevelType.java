@@ -3,7 +3,8 @@ package ca.afroman.level;
 public enum LevelType
 {
 	NULL(null),
-	MAIN("level1.txt");
+	MAIN("level1.txt"),
+	TEST("level2.txt");
 	
 	public static LevelType fromOrdinal(int ordinal)
 	{

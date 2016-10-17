@@ -664,6 +664,8 @@ public class ServerGame extends Game
 									double x = buf.getInt();
 									double y = buf.getInt();
 									
+									System.out.println("ToTpTo: " + toTpTo);
+									
 									hitbox.setLevelToTPTo(toTpTo);
 									hitbox.setLocationToTPTo(x, y);
 									hitbox.setInTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));

@@ -30,7 +30,7 @@ public class PacketEditTPTrigger extends BytePacket
 		}
 		
 		// toTpTo
-		for (byte e : ByteUtil.shortAsBytes((short) level.ordinal()))
+		for (byte e : ByteUtil.shortAsBytes((short) toTpTo.ordinal()))
 		{
 			send.add(e);
 		}

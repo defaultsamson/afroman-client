@@ -1,5 +1,6 @@
 package ca.afroman.events;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.entity.PlayerEntity;
@@ -81,13 +82,20 @@ public class TPTrigger extends Event
 		// Only activate the triggers if it's on the server side
 		if (isServerSide())
 		{
+			List<PlayerEntity> conPlayers = new ArrayList<PlayerEntity>();
+			
 			for (PlayerEntity p : level.getPlayers())
 			{
 				if (p.isColliding(hitbox))
 				{
-					trigger(p);
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getType(), p.getRole()));
+					conPlayers.add(p);
 				}
+			}
+			
+			for (PlayerEntity p : conPlayers)
+			{
+				trigger(p);
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getType(), p.getRole()));
 			}
 		}
 	}
