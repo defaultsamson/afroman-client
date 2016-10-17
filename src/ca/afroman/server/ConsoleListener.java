@@ -8,11 +8,25 @@ import ca.afroman.util.CommandUtil;
 
 public class ConsoleListener extends DynamicThread
 {
-	Scanner sc;
+	private static ConsoleListener game = null;
+	
+	public static ConsoleListener instance()
+	{
+		return game;
+	}
+	
+	private Scanner sc = null;
 	
 	public ConsoleListener()
 	{
 		super(ServerGame.instance().getThreadGroup(), "TypeListener");
+		
+		sc = new Scanner(System.in);
+		
+		if (game == null)
+		{
+			game = this;
+		}
 	}
 	
 	@Override
@@ -30,18 +44,11 @@ public class ConsoleListener extends DynamicThread
 	}
 	
 	@Override
-	public void startThis()
-	{
-		sc = new Scanner(System.in);
-		
-		super.startThis();
-	}
-	
-	@Override
 	public void stopThis()
 	{
 		super.stopThis();
 		
 		sc.close();
+		game = null;
 	}
 }

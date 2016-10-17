@@ -4,6 +4,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.option.Options;
 import ca.afroman.server.ConsoleCommand;
+import ca.afroman.server.ConsoleListener;
 import ca.afroman.server.ServerGame;
 
 public class CommandUtil
@@ -70,6 +71,11 @@ public class CommandUtil
 								ALogger.logA("Command not yet implemented");
 								break;
 							case STOP:
+								if (ConsoleListener.instance() != null)
+								{
+									ConsoleListener.instance().stopThis();
+								}
+								
 								if (ServerGame.instance() != null)
 								{
 									ALogger.logA(ALogType.DEBUG, "Stopping server...");

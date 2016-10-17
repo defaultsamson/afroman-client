@@ -68,7 +68,7 @@ public class ServerGame extends Game
 	
 	private boolean stopServer = false;
 	
-	private ConsoleListener commandInput;
+	private boolean isCommandLine;
 	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
@@ -76,14 +76,12 @@ public class ServerGame extends Game
 		
 		if (game == null) game = this;
 		
-		if (commandLine)
+		isCommandLine = commandLine;
+		
+		if (commandLine && ConsoleListener.instance() == null)
 		{
-			commandInput = new ConsoleListener();
-			commandInput.startThis();
-		}
-		else
-		{
-			commandInput = null;
+			// Starts the console listener
+			new ConsoleListener().startThis();
 		}
 		
 		this.password = password;
@@ -109,7 +107,7 @@ public class ServerGame extends Game
 	
 	public boolean isCommandLine()
 	{
-		return commandInput != null;
+		return isCommandLine;
 	}
 	
 	// TODO add server-wide build mode? probably not
@@ -875,8 +873,6 @@ public class ServerGame extends Game
 		IDCounter.resetAll();
 		
 		game = null;
-		
-		if (commandInput != null) commandInput.stopThis();
 		
 		stopSocket();
 	}
