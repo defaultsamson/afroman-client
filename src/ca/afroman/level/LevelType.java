@@ -4,7 +4,8 @@ public enum LevelType
 {
 	NULL(null),
 	MAIN("level1.txt"),
-	TEST("level2.txt");
+	TEST("level2.txt"),
+	SECOND("level3.txt");
 	
 	public static LevelType fromOrdinal(int ordinal)
 	{
