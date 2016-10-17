@@ -48,7 +48,7 @@ public class ALogger extends Logger
 	 */
 	public static void logA(ALogType type, String msg)
 	{
-		System.out.println("[" + getDateAndTime() + "] [" + type.toString() + "] " + msg);
+		System.out.println("[" + getDateAndTime() + "] [" + type + "] " + msg);
 	}
 	
 	/**
@@ -59,7 +59,7 @@ public class ALogger extends Logger
 	 */
 	public static void logA(ALogType type, String msg, Throwable thr)
 	{
-		System.err.println("[" + getDateAndTime() + "] [" + type.toString() + "] " + msg + " (" + thr.getMessage() + ")");
+		System.err.println("[" + getDateAndTime() + "] [" + type + "] " + msg + " (" + thr.getMessage() + ")");
 		thr.printStackTrace();
 	}
 	
@@ -87,13 +87,13 @@ public class ALogger extends Logger
 	public void log(ALogType type, String msg)
 	{
 		this.log(type.getLevel(), msg);
-		System.out.println("[" + getDateAndTime() + "] [" + this.getName() + "] [" + type.toString() + "] " + msg);
+		System.out.println("[" + getDateAndTime() + "] [" + this.getName() + "] [" + type + "] " + msg);
 	}
 	
 	public void log(ALogType type, String msg, Throwable thr)
 	{
 		this.log(type.getLevel(), msg, thr);
-		System.err.println("[" + getDateAndTime() + "] [" + this.getName() + "] [" + type.toString() + "] " + msg + " (" + thr.getMessage() + ")");
+		System.err.println("[" + getDateAndTime() + "] [" + this.getName() + "] [" + type + "] " + msg + " (" + thr.getMessage() + ")");
 		thr.printStackTrace();
 	}
 }

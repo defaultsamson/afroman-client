@@ -76,7 +76,6 @@ public class HitboxTriggerWrapper
 	private double height;
 	private List<TriggerType> triggers;
 	private List<Integer> inTriggers;
-	
 	private List<Integer> outTriggers;
 	
 	public HitboxTriggerWrapper(double x, double y, double width, double height, List<TriggerType> triggers, List<Integer> inTriggers, List<Integer> outTriggers)
@@ -105,7 +104,7 @@ public class HitboxTriggerWrapper
 		return outTriggers;
 	}
 	
-	public List<TriggerType> getTriggers()
+	public List<TriggerType> getTriggerTypes()
 	{
 		return triggers;
 	}
@@ -123,5 +122,55 @@ public class HitboxTriggerWrapper
 	public double getY()
 	{
 		return y;
+	}
+	
+	public HitboxTrigger toHitboxTrigger(boolean isServerSide, int id)
+	{
+		return new HitboxTrigger(isServerSide, id, x, y, width, height, triggers, inTriggers, outTriggers);
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(LevelObjectType.HITBOX_TRIGGER);
+		sb.append('(');
+		sb.append(x);
+		sb.append(", ");
+		sb.append(y);
+		sb.append(", ");
+		sb.append(width);
+		sb.append(", ");
+		sb.append(height);
+		sb.append(", {");
+		
+		// Saves trigger types
+		for (int k = 0; k < triggers.size(); k++)
+		{
+			sb.append(triggers.get(k));
+			if (k != triggers.size() - 1) sb.append(", ");
+		}
+		
+		sb.append("}, {");
+		
+		// Saves in triggers
+		for (int k = 0; k < inTriggers.size(); k++)
+		{
+			sb.append(inTriggers.get(k));
+			if (k != inTriggers.size() - 1) sb.append(", ");
+		}
+		
+		sb.append("}, {");
+		
+		// Saves out triggers
+		for (int k = 0; k < outTriggers.size(); k++)
+		{
+			sb.append(outTriggers.get(k));
+			if (k != outTriggers.size() - 1) sb.append(", ");
+		}
+		
+		sb.append("})");
+		
+		return sb.toString();
 	}
 }

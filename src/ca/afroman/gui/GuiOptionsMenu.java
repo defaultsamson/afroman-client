@@ -5,7 +5,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.gfx.LightMapState;
+import ca.afroman.light.LightMapState;
 import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DInt;
 

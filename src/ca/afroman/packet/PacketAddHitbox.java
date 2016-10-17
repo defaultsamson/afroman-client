@@ -11,29 +11,23 @@ public class PacketAddHitbox extends BytePacket
 {
 	private byte[] toSend;
 	
-	public PacketAddHitbox(LevelType level, Hitbox hitbox, IPConnection... connection)
+	public PacketAddHitbox(LevelType level, Hitbox box, IPConnection... connection)
+	{
+		this(level, box.getID(), box.getX(), box.getY(), box.getWidth(), box.getHeight(), connection);
+	}
+	
+	public PacketAddHitbox(LevelType level, int id, double x, double y, double width, double height, IPConnection... connection)
 	{
 		super(PacketType.ADD_LEVEL_HITBOX, true, connection);
 		
 		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + (5 * ByteUtil.INT_BYTE_COUNT));
 		
-		// Level Type
 		buf.putShort((short) level.ordinal());
-		
-		// ID
-		buf.putInt(hitbox.getID());
-		
-		// x
-		buf.putInt((int) hitbox.getX());
-		
-		// y
-		buf.putInt((int) hitbox.getY());
-		
-		// width
-		buf.putInt((int) hitbox.getWidth());
-		
-		// height
-		buf.putInt((int) hitbox.getHeight());
+		buf.putInt(id);
+		buf.putInt((int) x);
+		buf.putInt((int) y);
+		buf.putInt((int) width);
+		buf.putInt((int) height);
 		
 		toSend = buf.array();
 	}

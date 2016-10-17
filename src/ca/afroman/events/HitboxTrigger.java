@@ -6,7 +6,6 @@ import java.util.List;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.input.InputType;
-import ca.afroman.level.LevelObjectType;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.server.ServerGame;
@@ -30,24 +29,6 @@ public class HitboxTrigger extends Event
 	public List<TriggerType> getTriggerTypes()
 	{
 		return triggerTypes;
-	}
-	
-	@Override
-	public void onTrigger(Entity triggerer)
-	{
-		// if (!isServerSide())
-		// {
-		// String message = "Out Triggers: ";
-		//
-		// for (int out : getOutTriggers())
-		// {
-		// message += out + ", ";
-		// }
-		//
-		// if (outTriggers.isEmpty()) message += "(none)";
-		//
-		// ClientGame.instance().logger().log(ALogType.DEBUG, message);
-		// }
 	}
 	
 	public void setTriggerTypes(List<TriggerType> types)
@@ -106,45 +87,11 @@ public class HitboxTrigger extends Event
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(LevelObjectType.HITBOX_TRIGGER.toString());
-		sb.append('(');
-		sb.append(getHitbox().getX());
-		sb.append(", ");
-		sb.append(getHitbox().getY());
-		sb.append(", ");
-		sb.append(getHitbox().getWidth());
-		sb.append(", ");
-		sb.append(getHitbox().getHeight());
-		sb.append(", {");
-		
-		// Saves trigger types
-		for (int k = 0; k < getTriggerTypes().size(); k++)
-		{
-			sb.append(getTriggerTypes().get(k).toString());
-			if (k != getTriggerTypes().size() - 1) sb.append(", ");
-		}
-		
-		sb.append("}, {");
-		
-		// Saves in triggers
-		for (int k = 0; k < inTriggers.size(); k++)
-		{
-			sb.append(inTriggers.get(k));
-			if (k != inTriggers.size() - 1) sb.append(", ");
-		}
-		
-		sb.append("}, {");
-		
-		// Saves out triggers
-		for (int k = 0; k < outTriggers.size(); k++)
-		{
-			sb.append(outTriggers.get(k));
-			if (k != outTriggers.size() - 1) sb.append(", ");
-		}
-		
-		sb.append("})");
-		
-		return sb.toString();
+		return toWrapper().toString();
+	}
+	
+	public HitboxTriggerWrapper toWrapper()
+	{
+		return new HitboxTriggerWrapper(getHitbox().getX(), getHitbox().getY(), getHitbox().getWidth(), getHitbox().getHeight(), triggerTypes, inTriggers, outTriggers);
 	}
 }

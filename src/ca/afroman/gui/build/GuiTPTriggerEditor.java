@@ -5,9 +5,8 @@ import java.util.List;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.HitboxTriggerWrapper;
-import ca.afroman.events.TriggerType;
+import ca.afroman.events.TPTrigger;
+import ca.afroman.events.TPTriggerWrapper;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
 import ca.afroman.gui.GuiTextField;
@@ -15,13 +14,14 @@ import ca.afroman.input.InputHandler;
 import ca.afroman.input.TypingMode;
 import ca.afroman.level.ClientLevel;
 import ca.afroman.level.LevelObjectType;
+import ca.afroman.level.LevelType;
 import ca.afroman.log.ALogType;
-import ca.afroman.packet.PacketEditTrigger;
+import ca.afroman.packet.PacketEditTPTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.ArrayUtil;
 
-public class GuiHitboxTriggerEditor extends GuiScreen
+public class GuiTPTriggerEditor extends GuiScreen
 {
 	private GuiTextField triggers;
 	private GuiTextField inTriggers;
@@ -31,9 +31,9 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 	private GuiTextButton cancel;
 	
 	private ClientLevel level;
-	private HitboxTrigger trigger;
+	private TPTrigger trigger;
 	
-	public GuiHitboxTriggerEditor(ClientLevel level, int triggerID)
+	public GuiTPTriggerEditor(ClientLevel level, int triggerID)
 	{
 		super(null);
 		
@@ -41,7 +41,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		
 		int width = (ClientGame.WIDTH - 40);
 		
-		trigger = (HitboxTrigger) level.getScriptedEvent(triggerID);
+		trigger = (TPTrigger) level.getScriptedEvent(triggerID);
 		
 		triggers = new GuiTextField(this, 20, 28, width);
 		triggers.setMaxLength(5000);
@@ -66,7 +66,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		addButton(finish);
 		addButton(new GuiTextButton(this, 202, (ClientGame.WIDTH / 2) + 60, 6, 54, blackFont, "Delete"));
 		addButton(new GuiTextButton(this, 204, (ClientGame.WIDTH / 2) + 14, 6, 42, blackFont, "Copy"));
-		initInfo(trigger.getTriggerTypes(), trigger.getInTriggers(), trigger.getOutTriggers());
+		initInfo(trigger.getLevelTypeToTPTo(), trigger.getTPX(), trigger.getTPY(), trigger.getInTriggers(), trigger.getOutTriggers());
 	}
 	
 	@Override
@@ -77,15 +77,20 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		nobleFont.render(renderTo, new Vector2DInt(36, 78), "Out Triggers");
 	}
 	
-	private void initInfo(List<TriggerType> triggers, List<Integer> inTriggers, List<Integer> outTriggers)
+	private void initInfo(LevelType level, double x, double y, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
 		StringBuilder sb = new StringBuilder();
 		
-		for (TriggerType t : triggers)
+		if (level != LevelType.NULL)
 		{
-			sb.append(t.ordinal());
+			sb.append(level.ordinal());
 			sb.append(',');
 		}
+		
+		sb.append((int) x);
+		sb.append(',');
+		sb.append((int) y);
+		sb.append(',');
 		
 		this.triggers.setText(sb.toString());
 		
@@ -122,21 +127,33 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 			
 			if (!ArrayUtil.isEmpty(trigs))
 			{
-				for (String t : trigs)
+				if (trigs.length > 3)
 				{
-					try
+					finished = false;
+				}
+				else
+				{
+					for (int i = 0; i < trigs.length; i++)
 					{
-						int ord = Integer.parseInt(t);
-						if (TriggerType.fromOrdinal(ord) == null)
+						String t = trigs[i];
+						try
+						{
+							int ord = Integer.parseInt(t);
+							
+							if (trigs.length == 3 && i == 0)
+							{
+								if (LevelType.fromOrdinal(ord) == null)
+								{
+									finished = false;
+									break;
+								}
+							}
+						}
+						catch (NumberFormatException e)
 						{
 							finished = false;
 							break;
 						}
-					}
-					catch (NumberFormatException e)
-					{
-						finished = false;
-						break;
 					}
 				}
 			}
@@ -197,18 +214,27 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 				ClientGame.instance().input().setClipboard(trigger.toString());
 				break;
 			case 202:
-				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(trigger.getID(), level.getType(), LevelObjectType.HITBOX_TRIGGER));
+				ClientGame.instance().sockets().sender().sendPacket(new PacketRemoveLevelObject(trigger.getID(), level.getType(), LevelObjectType.TP_TRIGGER));
 			case 201:
 				goToParentScreen();
 				break;
 			case 200:
 				String[] trigs = this.triggers.getText().split(",");
-				List<TriggerType> triggers = new ArrayList<TriggerType>(trigs.length);
+				LevelType tpToType = LevelType.NULL;
+				int x = 0, y = 0;
+				
 				if (!ArrayUtil.isEmpty(trigs))
 				{
-					for (String t : trigs)
+					if (trigs.length == 3)
 					{
-						triggers.add(TriggerType.fromOrdinal(Integer.parseInt(t)));
+						tpToType = LevelType.fromOrdinal(Integer.parseInt(trigs[0]));
+						x = Integer.parseInt(trigs[1]);
+						y = Integer.parseInt(trigs[2]);
+					}
+					else
+					{
+						x = Integer.parseInt(trigs[0]);
+						y = Integer.parseInt(trigs[1]);
 					}
 				}
 				
@@ -232,7 +258,7 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 					}
 				}
 				
-				PacketEditTrigger pack = new PacketEditTrigger(level.getType(), trigger.getID(), triggers, inTriggers, outTriggers);
+				PacketEditTPTrigger pack = new PacketEditTPTrigger(level.getType(), trigger.getID(), tpToType, x, y, inTriggers, outTriggers);
 				ClientGame.instance().sockets().sender().sendPacket(pack);
 				goToParentScreen();
 				break;
@@ -248,20 +274,20 @@ public class GuiHitboxTriggerEditor extends GuiScreen
 		{
 			try
 			{
-				HitboxTriggerWrapper w = HitboxTriggerWrapper.fromString(InputHandler.getClipboard());
+				TPTriggerWrapper w = TPTriggerWrapper.fromString(InputHandler.getClipboard());
 				
 				if (w != null)
 				{
-					initInfo(w.getTriggerTypes(), w.getInTriggers(), w.getOutTriggers());
+					initInfo(w.toTpTo(), w.getTPX(), w.getTPY(), w.getInTriggers(), w.getOutTriggers());
 				}
 				else
 				{
-					ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiHitboxTriggerEditor");
+					ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiTPTriggerEditor");
 				}
 			}
 			catch (Exception e)
 			{
-				ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiHitboxTriggerEditor");
+				ClientGame.instance().logger().log(ALogType.DEBUG, "Failed to parse pasted text into GuiTPTriggerEditor");
 			}
 		}
 		

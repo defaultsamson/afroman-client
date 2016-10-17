@@ -36,12 +36,11 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.TPTrigger;
 import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
-import ca.afroman.gfx.FlickeringLight;
-import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiCommand;
 import ca.afroman.gui.GuiConnectToServer;
@@ -57,6 +56,8 @@ import ca.afroman.level.ClientLevel;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
+import ca.afroman.light.FlickeringLight;
+import ca.afroman.light.PointLight;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
@@ -66,6 +67,7 @@ import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLogin;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
+import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.DenyJoinReason;
@@ -145,7 +147,7 @@ public class ClientGame extends Game
 	private short id;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
-	private byte updateMem = Byte.MAX_VALUE - 1;
+	private ModulusCounter updateMem;
 	private long totalMemory = 0;
 	private long usedMemory = 0;
 	
@@ -478,6 +480,7 @@ public class ClientGame extends Game
 										}
 										break;
 									case POINT_LIGHT:
+									case FLICKERING_LIGHT:
 										PointLight light = level.getLight(id);
 										
 										if (light != null)
@@ -486,16 +489,8 @@ public class ClientGame extends Game
 											removed = true;
 										}
 										break;
-									case FLICKERING_LIGHT:
-										FlickeringLight flight = level.getFlickeringLight(id);
-										
-										if (flight != null)
-										{
-											flight.removeFromLevel();
-											removed = true;
-										}
-										break;
 									case HITBOX_TRIGGER:
+									case TP_TRIGGER:
 										Event event = level.getScriptedEvent(id);
 										
 										if (event != null)
@@ -722,6 +717,73 @@ public class ClientGame extends Game
 								logger().log(ALogType.WARNING, "No level with type " + levelType);
 							}
 						}
+						case ADD_EVENT_TP_TRIGGER:
+						{
+							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+							
+							LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+							Level level = getLevel(levelType);
+							
+							if (level != null)
+							{
+								int id = buf.getInt();
+								int x = buf.getInt();
+								int y = buf.getInt();
+								int width = buf.getInt();
+								int height = buf.getInt();
+								
+								TPTrigger trig = new TPTrigger(false, id, x, y, width, height, null, null);
+								trig.addToLevel(level);
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No level with type " + levelType);
+							}
+						}
+							break;
+						case EDIT_EVENT_TP_TRIGGER:
+						{
+							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+							
+							LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+							Level level = getLevel(levelType);
+							
+							if (level != null)
+							{
+								int id = buf.getInt();
+								
+								Event eHitbox = level.getScriptedEvent(id);
+								
+								if (eHitbox != null)
+								{
+									if (eHitbox instanceof TPTrigger)
+									{
+										TPTrigger hitbox = (TPTrigger) eHitbox;
+										
+										LevelType toTpTo = LevelType.fromOrdinal(buf.getShort());
+										double x = buf.getInt();
+										double y = buf.getInt();
+										
+										hitbox.setLevelToTPTo(toTpTo);
+										hitbox.setLocationToTPTo(x, y);
+										hitbox.setInTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
+										hitbox.setOutTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No event with ID " + id);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No level with type " + levelType);
+							}
+						}
 							break;
 						case ACTIVATE_TRIGGER:
 						{
@@ -841,14 +903,14 @@ public class ClientGame extends Game
 				}
 				else
 				{
-					logger().log(ALogType.WARNING, "A server (" + IPUtil.asReadable(inPack.getIPAddress(), inPack.getPort()) + ") is tring to send a packet " + packet.getType().toString() + " to this unlistening client");
+					logger().log(ALogType.WARNING, "A server (" + IPUtil.asReadable(inPack.getIPAddress(), inPack.getPort()) + ") is tring to send a packet " + packet.getType() + " to this unlistening client");
 				}
 			}
 			else
 			{
 				try
 				{
-					logger().log(ALogType.WARNING, "Client sockets are closed (" + IPUtil.asReadable(inPack.getIPAddress(), inPack.getPort()) + ") is tring to send a packet " + packet.getType().toString() + " to this unlistening client");
+					logger().log(ALogType.WARNING, "Client sockets are closed (" + IPUtil.asReadable(inPack.getIPAddress(), inPack.getPort()) + ") is tring to send a packet " + packet.getType() + " to this unlistening client");
 				}
 				catch (Exception e)
 				{
@@ -1295,6 +1357,7 @@ public class ClientGame extends Game
 		
 		logger().log(ALogType.DEBUG, "Initializing game variables...");
 		
+		updateMem = new ModulusCounter((int) ticksPerSecond);
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 		debugFont = Assets.getFont(AssetType.FONT_BLACK);
@@ -1374,10 +1437,8 @@ public class ClientGame extends Game
 	{
 		super.tick();
 		
-		updateMem++;
-		if (updateMem >= ticksPerSecond)
+		if (updateMem.isAtInterval())
 		{
-			updateMem = 0;
 			Runtime rt = Runtime.getRuntime();
 			totalMemory = rt.freeMemory();
 			usedMemory = rt.totalMemory() - rt.freeMemory();
@@ -1415,22 +1476,6 @@ public class ClientGame extends Game
 				{
 					music.stop();
 				}
-			}
-			
-			switch (ps)
-			{
-				case IN_GAME:
-					break;
-				case IN_GAME_MENU:
-					break;
-				case IN_GAME_MENU_OPTIONS:
-					break;
-				case LOADING:
-					break;
-				case LOBBY:
-				case MAIN_MENU:
-				case MAIN_MENU_OPTIONS:
-					break;
 			}
 		}
 		

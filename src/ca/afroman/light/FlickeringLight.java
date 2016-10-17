@@ -1,6 +1,4 @@
-package ca.afroman.gfx;
-
-import java.awt.Color;
+package ca.afroman.light;
 
 import ca.afroman.level.ClientLevel;
 import ca.afroman.resource.Vector2DDouble;
@@ -16,13 +14,8 @@ public class FlickeringLight extends PointLight
 	
 	public FlickeringLight(boolean isServerSide, int id, Vector2DDouble pos, double radius1, double radius2, int ticksPerFrame)
 	{
-		this(isServerSide, id, pos, radius1, radius2, ticksPerFrame, ColourUtil.TRANSPARENT);
-	}
-	
-	public FlickeringLight(boolean isServerSide, int id, Vector2DDouble pos, double radius1, double radius2, int ticksPerFrame, Color colour)
-	{
 		// Picks the larger of the 2 radi to use for anchoring the draw location
-		super(isServerSide, id, pos, (radius1 > radius2 ? radius1 : radius2), colour);
+		super(isServerSide, id, pos, (radius1 > radius2 ? radius1 : radius2));
 		
 		// Picks the smaller of the 2 radi
 		this.radius2 = (radius1 <= radius2 ? radius1 : radius2);
@@ -123,6 +116,17 @@ public class FlickeringLight extends PointLight
 				}
 			}
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		return toWrapper().toString();
+	}
+	
+	public FlickeringLightWrapper toWrapper()
+	{
+		return new FlickeringLightWrapper(position.getX(), position.getY(), radius, radius2, ticksPerFrame);
 	}
 	
 	private void updateRadius()

@@ -2,8 +2,8 @@ package ca.afroman.packet;
 
 import java.nio.ByteBuffer;
 
-import ca.afroman.gfx.PointLight;
 import ca.afroman.level.LevelType;
+import ca.afroman.light.PointLight;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 

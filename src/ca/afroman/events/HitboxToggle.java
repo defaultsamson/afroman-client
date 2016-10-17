@@ -4,7 +4,6 @@ import java.util.List;
 
 import ca.afroman.entity.api.Entity;
 import ca.afroman.level.Level;
-import ca.afroman.level.LevelObjectType;
 
 public class HitboxToggle extends Event
 {
@@ -74,38 +73,11 @@ public class HitboxToggle extends Event
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(LevelObjectType.HITBOX_TOGGLE.toString());
-		sb.append('(');
-		sb.append(isEnabled() ? "true" : "false");
-		sb.append(", ");
-		sb.append(getHitbox().getX());
-		sb.append(", ");
-		sb.append(getHitbox().getY());
-		sb.append(", ");
-		sb.append(getHitbox().getWidth());
-		sb.append(", ");
-		sb.append(getHitbox().getHeight());
-		sb.append(", {");
-		
-		// Saves in triggers
-		for (int k = 0; k < getInTriggers().size(); k++)
-		{
-			sb.append(getInTriggers().get(k));
-			if (k != getInTriggers().size() - 1) sb.append(", ");
-		}
-		
-		sb.append("}, {");
-		
-		// Saves out triggers
-		for (int k = 0; k < getOutTriggers().size(); k++)
-		{
-			sb.append(getOutTriggers().get(k));
-			if (k != getOutTriggers().size() - 1) sb.append(", ");
-		}
-		
-		sb.append("})");
-		
-		return sb.toString();
+		return toWrapper().toString();
+	}
+	
+	public HitboxToggleWrapper toWrapper()
+	{
+		return new HitboxToggleWrapper(isEnabled(), getHitbox().getX(), getHitbox().getY(), getHitbox().getWidth(), getHitbox().getHeight(), getInTriggers(), getOutTriggers());
 	}
 }

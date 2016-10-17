@@ -6,7 +6,7 @@ import java.util.List;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.game.Game;
-import ca.afroman.gfx.LightMapState;
+import ca.afroman.light.LightMapState;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.util.FileUtil;

@@ -10,13 +10,14 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IServerClient;
 import ca.afroman.events.Event;
-import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxToggleWrapper;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.HitboxTriggerWrapper;
+import ca.afroman.events.TPTriggerWrapper;
 import ca.afroman.events.TriggerType;
-import ca.afroman.gfx.FlickeringLight;
-import ca.afroman.gfx.PointLight;
+import ca.afroman.light.FlickeringLight;
+import ca.afroman.light.FlickeringLightWrapper;
+import ca.afroman.light.PointLight;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.Vector2DDouble;
@@ -98,28 +99,26 @@ public class Level implements IServerClient
 							break;
 						case FLICKERING_LIGHT:
 						{
-							Vector2DDouble pos = new Vector2DDouble(Double.parseDouble(parameters[0]), Double.parseDouble(parameters[1]));
-							double radius1 = Double.parseDouble(parameters[2]);
-							double radius2 = Double.parseDouble(parameters[3]);
-							int tpf = Integer.parseInt(parameters[4]);
-							
-							new FlickeringLight(isServerSide, PointLight.getIDCounter().getNext(), pos, radius1, radius2, tpf).addToLevel(level);
+							FlickeringLightWrapper w = FlickeringLightWrapper.fromString(line);
+							w.toFlickeringLight(isServerSide, PointLight.getIDCounter().getNext()).addToLevel(level);
 						}
 							break;
 						case HITBOX_TRIGGER:
 						{
 							HitboxTriggerWrapper w = HitboxTriggerWrapper.fromString(line);
-							
-							new HitboxTrigger(isServerSide, Event.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getTriggers(), w.getInTriggers(), w.getOutTriggers()).addToLevel(level);;
+							w.toHitboxTrigger(isServerSide, Event.getIDCounter().getNext()).addToLevel(level);
 						}
 							break;
 						case HITBOX_TOGGLE:
 						{
 							HitboxToggleWrapper w = HitboxToggleWrapper.fromString(line);
-							
-							HitboxToggle r = new HitboxToggle(isServerSide, Event.getIDCounter().getNext(), w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getInTriggers(), w.getOutTriggers());
-							r.addToLevel(level);
-							r.setEnabled(w.isEnabled());
+							w.toHitboxToggle(isServerSide, Event.getIDCounter().getNext()).addToLevel(level);
+						}
+							break;
+						case TP_TRIGGER:
+						{
+							TPTriggerWrapper w = TPTriggerWrapper.fromString(line);
+							w.toTPTrigger(isServerSide, Event.getIDCounter().getNext()).addToLevel(level);
 						}
 							break;
 					}
@@ -529,7 +528,7 @@ public class Level implements IServerClient
 			for (Entity tile : tileList)
 			{
 				StringBuilder sb = new StringBuilder();
-				sb.append(LevelObjectType.TILE.toString());
+				sb.append(LevelObjectType.TILE);
 				sb.append('(');
 				sb.append(layer);
 				sb.append(", ");
@@ -537,7 +536,7 @@ public class Level implements IServerClient
 				sb.append(", ");
 				sb.append(tile.getPosition().getY());
 				sb.append(", ");
-				sb.append(tile.getAssetType().toString());
+				sb.append(tile.getAssetType());
 				
 				if (tile.hasHitbox())
 				{
@@ -605,27 +604,12 @@ public class Level implements IServerClient
 		toReturn.add("");
 		toReturn.add("");
 		toReturn.add("// The HitboxTriggers. HitboxTrigger(x, y, width, height, triggerTypes, inTriggers, outTriggers)");
-		toReturn.add("");
-		
-		for (Event e : getScriptedEvents())
-		{
-			if (e instanceof HitboxTrigger)
-			{
-				toReturn.add(e.toString());
-			}
-		}
-		
-		toReturn.add("");
-		toReturn.add("");
 		toReturn.add("// The HitboxToggleReceivers. HitboxToggleReceiver(isEnabled, x, y, width, height, inTriggers, outTriggers)");
 		toReturn.add("");
 		
 		for (Event e : getScriptedEvents())
 		{
-			if (e instanceof HitboxToggle)
-			{
-				toReturn.add(e.toString());
-			}
+			toReturn.add(e.toString());
 		}
 		
 		// Copies the level data to the clipboard

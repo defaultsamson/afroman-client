@@ -1,4 +1,4 @@
-package ca.afroman.gfx;
+package ca.afroman.light;
 
 public enum LightMapState
 {

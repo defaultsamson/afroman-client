@@ -12,15 +12,16 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.TPTrigger;
 import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
-import ca.afroman.gfx.FlickeringLight;
-import ca.afroman.gfx.PointLight;
 import ca.afroman.level.Level;
 import ca.afroman.level.LevelObjectType;
 import ca.afroman.level.LevelType;
+import ca.afroman.light.FlickeringLight;
+import ca.afroman.light.PointLight;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
@@ -32,10 +33,12 @@ import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddLevel;
 import ca.afroman.packet.PacketAddPointLight;
+import ca.afroman.packet.PacketAddTPTrigger;
 import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketEditHitboxToggle;
+import ca.afroman.packet.PacketEditTPTrigger;
 import ca.afroman.packet.PacketEditTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
@@ -180,6 +183,13 @@ public class ServerGame extends Game
 					HitboxToggle e = (HitboxToggle) event;
 					sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(level.getType(), e));
 					sockets().sender().sendPacketToAllClients(new PacketEditHitboxToggle(level.getType(), e.isEnabled(), e.getID(), e.getInTriggers(), e.getOutTriggers()));
+				}
+				else if (event instanceof TPTrigger)
+				{
+					TPTrigger e = (TPTrigger) event;
+					
+					sockets().sender().sendPacketToAllClients(new PacketAddTPTrigger(level.getType(), e));
+					sockets().sender().sendPacketToAllClients(new PacketEditTPTrigger(level.getType(), e.getID(), e.getLevelTypeToTPTo(), e.getTPX(), e.getTPY(), e.getInTriggers(), e.getOutTriggers()));
 				}
 			}
 		}
@@ -413,6 +423,7 @@ public class ServerGame extends Game
 									}
 									break;
 								case POINT_LIGHT:
+								case FLICKERING_LIGHT:
 									PointLight light = level.getLight(id);
 									
 									if (light != null)
@@ -421,16 +432,8 @@ public class ServerGame extends Game
 										removed = true;
 									}
 									break;
-								case FLICKERING_LIGHT:
-									FlickeringLight flight = level.getFlickeringLight(id);
-									
-									if (flight != null)
-									{
-										flight.removeFromLevel();
-										removed = true;
-									}
-									break;
 								case HITBOX_TRIGGER:
+								case TP_TRIGGER:
 									Event event = level.getScriptedEvent(id);
 									
 									if (event != null)
@@ -595,6 +598,79 @@ public class ServerGame extends Game
 									
 									// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
 									sockets().sender().sendPacketToAllClients(new PacketEditTrigger(levelType, id, triggers, triggersIn, triggersOut));
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No event with ID " + id);
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No level with type " + levelType);
+						}
+					}
+						break;
+					case ADD_EVENT_TP_TRIGGER:
+					{
+						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+						
+						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+						Level level = getLevel(levelType);
+						
+						if (level != null)
+						{
+							int id = Event.getIDCounter().getNext();
+							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
+							int x = buf.getInt();
+							int y = buf.getInt();
+							int width = buf.getInt();
+							int height = buf.getInt();
+							
+							TPTrigger trig = new TPTrigger(true, id, x, y, width, height, null, null);
+							trig.addToLevel(level);
+							sockets().sender().sendPacketToAllClients(new PacketAddTPTrigger(levelType, id, x, y, width, height));
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No level with type " + levelType);
+						}
+					}
+						break;
+					case EDIT_EVENT_TP_TRIGGER:
+					{
+						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+						
+						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+						Level level = getLevel(levelType);
+						
+						if (level != null)
+						{
+							int id = buf.getInt();
+							
+							Event eHitbox = level.getScriptedEvent(id);
+							
+							if (eHitbox != null)
+							{
+								if (eHitbox instanceof TPTrigger)
+								{
+									TPTrigger hitbox = (TPTrigger) eHitbox;
+									
+									LevelType toTpTo = LevelType.fromOrdinal(buf.getShort());
+									double x = buf.getInt();
+									double y = buf.getInt();
+									
+									hitbox.setLevelToTPTo(toTpTo);
+									hitbox.setLocationToTPTo(x, y);
+									hitbox.setInTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
+									hitbox.setOutTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
+									
+									// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
+									sockets().sender().sendPacketToAllClients(new PacketEditTPTrigger(levelType, id, hitbox.getLevelTypeToTPTo(), hitbox.getTPX(), hitbox.getTPY(), hitbox.getInTriggers(), hitbox.getOutTriggers()));
 								}
 								else
 								{

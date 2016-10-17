@@ -7,7 +7,8 @@ public enum BuildMode
 	FLICKERING_LIGHT,
 	HITBOX,
 	TRIGGER,
-	HITBOX_TOGGLE;
+	HITBOX_TOGGLE,
+	TP_TRIGGER;
 	
 	public static BuildMode fromOrdinal(int ordinal)
 	{

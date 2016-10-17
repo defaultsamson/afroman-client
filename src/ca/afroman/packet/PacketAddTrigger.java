@@ -16,7 +16,7 @@ public class PacketAddTrigger extends BytePacket
 		this(level, trig.getID(), (int) trig.getHitbox().getX(), (int) trig.getHitbox().getY(), (int) trig.getHitbox().getWidth(), (int) trig.getHitbox().getHeight(), connection);
 	}
 	
-	public PacketAddTrigger(LevelType level, int id, int x, int y, int width, int height, IPConnection... connection)
+	public PacketAddTrigger(LevelType level, int id, double x, double y, double width, double height, IPConnection... connection)
 	{
 		super(PacketType.ADD_EVENT_HITBOX_TRIGGER, true, connection);
 		
@@ -24,21 +24,11 @@ public class PacketAddTrigger extends BytePacket
 		
 		// Level Type
 		buf.putShort((short) level.ordinal());
-		
-		// ID
 		buf.putInt(id);
-		
-		// x
-		buf.putInt(x);
-		
-		// y
-		buf.putInt(y);
-		
-		// width
-		buf.putInt(width);
-		
-		// height
-		buf.putInt(height);
+		buf.putInt((int) x);
+		buf.putInt((int) y);
+		buf.putInt((int) width);
+		buf.putInt((int) height);
 		
 		toSend = buf.array();
 	}

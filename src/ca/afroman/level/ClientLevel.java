@@ -21,23 +21,26 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.TPTrigger;
 import ca.afroman.game.Role;
-import ca.afroman.gfx.FlickeringLight;
-import ca.afroman.gfx.LightMap;
-import ca.afroman.gfx.PointLight;
 import ca.afroman.gui.build.GuiFlickeringLightEditor;
 import ca.afroman.gui.build.GuiGrid;
 import ca.afroman.gui.build.GuiHitboxToggleEditor;
 import ca.afroman.gui.build.GuiHitboxTriggerEditor;
+import ca.afroman.gui.build.GuiTPTriggerEditor;
 import ca.afroman.gui.build.GuiTileEditor;
 import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.light.FlickeringLight;
+import ca.afroman.light.LightMap;
+import ca.afroman.light.PointLight;
 import ca.afroman.log.ALogType;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAddFlickeringLight;
 import ca.afroman.packet.PacketAddHitbox;
 import ca.afroman.packet.PacketAddHitboxToggle;
 import ca.afroman.packet.PacketAddPointLight;
+import ca.afroman.packet.PacketAddTPTrigger;
 import ca.afroman.packet.PacketAddTile;
 import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketRemoveLevelObject;
@@ -124,6 +127,10 @@ public class ClientLevel extends Level
 				hitboxClickCount = 0;
 				flickerCursor.removeFromLevel();
 				break;
+			case TP_TRIGGER:
+				hitboxClickCount = 0;
+				ClientGame.instance().setCurrentScreen(null);
+				break;
 		}
 	}
 	
@@ -161,6 +168,19 @@ public class ClientLevel extends Level
 	public LightMap getLightMap()
 	{
 		return lightmap;
+	}
+	
+	// Only used for right clicks in Build Mode
+	private TPTrigger getTPTrigger(Vector2DDouble pos)
+	{
+		for (Event event : getScriptedEvents())
+		{
+			if (event instanceof TPTrigger)
+			{
+				if (event.getHitbox().contains(pos.getX(), pos.getY())) return (TPTrigger) event;
+			}
+		}
+		return null;
 	}
 	
 	// Deals with generic hitbox behaviour for build modes that use it
@@ -215,8 +235,7 @@ public class ClientLevel extends Level
 				{
 					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
 					
-					PacketAddHitboxToggle pack = new PacketAddHitboxToggle(this.getType(), -1, (int) box.getX(), (int) box.getY(), (int) box.getWidth(), (int) box.getHeight());
-					ClientGame.instance().sockets().sender().sendPacket(pack);
+					ClientGame.instance().sockets().sender().sendPacket(new PacketAddHitboxToggle(this.getType(), -1, box.getX(), box.getY(), box.getWidth(), box.getHeight()));
 				}
 				else
 				{
@@ -234,7 +253,7 @@ public class ClientLevel extends Level
 			case FLICKERING_LIGHT:
 				if (leftClick)
 				{
-					PacketAddFlickeringLight pack = new PacketAddFlickeringLight(this.getType(), -1, flickerCursor.getPosition(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
+					PacketAddFlickeringLight pack = new PacketAddFlickeringLight(this.getType(), flickerCursor);
 					ClientGame.instance().sockets().sender().sendPacket(pack);
 					
 					if (buildMode == BuildMode.FLICKERING_LIGHT)
@@ -251,6 +270,27 @@ public class ClientLevel extends Level
 					{
 						PacketRemoveLevelObject pack = new PacketRemoveLevelObject(light.getID(), this.getType(), LevelObjectType.FLICKERING_LIGHT);
 						ClientGame.instance().sockets().sender().sendPacket(pack);
+					}
+				}
+				break;
+			case TP_TRIGGER:
+				if (leftClick)
+				{
+					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+					
+					PacketAddTPTrigger pack = new PacketAddTPTrigger(this.getType(), -1, box.getX(), box.getY(), box.getWidth(), box.getHeight());
+					ClientGame.instance().sockets().sender().sendPacket(pack);
+				}
+				else
+				{
+					TPTrigger event = getTPTrigger(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (event != null)
+					{
+						if (!(ClientGame.instance().getCurrentScreen() instanceof GuiTPTriggerEditor))
+						{
+							ClientGame.instance().setCurrentScreen(new GuiTPTriggerEditor(this, event.getID()));
+						}
 					}
 				}
 				break;
@@ -284,6 +324,9 @@ public class ClientLevel extends Level
 			case FLICKERING_LIGHT:
 				if (flickerCursor == null) flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightRadius = currentFlickerLightFlicker, 10);
 				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor());
+				break;
+			case TP_TRIGGER:
+				ClientGame.instance().setCurrentScreen(new GuiGrid());
 				break;
 		}
 	}
@@ -502,7 +545,7 @@ public class ClientLevel extends Level
 		}
 		
 		// Draws out scripted events
-		if (ClientGame.instance().isHitboxDebugging() || ((buildMode == BuildMode.TRIGGER || buildMode == BuildMode.HITBOX_TOGGLE) && isBuildMode))
+		if (ClientGame.instance().isHitboxDebugging() || ((buildMode == BuildMode.TRIGGER || buildMode == BuildMode.HITBOX_TOGGLE || buildMode == BuildMode.TP_TRIGGER) && isBuildMode))
 		{
 			for (Event e : getScriptedEvents())
 			{
@@ -520,6 +563,10 @@ public class ClientLevel extends Level
 				else if (e instanceof HitboxToggle && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.HITBOX_TOGGLE)))
 				{
 					renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), pos, width, height);// Red
+				}
+				else if (e instanceof TPTrigger && (ClientGame.instance().isHitboxDebugging() || (buildMode == BuildMode.TP_TRIGGER)))
+				{
+					renderTo.drawRect(new Color(0.3F, 1F, 0.3F, 1F), pos, width, height);// Green
 				}
 			}
 		}
@@ -549,6 +596,12 @@ public class ClientLevel extends Level
 				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
 				
 				renderTo.drawRect(new Color(1F, 0.3F, 0.3F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Red
+			}
+			else if (buildMode == BuildMode.TP_TRIGGER && hitboxClickCount == 1)
+			{
+				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
+				
+				renderTo.drawRect(new Color(0.1F, 1F, 0.3F, 1F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());// Green
 			}
 			else if (buildMode == BuildMode.FLICKERING_LIGHT && hitboxClickCount == 1)
 			{
@@ -629,6 +682,13 @@ public class ClientLevel extends Level
 						text2 = "Flickering Lights";
 						text3 = "Click to place center and edge";
 						text4 = "Scroll to adjust flicker";
+						break;
+					case TP_TRIGGER:
+						lines = 4;
+						text1 = "Teleport Triggers";
+						text2 = "Click to place both corners";
+						text3 = "Right click to cancel corner";
+						text4 = "Right click box to edit";
 						break;
 				}
 				
@@ -832,6 +892,7 @@ public class ClientLevel extends Level
 				case HITBOX:
 				case TRIGGER:
 				case HITBOX_TOGGLE:
+				case TP_TRIGGER:
 					if (ClientGame.instance().getCurrentScreen() instanceof GuiGrid || ClientGame.instance().getCurrentScreen() == null)
 					{
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())

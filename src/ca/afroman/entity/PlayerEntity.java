@@ -89,15 +89,20 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 		removeFromLevel();
 	}
 	
-	@Override
-	public void setPosition(Vector2DDouble position)
+	public void setPosition(boolean updateClientPosition, Vector2DDouble position)
 	{
 		super.setPosition(position);
 		
-		if (isServerSide())
+		if (updateClientPosition && isServerSide())
 		{
 			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
 		}
+	}
+	
+	@Override
+	public void setPosition(Vector2DDouble position)
+	{
+		setPosition(true, position);
 	}
 	
 	@Override

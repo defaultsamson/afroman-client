@@ -13,7 +13,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.gfx.ColourUtil;
+import ca.afroman.light.ColourUtil;
 import ca.afroman.log.ALogType;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.ShapeUtil;

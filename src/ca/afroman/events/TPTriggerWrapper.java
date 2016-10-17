@@ -4,32 +4,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.level.LevelObjectType;
+import ca.afroman.level.LevelType;
 import ca.afroman.util.ParamUtil;
 
-public class HitboxToggleWrapper
+public class TPTriggerWrapper
 {
 	/**
 	 * Takes a saved version of a HitboxToggle's information and parses it.
 	 * 
-	 * @param input must be formatted as it is saved. e.g. HITBOX_TOGGLE(false, 0.0, 85.0, 33.0, 4.0, {22}, {})
+	 * @param input must be formatted as it is saved. e.g. TP_TRIGGER(-1.0, 82.0, 35.0, 10.0, {PLAYER_COLLIDE, PLAYER_UNCOLLIDE}, {}, {22})
 	 * @return
 	 */
-	public static HitboxToggleWrapper fromString(String input)
+	public static TPTriggerWrapper fromString(String input)
 	{
 		String[] split = input.split("\\(");
 		LevelObjectType objectType = LevelObjectType.valueOf(split[0]);
 		
-		if (objectType == LevelObjectType.HITBOX_TOGGLE)
+		if (objectType == LevelObjectType.TP_TRIGGER)
 		{
 			String[] split2 = split[1].split("\\)");
 			String rawParameters = split2.length > 0 ? split2[0] : "";
 			String[] parameters = ParamUtil.getParameters(rawParameters);
 			
-			boolean isEnabled = Boolean.parseBoolean(parameters[0]);
-			double x = Double.parseDouble(parameters[1]);
-			double y = Double.parseDouble(parameters[2]);
-			double width = Double.parseDouble(parameters[3]);
-			double height = Double.parseDouble(parameters[4]);
+			double x = Double.parseDouble(parameters[0]);
+			double y = Double.parseDouble(parameters[1]);
+			double width = Double.parseDouble(parameters[2]);
+			double height = Double.parseDouble(parameters[3]);
+			double tpX = Double.parseDouble(parameters[4]);
+			double tpY = Double.parseDouble(parameters[5]);
+			LevelType toTpTo = LevelType.valueOf(parameters[6]);
 			
 			String[] rSubParameters = ParamUtil.getRawSubParameters(rawParameters);
 			
@@ -53,7 +56,7 @@ public class HitboxToggleWrapper
 				}
 			}
 			
-			return new HitboxToggleWrapper(isEnabled, x, y, width, height, inTriggers, outTriggers);
+			return new TPTriggerWrapper(x, y, width, height, tpX, tpY, toTpTo, inTriggers, outTriggers);
 		}
 		else
 		{
@@ -61,19 +64,23 @@ public class HitboxToggleWrapper
 		}
 	}
 	
-	private boolean isEnabled;
+	private LevelType toTpTo;
 	private double x;
 	private double y;
+	private double tpX;
+	private double tpY;
 	private double width;
 	private double height;
 	private List<Integer> inTriggers;
 	private List<Integer> outTriggers;
 	
-	public HitboxToggleWrapper(boolean isEnabled, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public TPTriggerWrapper(double x, double y, double width, double height, double tpX, double tpY, LevelType toTpTo, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		this.isEnabled = isEnabled;
+		this.toTpTo = toTpTo;
 		this.x = x;
 		this.y = y;
+		this.tpX = tpX;
+		this.tpY = tpY;
 		this.width = width;
 		this.height = height;
 		this.inTriggers = inTriggers;
@@ -95,6 +102,16 @@ public class HitboxToggleWrapper
 		return outTriggers;
 	}
 	
+	public double getTPX()
+	{
+		return tpX;
+	}
+	
+	public double getTPY()
+	{
+		return tpY;
+	}
+	
 	public double getWidth()
 	{
 		return width;
@@ -110,26 +127,12 @@ public class HitboxToggleWrapper
 		return y;
 	}
 	
-	public boolean isEnabled()
-	{
-		return isEnabled;
-	}
-	
-	public HitboxToggle toHitboxToggle(boolean isServerSide, int id)
-	{
-		HitboxToggle r = new HitboxToggle(isServerSide, id, x, y, width, height, inTriggers, outTriggers);;
-		r.setEnabled(isEnabled);
-		return r;
-	}
-	
 	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(LevelObjectType.HITBOX_TOGGLE);
+		sb.append(LevelObjectType.TP_TRIGGER);
 		sb.append('(');
-		sb.append(isEnabled() ? "true" : "false");
-		sb.append(", ");
 		sb.append(x);
 		sb.append(", ");
 		sb.append(y);
@@ -137,6 +140,12 @@ public class HitboxToggleWrapper
 		sb.append(width);
 		sb.append(", ");
 		sb.append(height);
+		sb.append(", ");
+		sb.append(tpX);
+		sb.append(", ");
+		sb.append(tpY);
+		sb.append(", ");
+		sb.append(toTpTo);
 		sb.append(", {");
 		
 		// Saves in triggers
@@ -158,5 +167,18 @@ public class HitboxToggleWrapper
 		sb.append("})");
 		
 		return sb.toString();
+	}
+	
+	public LevelType toTpTo()
+	{
+		return toTpTo;
+	}
+	
+	public TPTrigger toTPTrigger(boolean isServerSide, int id)
+	{
+		TPTrigger t = new TPTrigger(isServerSide, id, x, y, width, height, inTriggers, outTriggers);
+		t.setLevelToTPTo(toTpTo);
+		t.setLocationToTPTo(tpX, tpY);
+		return t;
 	}
 }

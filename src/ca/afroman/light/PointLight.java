@@ -1,4 +1,4 @@
-package ca.afroman.gfx;
+package ca.afroman.light;
 
 import java.awt.Color;
 
@@ -29,7 +29,7 @@ public class PointLight extends Entity
 		this(isServerSide, id, pos, radius, ColourUtil.TRANSPARENT);
 	}
 	
-	public PointLight(boolean isServerSide, int id, Vector2DDouble pos, double radius, Color colour)
+	private PointLight(boolean isServerSide, int id, Vector2DDouble pos, double radius, Color colour)
 	{
 		super(isServerSide, id, AssetType.INVALID, pos);
 		

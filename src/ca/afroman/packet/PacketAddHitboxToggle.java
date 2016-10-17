@@ -11,34 +11,23 @@ public class PacketAddHitboxToggle extends BytePacket
 {
 	private byte[] toSend;
 	
-	public PacketAddHitboxToggle(LevelType level, HitboxToggle hitbox, IPConnection... connection)
+	public PacketAddHitboxToggle(LevelType level, HitboxToggle tog, IPConnection... connection)
 	{
-		this(level, hitbox.getID(), (int) hitbox.getHitbox().getX(), (int) hitbox.getHitbox().getY(), (int) hitbox.getHitbox().getWidth(), (int) hitbox.getHitbox().getHeight(), connection);
+		this(level, tog.getID(), tog.getHitbox().getX(), tog.getHitbox().getY(), tog.getHitbox().getWidth(), tog.getHitbox().getHeight(), connection);
 	}
 	
-	public PacketAddHitboxToggle(LevelType level, int id, int x, int y, int width, int height, IPConnection... connection)
+	public PacketAddHitboxToggle(LevelType level, int id, double x, double y, double width, double height, IPConnection... connection)
 	{
 		super(PacketType.ADD_EVENT_HITBOX_TOGGLE, true, connection);
 		
 		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + (5 * ByteUtil.INT_BYTE_COUNT));
 		
-		// Level Type
 		buf.putShort((short) level.ordinal());
-		
-		// ID
 		buf.putInt(id);
-		
-		// x
-		buf.putInt(x);
-		
-		// y
-		buf.putInt(y);
-		
-		// width
-		buf.putInt(width);
-		
-		// height
-		buf.putInt(height);
+		buf.putInt((int) x);
+		buf.putInt((int) y);
+		buf.putInt((int) width);
+		buf.putInt((int) height);
 		
 		toSend = buf.array();
 	}
