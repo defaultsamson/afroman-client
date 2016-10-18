@@ -15,26 +15,22 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.option.Options;
 
 public class AudioClip extends Asset
 {
-	private static boolean initUseMp3 = true;
-	public static boolean USE_MP3;
 	private static final String AUDIO_DIR = "/audio/";
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";
 	
+	private static boolean initUseMp3 = true;
+	private static boolean USE_MP3;
+	private static final String USE_MP3_TEST = "music/menu";
+	
 	public static AudioClip fromResource(AssetType type, AudioType audioType, String path)
 	{
-		if (initUseMp3)
-		{
-			USE_MP3 = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + path + ".wav") == null;
-			initUseMp3 = false;
-			ClientGame.instance().logger().log(ALogType.DEBUG, "Loading audio using " + (USE_MP3 ? "MP3" : "WAV") + " files");
-		}
-		
-		URL url = AudioClip.class.getResource(AUDIO_DIR + (USE_MP3 ? MP3_DIR : WAV_DIR) + path + (USE_MP3 ? ".mp3" : ".wav"));
+		URL url = AudioClip.class.getResource(AUDIO_DIR + (useMp3() ? MP3_DIR : WAV_DIR) + path + (useMp3() ? ".mp3" : ".wav"));
 		
 		AudioInputStream audioIn = null;
 		
@@ -53,7 +49,7 @@ public class AudioClip extends Asset
 		
 		Clip clip = null;
 		
-		if (USE_MP3)
+		if (useMp3())
 		{
 			if (audioIn != null)
 			{
@@ -136,6 +132,21 @@ public class AudioClip extends Asset
 				audio.setVolume(volume / 100D);
 			}
 		}
+	}
+	
+	/**
+	 * @return <b>true</b> if using MP3 files, <b>false</b> if using WAV files.
+	 */
+	public static boolean useMp3()
+	{
+		if (initUseMp3)
+		{
+			USE_MP3 = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + USE_MP3_TEST + ".wav") == null;
+			initUseMp3 = false;
+			ALogger.logA(ALogType.DEBUG, "Disribution uses " + (USE_MP3 ? "MP3" : "WAV") + " files");
+		}
+		
+		return USE_MP3;
 	}
 	
 	private AudioType type;

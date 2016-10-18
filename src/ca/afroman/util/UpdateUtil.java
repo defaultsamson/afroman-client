@@ -173,8 +173,22 @@ public class UpdateUtil
 		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
 		URL buildLocation = null;
 		destFile = FILE_HEADER;
-		if (audio) { destFile += MP3_SUBHEADER; } else { destFile += WAV_SUBHEADER;	}
-		if (type) { destFile += JAR_EXTENSION; } else { destFile += EXE_EXTENSION; }
+		if (audio)
+		{
+			destFile += MP3_SUBHEADER;
+		}
+		else
+		{
+			destFile += WAV_SUBHEADER;
+		}
+		if (type)
+		{
+			destFile += JAR_EXTENSION;
+		}
+		else
+		{
+			destFile += EXE_EXTENSION;
+		}
 		newFile = NEW_HEADER + destFile;
 		
 		try
@@ -255,11 +269,11 @@ public class UpdateUtil
 					ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
 					return false;
 				case EXE:
-					newVersion(AudioClip.USE_MP3, false);
+					newVersion(AudioClip.useMp3(), false);
 					replace(newFile, selfName);
 					return true;
 				case JAR:
-					newVersion(AudioClip.USE_MP3, true);
+					newVersion(AudioClip.useMp3(), true);
 					replace(newFile, selfName);
 					return true;
 			}

@@ -176,7 +176,7 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_OBJECT_POST, 16 * 6, 16 * 1, 16, 16));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 1, 16 * 0, 16, 16));
-		Texture wallGrass= sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16);
+		Texture wallGrass = sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16);
 		assets.add(wallGrass);
 		assets.add(wallGrass.clone(AssetType.TILE_WALL_GRASS_FLIP).rotate(180));
 		Texture wallSide = sheet.getSubTexture(AssetType.TILE_WALL_GRASS_SIDE, 16 * 4, 0, 16, 16);
