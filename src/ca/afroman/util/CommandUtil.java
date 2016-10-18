@@ -1,5 +1,6 @@
 package ca.afroman.util;
 
+import ca.afroman.assets.AudioClip;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.option.Options;
@@ -151,7 +152,8 @@ public class CommandUtil
 								
 								if (UpdateUtil.updateQuery())
 								{
-									ALogger.logA("Update found (" + VersionUtil.toString(UpdateUtil.serverVersion) + ")");
+									ALogger.logA("Current version: (" + VersionUtil.VERSION_STRING + " - " + (AudioClip.useMp3() ? "MP3" : "WAV") + ")");
+									ALogger.logA("Update found: (" + VersionUtil.toString(UpdateUtil.serverVersion) + " - " + (AudioClip.useMp3() ? "MP3" : "WAV") + ")");
 									ALogger.logA("Type \"update\" again to update");
 									wentThroughUpdate = true;
 								}
@@ -159,6 +161,9 @@ public class CommandUtil
 								{
 									ALogger.logA("No updates found");
 								}
+								break;
+							case VERSION:
+								ALogger.logA("Current version: (" + VersionUtil.VERSION_STRING + " - " + (AudioClip.useMp3() ? "MP3" : "WAV") + ")");
 								break;
 						}
 					}
