@@ -20,7 +20,7 @@ import ca.afroman.option.Options;
 public class AudioClip extends Asset
 {
 	private static boolean initUseMp3 = true;
-	private static boolean USE_MP3;
+	public static boolean USE_MP3;
 	private static final String AUDIO_DIR = "/audio/";
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";

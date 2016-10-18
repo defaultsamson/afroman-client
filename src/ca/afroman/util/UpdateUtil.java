@@ -9,24 +9,28 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Scanner;
 
+import ca.afroman.assets.AudioClip;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 
 public class UpdateUtil
 {
-	public static final String SERVER_VERSION = "server.txt";
-	public static final String RAW_LOCATION = "https://raw.githubusercontent.com/qwertysam/afroman-client/master/version.txt";
-	public static final String RAW_BUILD = "https://github.com/qwertysam/afroman-client/releases/download";
-	public static final String JAR_FILENAME = "AfroMan-mp3.jar";
-	public static final String JAR_NEWNAME = "AfroMan-new.jar";
-	public static final String EXE_FILENAME = "AfroMan-mp3.exe";
-	public static final String EXE_NEWNAME = "AfroMan-new.exe";
-	public static final String NEW_UPDATE = "/new/";
+	private static final String SERVER_VERSION = "server.txt";
+	private static final String RAW_LOCATION = "https://raw.githubusercontent.com/qwertysam/afroman-client/master/version.txt";
+	private static final String RAW_BUILD = "https://github.com/qwertysam/afroman-client/releases/download";
+	private static final String FILE_HEADER = "AfroMan-";
+	private static final String MP3_SUBHEADER = "mp3";
+	private static final String WAV_SUBHEADER = "wav";
+	private static final String JAR_EXTENSION = ".jar";
+	private static final String NEW_HEADER = "!";
+	private static final String EXE_EXTENSION = ".exe";
 	
 	public static long serverVersion = 0L;
 	
-	public static String selfName = "";
-	public static FileType runningFile = FileType.INVALID;
+	private static String selfName = "";
+	private static FileType runningFile = FileType.INVALID;
+	private static String destFile;
+	private static String newFile;
 	
 	public static void applyUpdate()
 	{
@@ -82,7 +86,7 @@ public class UpdateUtil
 	 * @param fileName the name that the download should take.
 	 * @return the downloaded file.
 	 */
-	private static File download(String location, String fileName)
+	public static File download(String location, String fileName)
 	{
 		URL downloadLocation = null;
 		try
@@ -160,50 +164,30 @@ public class UpdateUtil
 	}
 	
 	/**
-	 * Constructs a URL to grab a executable from the repo server, then downloads it into a new folder.
-	 * 
-	 * @return the file it has downloaded.
-	 */
-	private static File newExe()
-	{
-		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
-		URL buildLocation = null;
-		
-		try
-		{
-			String displayVersion = VersionUtil.toString(serverVersion);
-			download(RAW_BUILD + "/" + displayVersion + "/" + EXE_FILENAME, EXE_NEWNAME);
-		}
-		catch (Exception e)
-		{
-			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation, e);
-			return null;
-		}
-		
-		return new File(EXE_FILENAME);
-	}
-	
-	/**
 	 * Constructs a URL to grab a jar from the repo server, then downloads it into a new folder.
 	 * 
 	 * @return the file it has downloaded.
 	 */
-	private static File newJar()
+	private static File newVersion(boolean audio, boolean type)
 	{
 		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
 		URL buildLocation = null;
+		destFile = FILE_HEADER;
+		if (audio) { destFile += MP3_SUBHEADER; } else { destFile += WAV_SUBHEADER;	}
+		if (type) { destFile += JAR_EXTENSION; } else { destFile += EXE_EXTENSION; }
+		newFile = NEW_HEADER + destFile;
+		
 		try
 		{
 			String displayVersion = VersionUtil.toString(serverVersion);
-			download(RAW_BUILD + "/" + displayVersion + "/" + JAR_FILENAME, JAR_NEWNAME);
+			download(RAW_BUILD + "/" + displayVersion + "/" + destFile, newFile);
 		}
 		catch (Exception e)
 		{
 			ALogger.logA(ALogType.WARNING, "Failed to create repository URL: " + buildLocation, e);
 			return null;
 		}
-		
-		return new File(JAR_FILENAME);
+		return new File(newFile);
 	}
 	
 	/**
@@ -224,29 +208,16 @@ public class UpdateUtil
 			}
 		}
 		
-		File jar = new File(JAR_NEWNAME);
-		if (jar.exists())
+		File old = new File(NEW_HEADER);
+		if (old.exists())
 		{
 			try
 			{
-				FileUtil.delete(jar);
+				FileUtil.delete(old);
 			}
 			catch (IOException e)
 			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete" + JAR_NEWNAME, e);
-			}
-		}
-		
-		File exe = new File(EXE_NEWNAME);
-		if (exe.exists())
-		{
-			try
-			{
-				FileUtil.delete(exe);
-			}
-			catch (IOException e)
-			{
-				ALogger.logA(ALogType.WARNING, "Failed to delete" + EXE_NEWNAME, e);
+				ALogger.logA(ALogType.WARNING, "Failed to delete" + newFile, e);
 			}
 		}
 	}
@@ -284,12 +255,12 @@ public class UpdateUtil
 					ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
 					return false;
 				case EXE:
-					newExe();
-					replace(EXE_NEWNAME, selfName);
+					newVersion(AudioClip.USE_MP3, false);
+					replace(newFile, selfName);
 					return true;
 				case JAR:
-					newJar();
-					replace(JAR_NEWNAME, selfName);
+					newVersion(AudioClip.USE_MP3, true);
+					replace(newFile, selfName);
 					return true;
 			}
 		}
