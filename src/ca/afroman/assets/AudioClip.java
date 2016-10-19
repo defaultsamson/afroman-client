@@ -24,13 +24,56 @@ public class AudioClip extends Asset
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";
 	
-	private static boolean initUseMp3 = true;
-	private static boolean USE_MP3;
+	private static AudioFileType FILE_TYPE = AudioFileType.INVALID;
 	private static final String USE_MP3_TEST = "music/menu";
+	
+	/**
+	 * @return which audio files this distribustion is using.
+	 */
+	public static AudioFileType fileType()
+	{
+		if (FILE_TYPE == AudioFileType.INVALID)
+		{
+			if (AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + USE_MP3_TEST + ".wav") != null)
+			{
+				FILE_TYPE = AudioFileType.WAV;
+			}
+			else if (AudioClip.class.getResource(AUDIO_DIR + MP3_DIR + USE_MP3_TEST + ".mp3") != null)
+			{
+				FILE_TYPE = AudioFileType.MP3;
+			}
+			else
+			{
+				FILE_TYPE = AudioFileType.NULL;
+			}
+			
+			ALogger.logA(ALogType.DEBUG, "Disribution uses " + FILE_TYPE + " audio files");
+		}
+		
+		return FILE_TYPE;
+	}
 	
 	public static AudioClip fromResource(AssetType type, AudioType audioType, String path)
 	{
-		URL url = AudioClip.class.getResource(AUDIO_DIR + (useMp3() ? MP3_DIR : WAV_DIR) + path + (useMp3() ? ".mp3" : ".wav"));
+		URL url = null;
+		
+		switch (fileType())
+		{
+			default:
+				return new AudioClip(type, audioType, null);
+				break;
+			case MP3:
+				url = AudioClip.class.getResource(AUDIO_DIR + MP3_DIR + path + ".mp3");
+				break;
+			case WAV:
+				url = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + path + ".wav");
+				break;
+		}
+		
+		if (url == null)
+		{
+			return new AudioClip(type, audioType, null);
+		}
 		
 		AudioInputStream audioIn = null;
 		
@@ -49,15 +92,45 @@ public class AudioClip extends Asset
 		
 		Clip clip = null;
 		
-		if (useMp3())
+		switch (fileType())
 		{
-			if (audioIn != null)
-			{
-				AudioFormat baseFormat = audioIn.getFormat();
-				AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
-				
-				AudioInputStream decodedAudioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
-				
+			default:
+				break;
+			case MP3:
+				if (audioIn != null)
+				{
+					AudioFormat baseFormat = audioIn.getFormat();
+					AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+					
+					AudioInputStream decodedAudioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
+					
+					try
+					{
+						clip = AudioSystem.getClip();
+					}
+					catch (LineUnavailableException e)
+					{
+						ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
+					}
+					
+					if (clip != null)
+					{
+						try
+						{
+							clip.open(decodedAudioIn);
+						}
+						catch (LineUnavailableException e)
+						{
+							ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
+						}
+						catch (IOException e)
+						{
+							ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
+						}
+					}
+				}
+				break;
+			case WAV:
 				try
 				{
 					clip = AudioSystem.getClip();
@@ -71,7 +144,7 @@ public class AudioClip extends Asset
 				{
 					try
 					{
-						clip.open(decodedAudioIn);
+						clip.open(audioIn);
 					}
 					catch (LineUnavailableException e)
 					{
@@ -82,34 +155,7 @@ public class AudioClip extends Asset
 						ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
 					}
 				}
-			}
-		}
-		else
-		{
-			try
-			{
-				clip = AudioSystem.getClip();
-			}
-			catch (LineUnavailableException e)
-			{
-				ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
-			}
-			
-			if (clip != null)
-			{
-				try
-				{
-					clip.open(audioIn);
-				}
-				catch (LineUnavailableException e)
-				{
-					ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
-				}
-				catch (IOException e)
-				{
-					ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
-				}
-			}
+				break;
 		}
 		
 		return new AudioClip(type, audioType, clip);
@@ -134,21 +180,6 @@ public class AudioClip extends Asset
 		}
 	}
 	
-	/**
-	 * @return <b>true</b> if using MP3 files, <b>false</b> if using WAV files.
-	 */
-	public static boolean useMp3()
-	{
-		if (initUseMp3)
-		{
-			USE_MP3 = AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + USE_MP3_TEST + ".wav") == null;
-			initUseMp3 = false;
-			ALogger.logA(ALogType.DEBUG, "Disribution uses " + (USE_MP3 ? "MP3" : "WAV") + " files");
-		}
-		
-		return USE_MP3;
-	}
-	
 	private AudioType type;
 	
 	private Clip clip;
@@ -171,9 +202,12 @@ public class AudioClip extends Asset
 	@Override
 	public void dispose()
 	{
-		clip.stop();
-		clip.flush();
-		clip.close();
+		if (clip != null)
+		{
+			clip.stop();
+			clip.flush();
+			clip.close();
+		}
 	}
 	
 	public AudioType getAudioType()
@@ -183,6 +217,8 @@ public class AudioClip extends Asset
 	
 	public boolean isRunning()
 	{
+		if (clip == null) return false;
+		
 		return clip.isActive();
 	}
 	
@@ -213,49 +249,52 @@ public class AudioClip extends Asset
 	
 	public void setVolume(final float dB, final long duration)
 	{
-		Control con = clip.getControl(Type.MASTER_GAIN);
-		if (con instanceof FloatControl)
+		if (clip != null)
 		{
-			final FloatControl gain = (FloatControl) con;
-			
-			if (duration > 0)
+			Control con = clip.getControl(Type.MASTER_GAIN);
+			if (con instanceof FloatControl)
 			{
-				// How long one step in volume change takes in ms
-				final int period = 50;
+				final FloatControl gain = (FloatControl) con;
 				
-				new Thread()
+				if (duration > 0)
 				{
-					@Override
-					public void run()
+					// How long one step in volume change takes in ms
+					final int period = 50;
+					
+					new Thread()
 					{
-						// The linear change in dB overall
-						float netChange = dB - gain.getValue();
-						int needed = (int) Math.floor((double) duration / (double) period);
-						// The linear change in dB per step
-						float changePerStep = netChange / needed;
-						int counted = 0;
-						while (counted < needed)
+						@Override
+						public void run()
 						{
-							try
+							// The linear change in dB overall
+							float netChange = dB - gain.getValue();
+							int needed = (int) Math.floor((double) duration / (double) period);
+							// The linear change in dB per step
+							float changePerStep = netChange / needed;
+							int counted = 0;
+							while (counted < needed)
 							{
-								Thread.sleep(period);
-							}
-							catch (InterruptedException e)
-							{
-								e.printStackTrace();
+								try
+								{
+									Thread.sleep(period);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() + changePerStep);
+								counted++;
 							}
 							
-							gain.setValue(gain.getValue() + changePerStep);
-							counted++;
+							gain.setValue(dB);
 						}
-						
-						gain.setValue(dB);
-					}
-				}.start();
-			}
-			else
-			{
-				gain.setValue(dB);
+					}.start();
+				}
+				else
+				{
+					gain.setValue(dB);
+				}
 			}
 		}
 	}

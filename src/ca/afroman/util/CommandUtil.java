@@ -152,8 +152,8 @@ public class CommandUtil
 								
 								if (UpdateUtil.updateQuery())
 								{
-									ALogger.logA("Current version: (" + VersionUtil.VERSION_STRING + " - " + (AudioClip.useMp3() ? "MP3" : "WAV") + ")");
-									ALogger.logA("Update found: (" + VersionUtil.toString(UpdateUtil.serverVersion) + " - " + (AudioClip.useMp3() ? "MP3" : "WAV") + ")");
+									ALogger.logA("Current version: (" + VersionUtil.VERSION_STRING + " - " + AudioClip.fileType() + ")");
+									ALogger.logA("Update found: (" + VersionUtil.toString(UpdateUtil.serverVersion) + " - " + AudioClip.fileType() + ")");
 									ALogger.logA("Type \"update\" again to update");
 									wentThroughUpdate = true;
 								}
@@ -163,7 +163,7 @@ public class CommandUtil
 								}
 								break;
 							case VERSION:
-								ALogger.logA("Current version: (" + VersionUtil.VERSION_STRING + " - " + (AudioClip.useMp3() ? "MP3" : "WAV") + ")");
+								ALogger.logA("Current version: (" + VersionUtil.VERSION_STRING + " - " + AudioClip.fileType() + ")");
 								break;
 						}
 					}

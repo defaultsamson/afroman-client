@@ -10,6 +10,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Scanner;
 
 import ca.afroman.assets.AudioClip;
+import ca.afroman.assets.AudioFileType;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 
@@ -168,27 +169,34 @@ public class UpdateUtil
 	 * 
 	 * @return the file it has downloaded.
 	 */
-	private static File newVersion(boolean audio, boolean type)
+	private static File newVersion(AudioFileType audio, FileType type)
 	{
 		ALogger.logA(ALogType.DEBUG, "Newer version found on server repository, downloading...");
 		URL buildLocation = null;
 		destFile = FILE_HEADER;
-		if (audio)
+		
+		switch (audio)
 		{
-			destFile += MP3_SUBHEADER;
+			case WAV:
+				destFile += WAV_SUBHEADER;
+				break;
+			case MP3:
+			default:
+				destFile += MP3_SUBHEADER;
+				break;
 		}
-		else
+		
+		switch (type)
 		{
-			destFile += WAV_SUBHEADER;
+			case EXE:
+				destFile += EXE_EXTENSION;
+				break;
+			case JAR:
+			default:
+				destFile += JAR_EXTENSION;
+				break;
 		}
-		if (type)
-		{
-			destFile += JAR_EXTENSION;
-		}
-		else
-		{
-			destFile += EXE_EXTENSION;
-		}
+		
 		newFile = NEW_HEADER + destFile;
 		
 		try
@@ -263,19 +271,17 @@ public class UpdateUtil
 			runningFile = FileUtil.getFileType(self);
 			
 			selfName = self.getName();
-			switch (runningFile)
+			
+			File newVersionFile = newVersion(AudioClip.fileType(), runningFile);
+			
+			if (newVersionFile != null)
 			{
-				case INVALID:
-					ALogger.logA(ALogType.DEBUG, "Program is not run from file, refusing to update.");
-					return false;
-				case EXE:
-					newVersion(AudioClip.useMp3(), false);
-					replace(newFile, selfName);
-					return true;
-				case JAR:
-					newVersion(AudioClip.useMp3(), true);
-					replace(newFile, selfName);
-					return true;
+				replace(newFile, selfName);
+				return true;
+			}
+			else
+			{
+				return false;
 			}
 		}
 		catch (FileNotFoundException e)
