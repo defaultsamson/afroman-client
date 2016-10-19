@@ -61,7 +61,6 @@ public class AudioClip extends Asset
 		{
 			default:
 				return new AudioClip(type, audioType, null);
-				break;
 			case MP3:
 				url = AudioClip.class.getResource(AUDIO_DIR + MP3_DIR + path + ".mp3");
 				break;
