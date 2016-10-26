@@ -46,6 +46,7 @@ import ca.afroman.packet.PacketType;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.CommandUtil;
 import ca.afroman.util.VersionUtil;
 
 public class ServerGame extends Game
@@ -662,8 +663,6 @@ public class ServerGame extends Game
 									double x = buf.getInt();
 									double y = buf.getInt();
 									
-									System.out.println("ToTpTo: " + toTpTo);
-									
 									hitbox.setLevelToTPTo(toTpTo);
 									hitbox.setLocationToTPTo(x, y);
 									hitbox.setInTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
@@ -760,6 +759,21 @@ public class ServerGame extends Game
 						}
 					}
 						break;
+					case COMMAND:
+					{
+						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+						
+						ConsoleCommand command = ConsoleCommand.fromOrdinal(buf.getInt());
+						String[] params = new String[buf.get()];
+						
+						for (int i = 0; i < params.length; i++)
+						{
+							params[i] = new String(ByteUtil.extractBytes(buf, Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE));
+						}
+						
+						CommandUtil.issueCommand(command, params, sentByHost);
+					}
+						break;
 				}
 			}
 			else if (type == PacketType.REQUEST_CONNECTION)
@@ -850,7 +864,7 @@ public class ServerGame extends Game
 		}
 		catch (Exception e)
 		{
-			// logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
+			logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
 	}
 	

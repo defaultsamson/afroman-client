@@ -112,7 +112,9 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			// Gives player a default role based on what critical roles are still required
 			Role role = (getPlayerConnection(Role.PLAYER1) == null ? Role.PLAYER1 : (getPlayerConnection(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
 			
-			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, (short) ConnectedPlayer.getIDCounter().getNext(), role, username);
+			short id = (short) ConnectedPlayer.getIDCounter().getNext();
+			
+			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, id, role, username);
 			playerList.add(newConnection);
 			
 			// Tells the newly added connection their ID
@@ -294,6 +296,24 @@ public class SocketManager implements IDynamicRunning, IServerClient
 			
 			playerList.remove(connection);
 			
+			ConnectedPlayer.getIDCounter().reset();
+			// shifts everyone's ID
+			for (ConnectedPlayer player : getConnectedPlayers())
+			{
+				if (player instanceof IPConnectedPlayer)
+				{
+					IPConnectedPlayer cPlayer = (IPConnectedPlayer) player;
+					
+					cPlayer.setID((short) ConnectedPlayer.getIDCounter().getNext());
+					
+					sender().sendPacket(new PacketAssignClientID(cPlayer.getID(), cPlayer.getConnection()));
+				}
+				else
+				{
+					ServerGame.instance().logger().log(ALogType.CRITICAL, "There shouldn't be a non-IPConnectedPlayer in the server's SocketManager");
+				}
+			}
+			
 			updateClientsPlayerList();
 		}
 	}
@@ -383,6 +403,11 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		sSocket.startThis();
 		
 		return true;
+	}
+	
+	public boolean hasActiveServerConnection()
+	{
+		return sSocket != null;
 	}
 	
 	public DatagramSocket socket()

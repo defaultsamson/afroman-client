@@ -175,6 +175,11 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		return mousePos;
 	}
 	
+	public List<Key> getKeys()
+	{
+		return keys;
+	}
+	
 	public boolean isGameInFocus()
 	{
 		return isGameFocused;

@@ -277,7 +277,7 @@ public class ClientGame extends Game
 	
 	public boolean isHostingServer()
 	{
-		return ServerGame.instance() != null;
+		return getID() == 0;
 	}
 	
 	public boolean isHudDebugging()

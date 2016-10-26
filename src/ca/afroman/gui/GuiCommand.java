@@ -23,6 +23,7 @@ public class GuiCommand extends GuiScreen
 		addButton(input);
 		input.setText("/");
 		input.setFocussed();
+		input.setMaxLength(128);
 		currentText = input.getText();
 		
 		browsingIndex = -1;
@@ -42,7 +43,7 @@ public class GuiCommand extends GuiScreen
 	public void render(Texture renderTo)
 	{
 		// Renders this overtop of other GUIs
-		getParent().render(renderTo);
+		if (getParent() != null) getParent().render(renderTo);
 		super.render(renderTo);
 	}
 	
@@ -62,7 +63,7 @@ public class GuiCommand extends GuiScreen
 		{
 			goToParentScreen();
 		}
-		if (ClientGame.instance().input().up.isPressedFiltered())
+		if (ClientGame.instance().input().up_arrow.isPressedFiltered())
 		{
 			if (browsingIndex < previousCommands.size() - 1)
 			{
@@ -71,7 +72,7 @@ public class GuiCommand extends GuiScreen
 				setText(previousCommands.get(browsingIndex));
 			}
 		}
-		if (ClientGame.instance().input().down.isPressedFiltered())
+		if (ClientGame.instance().input().down_arrow.isPressedFiltered())
 		{
 			if (browsingIndex > 0)
 			{

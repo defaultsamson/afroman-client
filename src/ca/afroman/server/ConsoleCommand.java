@@ -43,4 +43,11 @@ public enum ConsoleCommand
 	{
 		return use;
 	}
+	
+	public static ConsoleCommand fromOrdinal(int ordinal)
+	{
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
+		return values()[ordinal];
+	}
 }
