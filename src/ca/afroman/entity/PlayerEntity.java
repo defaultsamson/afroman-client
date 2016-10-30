@@ -121,32 +121,32 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 			{
 				if (ClientGame.instance().getCurrentScreen() == null)
 				{
-				byte xa = 0;
-				byte ya = 0;
-				
-				if (ClientGame.instance().input().interact.isPressedFiltered())
-				{
-					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract());
+					byte xa = 0;
+					byte ya = 0;
+					
+					if (ClientGame.instance().input().interact.isPressedFiltered())
+					{
+						ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract());
+					}
+					if (ClientGame.instance().input().up.isPressed())
+					{
+						ya = -1;
+					}
+					if (ClientGame.instance().input().down.isPressed())
+					{
+						ya = 1;
+					}
+					if (ClientGame.instance().input().left.isPressed())
+					{
+						xa = -1;
+					}
+					if (ClientGame.instance().input().right.isPressed())
+					{
+						xa = 1;
+					}
+					
+					this.move(xa, ya);
 				}
-				if (ClientGame.instance().input().up.isPressed())
-				{
-					ya = -1;
-				}
-				if (ClientGame.instance().input().down.isPressed())
-				{
-					ya = 1;
-				}
-				if (ClientGame.instance().input().left.isPressed())
-				{
-					xa = -1;
-				}
-				if (ClientGame.instance().input().right.isPressed())
-				{
-					xa = 1;
-				}
-				
-				this.move(xa, ya);
-			}
 			}
 		}
 	}

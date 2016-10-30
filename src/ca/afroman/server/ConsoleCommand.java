@@ -11,9 +11,16 @@ public enum ConsoleCommand
 	UPDATE("Updates Afro Man", "Downloads and replaces the currently running file with the latest version of Afro Man", "update"),
 	VERSION("Displays version", "Tells the distribution of Afro Man currently running", "version");
 	
+	public static ConsoleCommand fromOrdinal(int ordinal)
+	{
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
+		return values()[ordinal];
+	}
 	private String sh;
 	private String full;
 	private String use;
+	
 	private String[] ex;
 	
 	ConsoleCommand(String shortDesc, String fullDesc, String usage, String... example)
@@ -42,12 +49,5 @@ public enum ConsoleCommand
 	public String getUsage()
 	{
 		return use;
-	}
-	
-	public static ConsoleCommand fromOrdinal(int ordinal)
-	{
-		if (ordinal < 0 || ordinal > values().length - 1) return null;
-		
-		return values()[ordinal];
 	}
 }

@@ -211,6 +211,11 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		return serverConnection;
 	}
 	
+	public boolean hasActiveServerConnection()
+	{
+		return sSocket != null;
+	}
+	
 	public void initServerTCPConnection()
 	{
 		if (!isServerSide())
@@ -403,11 +408,6 @@ public class SocketManager implements IDynamicRunning, IServerClient
 		sSocket.startThis();
 		
 		return true;
-	}
-	
-	public boolean hasActiveServerConnection()
-	{
-		return sSocket != null;
 	}
 	
 	public DatagramSocket socket()

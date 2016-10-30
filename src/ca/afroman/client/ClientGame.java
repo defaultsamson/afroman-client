@@ -144,7 +144,7 @@ public class ClientGame extends Game
 	
 	private Role role;
 	private Role spectatingRole = Role.PLAYER1;
-	private short id;
+	private short id = -1;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
 	private ModulusCounter updateMem;
@@ -177,6 +177,8 @@ public class ClientGame extends Game
 		setIsInGame(false);
 		
 		stopSocket();
+		
+		id = -1;
 		
 		getLevels().clear();
 		setCurrentLevel(null);
@@ -1417,7 +1419,7 @@ public class ClientGame extends Game
 		
 		game = null;
 		
-		if (this.isHostingServer()) ServerGame.instance().stopThis();
+		if (this.isHostingServer() && ServerGame.instance() != null) ServerGame.instance().stopThis();
 		
 		while (ServerGame.instance() != null)
 		{

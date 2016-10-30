@@ -170,14 +170,14 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		ClientGame.instance().updateCursorHiding(true);
 	}
 	
-	public Vector2DInt getMousePos()
-	{
-		return mousePos;
-	}
-	
 	public List<Key> getKeys()
 	{
 		return keys;
+	}
+	
+	public Vector2DInt getMousePos()
+	{
+		return mousePos;
 	}
 	
 	public boolean isGameInFocus()
