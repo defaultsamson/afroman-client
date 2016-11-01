@@ -4,3 +4,4 @@ options.txt
 /bin/
 
 server.txt
+*.db
