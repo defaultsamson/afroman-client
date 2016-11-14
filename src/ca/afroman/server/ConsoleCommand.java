@@ -17,6 +17,7 @@ public enum ConsoleCommand
 		
 		return values()[ordinal];
 	}
+	
 	private String sh;
 	private String full;
 	private String use;

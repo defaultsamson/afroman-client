@@ -1419,19 +1419,7 @@ public class ClientGame extends Game
 		
 		game = null;
 		
-		if (this.isHostingServer() && ServerGame.instance() != null) ServerGame.instance().stopThis();
-		
-		while (ServerGame.instance() != null)
-		{
-			try
-			{
-				Thread.sleep(10);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		if (ServerGame.instance() != null) ServerGame.instance().stopThis();
 	}
 	
 	@Override
