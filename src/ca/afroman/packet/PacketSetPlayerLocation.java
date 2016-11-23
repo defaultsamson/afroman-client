@@ -12,7 +12,8 @@ public class PacketSetPlayerLocation extends BytePacket
 	
 	public PacketSetPlayerLocation(PlayerEntity player, IPConnection... connection)
 	{
-		super(PacketType.SET_PLAYER_LOCATION, false, connection);
+		// TODO make false? typically movement packets should never be forces, and should only use UDP
+		super(PacketType.SET_PLAYER_LOCATION, true, connection);
 		
 		ByteBuffer buf = ByteBuffer.allocate(3 + (2 * ByteUtil.DOUBLE_BYTE_COUNT));
 		

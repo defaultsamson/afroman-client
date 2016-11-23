@@ -8,7 +8,8 @@ public class PacketPlayerMove extends BytePacket
 	
 	public PacketPlayerMove(byte xa, byte ya, IPConnection... connection)
 	{
-		super(PacketType.REQUEST_PLAYER_MOVE, false, connection);
+		// TODO make false? typically movement packets should never be forces, and should only use UDP
+		super(PacketType.REQUEST_PLAYER_MOVE, true, connection);
 		
 		toSend = new byte[] { xa, ya };
 	}

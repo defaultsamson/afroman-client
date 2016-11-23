@@ -464,10 +464,11 @@ public class Entity implements ITickable, IServerClient
 			direction = Direction.NONE;
 			
 			// Change the last direction so this entity faces in the direction that it tried to move in
-			if (ya < 0) lastDirection = Direction.UP;
-			if (ya > 0) lastDirection = Direction.DOWN;
-			if (xa < 0) lastDirection = Direction.LEFT;
-			if (xa > 0) lastDirection = Direction.RIGHT;
+			Direction tempLast = Direction.fromAmplitudes(xa, ya);
+			if (tempLast != Direction.NONE)
+			{
+				lastDirection = tempLast;
+			}
 		}
 		else
 		{
@@ -475,10 +476,7 @@ public class Entity implements ITickable, IServerClient
 			
 			numSteps++;
 			
-			if (deltaY < 0) direction = Direction.UP;
-			if (deltaY > 0) direction = Direction.DOWN;
-			if (deltaX < 0) direction = Direction.LEFT;
-			if (deltaX > 0) direction = Direction.RIGHT;
+			direction = Direction.fromAmplitudes(deltaX, deltaY);
 		}
 		
 		if (sendPacket)

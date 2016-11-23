@@ -34,39 +34,73 @@ public class ClientAssetEntityDirectional extends ClientAssetEntity
 	{
 		if (!isServerSide())
 		{
-			switch (direction)
+			// If player is moving sideways, determine asset by x
+			if (direction.getXAmplitude() != 0)
 			{
-				case UP:
-					asset = up;
-					break;
-				default:
-				case DOWN:
-					asset = down;
-					break;
-				case LEFT:
-					asset = left;
-					break;
-				case RIGHT:
-					asset = right;
-					break;
-				case NONE:
-					switch (lastDirection)
+				switch (direction.getXAmplitude())
+				{
+					default:
+						break;
+					case 1:
+						asset = right;
+						break;
+					case -1:
+						asset = left;
+						break;
+				}
+				
+			}
+			// else determine it by y
+			else if (direction.getYAmplitude() != 0)
+			{
+				switch (direction.getYAmplitude())
+				{
+					default:
+						break;
+					case 1:
+						asset = down;
+						break;
+					case -1:
+						asset = up;
+						break;
+				}
+			}
+			else // Else if not moving at all
+			{
+				if (lastDirection.getXAmplitude() != 0)
+				{
+					switch (lastDirection.getXAmplitude())
 					{
-						case UP:
-							asset = idleUp;
-							break;
 						default:
-						case DOWN:
-							asset = idleDown;
 							break;
-						case LEFT:
-							asset = idleLeft;
-							break;
-						case RIGHT:
+						case 1:
 							asset = idleRight;
 							break;
+						case -1:
+							asset = idleLeft;
+							break;
 					}
-					break;
+					
+				}
+				else if (lastDirection.getYAmplitude() != 0)
+				{
+					switch (lastDirection.getYAmplitude())
+					{
+						default:
+							break;
+						case 1:
+							asset = idleDown;
+							break;
+						case -1:
+							asset = idleUp;
+							break;
+					}
+				}
+				// Absolute default is idle down
+				else
+				{
+					asset = idleDown;
+				}
 			}
 		}
 		
