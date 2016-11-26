@@ -63,8 +63,8 @@ public class GuiChooseRole extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(player1.getCurrentFrame(), p1);
-		renderTo.draw(player2.getCurrentFrame(), p2);
+		renderTo.draw(player1.getDisplayedTexture(), p1);
+		renderTo.draw(player2.getDisplayedTexture(), p2);
 		
 		if (Options.instance().isLightingOn())
 		{

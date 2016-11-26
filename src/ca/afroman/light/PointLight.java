@@ -6,6 +6,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.util.ColourUtil;
 
 public class PointLight extends Entity
 {

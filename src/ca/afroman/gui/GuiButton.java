@@ -91,6 +91,11 @@ public class GuiButton
 		return id;
 	}
 	
+	public GuiScreen getScreen()
+	{
+		return screen;
+	}
+	
 	/**
 	 * @return the texture set to be using based on the state.
 	 */

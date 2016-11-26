@@ -14,9 +14,9 @@ public enum LightMapState
 	}
 	
 	/**
-	 * Gets the enum value of this past the <b>current</b> value.
+	 * Gets the enum value of this past this value.
 	 * <p>
-	 * If no value is found past the <b>current</b> value, the value at
+	 * If no value is found past this value, the value at
 	 * index 0 will be returned.
 	 * 
 	 * @return the next item on the list of this enumerator.

@@ -2,10 +2,9 @@ package ca.afroman.level.api;
 
 public enum LevelType
 {
-	NULL(null),
-	MAIN("level1.txt"),
-	TEST("level2.txt"),
-	SECOND("level3.txt");
+	MAIN("Main"),
+	TEST("Testing"),
+	SECOND("Second");
 	
 	public static LevelType fromOrdinal(int ordinal)
 	{
@@ -14,15 +13,15 @@ public enum LevelType
 		return values()[ordinal];
 	}
 	
-	private String fileName;
+	private String name;
 	
-	LevelType(String fileName)
+	LevelType(String name)
 	{
-		this.fileName = fileName;
+		this.name = name;
 	}
 	
-	public String getFileName()
+	public String getName()
 	{
-		return fileName;
+		return name;
 	}
 }

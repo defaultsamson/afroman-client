@@ -13,12 +13,12 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.light.ColourUtil;
 import ca.afroman.log.ALogType;
 import ca.afroman.resource.Vector2DInt;
+import ca.afroman.util.ColourUtil;
 import ca.afroman.util.ShapeUtil;
 
-public class Texture extends DrawableAsset
+public class Texture extends DrawableAsset implements ITextureDrawable
 {
 	public static final String TEXTURE_PATH = "/texture/";
 	
@@ -184,6 +184,12 @@ public class Texture extends DrawableAsset
 		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		image = op.filter(image, null);
 		
+		return this;
+	}
+	
+	@Override
+	public Texture getDisplayedTexture()
+	{
 		return this;
 	}
 	

@@ -16,6 +16,8 @@ public class ConnectedPlayer
 	private String username;
 	private short id;
 	
+	private boolean isLoadingLevels;
+	
 	/**
 	 * A player object with a role, username, and ID number.
 	 * 
@@ -28,6 +30,8 @@ public class ConnectedPlayer
 		this.id = id;
 		this.role = role;
 		this.username = username;
+		
+		isLoadingLevels = false;
 	}
 	
 	/**
@@ -54,9 +58,19 @@ public class ConnectedPlayer
 		return username;
 	}
 	
+	public boolean isLoadingLevels()
+	{
+		return isLoadingLevels;
+	}
+	
 	public void setID(short id)
 	{
 		this.id = id;
+	}
+	
+	public void setIsLoadingLevels(boolean isLoading)
+	{
+		isLoadingLevels = isLoading;
 	}
 	
 	/**

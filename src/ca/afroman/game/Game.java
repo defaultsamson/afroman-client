@@ -11,7 +11,7 @@ import ca.afroman.level.MainLevel;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.packet.PacketStopServer;
+import ca.afroman.packet.PacketStartServer;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicTickRenderThread;
@@ -144,12 +144,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return successful;
 	}
 	
-	public void stopSocket()
-	{
-		if (socketManager != null) socketManager.stopThis();
-		socketManager = null;
-	}
-	
 	@Override
 	public void stopThis()
 	{
@@ -157,7 +151,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		
 		if (isServerSide())
 		{
-			sockets().sender().sendPacketToAllClients(new PacketStopServer());
+			sockets().sender().sendPacketToAllClients(new PacketStartServer(false));
 			
 			// TODO make a more surefire way to ensure that all clients got the message
 			try
@@ -183,6 +177,12 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		
 		if (getLevels() != null) getLevels().clear();
 		IDCounter.resetAll();
+	}
+	
+	public void stopSocket()
+	{
+		if (socketManager != null) socketManager.stopThis();
+		socketManager = null;
 	}
 	
 	@Override

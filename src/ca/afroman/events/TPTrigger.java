@@ -22,7 +22,7 @@ public class TPTrigger extends Event
 	{
 		super(isServerSide, id, x, y, width, height, inTriggers, outTriggers);
 		
-		tpTo = LevelType.NULL;
+		tpTo = null;
 		tpX = 0;
 		tpY = 0;
 	}
@@ -49,7 +49,7 @@ public class TPTrigger extends Event
 		{
 			PlayerEntity p = (PlayerEntity) triggerer;
 			
-			if (tpTo != LevelType.NULL)
+			if (tpTo != null)
 			{
 				Level level = Game.instance(isServerSide()).getLevel(tpTo);
 				p.addToLevel(level);

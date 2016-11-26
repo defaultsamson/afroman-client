@@ -8,7 +8,7 @@ import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.game.Role;
 import ca.afroman.level.api.Level;
-import ca.afroman.level.api.LevelType;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketPlayerInteract;
 import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketSetPlayerLevel;
@@ -96,11 +96,15 @@ public class PlayerEntity extends DrawableEntityDirectional
 		if (level != null)
 		{
 			level.getPlayers().add(this);
+			
+			if (isServerSide())
+			{
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level.getLevelType()));
+			}
 		}
-		
-		if (isServerSide())
+		else if (isServerSide())
 		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), (level != null ? level.getLevelType() : LevelType.NULL)));
+			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server-side PlayerEntity cannot be added to a null level");
 		}
 	}
 	

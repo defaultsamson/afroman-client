@@ -16,9 +16,8 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketDenyJoin;
-import ca.afroman.packet.PacketSendLevels;
+import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketType;
-import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.CommandUtil;
@@ -41,6 +40,8 @@ public class ServerGame extends Game
 	private String password;
 	private boolean stopServer = false;
 	private boolean isCommandLine;
+	
+	private boolean waitingForPlayersToLoad = false;;
 	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
@@ -109,6 +110,35 @@ public class ServerGame extends Game
 					case INVALID:
 						logger().log(ALogType.CRITICAL, "INVALID PACKET");
 						break;
+					case LOAD_LEVELS:
+					{
+						boolean sendingLevels = (packet.getContent()[0] == 1);
+						
+						if (sendingLevels)
+						{
+							
+						}
+						else // Finished loading levels
+						{
+							sender.setIsLoadingLevels(false);
+							
+							waitingForPlayersToLoad = false;
+							for (ConnectedPlayer con : sockets().getConnectedPlayers())
+							{
+								if (con.isLoadingLevels())
+								{
+									waitingForPlayersToLoad = true;
+									break;
+								}
+							}
+							
+							if (!waitingForPlayersToLoad)
+							{
+								sockets().sender().sendPacketToAllClients(new PacketLoadLevels(false));
+							}
+						}
+					}
+						break;
 					case SETROLE:
 					{
 						if (sentByHost)
@@ -164,27 +194,13 @@ public class ServerGame extends Game
 						}
 					}
 						break;
-					case STOP_SERVER:
-						if (sentByHost)
-						{
-							if (ServerGame.instance() != null)
-							{
-								stopThis();
-							}
-							else
-							{
-								logger().log(ALogType.IMPORTANT, "Tried to stop a null instance of a ServerGame: " + sender.getConnection().asReadable());
-							}
-						}
-						else
-						{
-							logger().log(ALogType.CRITICAL, "A non-host user was trying to stop the server: " + sender.getConnection().asReadable());
-						}
-						break;
 					case START_SERVER:
 						if (sentByHost)
 						{
-							setIsInGame(true);
+							byte x = packet.getContent()[0];
+							
+							// 1 if true, 0 if false
+							setIsInGame(x == 1);
 						}
 						else
 						{
@@ -343,31 +359,19 @@ public class ServerGame extends Game
 		// Is never used because this is server side
 	}
 	
-	/**
-	 * Save the game state etc.
-	 */
-	private void safeStop()
-	{
-		super.stopThis();
-		
-		// TODO save levels?
-		
-		if (getLevels() != null) getLevels().clear();
-		IDCounter.resetAll();
-		
-		game = null;
-		
-		stopSocket();
-	}
-	
 	@Override
 	public void setIsInGame(boolean isInGame)
+	{
+		setIsInGame(isInGame, false);
+	}
+	
+	private void setIsInGame(boolean isInGame, boolean isSafeStop)
 	{
 		super.setIsInGame(isInGame);
 		
 		if (isInGame)
 		{
-			sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
+			sockets().sender().sendPacketToAllClients(new PacketLoadLevels(true));
 			
 			loadLevels();
 			
@@ -381,14 +385,21 @@ public class ServerGame extends Game
 				player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
 				player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
 			}
-			
-			// TODO only start ticking once the game has loaded for all clients
-			
-			sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
 		}
 		else
 		{
-			
+			if (isSafeStop)
+			{
+				// TODO save levels
+				
+				game = null;
+				
+				super.stopThis();
+			}
+			else
+			{
+				stopThis();
+			}
 		}
 	}
 	
@@ -404,9 +415,9 @@ public class ServerGame extends Game
 		super.tick();
 		
 		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
-		if (stopServer) safeStop();
+		if (stopServer) setIsInGame(false, true);
 		
-		if (isInGame())
+		if (isInGame() && !waitingForPlayersToLoad)
 		{
 			if (getLevels() != null)
 			{

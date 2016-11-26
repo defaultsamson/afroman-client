@@ -17,7 +17,6 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketStartServer;
-import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 
@@ -92,8 +91,8 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(player1.getCurrentFrame(), new Vector2DInt(player1X, player1Y));
-		renderTo.draw(player2.getCurrentFrame(), new Vector2DInt(player2X, player2Y));
+		renderTo.draw(player1.getDisplayedTexture(), new Vector2DInt(player1X, player1Y));
+		renderTo.draw(player2.getDisplayedTexture(), new Vector2DInt(player2X, player2Y));
 		
 		if (Options.instance().isLightingOn())
 		{
@@ -136,11 +135,11 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(true));
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(false));
 		}
 		else if (buttonID == 2002) // Leave server
 		{

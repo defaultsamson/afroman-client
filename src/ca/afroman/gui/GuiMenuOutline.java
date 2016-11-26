@@ -55,11 +55,11 @@ public class GuiMenuOutline extends GuiScreen
 		
 		if (afroMan != null)
 		{
-			renderTo.draw(afroMan.getCurrentFrame(), afroManPos);
+			renderTo.draw(afroMan.getDisplayedTexture(), afroManPos);
 		}
 		if (player2 != null)
 		{
-			renderTo.draw(player2.getCurrentFrame(), player2Pos);
+			renderTo.draw(player2.getDisplayedTexture(), player2Pos);
 		}
 		
 		if (Options.instance().isLightingOn())

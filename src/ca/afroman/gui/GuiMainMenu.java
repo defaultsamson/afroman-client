@@ -10,13 +10,21 @@ import ca.afroman.util.VersionUtil;
 
 public class GuiMainMenu extends GuiMenuOutline
 {
+	private boolean isShowingBuild = false;
+	
 	private boolean allowUpdateCheck;
+	
+	private GuiTextButton joinButton;
+	private GuiTextButton buildButton;
 	
 	public GuiMainMenu()
 	{
 		super(null, true, true);
 		
-		addButton(new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join"));
+		joinButton = new GuiTextButton(this, 1, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Join");
+		buildButton = new GuiTextButton(this, 20, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 0), 72, blackFont, "Build");
+		toggleBuildModeButton(isShowingBuild);
+		
 		addButton(new GuiTextButton(this, 2, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 1), 72, blackFont, "Host"));
 		addButton(new GuiTextButton(this, 0, (ClientGame.WIDTH / 2) - (72 / 2), 58 + (24 * 2), 72, blackFont, "Quit"));
 		addButton(new GuiIconButton(this, 4, (ClientGame.WIDTH / 2) - (72 / 2) - 16 - 4, 58 + (24 * 1), 16, Assets.getStepSpriteAnimation(AssetType.ICON_SETTINGS).clone()));
@@ -79,6 +87,31 @@ public class GuiMainMenu extends GuiMenuOutline
 			case 4:// Options menu
 				ClientGame.instance().setCurrentScreen(new GuiOptionsMenu(this, false));
 				break;
+			case 20: // Build mode
+				ClientGame.instance().setIsBuildMode(true);
+				ClientGame.instance().setIsInGame(true);
+				break;
+		}
+	}
+	
+	public void toggleBuildModeButton()
+	{
+		toggleBuildModeButton(!isShowingBuild);
+	}
+	
+	public void toggleBuildModeButton(boolean isShowing)
+	{
+		isShowingBuild = isShowing;
+		
+		if (isShowingBuild)
+		{
+			addButton(buildButton);
+			removeButton(joinButton);
+		}
+		else
+		{
+			removeButton(buildButton);
+			addButton(joinButton);
 		}
 	}
 }

@@ -13,6 +13,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DInt;
+import ca.afroman.util.ColourUtil;
 
 public class LightMap extends Texture
 {

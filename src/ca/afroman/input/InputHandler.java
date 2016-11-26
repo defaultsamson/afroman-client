@@ -87,19 +87,19 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key equals = new Key(keys, KeyEvent.VK_EQUALS);
 	public Key shift = new Key(keys, KeyEvent.VK_SHIFT);
 	public Key control = new Key(keys, KeyEvent.VK_CONTROL);
-	
 	public LockKey capsLock = new LockKey(keys, KeyEvent.VK_CAPS_LOCK);
-	public Key zero = new Key(keys, KeyEvent.VK_0);
-	public Key one = new Key(keys, KeyEvent.VK_1);
-	public Key two = new Key(keys, KeyEvent.VK_2);
-	public Key three = new Key(keys, KeyEvent.VK_3);
-	public Key four = new Key(keys, KeyEvent.VK_4);
-	public Key five = new Key(keys, KeyEvent.VK_5);
-	public Key six = new Key(keys, KeyEvent.VK_6);
-	public Key seven = new Key(keys, KeyEvent.VK_7);
-	public Key eight = new Key(keys, KeyEvent.VK_8);
 	
-	public Key nine = new Key(keys, KeyEvent.VK_9);
+	public Key zero = new Key(keys, KeyEvent.VK_0, KeyEvent.VK_NUMPAD0);
+	public Key one = new Key(keys, KeyEvent.VK_1, KeyEvent.VK_NUMPAD1);
+	public Key two = new Key(keys, KeyEvent.VK_2, KeyEvent.VK_NUMPAD2);
+	public Key three = new Key(keys, KeyEvent.VK_3, KeyEvent.VK_NUMPAD3);
+	public Key four = new Key(keys, KeyEvent.VK_4, KeyEvent.VK_NUMPAD4);
+	public Key five = new Key(keys, KeyEvent.VK_5, KeyEvent.VK_NUMPAD5);
+	public Key six = new Key(keys, KeyEvent.VK_6, KeyEvent.VK_NUMPAD6);
+	public Key seven = new Key(keys, KeyEvent.VK_7, KeyEvent.VK_NUMPAD7);
+	public Key eight = new Key(keys, KeyEvent.VK_8, KeyEvent.VK_NUMPAD8);
+	public Key nine = new Key(keys, KeyEvent.VK_9, KeyEvent.VK_NUMPAD9);
+	
 	public Key a = new Key(keys, KeyEvent.VK_A);
 	public Key b = new Key(keys, KeyEvent.VK_B);
 	public Key c = new Key(keys, KeyEvent.VK_C);

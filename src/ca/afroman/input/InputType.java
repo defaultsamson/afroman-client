@@ -5,7 +5,6 @@ public class InputType
 	private static final int INTERVAL = 30;
 	protected boolean pressed = false;
 	protected boolean filteredPress = false;
-	
 	protected boolean filteredRelease = false;
 	
 	private int spot = 0;

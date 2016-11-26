@@ -44,6 +44,7 @@ import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.gui.GuiOptionsMenu;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiSendingLevels;
+import ca.afroman.gui.build.GuiLevelSelect;
 import ca.afroman.input.InputHandler;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
@@ -54,6 +55,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketLogin;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
@@ -351,12 +353,23 @@ public class ClientGame extends Game
 							}
 						}
 							break;
-						case STOP_SERVER:
+						case START_SERVER:
 						{
-							exitGame = true;
+							byte x = packet.getContent()[0];
+							
+							// Server was started
+							if (x == 1)
+							{
+								
+							}
+							// Server was stopped
+							else
+							{
+								exitGame = true;
+							}
 						}
 							break;
-						case SEND_LEVELS:
+						case LOAD_LEVELS:
 						{
 							boolean sendingLevels = (packet.getContent()[0] == 1);
 							
@@ -372,6 +385,11 @@ public class ClientGame extends Game
 								if (getCurrentScreen() instanceof GuiSendingLevels)
 								{
 									setCurrentScreen(null);
+								}
+								
+								if (music.isRunning())
+								{
+									music.stop();
 								}
 								
 								if (getRole() == Role.SPECTATOR)
@@ -756,6 +774,11 @@ public class ClientGame extends Game
 		this.id = id;
 	}
 	
+	public void setIsBuildMode(boolean isBuild)
+	{
+		buildMode = isBuild;
+	}
+	
 	// public void setFullScreen(boolean isFullscreen)
 	// {
 	// GraphicsDevice device = frame.getGraphicsConfiguration().getDevice();
@@ -814,20 +837,24 @@ public class ClientGame extends Game
 			
 			loadLevels();
 			
-			waitingForOthersToLoad = true;
-			
-			if (music.isRunning())
+			if (isBuildMode())
 			{
-				music.stop();
+				ClientGame.instance().setCurrentScreen(new GuiLevelSelect(null, false));
+			}
+			else
+			{
+				waitingForOthersToLoad = true;
+				
+				sockets().sender().sendPacket(new PacketLoadLevels(false));
 			}
 		}
 		else
 		{
+			buildMode = false;
 			waitingForOthersToLoad = false;
+			id = -1;
 			
 			stopSocket();
-			
-			id = -1;
 			
 			getLevels().clear();
 			setCurrentLevel(null);
@@ -987,8 +1014,6 @@ public class ClientGame extends Game
 		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
 		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
 		
-		setCurrentScreen(new GuiMainMenu());
-		
 		// WHEN FINISHED LOADING
 		
 		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true);
@@ -1012,6 +1037,8 @@ public class ClientGame extends Game
 		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		
 		updateCursorHiding();
+		
+		setIsInGame(false);
 		
 		super.startThis();
 	}
@@ -1124,6 +1151,39 @@ public class ClientGame extends Game
 			//
 			// updateCursorHiding();
 			// }
+			
+			if (input.zero.isPressedFiltered())
+			{
+				if (isInGame())
+				{
+					if (isBuildMode())
+					{
+						if (getCurrentScreen() instanceof GuiLevelSelect)
+						{
+							getCurrentScreen().goToParentScreen();
+						}
+						else
+						{
+							setCurrentScreen(new GuiLevelSelect(getCurrentScreen(), getCurrentLevel() != null));
+						}
+					}
+				}
+				else
+				{
+					if (getCurrentScreen() instanceof GuiMainMenu)
+					{
+						((GuiMainMenu) getCurrentScreen()).toggleBuildModeButton();
+					}
+				}
+				
+				// buildMode = !buildMode;
+				//
+				// logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
+				//
+				// if (getThisPlayer() != null) getThisPlayer().setCameraToFollow(!buildMode);
+				//
+				// updateCursorHiding();
+			}
 			
 			if (input.shift.isPressed() && input.delete.isPressedFiltered())
 			{

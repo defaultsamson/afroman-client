@@ -1,4 +1,4 @@
-package ca.afroman.light;
+package ca.afroman.util;
 
 import java.awt.Color;
 
@@ -21,5 +21,10 @@ public class ColourUtil
 	public static Color fromHex(String hex)
 	{
 		return new Color(Integer.valueOf(hex.substring(4, 6), 16), Integer.valueOf(hex.substring(6, 8), 16), Integer.valueOf(hex.substring(8, 10), 16), Integer.valueOf(hex.substring(2, 4), 16));
+	}
+	
+	public static boolean isTransparent(int colourHex)
+	{
+		return (colourHex >> 24) == 0x00;
 	}
 }

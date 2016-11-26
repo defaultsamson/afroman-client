@@ -14,7 +14,7 @@ public class GuiTileEditor extends GuiGrid
 	private GuiTextButton layer3edit;
 	private GuiTextButton layer4edit;
 	private GuiTextButton layer5edit;
-	private GuiTextButton layer6edit;
+	private GuiTextButton dynamicLayerEdit;
 	
 	private GuiTextButton layer0show;
 	private GuiTextButton layer1show;
@@ -22,7 +22,7 @@ public class GuiTileEditor extends GuiGrid
 	private GuiTextButton layer3show;
 	private GuiTextButton layer4show;
 	private GuiTextButton layer5show;
-	private GuiTextButton layer6show;
+	private GuiTextButton dynamicLayerShow;
 	
 	private GuiTextButton tileMenu;
 	
@@ -36,7 +36,7 @@ public class GuiTileEditor extends GuiGrid
 		layer3show = new GuiTextButton(this, 30, 5, 3 + (18 * 2), 32, blackFont, "L4 X");
 		layer4show = new GuiTextButton(this, 40, 5, 3 + (18 * 1), 32, blackFont, "L5 X");
 		layer5show = new GuiTextButton(this, 50, 5, 3 + (18 * 0), 32, blackFont, "L6 X");
-		layer6show = new GuiTextButton(this, 60, 5, 5 + (18 * 3), 32, blackFont, "LM X");
+		dynamicLayerShow = new GuiTextButton(this, 60, 5, 5 + (18 * 3), 32, blackFont, "LM X");
 		
 		addButton(layer0show);
 		addButton(layer1show);
@@ -44,7 +44,7 @@ public class GuiTileEditor extends GuiGrid
 		addButton(layer3show);
 		addButton(layer4show);
 		addButton(layer5show);
-		addButton(layer6show);
+		addButton(dynamicLayerShow);
 		
 		layer0edit = new GuiTextButton(this, 01, 39, 26 + (18 * 5), 13, blackFont, "E");
 		layer1edit = new GuiTextButton(this, 11, 39, 26 + (18 * 4), 13, blackFont, "E");
@@ -52,7 +52,7 @@ public class GuiTileEditor extends GuiGrid
 		layer3edit = new GuiTextButton(this, 31, 39, 3 + (18 * 2), 13, blackFont, "E");
 		layer4edit = new GuiTextButton(this, 41, 39, 3 + (18 * 1), 13, blackFont, "E");
 		layer5edit = new GuiTextButton(this, 51, 39, 3 + (18 * 0), 13, blackFont, "E");
-		layer6edit = new GuiTextButton(this, 61, 39, 5 + (18 * 3), 13, blackFont, "E");
+		dynamicLayerEdit = new GuiTextButton(this, 61, 39, 5 + (18 * 3), 13, blackFont, "E");
 		
 		addButton(layer0edit);
 		addButton(layer1edit);
@@ -60,7 +60,7 @@ public class GuiTileEditor extends GuiGrid
 		addButton(layer3edit);
 		addButton(layer4edit);
 		addButton(layer5edit);
-		addButton(layer6edit);
+		addButton(dynamicLayerEdit);
 		
 		tileMenu = new GuiTextButton(this, 3, 200 - 4 - 12 - (13 * 6) - 5, 3, 13 * 6, blackFont, "Tile List");
 		
@@ -156,7 +156,7 @@ public class GuiTileEditor extends GuiGrid
 			layer3show.setText("L4 " + (level.isShowingLayer(4) ? "O" : "X"));
 			layer4show.setText("L5 " + (level.isShowingLayer(5) ? "O" : "X"));
 			layer5show.setText("L6 " + (level.isShowingLayer(6) ? "O" : "X"));
-			layer6show.setText("LM " + (level.isShowingLayer(3) ? "O" : "X"));
+			dynamicLayerShow.setText("LM " + (level.isShowingLayer(3) ? "O" : "X"));
 			
 			// Sets everything to true before setting one of them to false
 			layer0edit.setEnabled(true);
@@ -165,7 +165,7 @@ public class GuiTileEditor extends GuiGrid
 			layer3edit.setEnabled(true);
 			layer4edit.setEnabled(true);
 			layer5edit.setEnabled(true);
-			layer6edit.setEnabled(true);
+			dynamicLayerEdit.setEnabled(true);
 			
 			switch (level.getEditingLayer())
 			{
@@ -179,16 +179,16 @@ public class GuiTileEditor extends GuiGrid
 					layer2edit.setEnabled(false);
 					break;
 				case 3:
-					layer3edit.setEnabled(false);
+					dynamicLayerEdit.setEnabled(false);
 					break;
 				case 4:
-					layer4edit.setEnabled(false);
+					layer3edit.setEnabled(false);
 					break;
 				case 5:
-					layer5edit.setEnabled(false);
+					layer4edit.setEnabled(false);
 					break;
 				case 6:
-					layer6edit.setEnabled(false);
+					layer5edit.setEnabled(false);
 					break;
 			}
 		}

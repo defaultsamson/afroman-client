@@ -2,13 +2,13 @@ package ca.afroman.packet;
 
 import ca.afroman.network.IPConnection;
 
-public class PacketSendLevels extends BytePacket
+public class PacketLoadLevels extends BytePacket
 {
 	private byte[] toSend;
 	
-	public PacketSendLevels(boolean isSending, IPConnection... connection)
+	public PacketLoadLevels(boolean isSending, IPConnection... connection)
 	{
-		super(PacketType.SEND_LEVELS, true, connection);
+		super(PacketType.LOAD_LEVELS, true, connection);
 		
 		toSend = new byte[] { (byte) (isSending ? 1 : 0) };
 	}

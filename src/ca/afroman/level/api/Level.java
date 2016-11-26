@@ -2,12 +2,14 @@ package ca.afroman.level.api;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
+import ca.afroman.assets.ITextureDrawable;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
@@ -33,6 +35,7 @@ import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
+import ca.afroman.util.ColourUtil;
 import ca.afroman.util.ListUtil;
 import ca.afroman.util.ShapeUtil;
 
@@ -44,29 +47,28 @@ public class Level extends ServerClientObject implements ITickable
 	// Build mode
 	public GridSize grid = GridSize.MEDIUM;
 	public BuildMode buildMode = BuildMode.TILE;
+	
 	// Tiles
 	private DrawableAsset cursorAsset = null;
-	
 	private boolean showLayer[];
-	
 	private int editingLayer = 0;
+	
 	// PointLights
 	private int currentBuildLightRadius = 10;
+	
 	// FlickeringLights
 	private int currentFlickerLightFlicker = 4;
 	private double currentFlickerLightRadius = 4;
-	
 	private double lastFlickerLightRadius = currentFlickerLightRadius;
 	public FlickeringLight flickerCursor = null;
+	
 	// HitBoxes
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
-	
 	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
-	
 	private int hitboxClickCount = 0;
+	
 	// Used for doing cleanup and setup of build modes
 	private boolean lastIsBuildMode = false;
-	
 	private LevelType type;
 	
 	// Universal to both client and server
@@ -335,8 +337,7 @@ public class Level extends ServerClientObject implements ITickable
 	/**
 	 * Gets a tile at the given coordinates.
 	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
+	 * @param pos the in-level coordinates
 	 * @return the tile. <b>null</b> if there are no tiles at that given location.
 	 */
 	public Entity getTile(int layer, Vector2DDouble pos)
@@ -347,12 +348,52 @@ public class Level extends ServerClientObject implements ITickable
 		{
 			Entity tile = tiles.get(i);
 			
-			// TODO generate removable hitboxes for tiles based on asset
-			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
-			
-			if (surrounding.contains(pos.getX(), pos.getY()))
+			if (tile instanceof DrawableEntity)
 			{
-				return tile;
+				DrawableAsset asset = ((DrawableEntity) tile).getAsset();
+				
+				Vector2DDouble textureP = tile.getPosition();
+				Vector2DDouble mouseRelativeToTexture = pos.add(-textureP.getX(), -textureP.getY());
+				
+				boolean isClickWithinTexture = new Rectangle(0, 0, asset.getWidth(), asset.getHeight()).contains(mouseRelativeToTexture.getX(), mouseRelativeToTexture.getY());
+				
+				if (isClickWithinTexture)
+				{
+					// If the asset has an accessible Texture, refine the click search pixel by pixel
+					if (asset instanceof ITextureDrawable)
+					{
+						Texture texture = ((ITextureDrawable) asset).getDisplayedTexture();
+						
+						int colour = texture.getImage().getRGB((int) mouseRelativeToTexture.getX(), (int) mouseRelativeToTexture.getY());
+						boolean isClicked = !ColourUtil.isTransparent(colour);
+						
+						if (isClicked)
+						{
+							return tile;
+						}
+					}
+					else // If not, then just accept it
+					{
+						return tile;
+					}
+				}
+			}
+			else if (tile.hasHitbox())
+			{
+				for (Hitbox h : tile.hitboxInLevel())
+				{
+					h.contains(pos.getX(), pos.getY());
+				}
+			}
+			else
+			{
+				// TODO generate removable hitboxes for tiles based on asset
+				Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
+				
+				if (surrounding.contains(pos.getX(), pos.getY()))
+				{
+					return tile;
+				}
 			}
 		}
 		return null;
@@ -427,7 +468,19 @@ public class Level extends ServerClientObject implements ITickable
 	
 	public boolean isShowingLayer(int layer)
 	{
-		return layer == editingLayer;
+		if (layer >= 0 && layer < showLayer.length)
+		{
+			return showLayer[layer];
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public void leaveBuildMode()
+	{
+		lastIsBuildMode = false;
 	}
 	
 	private void loadBuildMode(BuildMode mode)
@@ -449,7 +502,10 @@ public class Level extends ServerClientObject implements ITickable
 				ClientGame.instance().setCurrentScreen(new GuiGrid());
 				break;
 			case FLICKERING_LIGHT:
-				if (flickerCursor == null) flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
+				if (flickerCursor == null)
+				{
+					flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
+				}
 				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor());
 				break;
 		}
@@ -507,6 +563,24 @@ public class Level extends ServerClientObject implements ITickable
 						}
 					}
 				}
+			}
+		}
+		
+		if (ClientGame.instance().isBuildMode())
+		{
+			switch (buildMode)
+			{
+				default:
+				case TILE:
+					cursorAsset.render(renderTo, ClientGame.instance().input().getMousePos());
+					break;
+				case HITBOX:
+					break;
+				case LIGHT:
+					break;
+				case FLICKERING_LIGHT:
+					break;
+				
 			}
 		}
 		
