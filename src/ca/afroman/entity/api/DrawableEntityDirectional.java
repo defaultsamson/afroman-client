@@ -1,23 +1,22 @@
 package ca.afroman.entity.api;
 
-import ca.afroman.assets.Asset;
-import ca.afroman.assets.AssetType;
+import ca.afroman.assets.DrawableAsset;
 import ca.afroman.resource.Vector2DDouble;
 
-public class ClientAssetEntityDirectional extends ClientAssetEntity
+public class DrawableEntityDirectional extends DrawableEntity
 {
-	protected Asset up;
-	protected Asset down;
-	protected Asset left;
-	protected Asset right;
-	protected Asset idleUp;
-	protected Asset idleDown;
-	protected Asset idleLeft;
-	protected Asset idleRight;
+	protected DrawableAsset up;
+	protected DrawableAsset down;
+	protected DrawableAsset left;
+	protected DrawableAsset right;
+	protected DrawableAsset idleUp;
+	protected DrawableAsset idleDown;
+	protected DrawableAsset idleLeft;
+	protected DrawableAsset idleRight;
 	
-	public ClientAssetEntityDirectional(boolean isServerSide, int id, AssetType assetType, Asset up, Asset down, Asset left, Asset right, Asset idleUp, Asset idleDown, Asset idleLeft, Asset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
+	public DrawableEntityDirectional(boolean isServerSide, int id, DrawableAsset up, DrawableAsset down, DrawableAsset left, DrawableAsset right, DrawableAsset idleUp, DrawableAsset idleDown, DrawableAsset idleLeft, DrawableAsset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(isServerSide, id, assetType, pos, hitboxes);
+		super(isServerSide, id, null, pos, hitboxes);
 		
 		this.up = up;
 		this.down = down;

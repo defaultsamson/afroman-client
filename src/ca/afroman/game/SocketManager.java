@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.api.IServerClient;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
@@ -24,10 +23,11 @@ import ca.afroman.network.TCPSocket;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
+import ca.afroman.resource.ServerClientObject;
 import ca.afroman.server.ServerGame;
 import ca.afroman.util.IPUtil;
 
-public class SocketManager implements IDynamicRunning, IServerClient
+public class SocketManager extends ServerClientObject implements IDynamicRunning
 {
 	/**
 	 * Returns a usable port. If the provided one is eligible then it will return it, otherwise it will return the default port.
@@ -79,6 +79,8 @@ public class SocketManager implements IDynamicRunning, IServerClient
 	
 	public SocketManager(Game game)
 	{
+		super(game.isServerSide());
+		
 		this.game = game;
 		
 		playerList = new ArrayList<ConnectedPlayer>();
@@ -242,12 +244,6 @@ public class SocketManager implements IDynamicRunning, IServerClient
 				game.logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
 			}
 		}
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return game.isServerSide();
 	}
 	
 	@Override

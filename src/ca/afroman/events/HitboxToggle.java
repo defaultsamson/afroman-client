@@ -3,7 +3,7 @@ package ca.afroman.events;
 import java.util.List;
 
 import ca.afroman.entity.api.Entity;
-import ca.afroman.level.Level;
+import ca.afroman.level.api.Level;
 
 public class HitboxToggle extends Event
 {
@@ -26,7 +26,7 @@ public class HitboxToggle extends Event
 		if (level != null)
 		{
 			setEnabled(false);
-			level.getScriptedEvents().remove(this);
+			level.getEvents().remove(this);
 		}
 		
 		// Sets the new level
@@ -35,7 +35,7 @@ public class HitboxToggle extends Event
 		if (level != null)
 		{
 			setEnabled(wasEnabled);
-			level.getScriptedEvents().add(this);
+			level.getEvents().add(this);
 		}
 	}
 	
@@ -68,16 +68,5 @@ public class HitboxToggle extends Event
 		}
 		
 		enabled = isActive;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return toWrapper().toString();
-	}
-	
-	public HitboxToggleWrapper toWrapper()
-	{
-		return new HitboxToggleWrapper(isEnabled(), getHitbox().getX(), getHitbox().getY(), getHitbox().getWidth(), getHitbox().getHeight(), getInTriggers(), getOutTriggers());
 	}
 }

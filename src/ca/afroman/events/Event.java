@@ -5,11 +5,11 @@ import java.util.List;
 
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.entity.api.IServerClient;
-import ca.afroman.level.Level;
+import ca.afroman.level.api.Level;
 import ca.afroman.resource.IDCounter;
+import ca.afroman.resource.ServerClientObject;
 
-public class Event implements IServerClient
+public class Event extends ServerClientObject
 {
 	private static IDCounter idCounter = new IDCounter();
 	
@@ -28,7 +28,7 @@ public class Event implements IServerClient
 	
 	public Event(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		this.isServerSide = isServerSide;
+		super(isServerSide);
 		
 		level = null;
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
@@ -43,7 +43,7 @@ public class Event implements IServerClient
 		
 		if (level != null)
 		{
-			level.getScriptedEvents().remove(this);
+			level.getEvents().remove(this);
 		}
 		
 		// Sets the new level
@@ -51,7 +51,7 @@ public class Event implements IServerClient
 		
 		if (level != null)
 		{
-			level.getScriptedEvents().add(this);
+			level.getEvents().add(this);
 		}
 	}
 	
@@ -141,7 +141,7 @@ public class Event implements IServerClient
 		for (int out : getOutTriggers())
 		{
 			// TODO chain for all levels
-			level.chainScriptedEvents(triggerer, out);
+			level.chainEvents(triggerer, out);
 		}
 	}
 }

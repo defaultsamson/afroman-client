@@ -112,7 +112,7 @@ public class Texture extends DrawableAsset
 		int y = pos.getY();
 		
 		// Only draw if what's trying to be drawn is within the bounds of this
-		if (ShapeUtil.areColliding(x, y, (int) toDraw.getWidth(), (int) toDraw.getHeight(), 0, 0, (int) getWidth(), (int) getHeight())) // (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
+		if (ShapeUtil.areColliding(x, y, toDraw.getWidth(), toDraw.getHeight(), 0, 0, getWidth(), getHeight())) // (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
 		{
 			graphics.drawImage(toDraw.image, x, y, null);
 		}
@@ -127,7 +127,7 @@ public class Texture extends DrawableAsset
 	public void drawFillRect(Color outlineColour, Color fillColour, final Vector2DInt pos, final int width, final int height)
 	{
 		// Only draw if what's trying to be drawn is within the bounds of this
-		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, (int) getWidth(), (int) getHeight()))
+		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, getWidth(), getHeight()))
 		{
 			Paint oldPaint = getGraphics().getPaint();
 			
@@ -150,7 +150,7 @@ public class Texture extends DrawableAsset
 	public void drawRect(Color colour, final Vector2DInt pos, final int width, final int height)
 	{
 		// Only draw if what's trying to be drawn is within the bounds of this
-		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, (int) getWidth(), (int) getHeight()))
+		if (ShapeUtil.areColliding(pos.getX(), pos.getY(), width, height, 0, 0, getWidth(), getHeight()))
 		{
 			Paint oldPaint = getGraphics().getPaint();
 			
@@ -287,8 +287,8 @@ public class Texture extends DrawableAsset
 	 */
 	public Texture[] toTextureArray(int xColumns, int yRows)
 	{
-		int subTextWidth = (int) this.getWidth() / xColumns;
-		int subTextHeight = (int) this.getHeight() / yRows;
+		int subTextWidth = this.getWidth() / xColumns;
+		int subTextHeight = this.getHeight() / yRows;
 		
 		Texture[] textures = new Texture[xColumns * yRows];
 		

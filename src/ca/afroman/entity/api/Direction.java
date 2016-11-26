@@ -24,6 +24,7 @@ public enum Direction
 		
 		return null;
 	}
+	
 	public static Direction fromAmplitudes(double xa, double ya)
 	{
 		// Normalizes all amplitudes to find direction

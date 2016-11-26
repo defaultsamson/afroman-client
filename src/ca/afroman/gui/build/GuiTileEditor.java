@@ -3,7 +3,7 @@ package ca.afroman.gui.build;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiTextButton;
-import ca.afroman.level.ClientLevel;
+import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DInt;
 
 public class GuiTileEditor extends GuiGrid
@@ -87,51 +87,53 @@ public class GuiTileEditor extends GuiGrid
 		
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
-			ClientLevel level = ClientGame.instance().getCurrentLevel();
+			Level level = ClientGame.instance().getCurrentLevel();
 			
 			switch (buttonID)
 			{
 				case 00:
-					level.showLayer0 = !level.showLayer0;
+					level.toggleTileLayerShow(0);
 					break;
 				case 01:
-					level.editLayer = 0;
+					level.setEditingLayer(0);
 					break;
 				case 10:
-					level.showLayer1 = !level.showLayer1;
+					level.toggleTileLayerShow(1);
 					break;
 				case 11:
-					level.editLayer = 1;
+					level.setEditingLayer(1);
 					break;
 				case 20:
-					level.showLayer2 = !level.showLayer2;
+					level.toggleTileLayerShow(2);
 					break;
 				case 21:
-					level.editLayer = 2;
+					level.setEditingLayer(2);
 					break;
 				case 30:
-					level.showLayer3 = !level.showLayer3;
+					level.toggleTileLayerShow(4);
 					break;
 				case 31:
-					level.editLayer = 3;
+					level.setEditingLayer(4);
 					break;
 				case 40:
-					level.showLayer4 = !level.showLayer4;
+					level.toggleTileLayerShow(5);
 					break;
 				case 41:
-					level.editLayer = 4;
+					level.setEditingLayer(5);
 					break;
 				case 50:
-					level.showLayer5 = !level.showLayer5;
+					level.toggleTileLayerShow(6);
 					break;
 				case 51:
-					level.editLayer = 5;
+					level.setEditingLayer(6);
 					break;
+				
+				// Dynamic Layer is by default layer 3
 				case 60:
-					level.showLayer6 = !level.showLayer6;
+					level.toggleTileLayerShow(3);
 					break;
 				case 61:
-					level.editLayer = 6;
+					level.setEditingLayer(3);
 					break;
 			}
 			
@@ -146,15 +148,15 @@ public class GuiTileEditor extends GuiGrid
 		
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
-			ClientLevel level = ClientGame.instance().getCurrentLevel();
+			Level level = ClientGame.instance().getCurrentLevel();
 			
-			layer0show.setText("L1 " + (level.showLayer0 ? "O" : "X"));
-			layer1show.setText("L2 " + (level.showLayer1 ? "O" : "X"));
-			layer2show.setText("L3 " + (level.showLayer2 ? "O" : "X"));
-			layer3show.setText("L4 " + (level.showLayer3 ? "O" : "X"));
-			layer4show.setText("L5 " + (level.showLayer4 ? "O" : "X"));
-			layer5show.setText("L6 " + (level.showLayer5 ? "O" : "X"));
-			layer6show.setText("LM " + (level.showLayer6 ? "O" : "X"));
+			layer0show.setText("L1 " + (level.isShowingLayer(0) ? "O" : "X"));
+			layer1show.setText("L2 " + (level.isShowingLayer(1) ? "O" : "X"));
+			layer2show.setText("L3 " + (level.isShowingLayer(2) ? "O" : "X"));
+			layer3show.setText("L4 " + (level.isShowingLayer(4) ? "O" : "X"));
+			layer4show.setText("L5 " + (level.isShowingLayer(5) ? "O" : "X"));
+			layer5show.setText("L6 " + (level.isShowingLayer(6) ? "O" : "X"));
+			layer6show.setText("LM " + (level.isShowingLayer(3) ? "O" : "X"));
 			
 			// Sets everything to true before setting one of them to false
 			layer0edit.setEnabled(true);
@@ -165,7 +167,7 @@ public class GuiTileEditor extends GuiGrid
 			layer5edit.setEnabled(true);
 			layer6edit.setEnabled(true);
 			
-			switch (level.editLayer)
+			switch (level.getEditingLayer())
 			{
 				case 0:
 					layer0edit.setEnabled(false);

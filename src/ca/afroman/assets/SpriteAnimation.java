@@ -5,7 +5,7 @@ import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DInt;
 
-public class SpriteAnimation extends AssetArray implements ITickable, IRenderable
+public class SpriteAnimation extends DrawableAssetArray implements ITickable, IRenderable
 {
 	/** Holds the textures for each frame. */
 	protected int currentFrameIndex = 0;
@@ -84,12 +84,14 @@ public class SpriteAnimation extends AssetArray implements ITickable, IRenderabl
 		return ((Texture[]) getAssets())[currentFrameIndex];
 	}
 	
-	public double getHeight()
+	@Override
+	public int getHeight()
 	{
 		return getCurrentFrame().getHeight();
 	}
 	
-	public double getWidth()
+	@Override
+	public int getWidth()
 	{
 		return getCurrentFrame().getWidth();
 	}

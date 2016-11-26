@@ -1,20 +1,24 @@
-package ca.afroman.level;
+package ca.afroman.level.api;
 
-public enum BuildMode
+public enum GridSize
 {
-	TILE,
-	LIGHT,
-	FLICKERING_LIGHT,
-	HITBOX,
-	TRIGGER,
-	HITBOX_TOGGLE,
-	TP_TRIGGER;
+	NONE(0),
+	SMALL(8),
+	MEDIUM(16),
+	LARGE(32);
 	
-	public static BuildMode fromOrdinal(int ordinal)
+	public static GridSize fromOrdinal(int ordinal)
 	{
 		if (ordinal < 0 || ordinal > values().length - 1) return null;
 		
 		return values()[ordinal];
+	}
+	
+	private int size;
+	
+	GridSize(int size)
+	{
+		this.size = size;
 	}
 	
 	/**
@@ -26,7 +30,7 @@ public enum BuildMode
 	 * 
 	 * @return the next item on the list of this enumerator.
 	 */
-	public BuildMode getLast()
+	public GridSize getLast()
 	{
 		int newOrdinal = ordinal() - 1;
 		
@@ -48,7 +52,7 @@ public enum BuildMode
 	 * 
 	 * @return the next item on the list of this enumerator.
 	 */
-	public BuildMode getNext()
+	public GridSize getNext()
 	{
 		int newOrdinal = ordinal() + 1;
 		
@@ -60,5 +64,10 @@ public enum BuildMode
 		{
 			return fromOrdinal(newOrdinal);
 		}
+	}
+	
+	public int getSize()
+	{
+		return size;
 	}
 }

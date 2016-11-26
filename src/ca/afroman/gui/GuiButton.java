@@ -41,7 +41,7 @@ public class GuiButton
 	{
 		if (width < 3) width = 3;
 		
-		hitbox = new Rectangle(x, y, width, (int) normal.getHeight());
+		hitbox = new Rectangle(x, y, width, normal.getHeight());
 		
 		Texture[] temp = new Texture[3];
 		temp[0] = normal;
@@ -58,7 +58,7 @@ public class GuiButton
 		{
 			for (int i2 = 0; i2 < 3; i2++)
 			{
-				textures[i][i2] = temp[i].getSubTexture(temp[i].getAssetType(), i2, 0, 1, (int) normal.getHeight());
+				textures[i][i2] = temp[i].getSubTexture(temp[i].getAssetType(), i2, 0, 1, normal.getHeight());
 			}
 		}
 		

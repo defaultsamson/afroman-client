@@ -4,12 +4,12 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.api.ClientAssetEntityDirectional;
+import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.IRoleEntity;
 import ca.afroman.game.Role;
-import ca.afroman.level.Level;
-import ca.afroman.level.LevelType;
+import ca.afroman.level.api.Level;
+import ca.afroman.level.api.LevelType;
 import ca.afroman.packet.PacketPlayerInteract;
 import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketSetPlayerLevel;
@@ -17,7 +17,7 @@ import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleEntity
+public class PlayerEntity extends DrawableEntityDirectional implements IRoleEntity
 {
 	public static final AssetType PLAYER1_ASSET = AssetType.PLAYER_ONE_RAW;
 	public static final AssetType PLAYER2_ASSET = AssetType.PLAYER_TWO_RAW;
@@ -31,10 +31,49 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 	 */
 	public PlayerEntity(boolean isServerSide, Role role, Vector2DDouble pos)
 	{
-		super(isServerSide, -1, (role == Role.PLAYER1 ? PLAYER1_ASSET : PLAYER2_ASSET), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_UP).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_UP).clone()), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_DOWN).clone()), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_LEFT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_LEFT).clone()), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_RIGHT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_RIGHT).clone()),
-				(isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP).clone()), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN).clone()), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT).clone()), (isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT).clone()), pos, new Hitbox(3, 5, 10, 11));
+		super(isServerSide, -1, getUp(isServerSide, role), getDown(isServerSide, role), getLeft(isServerSide, role), getRight(isServerSide, role), getIdleUp(isServerSide, role), getIdleDown(isServerSide, role), getIdleLeft(isServerSide, role), getIdleRight(isServerSide, role), pos, new Hitbox(3, 5, 10, 11));
 		
 		this.role = role;
+	}
+	
+	private static SpriteAnimation getUp(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_UP).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_UP).clone();
+	}
+	
+	private static SpriteAnimation getDown(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_DOWN).clone();
+	}
+	
+	private static SpriteAnimation getLeft(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_LEFT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_LEFT).clone();
+	}
+	
+	private static SpriteAnimation getRight(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_RIGHT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_RIGHT).clone();
+	}
+	
+	private static SpriteAnimation getIdleUp(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP).clone();
+	}
+	
+	private static SpriteAnimation getIdleDown(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN).clone();
+	}
+	
+	private static SpriteAnimation getIdleLeft(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT).clone();
+	}
+	
+	private static SpriteAnimation getIdleRight(boolean isServerSide, Role role)
+	{
+		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT).clone();
 	}
 	
 	/**
@@ -60,7 +99,10 @@ public class PlayerEntity extends ClientAssetEntityDirectional implements IRoleE
 			level.getPlayers().add(this);
 		}
 		
-		if (isServerSide()) ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), (level != null ? level.getType() : LevelType.NULL)));
+		if (isServerSide())
+		{
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), (level != null ? level.getLevelType() : LevelType.NULL)));
+		}
 	}
 	
 	@Override

@@ -1,6 +1,6 @@
 package ca.afroman.resource;
 
-import ca.afroman.level.GridSize;
+import ca.afroman.level.api.GridSize;
 
 public class Vector2DDouble
 {

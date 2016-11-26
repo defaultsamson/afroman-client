@@ -7,8 +7,9 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.IPacketParser;
-import ca.afroman.level.Level;
-import ca.afroman.level.LevelType;
+import ca.afroman.level.MainLevel;
+import ca.afroman.level.api.Level;
+import ca.afroman.level.api.LevelType;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.IDCounter;
@@ -26,6 +27,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return serverSide ? ServerGame.instance() : ClientGame.instance();
 	}
 	
+	private boolean isPaused;
 	private boolean isInGame;
 	protected List<Level> levels;
 	
@@ -37,6 +39,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	public Game(ThreadGroup threadGroup, String name, boolean isServerSide, int ticks)
 	{
 		super(threadGroup, name, isServerSide, ticks);
+		isPaused = false;
 		isInGame = false;
 		
 		levels = new ArrayList<Level>();
@@ -58,7 +61,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	{
 		for (Level level : getLevels())
 		{
-			if (level.getType() == type) return level;
+			if (level.getLevelType() == type) return level;
 		}
 		return null;
 	}
@@ -93,23 +96,35 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return isInGame;
 	}
 	
+	public void setIsInGame(boolean isInGame)
+	{
+		this.isInGame = isInGame;
+	}
+	
+	public boolean isPaused()
+	{
+		return isPaused;
+	}
+	
+	public void loadLevels()
+	{
+		levels.clear();
+		levels.add(new MainLevel(isServerSide()));
+		levels.add(new Level(isServerSide(), LevelType.SECOND));
+	}
+	
 	@Override
 	public void onPause()
 	{
 		super.onPause();
-		isInGame = false;
+		isPaused = false;
 	}
 	
 	@Override
 	public void onUnpause()
 	{
 		super.onUnpause();
-		isInGame = true;
-	}
-	
-	public void setIsInGame(boolean isInGame)
-	{
-		this.isInGame = isInGame;
+		isPaused = true;
 	}
 	
 	public SocketManager sockets()

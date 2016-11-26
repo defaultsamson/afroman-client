@@ -1,4 +1,4 @@
-package ca.afroman.level;
+package ca.afroman.level.api;
 
 public enum LevelType
 {

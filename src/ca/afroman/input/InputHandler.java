@@ -316,6 +316,14 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		if (ClientGame.instance() != null)
 		{
 			ClientGame.instance().quit();
+			try
+			{
+				Thread.sleep(5000);
+			}
+			catch (InterruptedException ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 		else
 		{

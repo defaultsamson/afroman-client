@@ -1,6 +1,6 @@
 package ca.afroman.packet;
 
-import ca.afroman.level.BuildMode;
+import ca.afroman.level.api.BuildMode;
 
 public enum PacketType
 {
@@ -18,24 +18,7 @@ public enum PacketType
 	
 	SEND_LEVELS,
 	
-	INSTANTIATE_LEVEL,
-	ADD_LEVEL_ENTITY,
-	ADD_LEVEL_TILE,
-	ADD_LEVEL_HITBOX,
-	ADD_LEVEL_POINTLIGHT,
-	ADD_LEVEL_FLICKERINGLIGHT,
 	ADD_LEVEL_PLAYER,
-	
-	ADD_EVENT_HITBOX_TRIGGER,
-	EDIT_EVENT_HITBOX_TRIGGER,
-	
-	ADD_EVENT_TP_TRIGGER,
-	EDIT_EVENT_TP_TRIGGER,
-	
-	ADD_EVENT_HITBOX_TOGGLE,
-	EDIT_EVENT_HITBOX_TOGGLE,
-	
-	REMOVE_LEVEL_OBJECT,
 	
 	ACTIVATE_TRIGGER,
 	

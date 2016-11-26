@@ -2,22 +2,22 @@ package ca.afroman.assets;
 
 import java.util.Random;
 
-public class AssetArray extends Asset
+public class DrawableAssetArray extends DrawableAsset
 {
 	/** Holds the assets. */
-	private Asset[] assets;
+	private DrawableAsset[] assets;
 	
-	public AssetArray(AssetType type, Asset... assets)
+	public DrawableAssetArray(AssetType type, DrawableAsset... assets)
 	{
-		super(type);
+		super(type, assets[0].getWidth(), assets[0].getHeight());
 		
 		this.assets = assets;
 	}
 	
 	@Override
-	public AssetArray clone()
+	public DrawableAssetArray clone()
 	{
-		return new AssetArray(getAssetType(), assets);
+		return new DrawableAssetArray(getAssetType(), assets);
 	}
 	
 	/**
@@ -27,16 +27,16 @@ public class AssetArray extends Asset
 	 * 
 	 * @return the cloned AssetArray.
 	 */
-	public AssetArray cloneWithAllSubAssets()
+	public DrawableAssetArray cloneWithAllSubAssets()
 	{
-		Asset[] newAssets = new Asset[assets.length];
+		DrawableAsset[] newAssets = new DrawableAsset[assets.length];
 		
 		for (int i = 0; i < assets.length; i++)
 		{
 			newAssets[i] = assets[i].clone();
 		}
 		
-		return new AssetArray(getAssetType(), newAssets);
+		return new DrawableAssetArray(getAssetType(), newAssets);
 	}
 	
 	@Override

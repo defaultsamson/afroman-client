@@ -2,7 +2,7 @@ package ca.afroman.assets;
 
 import ca.afroman.resource.Vector2DInt;
 
-public class Font extends AssetArray
+public class Font extends DrawableAssetArray
 {
 	public static final int CHAR_WIDTH = 6;
 	private static final int ROWS = 4;

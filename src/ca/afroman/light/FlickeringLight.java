@@ -1,6 +1,5 @@
 package ca.afroman.light;
 
-import ca.afroman.level.ClientLevel;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 
@@ -45,11 +44,9 @@ public class FlickeringLight extends PointLight
 		// TODO control this with positions entirely and don't get their primitive types
 		Vector2DInt offsetPos;
 		
-		if (level != null && level instanceof ClientLevel)
+		if (level != null)
 		{
-			ClientLevel cLevel = (ClientLevel) this.level;
-			
-			offsetPos = cLevel.worldToScreen(position);
+			offsetPos = level.worldToScreen(position);
 		}
 		else
 		{
@@ -116,17 +113,6 @@ public class FlickeringLight extends PointLight
 				}
 			}
 		}
-	}
-	
-	@Override
-	public String toString()
-	{
-		return toWrapper().toString();
-	}
-	
-	public FlickeringLightWrapper toWrapper()
-	{
-		return new FlickeringLightWrapper(position.getX(), position.getY(), radius, radius2, ticksPerFrame);
 	}
 	
 	private void updateRadius()

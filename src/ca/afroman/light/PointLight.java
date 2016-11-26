@@ -2,10 +2,8 @@ package ca.afroman.light;
 
 import java.awt.Color;
 
-import ca.afroman.assets.AssetType;
 import ca.afroman.entity.api.Entity;
-import ca.afroman.level.ClientLevel;
-import ca.afroman.level.Level;
+import ca.afroman.level.api.Level;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.Vector2DDouble;
 
@@ -31,7 +29,7 @@ public class PointLight extends Entity
 	
 	private PointLight(boolean isServerSide, int id, Vector2DDouble pos, double radius, Color colour)
 	{
-		super(isServerSide, id, AssetType.INVALID, pos);
+		super(isServerSide, id, pos);
 		
 		this.colour = colour;
 		this.radius = radius;
@@ -49,7 +47,7 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			level.getLights().remove(this);
+			level.getPointLights().remove(this);
 		}
 		
 		// Sets the new level
@@ -57,7 +55,7 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			level.getLights().add(this);
+			level.getPointLights().add(this);
 		}
 	}
 	
@@ -84,12 +82,7 @@ public class PointLight extends Entity
 	@SuppressWarnings("deprecation")
 	public void renderCentered(LightMap renderTo)
 	{
-		if (level instanceof ClientLevel)
-		{
-			ClientLevel cLevel = (ClientLevel) this.level;
-			
-			renderTo.drawLight(cLevel.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
-		}
+		renderTo.drawLight(level.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
 	}
 	
 	public void setRadius(double radius)

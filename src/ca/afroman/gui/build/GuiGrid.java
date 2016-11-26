@@ -3,7 +3,7 @@ package ca.afroman.gui.build;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
-import ca.afroman.level.ClientLevel;
+import ca.afroman.level.api.Level;
 
 public class GuiGrid extends GuiScreen
 {
@@ -26,7 +26,7 @@ public class GuiGrid extends GuiScreen
 		
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
-			ClientLevel level = ClientGame.instance().getCurrentLevel();
+			Level level = ClientGame.instance().getCurrentLevel();
 			
 			switch (buttonID)
 			{

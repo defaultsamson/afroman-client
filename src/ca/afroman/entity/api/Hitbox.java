@@ -2,7 +2,7 @@ package ca.afroman.entity.api;
 
 import java.awt.geom.Rectangle2D;
 
-import ca.afroman.level.Level;
+import ca.afroman.level.api.Level;
 import ca.afroman.resource.IDCounter;
 
 public class Hitbox extends Rectangle2D.Double

@@ -2,13 +2,13 @@ package ca.afroman.entity.api;
 
 import java.util.List;
 
-import ca.afroman.assets.AssetType;
 import ca.afroman.interfaces.ITickable;
-import ca.afroman.level.Level;
+import ca.afroman.level.api.Level;
 import ca.afroman.resource.IDCounter;
+import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
 
-public class Entity implements ITickable, IServerClient
+public class Entity extends ServerClientObject implements ITickable
 {
 	private static final boolean PLAYER_COLLISION = false;
 	private static final boolean HITBOX_COLLISION = true;
@@ -36,20 +36,16 @@ public class Entity implements ITickable, IServerClient
 	// All the required variables needed to create an Entity
 	private int id;
 	protected Level level;
-	protected AssetType assetType;
 	protected Vector2DDouble position;
 	protected boolean hasHitbox;
 	protected Hitbox[] hitbox;
-	
 	protected Hitbox[] hitboxInLevel;
 	
-	private boolean serverSide;
 	// All the movement related variables
 	protected double speed;
 	protected final double originalSpeed;
 	protected int numSteps;
 	protected Direction direction;
-	
 	protected Direction lastDirection;
 	
 	/**
@@ -61,9 +57,9 @@ public class Entity implements ITickable, IServerClient
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position)
+	public Entity(boolean isServerSide, int id, Vector2DDouble position)
 	{
-		this(isServerSide, id, assetType, position, false, new Hitbox[] { null });
+		this(isServerSide, id, position, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -75,11 +71,12 @@ public class Entity implements ITickable, IServerClient
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(boolean isServerSide, int id, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
 	{
+		super(isServerSide);
+		
 		this.id = id; // -1 if this is not an object in a level
 		this.level = null;
-		this.assetType = assetType;
 		this.position = position;
 		this.hasHitbox = hasHitbox;
 		hitbox = hasHitbox ? hitboxes : null;
@@ -96,8 +93,6 @@ public class Entity implements ITickable, IServerClient
 			hitboxInLevel = null;
 		}
 		updateHitboxInLevel();
-		
-		serverSide = isServerSide;
 		
 		speed = 1.0;
 		originalSpeed = speed;
@@ -116,9 +111,9 @@ public class Entity implements ITickable, IServerClient
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(boolean isServerSide, int id, AssetType assetType, Vector2DDouble position, Hitbox... hitboxes)
+	public Entity(boolean isServerSide, int id, Vector2DDouble position, Hitbox... hitboxes)
 	{
-		this(isServerSide, id, assetType, position, true, hitboxes);
+		this(isServerSide, id, position, true, hitboxes);
 	}
 	
 	/**
@@ -129,16 +124,16 @@ public class Entity implements ITickable, IServerClient
 	 * @param level the new level
 	 * @param layer the new layer
 	 */
-	public void addTileToLevel(Level newLevel, byte layer)
+	public void addTileToLevel(Level newLevel, int layer)
 	{
 		if (level == newLevel) return;
 		
 		if (level != null)
 		{
-			synchronized (level.getTiles())
+			synchronized (level.getTileLayers())
 			{
 				// Searches all the old layers in case the old tile isn't on the same layer as the new one being specified
-				for (List<Entity> tiles : level.getTiles())
+				for (List<Entity> tiles : level.getTileLayers())
 				{
 					if (tiles.contains(this))
 					{
@@ -185,14 +180,6 @@ public class Entity implements ITickable, IServerClient
 		}
 	}
 	
-	/**
-	 * @return the asset type associated with this Entity.
-	 */
-	public AssetType getAssetType()
-	{
-		return assetType;
-	}
-	
 	public Direction getDirection()
 	{
 		return direction;
@@ -207,7 +194,7 @@ public class Entity implements ITickable, IServerClient
 	}
 	
 	/**
-	 * @return this player's ID.
+	 * @return this entity's ID.
 	 */
 	public int getID()
 	{
@@ -238,33 +225,6 @@ public class Entity implements ITickable, IServerClient
 	public boolean hasHitbox()
 	{
 		return hasHitbox;
-	}
-	
-	/**
-	 * @return hitboxes in a savable form for level saving and sending.
-	 */
-	public String hitboxesAsSaveable()
-	{
-		StringBuilder sb = new StringBuilder();
-		
-		if (this.hasHitbox())
-		{
-			for (int i = 0; i < getHitbox().length; i++)
-			{
-				Hitbox box = getHitbox()[i];
-				
-				sb.append(box.getX());
-				sb.append(", ");
-				sb.append(box.getY());
-				sb.append(", ");
-				sb.append(box.getWidth());
-				sb.append(", ");
-				sb.append(box.getHeight());
-				if (i == getHitbox().length - 1) sb.append(", ");
-			}
-		}
-		
-		return sb.toString();
 	}
 	
 	/**
@@ -312,12 +272,6 @@ public class Entity implements ITickable, IServerClient
 	public boolean isMoving()
 	{
 		return direction != Direction.NONE;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return serverSide;
 	}
 	
 	@SuppressWarnings("unused")
@@ -382,7 +336,7 @@ public class Entity implements ITickable, IServerClient
 				}
 			}
 			
-			// If it it now intersecting another hitbox, move it back in the x direction
+			// If it is now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
 			{
 				position.add(-deltaX, 0);
@@ -512,7 +466,7 @@ public class Entity implements ITickable, IServerClient
 	 */
 	public void removeTileFromLevel()
 	{
-		addTileToLevel(null, (byte) 0);
+		addTileToLevel(null, 0);
 	}
 	
 	/**
@@ -546,6 +500,11 @@ public class Entity implements ITickable, IServerClient
 		lastDirection = dir;
 	}
 	
+	/**
+	 * Designed for use from the server only.
+	 * 
+	 * @param position
+	 */
 	public void setPosition(Vector2DDouble position)
 	{
 		this.position.setPosition(position);

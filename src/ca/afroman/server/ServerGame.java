@@ -1,46 +1,21 @@
 package ca.afroman.server;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import ca.afroman.assets.AssetType;
 import ca.afroman.entity.PlayerEntity;
-import ca.afroman.entity.api.Entity;
-import ca.afroman.entity.api.Hitbox;
-import ca.afroman.events.Event;
-import ca.afroman.events.HitboxToggle;
-import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.TPTrigger;
-import ca.afroman.events.TriggerType;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
-import ca.afroman.level.Level;
-import ca.afroman.level.LevelObjectType;
-import ca.afroman.level.LevelType;
-import ca.afroman.light.FlickeringLight;
-import ca.afroman.light.PointLight;
+import ca.afroman.level.api.Level;
+import ca.afroman.level.api.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
-import ca.afroman.packet.PacketAddFlickeringLight;
-import ca.afroman.packet.PacketAddHitbox;
-import ca.afroman.packet.PacketAddHitboxToggle;
-import ca.afroman.packet.PacketAddLevel;
-import ca.afroman.packet.PacketAddPointLight;
-import ca.afroman.packet.PacketAddTPTrigger;
-import ca.afroman.packet.PacketAddTile;
-import ca.afroman.packet.PacketAddTrigger;
 import ca.afroman.packet.PacketDenyJoin;
-import ca.afroman.packet.PacketEditHitboxToggle;
-import ca.afroman.packet.PacketEditTPTrigger;
-import ca.afroman.packet.PacketEditTrigger;
-import ca.afroman.packet.PacketRemoveLevelObject;
 import ca.afroman.packet.PacketSendLevels;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.IDCounter;
@@ -63,12 +38,8 @@ public class ServerGame extends Game
 		return new ThreadGroup("Server");
 	}
 	
-	private boolean isSendingLevels = false;
-	
 	private String password;
-	
 	private boolean stopServer = false;
-	
 	private boolean isCommandLine;
 	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
@@ -111,104 +82,36 @@ public class ServerGame extends Game
 		return isCommandLine;
 	}
 	
-	// TODO add server-wide build mode? probably not
-	// public boolean isBuildMode()
-	// {
-	// return buildMode;
-	// }
-	
-	public boolean isSendingLevels()
+	@Override
+	public void setIsInGame(boolean isInGame)
 	{
-		return isSendingLevels;
-	}
-	
-	public void loadGame()
-	{
-		isSendingLevels = true;
+		super.setIsInGame(isInGame);
 		
-		sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
-		
-		for (LevelType type : LevelType.values())
+		if (isInGame)
 		{
-			if (type != LevelType.NULL) getLevels().add(Level.fromFile(true, type));
+			sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
+			
+			loadLevels();
+			
+			players.clear();
+			players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80, 50)));
+			players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(20, 20)));
+			
+			for (int i = 0; i < players.size(); i++)
+			{
+				PlayerEntity player = players.get(i);
+				player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
+				player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
+			}
+			
+			// TODO only start ticking once the game has loaded for all clients
+			
+			sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
 		}
-		
-		// Sends the levels to everyone else
-		for (Level level : getLevels())
+		else
 		{
-			PacketAddLevel levelPack = new PacketAddLevel(level.getType());
 			
-			sockets().sender().sendPacketToAllClients(levelPack);
-			
-			byte layer = 0;
-			for (List<Entity> tileList : level.getTiles())
-			{
-				for (Entity tile : tileList)
-				{
-					sockets().sender().sendPacketToAllClients(new PacketAddTile(layer, level.getType(), tile));
-				}
-				
-				layer++;
-			}
-			
-			for (Hitbox box : level.getHitboxes())
-			{
-				if (!box.isMicroManaged()) sockets().sender().sendPacketToAllClients(new PacketAddHitbox(level.getType(), box));
-			}
-			
-			for (PointLight light : level.getLights())
-			{
-				if (light instanceof FlickeringLight)
-				{
-					FlickeringLight flight = (FlickeringLight) light;
-					sockets().sender().sendPacketToAllClients(new PacketAddFlickeringLight(level.getType(), flight.getID(), flight.getPosition(), flight.getRadius(), flight.getRadius2(), flight.getTicksPerFrame()));
-				}
-				else
-				{
-					sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
-				}
-			}
-			
-			for (Event event : level.getScriptedEvents())
-			{
-				if (event instanceof HitboxTrigger)
-				{
-					HitboxTrigger e = (HitboxTrigger) event;
-					sockets().sender().sendPacketToAllClients(new PacketAddTrigger(level.getType(), e));
-					sockets().sender().sendPacketToAllClients(new PacketEditTrigger(level.getType(), e.getID(), e.getTriggerTypes(), e.getInTriggers(), e.getOutTriggers()));
-				}
-				else if (event instanceof HitboxToggle)
-				{
-					HitboxToggle e = (HitboxToggle) event;
-					sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(level.getType(), e));
-					sockets().sender().sendPacketToAllClients(new PacketEditHitboxToggle(level.getType(), e.isEnabled(), e.getID(), e.getInTriggers(), e.getOutTriggers()));
-				}
-				else if (event instanceof TPTrigger)
-				{
-					TPTrigger e = (TPTrigger) event;
-					
-					sockets().sender().sendPacketToAllClients(new PacketAddTPTrigger(level.getType(), e));
-					sockets().sender().sendPacketToAllClients(new PacketEditTPTrigger(level.getType(), e.getID(), e.getLevelTypeToTPTo(), e.getTPX(), e.getTPY(), e.getInTriggers(), e.getOutTriggers()));
-				}
-			}
 		}
-		
-		players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80, 50)));
-		players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(20, 20)));
-		
-		for (int i = 0; i < players.size(); i++)
-		{
-			PlayerEntity player = players.get(i);
-			player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
-			player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
-		}
-		
-		// TODO only start ticking once the game has loaded for all clients
-		
-		setIsInGame(true);
-		isSendingLevels = false;
-		
-		sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
 	}
 	
 	/**
@@ -230,7 +133,7 @@ public class ServerGame extends Game
 			boolean sentByConnected = sender != null;
 			boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 			
-			if (sentByConnected)
+			if (sentByConnected && type != null)
 			{
 				switch (type)
 				{
@@ -313,7 +216,7 @@ public class ServerGame extends Game
 					case START_SERVER:
 						if (sentByHost)
 						{
-							loadGame();
+							setIsInGame(true);
 						}
 						else
 						{
@@ -333,33 +236,6 @@ public class ServerGame extends Game
 								
 								player.move(x, y);
 							}
-						}
-					}
-						break;
-					case ADD_LEVEL_TILE:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							byte layer = buf.get();
-							
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							// int id = buf.getInt();
-							AssetType asset = AssetType.fromOrdinal(buf.getInt());
-							Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
-							
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							Entity tile = new Entity(true, Entity.getIDCounter().getNext(), asset, pos);
-							tile.addTileToLevel(level, layer);
-							sockets().sender().sendPacketToAllClients(new PacketAddTile(layer, level.getType(), tile));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
 						}
 					}
 						break;
@@ -383,381 +259,6 @@ public class ServerGame extends Game
 						{
 							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
 						}
-						break;
-					case REMOVE_LEVEL_OBJECT:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							LevelObjectType objType = LevelObjectType.fromOrdinal(buf.getShort());
-							
-							int id = buf.getInt();
-							
-							boolean removed = false;
-							
-							switch (objType)
-							{
-								default:
-									break;
-								case TILE:
-									Entity tile = level.getTile(id);
-									
-									if (tile != null)
-									{
-										tile.removeTileFromLevel();
-										removed = true;
-									}
-									break;
-								case HITBOX:
-									Hitbox box = level.getHitbox(id);
-									
-									if (box != null)
-									{
-										box.removeFromLevel();
-										removed = true;
-									}
-									break;
-								case POINT_LIGHT:
-								case FLICKERING_LIGHT:
-									PointLight light = level.getLight(id);
-									
-									if (light != null)
-									{
-										light.removeFromLevel();
-										removed = true;
-									}
-									break;
-								case HITBOX_TRIGGER:
-								case TP_TRIGGER:
-									Event event = level.getScriptedEvent(id);
-									
-									if (event != null)
-									{
-										event.removeFromLevel();
-										removed = true;
-									}
-									break;
-							}
-							
-							if (removed)
-							{
-								// TODO use the previous byte content so it doens't need to reformat to bytes
-								PacketRemoveLevelObject pack = new PacketRemoveLevelObject(id, levelType, objType);
-								sockets().sender().sendPacketToAllClients(pack);
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "Could not remove object id " + id + " of type " + objType);
-							}
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case ADD_LEVEL_HITBOX:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							// int id = buf.getInt();
-							double x = buf.getInt();
-							double y = buf.getInt();
-							double width = buf.getInt();
-							double height = buf.getInt();
-							
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							Hitbox box = new Hitbox(Hitbox.getIDCounter().getNext(), x, y, width, height);
-							box.addToLevel(level);
-							sockets().sender().sendPacketToAllClients(new PacketAddHitbox(levelType, box));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case ADD_LEVEL_POINTLIGHT:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							// int id = buf.getInt();
-							Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
-							double radius = buf.getInt();
-							
-							// Create entity with next available ID. Ignore any sent ID, and it isn't trusted
-							PointLight light = new PointLight(true, PointLight.getIDCounter().getNext(), pos, radius);
-							light.addToLevel(level);
-							sockets().sender().sendPacketToAllClients(new PacketAddPointLight(level.getType(), light));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-					case ADD_LEVEL_FLICKERINGLIGHT:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							// int id = buf.getInt();
-							double x = buf.getInt();
-							double y = buf.getInt();
-							double radius1 = buf.getInt();
-							double radius2 = buf.getInt();
-							int tpf = buf.getInt();
-							
-							FlickeringLight light = new FlickeringLight(false, PointLight.getIDCounter().getNext(), new Vector2DDouble(x, y), radius1, radius2, tpf);
-							light.addToLevel(level);
-							sockets().sender().sendPacketToAllClients(new PacketAddFlickeringLight(level.getType(), light.getID(), light.getPosition(), light.getRadius(), light.getRadius2(), light.getTicksPerFrame()));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case ADD_EVENT_HITBOX_TRIGGER:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							int id = Event.getIDCounter().getNext();
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							int x = buf.getInt();
-							int y = buf.getInt();
-							int width = buf.getInt();
-							int height = buf.getInt();
-							
-							HitboxTrigger trig = new HitboxTrigger(true, id, x, y, width, height, null, null, null);
-							trig.addToLevel(level);
-							sockets().sender().sendPacketToAllClients(new PacketAddTrigger(levelType, id, x, y, width, height));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case EDIT_EVENT_HITBOX_TRIGGER:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							int id = buf.getInt();
-							
-							Event eHitbox = level.getScriptedEvent(id);
-							
-							if (eHitbox != null)
-							{
-								if (eHitbox instanceof HitboxTrigger)
-								{
-									HitboxTrigger hitbox = (HitboxTrigger) eHitbox;
-									
-									List<TriggerType> triggers = new ArrayList<TriggerType>();
-									
-									for (byte b : ByteUtil.extractBytes(buf, Byte.MIN_VALUE, Byte.MAX_VALUE))
-										triggers.add(TriggerType.fromOrdinal(b));
-									
-									List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
-									List<Integer> triggersOut = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
-									
-									hitbox.setTriggerTypes(triggers);
-									hitbox.setInTriggers(triggersIn);
-									hitbox.setOutTriggers(triggersOut);
-									
-									// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
-									sockets().sender().sendPacketToAllClients(new PacketEditTrigger(levelType, id, triggers, triggersIn, triggersOut));
-								}
-								else
-								{
-									logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
-								}
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "No event with ID " + id);
-							}
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case ADD_EVENT_TP_TRIGGER:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							int id = Event.getIDCounter().getNext();
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							int x = buf.getInt();
-							int y = buf.getInt();
-							int width = buf.getInt();
-							int height = buf.getInt();
-							
-							TPTrigger trig = new TPTrigger(true, id, x, y, width, height, null, null);
-							trig.addToLevel(level);
-							sockets().sender().sendPacketToAllClients(new PacketAddTPTrigger(levelType, id, x, y, width, height));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case EDIT_EVENT_TP_TRIGGER:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							int id = buf.getInt();
-							
-							Event eHitbox = level.getScriptedEvent(id);
-							
-							if (eHitbox != null)
-							{
-								if (eHitbox instanceof TPTrigger)
-								{
-									TPTrigger hitbox = (TPTrigger) eHitbox;
-									
-									LevelType toTpTo = LevelType.fromOrdinal(buf.getShort());
-									double x = buf.getInt();
-									double y = buf.getInt();
-									
-									hitbox.setLevelToTPTo(toTpTo);
-									hitbox.setLocationToTPTo(x, y);
-									hitbox.setInTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
-									hitbox.setOutTriggers(ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE));
-									
-									// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
-									sockets().sender().sendPacketToAllClients(new PacketEditTPTrigger(levelType, id, hitbox.getLevelTypeToTPTo(), hitbox.getTPX(), hitbox.getTPY(), hitbox.getInTriggers(), hitbox.getOutTriggers()));
-								}
-								else
-								{
-									logger().log(ALogType.WARNING, "Event found is not an instance of HitboxTrigger");
-								}
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "No event with ID " + id);
-							}
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case ADD_EVENT_HITBOX_TOGGLE:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							int id = Event.getIDCounter().getNext();
-							buf.position(buf.position() + ByteUtil.INT_BYTE_COUNT);
-							int x = buf.getInt();
-							int y = buf.getInt();
-							int width = buf.getInt();
-							int height = buf.getInt();
-							
-							HitboxToggle trig = new HitboxToggle(true, id, x, y, width, height, null, null);
-							trig.addToLevel(level);
-							sockets().sender().sendPacketToAllClients(new PacketAddHitboxToggle(levelType, id, x, y, width, height));
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
-						break;
-					case EDIT_EVENT_HITBOX_TOGGLE:
-					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-						
-						LevelType levelType = LevelType.fromOrdinal(buf.getShort());
-						Level level = getLevel(levelType);
-						
-						if (level != null)
-						{
-							int id = buf.getInt();
-							
-							Event eHitbox = level.getScriptedEvent(id);
-							
-							if (eHitbox != null)
-							{
-								if (eHitbox instanceof HitboxToggle)
-								{
-									HitboxToggle hitbox = (HitboxToggle) eHitbox;
-									
-									boolean enabled = buf.get() == 1;
-									List<Integer> triggersIn = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
-									List<Integer> triggersOut = ByteUtil.extractIntList(buf, Byte.MIN_VALUE, Byte.MAX_VALUE);
-									
-									hitbox.setEnabled(enabled);
-									hitbox.setInTriggers(triggersIn);
-									hitbox.setOutTriggers(triggersOut);
-									
-									// TODO optimise by using the same byte data that was given so that it doesn't need to create an entirely new packet from scratch
-									sockets().sender().sendPacketToAllClients(new PacketEditHitboxToggle(levelType, enabled, id, triggersIn, triggersOut));
-								}
-								else
-								{
-									logger().log(ALogType.WARNING, "Event found is not an instance of HitboxToggleReceiver");
-								}
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "No event with ID " + id);
-							}
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No level with type " + levelType);
-						}
-					}
 						break;
 					case COMMAND:
 					{

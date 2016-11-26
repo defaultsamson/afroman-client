@@ -6,8 +6,8 @@ import java.util.List;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.game.Game;
-import ca.afroman.level.Level;
-import ca.afroman.level.LevelType;
+import ca.afroman.level.api.Level;
+import ca.afroman.level.api.LevelType;
 import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
@@ -95,19 +95,8 @@ public class TPTrigger extends Event
 			for (PlayerEntity p : conPlayers)
 			{
 				trigger(p);
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getType(), p.getRole()));
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), p.getRole()));
 			}
 		}
-	}
-	
-	@Override
-	public String toString()
-	{
-		return toWrapper().toString();
-	}
-	
-	public TPTriggerWrapper toWrapper()
-	{
-		return new TPTriggerWrapper(getHitbox().getX(), getHitbox().getY(), getHitbox().getWidth(), getHitbox().getHeight(), tpX, tpY, tpTo, inTriggers, outTriggers);
 	}
 }
