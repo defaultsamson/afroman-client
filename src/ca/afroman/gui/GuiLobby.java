@@ -16,7 +16,7 @@ import ca.afroman.light.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.option.Options;
-import ca.afroman.packet.PacketBeginGame;
+import ca.afroman.packet.PacketStartServer;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
@@ -136,7 +136,7 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketBeginGame());
+			ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer());
 		}
 		else if (buttonID == 2001) // Stop Server
 		{

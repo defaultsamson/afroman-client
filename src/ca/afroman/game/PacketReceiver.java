@@ -7,7 +7,6 @@ import java.net.PortUnreachableException;
 import java.net.SocketException;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.api.IServerClient;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
@@ -18,24 +17,18 @@ import ca.afroman.packet.BytePacket;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
-public class PacketReceiver extends DynamicThread implements IServerClient
+public class PacketReceiver extends DynamicThread
 {
 	private SocketManager manager;
 	
 	/**
 	 * A socket that receives BytePackets and parses them through the provided game.
 	 */
-	public PacketReceiver(SocketManager manager)
+	public PacketReceiver(boolean isServerSide, SocketManager manager)
 	{
-		super(manager.getGame().getThreadGroup(), "Receive");
+		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive");
 		
 		this.manager = manager;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return manager.isServerSide();
 	}
 	
 	@Override

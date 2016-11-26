@@ -6,8 +6,9 @@ import java.util.List;
 import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
+import ca.afroman.resource.ServerClientObject;
 
-public abstract class DynamicThread extends Thread implements IDynamicRunning
+public abstract class DynamicThread extends ServerClientObject implements IDynamicRunning
 {
 	private static List<String> excludeNames;
 	static
@@ -36,16 +37,60 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		return toReturn;
 	}
 	
+	private Thread thread;
+	private ALogger logger;
+	
 	private boolean exit = false;
 	protected boolean isRunning = false;
 	
-	private ALogger logger;
-	
-	public DynamicThread(ThreadGroup group, String name)
+	public DynamicThread(boolean isServerSide, ThreadGroup group, String name)
 	{
-		super(group, getNameWithParents(group, name));
+		super(isServerSide);
 		
-		logger = new ALogger(this.getName());
+		thread = new Thread(group, getNameWithParents(group, name))
+		{
+			@Override
+			public void run()
+			{
+				dynamicRun();
+			}
+		};
+		
+		logger = new ALogger(thread.getName());
+	}
+	
+	public void dynamicRun()
+	{
+		while (!exit)
+		{
+			while (isRunning)
+			{
+				onRun();
+				
+				try
+				{
+					Thread.sleep(3);
+				}
+				catch (InterruptedException e)
+				{
+					logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread during runtime", e);
+				}
+			}
+			
+			try
+			{
+				Thread.sleep(200);
+			}
+			catch (InterruptedException e)
+			{
+				logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread while paused", e);
+			}
+		}
+	}
+	
+	public Thread getThread()
+	{
+		return thread;
 	}
 	
 	public ALogger logger()
@@ -80,42 +125,15 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		isRunning = false;
 	}
 	
-	@Override
-	public void run()
-	{
-		while (!exit)
-		{
-			while (isRunning)
-			{
-				onRun();
-				
-				try
-				{
-					Thread.sleep(3);
-				}
-				catch (InterruptedException e)
-				{
-					logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread during runtime", e);
-				}
-			}
-			
-			try
-			{
-				Thread.sleep(200);
-			}
-			catch (InterruptedException e)
-			{
-				logger().log(ALogType.CRITICAL, "Couldn't sleep dynamic thread while paused", e);
-			}
-		}
-	}
-	
 	/**
-	 * @deprecated Use startThis()
+	 * Starts this thread, unpausing it if it's only paused,
+	 * and starting it completely if it's not yet been started.
+	 * <p>
+	 * <b>NOTE:</b> When overriding, put <code>super.startThis()</code>
+	 * at the end so that everything is initialised before the thread begins.
 	 */
-	@Deprecated
 	@Override
-	public void start()
+	public void startThis()
 	{
 		if (exit)
 		{
@@ -128,10 +146,10 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 			isRunning = true;
 			
 			// If it's not already started and hasn't been exited, start it
-			if (!this.isAlive())
+			if (!thread.isAlive())
 			{
 				logger().log(ALogType.DEBUG, "Starting Thread");
-				super.start();
+				thread.start();
 			}
 			else
 			{
@@ -142,19 +160,6 @@ public abstract class DynamicThread extends Thread implements IDynamicRunning
 		{
 			logger().log(ALogType.WARNING, "This thread is already running");
 		}
-	}
-	
-	/**
-	 * Starts this thread, unpausing it if it's only paused,
-	 * and starting it completely if it's not yet been started.
-	 * <p>
-	 * <b>NOTE:</b> When overriding, put <code>super.startThis()</code>
-	 * at the end so that everything is initialised before the thread begins.
-	 */
-	@Override
-	public void startThis()
-	{
-		this.start();
 	}
 	
 	/**

@@ -5,7 +5,6 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.api.IServerClient;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
@@ -14,24 +13,18 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.thread.DynamicTickThread;
 
-public class PacketSender extends DynamicTickThread implements IServerClient
+public class PacketSender extends DynamicTickThread
 {
 	private SocketManager manager;
 	
 	/**
 	 * A socket that receives BytePackets and parses them through the provided game.
 	 */
-	public PacketSender(SocketManager manager)
+	public PacketSender(boolean isServerSide, SocketManager manager)
 	{
-		super(manager.getGame().getThreadGroup(), "Send", 0);
+		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Send", 0);
 		
 		this.manager = manager;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return manager.isServerSide();
 	}
 	
 	/**

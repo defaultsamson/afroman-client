@@ -1,10 +1,8 @@
 package ca.afroman.assets;
 
-import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
-import ca.afroman.resource.Vector2DInt;
 
-public class StepSpriteAnimation extends SpriteAnimation implements ITickable, IRenderable
+public class StepSpriteAnimation extends SpriteAnimation implements ITickable
 {
 	private int[] pauseFrames;
 	
@@ -42,12 +40,6 @@ public class StepSpriteAnimation extends SpriteAnimation implements ITickable, I
 	public void progress()
 	{
 		progress = true;
-	}
-	
-	@Override
-	public void render(Texture renderTo, Vector2DInt pos)
-	{
-		renderTo.draw(getCurrentFrame(), pos);
 	}
 	
 	@Override

@@ -15,9 +15,9 @@ public abstract class DynamicTickThread extends DynamicThread implements ITickab
 	protected long lastTimer;
 	protected double delta;
 	
-	public DynamicTickThread(ThreadGroup group, String name, double ticksPerSecond)
+	public DynamicTickThread(boolean isServerSide, ThreadGroup group, String name, double ticksPerSecond)
 	{
-		super(group, name);
+		super(isServerSide, group, name);
 		
 		if (ticksPerSecond < 0) ticksPerSecond = 0;
 		

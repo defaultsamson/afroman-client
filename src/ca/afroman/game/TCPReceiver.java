@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.PortUnreachableException;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.api.IServerClient;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
@@ -17,7 +16,7 @@ import ca.afroman.packet.BytePacket;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
-public class TCPReceiver extends DynamicThread implements IServerClient
+public class TCPReceiver extends DynamicThread
 {
 	private TCPSocket socket;
 	private SocketManager manager;
@@ -25,9 +24,9 @@ public class TCPReceiver extends DynamicThread implements IServerClient
 	/**
 	 * A socket that receives BytePackets and parses them through the provided game.
 	 */
-	public TCPReceiver(SocketManager manager, TCPSocket socket)
+	public TCPReceiver(boolean isServerSide, SocketManager manager, TCPSocket socket)
 	{
-		super(manager.getGame().getThreadGroup(), "Receive(" + IPUtil.asReadable(socket.getSocket().getInetAddress(), socket.getSocket().getPort()) + ")");
+		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive(" + IPUtil.asReadable(socket.getSocket().getInetAddress(), socket.getSocket().getPort()) + ")");
 		
 		this.manager = manager;
 		this.socket = socket;
@@ -36,12 +35,6 @@ public class TCPReceiver extends DynamicThread implements IServerClient
 	public TCPSocket getTCPSocket()
 	{
 		return socket;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return manager.isServerSide();
 	}
 	
 	@Override

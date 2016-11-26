@@ -38,34 +38,34 @@ import ca.afroman.util.ShapeUtil;
 
 public class Level extends ServerClientObject implements ITickable
 {
+	private static final int DEFAULT_TILE_LAYERS = 7;
+	private static final int DEFAULT_DYNAMIC_TILE_LAYER_INDEX = 3;
+	
 	// Build mode
 	public GridSize grid = GridSize.MEDIUM;
 	public BuildMode buildMode = BuildMode.TILE;
-	
 	// Tiles
 	private DrawableAsset cursorAsset = null;
-	private boolean showLayer[];
-	private int editingLayer = 0;
 	
+	private boolean showLayer[];
+	
+	private int editingLayer = 0;
 	// PointLights
 	private int currentBuildLightRadius = 10;
-	
 	// FlickeringLights
 	private int currentFlickerLightFlicker = 4;
 	private double currentFlickerLightRadius = 4;
+	
 	private double lastFlickerLightRadius = currentFlickerLightRadius;
 	public FlickeringLight flickerCursor = null;
-	
 	// HitBoxes
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
-	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
-	private int hitboxClickCount = 0;
 	
+	private Vector2DDouble hitbox2 = new Vector2DDouble(0, 0);
+	
+	private int hitboxClickCount = 0;
 	// Used for doing cleanup and setup of build modes
 	private boolean lastIsBuildMode = false;
-	
-	private static final int DEFAULT_TILE_LAYERS = 7;
-	private static final int DEFAULT_DYNAMIC_TILE_LAYER_INDEX = 3;
 	
 	private LevelType type;
 	
@@ -130,6 +130,329 @@ public class Level extends ServerClientObject implements ITickable
 	public void chainEvents(Entity triggerer, int inTrigger)
 	{
 		
+	}
+	
+	private void cleanupBuildMode(BuildMode mode)
+	{
+		// Cleanup
+		switch (mode)
+		{
+			case TILE:
+				ClientGame.instance().setCurrentScreen(null);
+				break;
+			case LIGHT:
+				ClientGame.instance().setCurrentScreen(null);
+				break;
+			case HITBOX:
+				ClientGame.instance().setCurrentScreen(null);
+				hitboxClickCount = 0;
+				break;
+			case FLICKERING_LIGHT:
+				ClientGame.instance().setCurrentScreen(null);
+				hitboxClickCount = 0;
+				flickerCursor.removeFromLevel();
+				break;
+		}
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @return the level's camera offset.
+	 */
+	public Vector2DDouble getCameraOffset()
+	{
+		return camOffset;
+	}
+	
+	public int getEditingLayer()
+	{
+		return editingLayer;
+	}
+	
+	/**
+	 * <i>Accessible from server/client.</i>
+	 * 
+	 * @return the level entities.
+	 */
+	public ArrayList<Entity> getEntities()
+	{
+		return entities;
+	}
+	
+	public Event getEvent(int id)
+	{
+		for (Event e : events)
+		{
+			if (id == e.getID()) return e;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * <i>Accessible from server/client.</i>
+	 * 
+	 * @return the level events.
+	 */
+	public ArrayList<Event> getEvents()
+	{
+		return events;
+	}
+	
+	/**
+	 * Gets a PointLight at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
+	 */
+	public FlickeringLight getFlickeringLight(Vector2DDouble pos)
+	{
+		for (int i = getPointLights().size() - 1; i >= 0; i--)
+		{
+			PointLight light = getPointLights().get(i);
+			
+			// If the light is not unnamed
+			if (light instanceof FlickeringLight && light.getID() != -1) ;
+			{
+				double radius = light.getRadius();
+				
+				double xa = (pos.getX() - light.getPosition().getX());
+				double ya = (pos.getY() - light.getPosition().getY());
+				
+				// If the light contains the point
+				// Old method, creates a square hitbox to check for collision
+				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
+				{
+					return (FlickeringLight) light;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a hitbox at the given coordinates.
+	 *
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no hitboxes at that given location.
+	 */
+	public Hitbox getHitbox(Vector2DDouble pos)
+	{
+		for (int i = getHitboxes().size() - 1; i >= 0; i--)
+		{
+			Hitbox hitbox = getHitboxes().get(i);
+			
+			if (!hitbox.isMicroManaged() && hitbox.contains(pos.getX(), pos.getY()))
+			{
+				return hitbox;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * <i>Accessible from server/client.</i>
+	 * 
+	 * @return the level hitboxes.
+	 */
+	public ArrayList<Hitbox> getHitboxes()
+	{
+		return hitboxes;
+	}
+	
+	public LevelType getLevelType()
+	{
+		return type;
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @return the level lightmap.
+	 */
+	public LightMap getLightmap()
+	{
+		return lightmap;
+	}
+	
+	/**
+	 * <i>Accessible from server/client.</i>
+	 * 
+	 * @return the level players.
+	 */
+	public ArrayList<PlayerEntity> getPlayers()
+	{
+		return players;
+	}
+	
+	/**
+	 * Gets a PointLight at the given coordinates.
+	 * 
+	 * @param pos the position
+	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
+	 */
+	public PointLight getPointLight(Vector2DDouble pos)
+	{
+		for (int i = getPointLights().size() - 1; i >= 0; i--)
+		{
+			PointLight light = getPointLights().get(i);
+			
+			// If the light is not unnamed
+			if (light.getID() != -1) ;
+			{
+				double radius = light.getRadius();
+				
+				double xa = (pos.getX() - light.getPosition().getX());
+				double ya = (pos.getY() - light.getPosition().getY());
+				
+				// If the light contains the point
+				// Old method, creates a square hitbox to check for collision
+				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
+				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
+				{
+					return light;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @return the level lights.
+	 */
+	public ArrayList<PointLight> getPointLights()
+	{
+		return lights;
+	}
+	
+	/**
+	 * Gets a tile at the given coordinates.
+	 * 
+	 * @param x the x in-level ordinate
+	 * @param y the y in-level ordinate
+	 * @return the tile. <b>null</b> if there are no tiles at that given location.
+	 */
+	public Entity getTile(int layer, Vector2DDouble pos)
+	{
+		ArrayList<Entity> tiles = getTiles(layer);
+		
+		for (int i = tiles.size() - 1; i >= 0; i--)
+		{
+			Entity tile = tiles.get(i);
+			
+			// TODO generate removable hitboxes for tiles based on asset
+			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
+			
+			if (surrounding.contains(pos.getX(), pos.getY()))
+			{
+				return tile;
+			}
+		}
+		return null;
+		
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @return the layers of tiles.
+	 */
+	public ArrayList<ArrayList<Entity>> getTileLayers()
+	{
+		return tiles;
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @return the tiles on the specified layer.
+	 */
+	public ArrayList<Entity> getTiles(int layer)
+	{
+		return tiles.get(layer);
+	}
+	
+	// Deals with generic hitbox behaviour for build modes that use it
+	private void hitboxBehaviour(BuildMode mode, boolean leftClick)
+	{
+		switch (mode)
+		{
+			default:
+				break;
+			case HITBOX:
+				if (leftClick)
+				{
+					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
+					hitboxes.add(new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
+				}
+				else
+				{
+					Hitbox box = getHitbox(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (box != null)
+					{
+						box.removeFromLevel();
+					}
+				}
+				break;
+			case FLICKERING_LIGHT:
+				if (leftClick)
+				{
+					FlickeringLight light = new FlickeringLight(false, PointLight.getIDCounter().getNext(), flickerCursor.getPosition(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
+					lights.add(light);
+					
+					flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
+					flickerCursor.removeFromLevel();
+				}
+				else
+				{
+					FlickeringLight light = getFlickeringLight(screenToWorld(ClientGame.instance().input().getMousePos()));
+					
+					if (light != null)
+					{
+						light.removeFromLevel();
+					}
+				}
+				break;
+		}
+		
+	}
+	
+	public boolean isShowingLayer(int layer)
+	{
+		return layer == editingLayer;
+	}
+	
+	private void loadBuildMode(BuildMode mode)
+	{
+		// Load new build mode
+		switch (mode)
+		{
+			case TILE:
+				if (cursorAsset == null)
+				{
+					cursorAsset = (DrawableAsset) Assets.getAsset(AssetType.fromOrdinal(0).getNextDrawableAsset()).clone();
+				}
+				ClientGame.instance().setCurrentScreen(new GuiTileEditor());
+				break;
+			case LIGHT:
+				ClientGame.instance().setCurrentScreen(new GuiGrid());
+				break;
+			case HITBOX:
+				ClientGame.instance().setCurrentScreen(new GuiGrid());
+				break;
+			case FLICKERING_LIGHT:
+				if (flickerCursor == null) flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
+				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor());
+				break;
+		}
 	}
 	
 	public void render(Texture renderTo)
@@ -257,6 +580,37 @@ public class Level extends ServerClientObject implements ITickable
 				
 				renderTo.getGraphics().setPaint(oldPaint);
 			}
+		}
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @param point the point on the screen to translate to level coordinates
+	 * @return the in-level coordinate equivalent of <b>point</b>.
+	 */
+	public Vector2DDouble screenToWorld(Vector2DInt point)
+	{
+		return new Vector2DDouble(point.getX() + camOffset.getX(), point.getY() + camOffset.getY());
+	}
+	
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * Sets the camera to center itself on the given point.
+	 * 
+	 * @param point the point in level coordinates
+	 */
+	public void setCameraCenterInWorld(Vector2DDouble point)
+	{
+		camOffset.setPosition(point.getX() - ClientGame.WIDTH / 2, point.getY() - ClientGame.HEIGHT / 2);
+	}
+	
+	public void setEditingLayer(int layer)
+	{
+		if (layer >= 0 && layer < showLayer.length)
+		{
+			editingLayer = layer;
 		}
 	}
 	
@@ -546,346 +900,12 @@ public class Level extends ServerClientObject implements ITickable
 		}
 	}
 	
-	// Deals with generic hitbox behaviour for build modes that use it
-	private void hitboxBehaviour(BuildMode mode, boolean leftClick)
+	public void toggleTileLayerShow(int layer)
 	{
-		switch (mode)
+		if (layer >= 0 && layer < showLayer.length)
 		{
-			default:
-				break;
-			case HITBOX:
-				if (leftClick)
-				{
-					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
-					hitboxes.add(new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
-				}
-				else
-				{
-					Hitbox box = getHitbox(screenToWorld(ClientGame.instance().input().getMousePos()));
-					
-					if (box != null)
-					{
-						box.removeFromLevel();
-					}
-				}
-				break;
-			case FLICKERING_LIGHT:
-				if (leftClick)
-				{
-					FlickeringLight light = new FlickeringLight(false, PointLight.getIDCounter().getNext(), flickerCursor.getPosition(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
-					lights.add(light);
-					
-					flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
-					flickerCursor.removeFromLevel();
-				}
-				else
-				{
-					FlickeringLight light = getFlickeringLight(screenToWorld(ClientGame.instance().input().getMousePos()));
-					
-					if (light != null)
-					{
-						light.removeFromLevel();
-					}
-				}
-				break;
+			showLayer[layer] = !showLayer[layer];
 		}
-		
-	}
-	
-	private void loadBuildMode(BuildMode mode)
-	{
-		// Load new build mode
-		switch (mode)
-		{
-			case TILE:
-				if (cursorAsset == null)
-				{
-					cursorAsset = (DrawableAsset) Assets.getAsset(AssetType.fromOrdinal(0).getNextRenderable()).clone();
-				}
-				ClientGame.instance().setCurrentScreen(new GuiTileEditor());
-				break;
-			case LIGHT:
-				ClientGame.instance().setCurrentScreen(new GuiGrid());
-				break;
-			case HITBOX:
-				ClientGame.instance().setCurrentScreen(new GuiGrid());
-				break;
-			case FLICKERING_LIGHT:
-				if (flickerCursor == null) flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
-				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor());
-				break;
-		}
-	}
-	
-	private void cleanupBuildMode(BuildMode mode)
-	{
-		// Cleanup
-		switch (mode)
-		{
-			case TILE:
-				ClientGame.instance().setCurrentScreen(null);
-				break;
-			case LIGHT:
-				ClientGame.instance().setCurrentScreen(null);
-				break;
-			case HITBOX:
-				ClientGame.instance().setCurrentScreen(null);
-				hitboxClickCount = 0;
-				break;
-			case FLICKERING_LIGHT:
-				ClientGame.instance().setCurrentScreen(null);
-				hitboxClickCount = 0;
-				flickerCursor.removeFromLevel();
-				break;
-		}
-	}
-	
-	/**
-	 * <i>Accessible from server/client.</i>
-	 * 
-	 * @return the level entities.
-	 */
-	public ArrayList<Entity> getEntities()
-	{
-		return entities;
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @return the layers of tiles.
-	 */
-	public ArrayList<ArrayList<Entity>> getTileLayers()
-	{
-		return tiles;
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @return the tiles on the specified layer.
-	 */
-	public ArrayList<Entity> getTiles(int layer)
-	{
-		return tiles.get(layer);
-	}
-	
-	/**
-	 * Gets a tile at the given coordinates.
-	 * 
-	 * @param x the x in-level ordinate
-	 * @param y the y in-level ordinate
-	 * @return the tile. <b>null</b> if there are no tiles at that given location.
-	 */
-	public Entity getTile(int layer, Vector2DDouble pos)
-	{
-		ArrayList<Entity> tiles = getTiles(layer);
-		
-		for (int i = tiles.size() - 1; i >= 0; i--)
-		{
-			Entity tile = tiles.get(i);
-			
-			// TODO generate removable hitboxes for tiles based on asset
-			Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
-			
-			if (surrounding.contains(pos.getX(), pos.getY()))
-			{
-				return tile;
-			}
-		}
-		return null;
-		
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @return the level lights.
-	 */
-	public ArrayList<PointLight> getPointLights()
-	{
-		return lights;
-	}
-	
-	/**
-	 * Gets a PointLight at the given coordinates.
-	 * 
-	 * @param pos the position
-	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
-	 */
-	public PointLight getPointLight(Vector2DDouble pos)
-	{
-		for (int i = getPointLights().size() - 1; i >= 0; i--)
-		{
-			PointLight light = getPointLights().get(i);
-			
-			// If the light is not unnamed
-			if (light.getID() != -1) ;
-			{
-				double radius = light.getRadius();
-				
-				double xa = (pos.getX() - light.getPosition().getX());
-				double ya = (pos.getY() - light.getPosition().getY());
-				
-				// If the light contains the point
-				// Old method, creates a square hitbox to check for collision
-				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
-				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
-				{
-					return light;
-				}
-			}
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Gets a PointLight at the given coordinates.
-	 * 
-	 * @param pos the position
-	 * @return the entity. <b>null</b> if there are no PointLights at that given location.
-	 */
-	public FlickeringLight getFlickeringLight(Vector2DDouble pos)
-	{
-		for (int i = getPointLights().size() - 1; i >= 0; i--)
-		{
-			PointLight light = getPointLights().get(i);
-			
-			// If the light is not unnamed
-			if (light instanceof FlickeringLight && light.getID() != -1) ;
-			{
-				double radius = light.getRadius();
-				
-				double xa = (pos.getX() - light.getPosition().getX());
-				double ya = (pos.getY() - light.getPosition().getY());
-				
-				// If the light contains the point
-				// Old method, creates a square hitbox to check for collision
-				// if (light.getID() != -1 && new Hitbox(light.getX() - radius, light.getY() - radius, (radius * 2) - 1, (radius * 2) - 1).contains(x, y))
-				if (xa * xa + ya * ya < radius * radius) // (x - center_x)^2 + (y - center_y)^2 < radius^2
-				{
-					return (FlickeringLight) light;
-				}
-			}
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * <i>Accessible from server/client.</i>
-	 * 
-	 * @return the level hitboxes.
-	 */
-	public ArrayList<Hitbox> getHitboxes()
-	{
-		return hitboxes;
-	}
-	
-	/**
-	 * Gets a hitbox at the given coordinates.
-	 *
-	 * @param pos the position
-	 * @return the entity. <b>null</b> if there are no hitboxes at that given location.
-	 */
-	public Hitbox getHitbox(Vector2DDouble pos)
-	{
-		for (int i = getHitboxes().size() - 1; i >= 0; i--)
-		{
-			Hitbox hitbox = getHitboxes().get(i);
-			
-			if (!hitbox.isMicroManaged() && hitbox.contains(pos.getX(), pos.getY()))
-			{
-				return hitbox;
-			}
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * <i>Accessible from server/client.</i>
-	 * 
-	 * @return the level events.
-	 */
-	public ArrayList<Event> getEvents()
-	{
-		return events;
-	}
-	
-	public Event getEvent(int id)
-	{
-		for (Event e : events)
-		{
-			if (id == e.getID()) return e;
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * <i>Accessible from server/client.</i>
-	 * 
-	 * @return the level players.
-	 */
-	public ArrayList<PlayerEntity> getPlayers()
-	{
-		return players;
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @return the level lightmap.
-	 */
-	public LightMap getLightmap()
-	{
-		return lightmap;
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @return the level's camera offset.
-	 */
-	public Vector2DDouble getCameraOffset()
-	{
-		return camOffset;
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @param point the point on the screen to translate to level coordinates
-	 * @return the in-level coordinate equivalent of <b>point</b>.
-	 */
-	public Vector2DDouble screenToWorld(Vector2DInt point)
-	{
-		return new Vector2DDouble(point.getX() + camOffset.getX(), point.getY() + camOffset.getY());
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * @param point the point in the level to translate to screen coordinates
-	 * @return the on-screen coordinate equivalent of <b>point</b>.
-	 */
-	public Vector2DInt worldToScreen(Vector2DDouble point)
-	{
-		return new Vector2DInt((int) point.getX() - (int) camOffset.getX(), (int) point.getY() - (int) camOffset.getY());
-	}
-	
-	/**
-	 * <i>Accessible from client only.</i>
-	 * 
-	 * Sets the camera to center itself on the given point.
-	 * 
-	 * @param point the point in level coordinates
-	 */
-	public void setCameraCenterInWorld(Vector2DDouble point)
-	{
-		camOffset.setPosition(point.getX() - ClientGame.WIDTH / 2, point.getY() - ClientGame.HEIGHT / 2);
 	}
 	
 	/**
@@ -913,34 +933,14 @@ public class Level extends ServerClientObject implements ITickable
 		}
 	}
 	
-	public void toggleTileLayerShow(int layer)
+	/**
+	 * <i>Accessible from client only.</i>
+	 * 
+	 * @param point the point in the level to translate to screen coordinates
+	 * @return the on-screen coordinate equivalent of <b>point</b>.
+	 */
+	public Vector2DInt worldToScreen(Vector2DDouble point)
 	{
-		if (layer >= 0 && layer < showLayer.length)
-		{
-			showLayer[layer] = !showLayer[layer];
-		}
-	}
-	
-	public void setEditingLayer(int layer)
-	{
-		if (layer >= 0 && layer < showLayer.length)
-		{
-			editingLayer = layer;
-		}
-	}
-	
-	public int getEditingLayer()
-	{
-		return editingLayer;
-	}
-	
-	public boolean isShowingLayer(int layer)
-	{
-		return layer == editingLayer;
-	}
-	
-	public LevelType getLevelType()
-	{
-		return type;
+		return new Vector2DInt((int) point.getX() - (int) camOffset.getX(), (int) point.getY() - (int) camOffset.getY());
 	}
 }

@@ -1,7 +1,5 @@
 package ca.afroman.assets;
 
-import ca.afroman.interfaces.IRenderable;
-
 public enum AssetType
 {
 	INVALID,
@@ -151,6 +149,23 @@ public enum AssetType
 	}
 	
 	/**
+	 * Gets the enum value of this prior to the <b>current</b> value.
+	 * <p>
+	 * If no value is found before the <b>current</b> value, the value at
+	 * index <i>n - 1</i> will be returned, where <i>n</i> is the total
+	 * number of values for this enumerator.
+	 * 
+	 * @return the next item on the list of this enumerator.
+	 */
+	public AssetType getLastDrawableAsset()
+	{
+		AssetType current = this;
+		for (int i = 0; i < values().length; i++)
+			if (Assets.getAsset(current = current.getLast()) instanceof DrawableAsset) return current;
+		return null;
+	}
+	
+	/**
 	 * Gets the enum value of this past the <b>current</b> value.
 	 * <p>
 	 * If no value is found past the <b>current</b> value, the value at
@@ -180,61 +195,11 @@ public enum AssetType
 	 * 
 	 * @return the next item on the list of this enumerator.
 	 */
-	public AssetType getNextRenderable()
-	{
-		AssetType current = this;
-		for (int i = 0; i < values().length; i++)
-			if (Assets.getAsset(current = current.getNext()) instanceof IRenderable) return current;
-		return null;
-	}
-	
-	/**
-	 * Gets the enum value of this prior to the <b>current</b> value.
-	 * <p>
-	 * If no value is found before the <b>current</b> value, the value at
-	 * index <i>n - 1</i> will be returned, where <i>n</i> is the total
-	 * number of values for this enumerator.
-	 * 
-	 * @return the next item on the list of this enumerator.
-	 */
-	public AssetType getLastRenderable()
-	{
-		AssetType current = this;
-		for (int i = 0; i < values().length; i++)
-			if (Assets.getAsset(current = current.getLast()) instanceof IRenderable) return current;
-		return null;
-	}
-	
-	/**
-	 * Gets the enum value of this past the <b>current</b> value.
-	 * <p>
-	 * If no value is found past the <b>current</b> value, the value at
-	 * index 0 will be returned.
-	 * 
-	 * @return the next item on the list of this enumerator.
-	 */
 	public AssetType getNextDrawableAsset()
 	{
 		AssetType current = this;
 		for (int i = 0; i < values().length; i++)
 			if (Assets.getAsset(current = current.getNext()) instanceof DrawableAsset) return current;
-		return null;
-	}
-	
-	/**
-	 * Gets the enum value of this prior to the <b>current</b> value.
-	 * <p>
-	 * If no value is found before the <b>current</b> value, the value at
-	 * index <i>n - 1</i> will be returned, where <i>n</i> is the total
-	 * number of values for this enumerator.
-	 * 
-	 * @return the next item on the list of this enumerator.
-	 */
-	public AssetType getLastDrawableAsset()
-	{
-		AssetType current = this;
-		for (int i = 0; i < values().length; i++)
-			if (Assets.getAsset(current = current.getLast()) instanceof DrawableAsset) return current;
 		return null;
 	}
 }

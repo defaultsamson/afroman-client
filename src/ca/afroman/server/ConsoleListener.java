@@ -17,9 +17,9 @@ public class ConsoleListener extends DynamicThread
 	
 	private Scanner sc = null;
 	
-	public ConsoleListener()
+	public ConsoleListener(boolean isServerSide)
 	{
-		super(ServerGame.instance().getThreadGroup(), "TypeListener");
+		super(isServerSide, ServerGame.instance().getThread().getThreadGroup(), "TypeListener");
 		
 		sc = new Scanner(System.in);
 		

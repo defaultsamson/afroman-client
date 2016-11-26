@@ -152,9 +152,11 @@ public class ClientGame extends Game
 	private GuiScreen currentScreen = null;
 	private AudioClip music;
 	
+	private boolean waitingForOthersToLoad = false;
+	
 	public ClientGame()
 	{
-		super(newDefaultThreadGroupInstance(), "Game", false, 60);
+		super(false, newDefaultThreadGroupInstance(), "Game", 60);
 	}
 	
 	public void exitFromGame(ExitGameReason reason)
@@ -180,59 +182,6 @@ public class ClientGame extends Game
 			case BANNED:
 				new GuiClickNotification(getCurrentScreen(), -1, "Banned", "from server");
 				break;
-		}
-	}
-	
-	private boolean waitingForOthersToLoad = false;
-	
-	@Override
-	public void setIsInGame(boolean isInGame)
-	{
-		super.setIsInGame(isInGame);
-		
-		if (isInGame)
-		{
-			getLevels().clear();
-			
-			if (!(getCurrentScreen() instanceof GuiSendingLevels))
-			{
-				setCurrentScreen(new GuiSendingLevels(null));
-			}
-			
-			loadLevels();
-			
-			waitingForOthersToLoad = true;
-			
-			if (music.isRunning())
-			{
-				music.stop();
-			}
-		}
-		else
-		{
-			waitingForOthersToLoad = false;
-			
-			stopSocket();
-			
-			id = -1;
-			
-			getLevels().clear();
-			setCurrentLevel(null);
-			
-			IDCounter.resetAll();
-			
-			// resets the player entities
-			for (PlayerEntity e : getPlayers())
-			{
-				e.reset();
-			}
-			
-			setCurrentScreen(new GuiMainMenu());
-			
-			if (!music.isRunning())
-			{
-				music.startLoop();
-			}
 		}
 	}
 	
@@ -802,6 +751,11 @@ public class ClientGame extends Game
 		}
 	}
 	
+	public void setID(short id)
+	{
+		this.id = id;
+	}
+	
 	// public void setFullScreen(boolean isFullscreen)
 	// {
 	// GraphicsDevice device = frame.getGraphicsConfiguration().getDevice();
@@ -844,9 +798,55 @@ public class ClientGame extends Game
 	// }
 	// }
 	
-	public void setID(short id)
+	@Override
+	public void setIsInGame(boolean isInGame)
 	{
-		this.id = id;
+		super.setIsInGame(isInGame);
+		
+		if (isInGame)
+		{
+			getLevels().clear();
+			
+			if (!(getCurrentScreen() instanceof GuiSendingLevels))
+			{
+				setCurrentScreen(new GuiSendingLevels(null));
+			}
+			
+			loadLevels();
+			
+			waitingForOthersToLoad = true;
+			
+			if (music.isRunning())
+			{
+				music.stop();
+			}
+		}
+		else
+		{
+			waitingForOthersToLoad = false;
+			
+			stopSocket();
+			
+			id = -1;
+			
+			getLevels().clear();
+			setCurrentLevel(null);
+			
+			IDCounter.resetAll();
+			
+			// resets the player entities
+			for (PlayerEntity e : getPlayers())
+			{
+				e.reset();
+			}
+			
+			setCurrentScreen(new GuiMainMenu());
+			
+			if (!music.isRunning())
+			{
+				music.startLoop();
+			}
+		}
 	}
 	
 	public void setRole(Role role)
@@ -929,7 +929,7 @@ public class ClientGame extends Game
 		
 		// Loading screen
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
-		DynamicThread renderLoading = new DynamicThread(this.getThreadGroup(), "Loading-Display")
+		DynamicThread renderLoading = new DynamicThread(false, this.getThread().getThreadGroup(), "Loading-Display")
 		{
 			@Override
 			public void onRun()

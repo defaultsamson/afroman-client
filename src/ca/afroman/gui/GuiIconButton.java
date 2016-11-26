@@ -1,31 +1,31 @@
 package ca.afroman.gui;
 
+import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.StepSpriteAnimation;
 import ca.afroman.assets.Texture;
-import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.Vector2DInt;
 
 public class GuiIconButton extends GuiButton
 {
-	private IRenderable icon;
+	private DrawableAsset icon;
 	
-	public GuiIconButton(GuiScreen screen, int id, int x, int y, int width, IRenderable icon)
+	public GuiIconButton(GuiScreen screen, int id, int x, int y, int width, DrawableAsset icon)
 	{
 		super(screen, id, x, y, width);
 		
 		this.icon = icon;
 	}
 	
-	public GuiIconButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y, int width, IRenderable icon)
+	public GuiIconButton(GuiScreen screen, Texture normal, Texture hover, Texture pressed, int id, int x, int y, int width, DrawableAsset icon)
 	{
 		super(screen, normal, hover, pressed, id, x, y, width);
 		
 		this.icon = icon;
 	}
 	
-	public IRenderable getIcon()
+	public DrawableAsset getIcon()
 	{
 		return icon;
 	}
@@ -63,7 +63,7 @@ public class GuiIconButton extends GuiButton
 		icon.render(drawTo, new Vector2DInt(hitbox.x, hitbox.y));
 	}
 	
-	public void setIcon(IRenderable icon)
+	public void setIcon(DrawableAsset icon)
 	{
 		this.icon = icon;
 	}

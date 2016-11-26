@@ -44,7 +44,7 @@ public class ServerGame extends Game
 	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
-		super(newDefaultThreadGroupInstance(), "Game", true, 60);
+		super(true, newDefaultThreadGroupInstance(), "Game", 60);
 		
 		if (game == null) game = this;
 		
@@ -53,7 +53,7 @@ public class ServerGame extends Game
 		if (commandLine && ConsoleListener.instance() == null)
 		{
 			// Starts the console listener
-			new ConsoleListener().startThis();
+			new ConsoleListener(isServerSide()).startThis();
 		}
 		
 		this.password = password;
@@ -80,38 +80,6 @@ public class ServerGame extends Game
 	public boolean isCommandLine()
 	{
 		return isCommandLine;
-	}
-	
-	@Override
-	public void setIsInGame(boolean isInGame)
-	{
-		super.setIsInGame(isInGame);
-		
-		if (isInGame)
-		{
-			sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
-			
-			loadLevels();
-			
-			players.clear();
-			players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80, 50)));
-			players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(20, 20)));
-			
-			for (int i = 0; i < players.size(); i++)
-			{
-				PlayerEntity player = players.get(i);
-				player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
-				player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
-			}
-			
-			// TODO only start ticking once the game has loaded for all clients
-			
-			sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
-		}
-		else
-		{
-			
-		}
 	}
 	
 	/**
@@ -390,6 +358,38 @@ public class ServerGame extends Game
 		game = null;
 		
 		stopSocket();
+	}
+	
+	@Override
+	public void setIsInGame(boolean isInGame)
+	{
+		super.setIsInGame(isInGame);
+		
+		if (isInGame)
+		{
+			sockets().sender().sendPacketToAllClients(new PacketSendLevels(true));
+			
+			loadLevels();
+			
+			players.clear();
+			players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80, 50)));
+			players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(20, 20)));
+			
+			for (int i = 0; i < players.size(); i++)
+			{
+				PlayerEntity player = players.get(i);
+				player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
+				player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
+			}
+			
+			// TODO only start ticking once the game has loaded for all clients
+			
+			sockets().sender().sendPacketToAllClients(new PacketSendLevels(false));
+		}
+		else
+		{
+			
+		}
 	}
 	
 	@Override

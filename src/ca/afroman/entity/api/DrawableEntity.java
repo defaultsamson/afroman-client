@@ -2,12 +2,10 @@ package ca.afroman.entity.api;
 
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.Texture;
-import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.Vector2DDouble;
-import ca.afroman.resource.Vector2DInt;
 
-public class DrawableEntity extends Entity implements IRenderable
+public class DrawableEntity extends Entity
 {
 	protected boolean cameraFollow;
 	protected DrawableAsset asset;
@@ -29,21 +27,8 @@ public class DrawableEntity extends Entity implements IRenderable
 	{
 		if (asset != null && getLevel() != null)
 		{
-			if (asset instanceof IRenderable)
-			{
-				asset.render(renderTo, getLevel().worldToScreen(position));
-			}
+			asset.render(renderTo, getLevel().worldToScreen(position));
 		}
-	}
-	
-	/**
-	 * @deprecated Use the other render method to properly render this in the world.
-	 */
-	@Override
-	@Deprecated
-	public void render(Texture renderTo, Vector2DInt pos)
-	{
-		asset.render(renderTo, pos);
 	}
 	
 	/**

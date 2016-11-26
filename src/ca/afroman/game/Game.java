@@ -36,9 +36,9 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	
 	private List<IncomingPacketWrapper> toProcess;
 	
-	public Game(ThreadGroup threadGroup, String name, boolean isServerSide, int ticks)
+	public Game(boolean isServerSide, ThreadGroup threadGroup, String name, int ticks)
 	{
-		super(threadGroup, name, isServerSide, ticks);
+		super(isServerSide, threadGroup, name, ticks);
 		isPaused = false;
 		isInGame = false;
 		
@@ -96,11 +96,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return isInGame;
 	}
 	
-	public void setIsInGame(boolean isInGame)
-	{
-		this.isInGame = isInGame;
-	}
-	
 	public boolean isPaused()
 	{
 		return isPaused;
@@ -125,6 +120,11 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	{
 		super.onUnpause();
 		isPaused = true;
+	}
+	
+	public void setIsInGame(boolean isInGame)
+	{
+		this.isInGame = isInGame;
 	}
 	
 	public SocketManager sockets()

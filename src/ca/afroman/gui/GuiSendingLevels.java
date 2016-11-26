@@ -3,8 +3,8 @@ package ca.afroman.gui;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
-import ca.afroman.packet.PacketBeginGame;
 import ca.afroman.packet.PacketPlayerDisconnect;
+import ca.afroman.packet.PacketStartServer;
 import ca.afroman.packet.PacketStopServer;
 import ca.afroman.resource.Vector2DInt;
 
@@ -68,7 +68,7 @@ public class GuiSendingLevels extends GuiScreen
 		switch (buttonID)
 		{
 			case 2000: // TODO Resend Levels
-				ClientGame.instance().sockets().sender().sendPacket(new PacketBeginGame());
+				ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer());
 				break;
 			case 2001: // Stop Server
 				ClientGame.instance().sockets().sender().sendPacket(new PacketStopServer());

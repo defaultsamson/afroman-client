@@ -1,9 +1,8 @@
 package ca.afroman.assets;
 
-import ca.afroman.interfaces.IRenderable;
 import ca.afroman.resource.Vector2DInt;
 
-public class DrawableAsset extends Asset implements IRenderable
+public abstract class DrawableAsset extends Asset
 {
 	// This simply acts as a class to relate all the assets together for the Assets class
 	
@@ -19,10 +18,7 @@ public class DrawableAsset extends Asset implements IRenderable
 	}
 	
 	@Override
-	public DrawableAsset clone()
-	{
-		return new DrawableAsset(getAssetType(), width, height);
-	}
+	public abstract DrawableAsset clone();
 	
 	public int getHeight()
 	{
@@ -34,9 +30,5 @@ public class DrawableAsset extends Asset implements IRenderable
 		return width;
 	}
 	
-	@Override
-	public void render(Texture renderTo, Vector2DInt pos)
-	{
-		// Override this in all children
-	}
+	public abstract void render(Texture renderTo, Vector2DInt pos);
 }

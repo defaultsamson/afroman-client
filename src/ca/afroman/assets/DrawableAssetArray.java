@@ -2,6 +2,8 @@ package ca.afroman.assets;
 
 import java.util.Random;
 
+import ca.afroman.resource.Vector2DInt;
+
 public class DrawableAssetArray extends DrawableAsset
 {
 	/** Holds the assets. */
@@ -71,5 +73,11 @@ public class DrawableAssetArray extends DrawableAsset
 	public int length()
 	{
 		return assets.length;
+	}
+	
+	@Override
+	public void render(Texture renderTo, Vector2DInt pos)
+	{
+		
 	}
 }

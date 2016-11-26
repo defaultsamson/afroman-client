@@ -1,11 +1,10 @@
 package ca.afroman.assets;
 
-import ca.afroman.interfaces.IRenderable;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DInt;
 
-public class SpriteAnimation extends DrawableAssetArray implements ITickable, IRenderable
+public class SpriteAnimation extends DrawableAssetArray implements ITickable
 {
 	/** Holds the textures for each frame. */
 	protected int currentFrameIndex = 0;

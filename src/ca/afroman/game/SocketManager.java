@@ -134,7 +134,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 					
 					synchronized (tcpSockets)
 					{
-						TCPReceiver rec = new TCPReceiver(this, tcp);
+						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
 						tcpSockets.add(rec);
 						rec.startThis();
 					}
@@ -228,7 +228,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				TCPSocket sock = new TCPSocket(clientSocket);
 				getServerConnection().setTCPSocket(sock);
 				
-				TCPReceiver thread = new TCPReceiver(this, sock);
+				TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
 				synchronized (tcpSockets)
 				{
 					tcpSockets.add(thread);
@@ -397,8 +397,8 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			}
 		}
 		
-		rSocket = new PacketReceiver(this);
-		sSocket = new PacketSender(this);
+		rSocket = new PacketReceiver(isServerSide(), this);
+		sSocket = new PacketSender(isServerSide(), this);
 		
 		rSocket.startThis();
 		sSocket.startThis();
@@ -451,11 +451,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			if (isServerSide())
 			{
-				threadGroup = new ThreadGroup(ServerGame.instance().getThreadGroup(), "Socket");
+				threadGroup = new ThreadGroup(ServerGame.instance().getThread().getThreadGroup(), "Socket");
 			}
 			else
 			{
-				threadGroup = new ThreadGroup(ClientGame.instance().getThreadGroup(), "Socket");
+				threadGroup = new ThreadGroup(ClientGame.instance().getThread().getThreadGroup(), "Socket");
 			}
 		}
 		return threadGroup;
