@@ -2,19 +2,21 @@ package ca.afroman.gui.build;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiSlider;
-import ca.afroman.level.api.Level;
+import ca.afroman.level.api.Grid;
+import ca.afroman.light.FlickeringLight;
 
 public class GuiFlickeringLightEditor extends GuiGrid
 {
 	private GuiSlider fpt;
+	private FlickeringLight light;
 	
-	public GuiFlickeringLightEditor()
+	public GuiFlickeringLightEditor(Grid grid, FlickeringLight light)
 	{
-		super();
+		super(grid);
 		
-		Level level = ClientGame.instance().getCurrentLevel();
+		this.light = light;
 		
-		fpt = new GuiSlider(this, 0, 200 - 4 - 12 - (13 * 6) - 5, 3, 13 * 6, 1, 60, level.flickerCursor.getTicksPerFrame(), "TPF");
+		fpt = new GuiSlider(this, 0, 200 - 4 - 12 - (13 * 6) - 5, 3, 13 * 6, 1, 60, light.getTicksPerFrame(), "TPF");
 		
 		addButton(fpt);
 	}
@@ -28,9 +30,7 @@ public class GuiFlickeringLightEditor extends GuiGrid
 		{
 			if (ClientGame.instance().getCurrentLevel() != null)
 			{
-				Level level = ClientGame.instance().getCurrentLevel();
-				
-				level.flickerCursor.setTicksPerFrame(newValue);
+				light.setTicksPerFrame(newValue);
 			}
 		}
 	}

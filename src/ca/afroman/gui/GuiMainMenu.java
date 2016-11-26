@@ -90,6 +90,7 @@ public class GuiMainMenu extends GuiMenuOutline
 			case 20: // Build mode
 				ClientGame.instance().setIsBuildMode(true);
 				ClientGame.instance().setIsInGame(true);
+				ClientGame.instance().setIsBuildMode(false);
 				break;
 		}
 	}

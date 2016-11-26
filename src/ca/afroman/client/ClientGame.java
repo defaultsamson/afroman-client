@@ -1011,8 +1011,8 @@ public class ClientGame extends Game
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
 		
 		lights = new HashMap<Role, FlickeringLight>(2);
-		lights.put(Role.PLAYER1, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(false, -1, new Vector2DDouble(0, 0), 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(false, true, new Vector2DDouble(0, 0), 50, 47, 4));
+		lights.put(Role.PLAYER2, new FlickeringLight(false, true, new Vector2DDouble(0, 0), 50, 47, 4));
 		
 		// WHEN FINISHED LOADING
 		
@@ -1140,31 +1140,29 @@ public class ClientGame extends Game
 				logger().log(ALogType.DEBUG, "Copied current level save data to clipboard");
 			}
 			
-			// Can no longer access build mode from in-game
-			// if (input.zero.isPressedFiltered() && isInGame())
-			// {
-			// buildMode = !buildMode;
-			//
-			// logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
-			//
-			// if (getThisPlayer() != null) getThisPlayer().setCameraToFollow(!buildMode);
-			//
-			// updateCursorHiding();
-			// }
-			
 			if (input.zero.isPressedFiltered())
 			{
 				if (isInGame())
 				{
+					// Go back to level selection
 					if (isBuildMode())
 					{
-						if (getCurrentScreen() instanceof GuiLevelSelect)
+						if (getCurrentLevel() != null)
 						{
-							getCurrentScreen().goToParentScreen();
+							getCurrentLevel().cleanupBuildMode(getCurrentLevel().getBuildMode());
 						}
-						else
+						setIsBuildMode(false);
+						
+						setCurrentScreen(new GuiLevelSelect(null, getCurrentLevel() != null)); // getCurrentLevel() != null
+					}
+					// Go out to
+					else if (getCurrentScreen() instanceof GuiLevelSelect)
+					{
+						if (getCurrentLevel() != null)
 						{
-							setCurrentScreen(new GuiLevelSelect(getCurrentScreen(), getCurrentLevel() != null));
+							setCurrentScreen(null);
+							setIsBuildMode(true);
+							getCurrentLevel().loadBuildMode(getCurrentLevel().getBuildMode());
 						}
 					}
 				}
@@ -1175,14 +1173,6 @@ public class ClientGame extends Game
 						((GuiMainMenu) getCurrentScreen()).toggleBuildModeButton();
 					}
 				}
-				
-				// buildMode = !buildMode;
-				//
-				// logger().log(ALogType.DEBUG, "Build Mode: " + buildMode);
-				//
-				// if (getThisPlayer() != null) getThisPlayer().setCameraToFollow(!buildMode);
-				//
-				// updateCursorHiding();
 			}
 			
 			if (input.shift.isPressed() && input.delete.isPressedFiltered())
@@ -1201,9 +1191,13 @@ public class ClientGame extends Game
 			getCurrentScreen().tick();
 		}
 		
-		if (!waitingForOthersToLoad && getCurrentLevel() != null)
+		if (!waitingForOthersToLoad) // && getCurrentLevel() != null
 		{
-			getCurrentLevel().tick();
+			for (Level l : getLevels())
+			{
+				l.tick();
+			}
+			// getCurrentLevel().tick();
 		}
 		
 		if (hasStartedUpdateList)

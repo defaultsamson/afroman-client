@@ -45,8 +45,11 @@ public class Level extends ServerClientObject implements ITickable
 	private static final int DEFAULT_DYNAMIC_TILE_LAYER_INDEX = 3;
 	
 	// Build mode
-	public GridSize grid = GridSize.MEDIUM;
-	public BuildMode buildMode = BuildMode.TILE;
+	private static final int MAX_TOOLTIP_TIME = (60 * 3); // Time in ticks
+	private int timeOnTool = 0;
+	
+	private Grid grid = new Grid();
+	private BuildMode buildMode = BuildMode.TILE;
 	
 	// Tiles
 	private DrawableAsset cursorAsset = null;
@@ -54,13 +57,14 @@ public class Level extends ServerClientObject implements ITickable
 	private int editingLayer = 0;
 	
 	// PointLights
-	private int currentBuildLightRadius = 10;
+	private int currentPointLightRadius = 10;
+	private PointLight lightCursor = null;
 	
 	// FlickeringLights
 	private int currentFlickerLightFlicker = 4;
 	private double currentFlickerLightRadius = 4;
 	private double lastFlickerLightRadius = currentFlickerLightRadius;
-	public FlickeringLight flickerCursor = null;
+	private FlickeringLight flickerCursor = null;
 	
 	// HitBoxes
 	private Vector2DDouble hitbox1 = new Vector2DDouble(0, 0);
@@ -68,7 +72,6 @@ public class Level extends ServerClientObject implements ITickable
 	private int hitboxClickCount = 0;
 	
 	// Used for doing cleanup and setup of build modes
-	private boolean lastIsBuildMode = false;
 	private LevelType type;
 	
 	// Universal to both client and server
@@ -131,10 +134,23 @@ public class Level extends ServerClientObject implements ITickable
 	
 	public void chainEvents(Entity triggerer, int inTrigger)
 	{
-		
+		// TODO detect infinite loops?
+		for (Event event : getEvents())
+		{
+			for (int eventTrigger : event.getInTriggers())
+			{
+				// If the event has the specified eventID
+				if (eventTrigger == inTrigger)
+				{
+					// Trigger it
+					event.trigger(triggerer);
+					break;
+				}
+			}
+		}
 	}
 	
-	private void cleanupBuildMode(BuildMode mode)
+	public void cleanupBuildMode(BuildMode mode)
 	{
 		// Cleanup
 		switch (mode)
@@ -144,6 +160,7 @@ public class Level extends ServerClientObject implements ITickable
 				break;
 			case LIGHT:
 				ClientGame.instance().setCurrentScreen(null);
+				lightCursor.removeFromLevel();
 				break;
 			case HITBOX:
 				ClientGame.instance().setCurrentScreen(null);
@@ -155,6 +172,11 @@ public class Level extends ServerClientObject implements ITickable
 				flickerCursor.removeFromLevel();
 				break;
 		}
+	}
+	
+	public BuildMode getBuildMode()
+	{
+		return buildMode;
 	}
 	
 	/**
@@ -387,8 +409,7 @@ public class Level extends ServerClientObject implements ITickable
 			}
 			else
 			{
-				// TODO generate removable hitboxes for tiles based on asset
-				Hitbox surrounding = new Hitbox(tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
+				Hitbox surrounding = new Hitbox(true, tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
 				
 				if (surrounding.contains(pos.getX(), pos.getY()))
 				{
@@ -431,7 +452,7 @@ public class Level extends ServerClientObject implements ITickable
 				if (leftClick)
 				{
 					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
-					hitboxes.add(new Hitbox(box.getX(), box.getY(), box.getWidth(), box.getHeight()));
+					new Hitbox(false, box.getX(), box.getY(), box.getWidth(), box.getHeight()).addToLevel(this);
 				}
 				else
 				{
@@ -446,8 +467,8 @@ public class Level extends ServerClientObject implements ITickable
 			case FLICKERING_LIGHT:
 				if (leftClick)
 				{
-					FlickeringLight light = new FlickeringLight(false, PointLight.getIDCounter().getNext(), flickerCursor.getPosition(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
-					lights.add(light);
+					FlickeringLight light = new FlickeringLight(false, false, flickerCursor.getPosition().clone(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
+					light.addToLevel(this);
 					
 					flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
 					flickerCursor.removeFromLevel();
@@ -466,6 +487,11 @@ public class Level extends ServerClientObject implements ITickable
 		
 	}
 	
+	public boolean isCurrentlevel()
+	{
+		return ClientGame.instance().getCurrentLevel() == this;
+	}
+	
 	public boolean isShowingLayer(int layer)
 	{
 		if (layer >= 0 && layer < showLayer.length)
@@ -478,13 +504,10 @@ public class Level extends ServerClientObject implements ITickable
 		}
 	}
 	
-	public void leaveBuildMode()
+	public void loadBuildMode(BuildMode mode)
 	{
-		lastIsBuildMode = false;
-	}
-	
-	private void loadBuildMode(BuildMode mode)
-	{
+		timeOnTool = 0;
+		
 		// Load new build mode
 		switch (mode)
 		{
@@ -493,20 +516,25 @@ public class Level extends ServerClientObject implements ITickable
 				{
 					cursorAsset = (DrawableAsset) Assets.getAsset(AssetType.fromOrdinal(0).getNextDrawableAsset()).clone();
 				}
-				ClientGame.instance().setCurrentScreen(new GuiTileEditor());
+				ClientGame.instance().setCurrentScreen(new GuiTileEditor(grid));
 				break;
 			case LIGHT:
-				ClientGame.instance().setCurrentScreen(new GuiGrid());
+				if (lightCursor == null)
+				{
+					lightCursor = new PointLight(false, true, new Vector2DDouble(0, 0), currentPointLightRadius);
+				}
+				lightCursor.addToLevel(this);
+				ClientGame.instance().setCurrentScreen(new GuiGrid(grid));
 				break;
 			case HITBOX:
-				ClientGame.instance().setCurrentScreen(new GuiGrid());
+				ClientGame.instance().setCurrentScreen(new GuiGrid(grid));
 				break;
 			case FLICKERING_LIGHT:
 				if (flickerCursor == null)
 				{
-					flickerCursor = new FlickeringLight(false, -1, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
+					flickerCursor = new FlickeringLight(false, true, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
 				}
-				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor());
+				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor(grid, flickerCursor));
 				break;
 		}
 	}
@@ -566,22 +594,10 @@ public class Level extends ServerClientObject implements ITickable
 			}
 		}
 		
-		if (ClientGame.instance().isBuildMode())
+		// Draws the tile on the cursor below the lighting
+		if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.TILE)
 		{
-			switch (buildMode)
-			{
-				default:
-				case TILE:
-					cursorAsset.render(renderTo, ClientGame.instance().input().getMousePos());
-					break;
-				case HITBOX:
-					break;
-				case LIGHT:
-					break;
-				case FLICKERING_LIGHT:
-					break;
-				
-			}
+			cursorAsset.render(renderTo, ClientGame.instance().input().getMousePos());
 		}
 		
 		// https://www.youtube.com/watch?v=6qIFmeRcY3c
@@ -592,12 +608,13 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				light.renderCentered(lightmap);
 			}
+			
 			lightmap.patch();
 			lightmap.render(renderTo, LightMap.PATCH_POSITION);
 		}
 		
 		// Draws out the hitboxes
-		if (ClientGame.instance().isHitboxDebugging())
+		if (ClientGame.instance().isHitboxDebugging() || ClientGame.instance().isBuildMode())
 		{
 			for (Hitbox box : this.getHitboxes())
 			{
@@ -622,38 +639,125 @@ public class Level extends ServerClientObject implements ITickable
 					renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
 				}
 			}
-		}
-		
-		if (ClientGame.instance().getCurrentScreen() instanceof GuiGrid)
-		{
-			// Draws the grid
-			if (grid.getSize() > 0)
+			
+			if (ClientGame.instance().getCurrentScreen() instanceof GuiGrid)
 			{
-				// The amount of extra lines to draw off the bottom and right sides of the screen to prevent any drawing loss
-				int bleed = 2;
-				int xOffset = (int) camOffset.getX() % grid.getSize(); // Gets the grid offsets so the grid draws to the screen with the world position in mind
-				int yOffset = (int) camOffset.getY() % grid.getSize();
+				// Draws the grid
+				if (grid.getSize() > 0)
+				{
+					// The amount of extra lines to draw off the bottom and right sides of the screen to prevent any drawing loss
+					int bleed = 2;
+					int xOffset = (int) camOffset.getX() % grid.getSize(); // Gets the grid offsets so the grid draws to the screen with the world position in mind
+					int yOffset = (int) camOffset.getY() % grid.getSize();
+					
+					Paint oldPaint = renderTo.getGraphics().getPaint();
+					
+					renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.1F));
+					
+					// Vertical lines
+					for (int i = 0; i < Math.ceil(ClientGame.WIDTH / (double) grid.getSize()) + bleed; i++)
+					{
+						int x = (i * grid.getSize()) - xOffset;
+						renderTo.getGraphics().drawLine(x, 0, x, ClientGame.HEIGHT);
+					}
+					
+					// Horizontal lines
+					for (int i = 0; i < Math.ceil(ClientGame.HEIGHT / (double) grid.getSize()) + bleed; i++)
+					{
+						int y = (i * grid.getSize()) - yOffset;
+						renderTo.getGraphics().drawLine(0, y, ClientGame.WIDTH, y);
+					}
+					
+					renderTo.getGraphics().setPaint(oldPaint);
+				}
+			}
+			
+			// Draws whatever it is for the specific build mode, whether it be the asset on the cursor, or the hitbox being created
+			if (buildMode == BuildMode.HITBOX && hitboxClickCount == 1)
+			{
+				Rectangle box = ShapeUtil.pointsToRectangle(worldToScreen(hitbox1), worldToScreen(hitbox2));
+				
+				renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), new Vector2DInt((int) box.getX(), (int) box.getY()), (int) box.getWidth(), (int) box.getHeight());
+			}
+			else if (buildMode == BuildMode.FLICKERING_LIGHT && hitboxClickCount == 1)
+			{
+				Vector2DInt pos1 = worldToScreen(hitbox1);
+				Vector2DInt pos2 = worldToScreen(hitbox2.clone().alignToGridCenter(grid.getGridSize()));
+				
+				// The change in x and y from first point to the cursor's point
+				int dx = pos2.getX() - pos1.getX();
+				int dy = pos2.getY() - pos1.getY();
+				
+				// Finds the amplitude to modify dx and dy by to achieve the x and y amplitudes for the smaller light flicker line
+				double amp = currentFlickerLightFlicker / currentFlickerLightRadius;
+				
+				// Finds the the x and y amplitudes for the smaller light flicker line
+				int cx = (int) (amp * dx);
+				int cy = (int) (amp * dy);
+				
+				// Finds the x and y ordinates of the intermediate point based on the new cx and cy amplitudes
+				int x = pos2.getX() - cx;
+				int y = pos2.getY() - cy;
+				
+				Vector2DInt intermediatePoint = new Vector2DInt(x, y);
 				
 				Paint oldPaint = renderTo.getGraphics().getPaint();
 				
-				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 0.1F));
+				renderTo.getGraphics().setPaint(new Color(1F, 1F, 1F, 1F));
+				renderTo.getGraphics().drawLine(pos1.getX(), pos1.getY(), intermediatePoint.getX(), intermediatePoint.getY());
 				
-				// Vertical lines
-				for (int i = 0; i < Math.ceil(ClientGame.WIDTH / (double) grid.getSize()) + bleed; i++)
-				{
-					int x = (i * grid.getSize()) - xOffset;
-					renderTo.getGraphics().drawLine(x, 0, x, ClientGame.HEIGHT);
-				}
-				
-				// Horizontal lines
-				for (int i = 0; i < Math.ceil(ClientGame.HEIGHT / (double) grid.getSize()) + bleed; i++)
-				{
-					int y = (i * grid.getSize()) - yOffset;
-					renderTo.getGraphics().drawLine(0, y, ClientGame.WIDTH, y);
-				}
+				renderTo.getGraphics().setPaint(new Color(0.1F, 0.1F, 1F, 1F));
+				renderTo.getGraphics().drawLine(intermediatePoint.getX(), intermediatePoint.getY(), pos2.getX(), pos2.getY());
 				
 				renderTo.getGraphics().setPaint(oldPaint);
 			}
+			
+			if (timeOnTool < MAX_TOOLTIP_TIME)
+			{
+				String text1 = "";
+				String text2 = "";
+				String text3 = "";
+				String text4 = "";
+				
+				int lines = 0;
+				
+				switch (buildMode)
+				{
+					case TILE:
+						lines = 3;
+						text2 = "Tiles";
+						text3 = "Scroll to switch texture";
+						break;
+					case LIGHT:
+						lines = 3;
+						text2 = "Lights";
+						text3 = "Scroll to change size";
+						break;
+					case HITBOX:
+						lines = 3;
+						text2 = "Hitboxes";
+						text3 = "Click to place both corners";
+						text4 = "Right click to cancel corner";
+						break;
+					case FLICKERING_LIGHT:
+						lines = 3;
+						text2 = "Flickering Lights";
+						text3 = "Click to place center and edge";
+						text4 = "Scroll to adjust flicker";
+						break;
+				}
+				
+				if (lines == 4) Assets.getFont(AssetType.FONT_NOBLE).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46), text1);
+				if (lines >= 3) Assets.getFont(lines == 3 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36), text2);
+				if (lines >= 2) Assets.getFont(lines == 2 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26), text3);
+				if (lines >= 1) Assets.getFont(lines == 1 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16), text4);
+			}
+		}
+		
+		// Draws the building hitbox, cursor asset, the grid, and the tooltips
+		if (ClientGame.instance().isBuildMode())
+		{
+			
 		}
 	}
 	
@@ -710,7 +814,7 @@ public class Level extends ServerClientObject implements ITickable
 		{
 			
 		}
-		else
+		else if (isCurrentlevel())
 		{
 			for (ArrayList<Entity> tileList : tiles)
 			{
@@ -725,23 +829,12 @@ public class Level extends ServerClientObject implements ITickable
 				light.tick();
 			}
 			
-			boolean newIsBuildMode = ClientGame.instance().isBuildMode();
+			boolean isBuildMode = ClientGame.instance().isBuildMode();
 			
-			// Cleanup the selected build mode if build mode has been exited,
-			// load if it has just been entered
-			if (newIsBuildMode && !lastIsBuildMode)
+			if (isBuildMode)
 			{
-				loadBuildMode(buildMode);
-			}
-			else if (!newIsBuildMode && lastIsBuildMode)
-			{
-				cleanupBuildMode(buildMode);
-			}
-			
-			lastIsBuildMode = newIsBuildMode;
-			
-			if (newIsBuildMode)
-			{
+				if (timeOnTool <= MAX_TOOLTIP_TIME) timeOnTool++;
+				
 				BuildMode lastBuildMode = buildMode;
 				
 				if (ClientGame.instance().input().e.isPressedFiltered())
@@ -796,7 +889,7 @@ public class Level extends ServerClientObject implements ITickable
 					case TILE:
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							DrawableEntity tileToAdd = new DrawableEntity(false, -1, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid));
+							DrawableEntity tileToAdd = new DrawableEntity(false, -1, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()));
 							tileToAdd.addTileToLevel(this, editingLayer);
 						}
 						
@@ -827,9 +920,11 @@ public class Level extends ServerClientObject implements ITickable
 					case LIGHT:
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							PointLight light = new PointLight(false, -1, screenToWorld(ClientGame.instance().input().getMousePos()).alignToGridCenter(grid), currentBuildLightRadius);
-							lights.add(light);
+							PointLight light = new PointLight(false, false, lightCursor.getPosition().clone(), lightCursor.getRadius());
+							light.addToLevel(this);
 						}
+						
+						lightCursor.setPosition(screenToWorld(ClientGame.instance().input().getMousePos()).alignToGridCenter(grid.getGridSize()));
 						
 						if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 						{
@@ -843,20 +938,24 @@ public class Level extends ServerClientObject implements ITickable
 						
 						if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 						{
-							currentBuildLightRadius -= speed;
-							if (currentBuildLightRadius < 2) currentBuildLightRadius = 2;
+							currentPointLightRadius -= speed;
+							if (currentPointLightRadius < 2) currentPointLightRadius = 2;
 						}
 						
 						if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
 						{
-							currentBuildLightRadius += speed;
+							currentPointLightRadius += speed;
 						}
+						
+						lightCursor.setRadius(currentPointLightRadius);
 						break;
 					case FLICKERING_LIGHT:
 						if (hitboxClickCount == 1)
 						{
-							flickerCursor.setPosition(hitbox1);
+							flickerCursor.setPosition(hitbox1.alignToGridCenter(grid.getGridSize()));
 							boolean flickerLightChange = false;
+							
+							hitbox2.alignToGridCenter(grid.getGridSize());
 							
 							// The change in x and y from first point to the cursor's point
 							double dx = hitbox2.getX() - hitbox1.getX();
@@ -901,7 +1000,7 @@ public class Level extends ServerClientObject implements ITickable
 							{
 								if (hitboxClickCount == 0)
 								{
-									hitboxClickCount = 1;
+									hitboxClickCount = 1; // TODO hitbox
 									hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 									
 									if (buildMode == BuildMode.FLICKERING_LIGHT)

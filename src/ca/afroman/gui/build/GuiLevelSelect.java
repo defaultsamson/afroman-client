@@ -30,7 +30,7 @@ public class GuiLevelSelect extends GuiMenuOutline
 		
 		prev = new GuiIconButton(this, 1001, (ClientGame.WIDTH / 2) - (72 / 2) - 16 - 4, 18 + (ySpacing * 4) + 6, 16, Assets.getTexture(AssetType.ICON_NEXT).clone().flipX());
 		next = new GuiIconButton(this, 1002, (ClientGame.WIDTH / 2) + (72 / 2) + 4, 18 + (ySpacing * 4) + 6, 16, Assets.getTexture(AssetType.ICON_NEXT).clone());
-		done = new GuiTextButton(this, 1000, (ClientGame.WIDTH / 2) - (72 / 2), 18 + (ySpacing * 4) + 6, 72, blackFont, "Back");
+		done = new GuiTextButton(this, 1000, (ClientGame.WIDTH / 2) - (72 / 2), 18 + (ySpacing * 4) + 6, 72, blackFont, "Quit");
 		
 		addButton(prev);
 		addButton(next);
@@ -81,20 +81,14 @@ public class GuiLevelSelect extends GuiMenuOutline
 				Level level = ClientGame.instance().getLevel(type);
 				if (level != null)
 				{
+					ClientGame.instance().setIsBuildMode(true);
 					ClientGame.instance().setCurrentScreen(null);
-					
-					Level currentLevel = ClientGame.instance().getCurrentLevel();
-					if (currentLevel != null)
-					{
-						currentLevel.leaveBuildMode();
-					}
-					
 					ClientGame.instance().setCurrentLevel(level);
+					level.loadBuildMode(level.getBuildMode());
 				}
 				break;
 			case 1000: // Back
 				ClientGame.instance().setIsInGame(false);
-				ClientGame.instance().setIsBuildMode(false);
 				break;
 			case 1001: // Prev
 				break;

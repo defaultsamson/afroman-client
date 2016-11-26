@@ -3,6 +3,7 @@ package ca.afroman.gui.build;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiTextButton;
+import ca.afroman.level.api.Grid;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DInt;
 
@@ -26,9 +27,9 @@ public class GuiTileEditor extends GuiGrid
 	
 	private GuiTextButton tileMenu;
 	
-	public GuiTileEditor()
+	public GuiTileEditor(Grid grid)
 	{
-		super();
+		super(grid);
 		
 		layer0show = new GuiTextButton(this, 00, 5, 26 + (18 * 5), 32, blackFont, "L1 X");
 		layer1show = new GuiTextButton(this, 10, 5, 26 + (18 * 4), 32, blackFont, "L2 X");

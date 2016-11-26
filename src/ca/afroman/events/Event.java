@@ -33,7 +33,7 @@ public class Event extends ServerClientObject
 		level = null;
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-		hitbox = new Hitbox(x, y, width, height);
+		hitbox = new Hitbox(true, x, y, width, height);
 		this.id = id;
 	}
 	
@@ -123,9 +123,6 @@ public class Event extends ServerClientObject
 		outTriggers = trigs;
 	}
 	
-	/**
-	 * Only ticks after triggered.
-	 */
 	public void tick()
 	{
 		

@@ -144,6 +144,12 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return successful;
 	}
 	
+	public void stopSocket()
+	{
+		if (socketManager != null) socketManager.stopThis();
+		socketManager = null;
+	}
+	
 	@Override
 	public void stopThis()
 	{
@@ -177,12 +183,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		
 		if (getLevels() != null) getLevels().clear();
 		IDCounter.resetAll();
-	}
-	
-	public void stopSocket()
-	{
-		if (socketManager != null) socketManager.stopThis();
-		socketManager = null;
 	}
 	
 	@Override

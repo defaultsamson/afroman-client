@@ -3,19 +3,22 @@ package ca.afroman.gui.build;
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiTextButton;
-import ca.afroman.level.api.Level;
+import ca.afroman.level.api.Grid;
 
 public class GuiGrid extends GuiScreen
 {
-	protected GuiTextButton grid;
+	protected GuiTextButton gridButton;
+	private Grid grid;
 	
-	public GuiGrid()
+	public GuiGrid(Grid grid)
 	{
 		super(null);
 		
-		grid = new GuiTextButton(this, 500, 200 - 4 - 12, 3, 41 + 12, blackFont, "Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
+		this.grid = grid;
 		
-		addButton(grid);
+		gridButton = new GuiTextButton(this, 500, 200 - 4 - 12, 3, 41 + 12, blackFont, "Grid " + grid.getSize());
+		
+		addButton(gridButton);
 	}
 	
 	@Override
@@ -26,12 +29,11 @@ public class GuiGrid extends GuiScreen
 		
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
-			Level level = ClientGame.instance().getCurrentLevel();
-			
 			switch (buttonID)
 			{
 				case 500:
-					level.grid = level.grid.getNext();
+					System.out.println("Caut");
+					grid.setGridSize(grid.getGridSize().getNext());
 					break;
 			}
 			
@@ -43,7 +45,7 @@ public class GuiGrid extends GuiScreen
 	{
 		if (ClientGame.instance().getCurrentLevel() != null)
 		{
-			grid.setText("Grid " + ClientGame.instance().getCurrentLevel().grid.getSize());
+			gridButton.setText("Grid " + grid.getSize());
 		}
 	}
 }

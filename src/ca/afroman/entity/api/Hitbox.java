@@ -3,38 +3,13 @@ package ca.afroman.entity.api;
 import java.awt.geom.Rectangle2D;
 
 import ca.afroman.level.api.Level;
-import ca.afroman.resource.IDCounter;
 
 public class Hitbox extends Rectangle2D.Double
 {
-	private static IDCounter idCounter = new IDCounter();
-	
 	private static final long serialVersionUID = -318324421701678550L;
-	private static final int MICRO_MANAGED_ID = -1;
 	
-	public static IDCounter getIDCounter()
-	{
-		return idCounter;
-	}
-	
-	// All the required variables needed to create an Entity
-	private int id;
-	
+	private boolean isMicroManaged;
 	public Level level = null;
-	
-	// TODO use a Vector2DDouble instead
-	/**
-	 * A micro-managed hitbox. This is invisible to standard hitbox operations such as adding and removing (excluding collision. Collision still is active against this hitbox)
-	 * 
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
-	 */
-	public Hitbox(double x, double y, double width, double height)
-	{
-		this(MICRO_MANAGED_ID, x, y, width, height);
-	}
 	
 	/**
 	 * A level hitbox. This is invisible to standard hitbox operations such as adding and removing (excluding collision. Collision still is active against this hitbox)
@@ -45,11 +20,11 @@ public class Hitbox extends Rectangle2D.Double
 	 * @param width
 	 * @param height
 	 */
-	public Hitbox(int id, double x, double y, double width, double height)
+	public Hitbox(boolean isMicroManaged, double x, double y, double width, double height)
 	{
 		super(x, y, width, height);
 		
-		this.id = id;
+		this.isMicroManaged = isMicroManaged;
 	}
 	
 	/**
@@ -78,17 +53,9 @@ public class Hitbox extends Rectangle2D.Double
 	@Override
 	public Hitbox clone()
 	{
-		Hitbox box = new Hitbox(x, y, width, height);
+		Hitbox box = new Hitbox(isMicroManaged, x, y, width, height);
 		box.addToLevel(level);
 		return box;
-	}
-	
-	/**
-	 * @return this hitbox's ID.
-	 */
-	public int getID()
-	{
-		return id;
 	}
 	
 	public Level getLevel()
@@ -97,13 +64,11 @@ public class Hitbox extends Rectangle2D.Double
 	}
 	
 	/**
-	 * Tells if this Hitbox is managed by a manager such as a HitboxToggle object.
-	 * 
-	 * @return if the id of this hitbox is -1
+	 * @return if this Hitbox is managed by a manager such as a HitboxToggle object.
 	 */
 	public boolean isMicroManaged()
 	{
-		return id == MICRO_MANAGED_ID;
+		return isMicroManaged;
 	}
 	
 	/**
