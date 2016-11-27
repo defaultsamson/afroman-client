@@ -14,9 +14,9 @@ public class DrawableEntityDirectional extends DrawableEntity
 	protected DrawableAsset idleLeft;
 	protected DrawableAsset idleRight;
 	
-	public DrawableEntityDirectional(boolean isServerSide, int id, DrawableAsset up, DrawableAsset down, DrawableAsset left, DrawableAsset right, DrawableAsset idleUp, DrawableAsset idleDown, DrawableAsset idleLeft, DrawableAsset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
+	public DrawableEntityDirectional(boolean isServerSide, boolean isMicromanaged, int id, DrawableAsset up, DrawableAsset down, DrawableAsset left, DrawableAsset right, DrawableAsset idleUp, DrawableAsset idleDown, DrawableAsset idleLeft, DrawableAsset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(isServerSide, id, null, pos, hitboxes);
+		super(isServerSide, isMicromanaged, id, null, pos, hitboxes);
 		
 		this.up = up;
 		this.down = down;

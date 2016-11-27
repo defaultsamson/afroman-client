@@ -2,6 +2,8 @@ package ca.afroman.entity.api;
 
 import java.util.Comparator;
 
+import ca.afroman.assets.ITextureDrawable;
+
 /**
  * Sorts entities by their Y ordinate value from highest to lowest.
  */
@@ -14,6 +16,16 @@ public class YComparator implements Comparator<DrawableEntity>
 		
 		int e1Y = (int) (e1.getAsset().getHeight() + e1.getPosition().getY());
 		int e2Y = (int) (e2.getAsset().getHeight() + e2.getPosition().getY());
+		
+		if (e1.getAsset() instanceof ITextureDrawable)
+		{
+			e1Y += ((ITextureDrawable) e1.getAsset()).getDisplayedTexture().getYComparatorOffset();
+		}
+		
+		if (e1.getAsset() instanceof ITextureDrawable)
+		{
+			e2Y += ((ITextureDrawable) e2.getAsset()).getDisplayedTexture().getYComparatorOffset();
+		}
 		
 		if (e1Y > e2Y)
 		{

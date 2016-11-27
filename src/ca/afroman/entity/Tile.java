@@ -12,9 +12,9 @@ public class Tile extends DrawableEntity
 {
 	private int layer;
 	
-	public Tile(int layer, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
+	public Tile(int layer, boolean isMicromanaged, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(false, MICROMANAGED_ID, asset, pos, hitboxes);
+		super(false, isMicromanaged, MICROMANAGED_ID, asset, pos, hitboxes);
 		
 		this.layer = layer;
 	}

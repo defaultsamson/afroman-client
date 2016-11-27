@@ -37,6 +37,7 @@ public class Entity extends ServerClientObject implements ITickable
 	
 	// All the required variables needed to create an Entity
 	private int id;
+	private boolean isMicromanaged;
 	protected Level level;
 	protected Vector2DDouble position;
 	protected boolean hasHitbox;
@@ -59,9 +60,9 @@ public class Entity extends ServerClientObject implements ITickable
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Entity(boolean isServerSide, int id, Vector2DDouble position)
+	public Entity(boolean isServerSide, boolean isMicromanaged, int id, Vector2DDouble position)
 	{
-		this(isServerSide, id, position, false, new Hitbox[] { null });
+		this(isServerSide, isMicromanaged, id, position, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -73,10 +74,11 @@ public class Entity extends ServerClientObject implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(boolean isServerSide, int id, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(boolean isServerSide, boolean isMicromanaged, int id, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
 	{
 		super(isServerSide);
 		
+		this.isMicromanaged = isMicromanaged;
 		this.id = id; // -1 if this is not an object in a level
 		this.level = null;
 		this.position = position;
@@ -113,9 +115,9 @@ public class Entity extends ServerClientObject implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(boolean isServerSide, int id, Vector2DDouble position, Hitbox... hitboxes)
+	public Entity(boolean isServerSide, boolean isMicromanaged, int id, Vector2DDouble position, Hitbox... hitboxes)
 	{
-		this(isServerSide, id, position, true, hitboxes);
+		this(isServerSide, isMicromanaged, id, position, true, hitboxes);
 	}
 	
 	/**
@@ -227,6 +229,14 @@ public class Entity extends ServerClientObject implements ITickable
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * @return if this entity is managed by a manager such as an Event object.
+	 */
+	public boolean isMicroManaged()
+	{
+		return isMicromanaged;
 	}
 	
 	/**

@@ -24,6 +24,11 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	
 	public static Texture fromResource(AssetType type, String path)
 	{
+		return fromResource(type, path, 0);
+	}
+	
+	public static Texture fromResource(AssetType type, String path, int yComparatorOffset)
+	{
 		// Loads the image
 		BufferedImage inImage = null;
 		try
@@ -64,19 +69,20 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		// int green = (pixels[i] >>> 8) & 0xFF;
 		// int blue = (pixels[i] >>> 0) & 0xFF;
 		
-		return new Texture(type, image);
+		return new Texture(type, image, yComparatorOffset);
 	}
 	
 	private BufferedImage image;
-	
 	private Graphics2D graphics;
+	private int yComparatorOffset;
 	
-	public Texture(AssetType type, BufferedImage image)
+	public Texture(AssetType type, BufferedImage image, int yComparatorOffset)
 	{
 		super(type, image.getWidth(), image.getHeight());
 		
 		this.image = image;
 		this.graphics = image.createGraphics();
+		this.yComparatorOffset = yComparatorOffset;
 	}
 	
 	@Override
@@ -90,7 +96,7 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		ColorModel cm = image.getColorModel();
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		WritableRaster raster = image.copyData(image.getRaster().createCompatibleWritableRaster());
-		return new Texture(newAssetType, new BufferedImage(cm, raster, isAlphaPremultiplied, null));
+		return new Texture(newAssetType, new BufferedImage(cm, raster, isAlphaPremultiplied, null), yComparatorOffset);
 	}
 	
 	@Override
@@ -230,7 +236,26 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	 */
 	public Texture getSubTexture(AssetType newType, int x, int y, int width, int height)
 	{
-		return new Texture(newType, getSubImage(x, y, width, height));
+		return getSubTexture(newType, x, y, width, height, 0);
+	}
+	
+	/**
+	 * Gets a sub-section of this.
+	 * 
+	 * @param x the x ordinate to start selecting from
+	 * @param y the y ordinate to start selecting from
+	 * @param width the width of the selection
+	 * @param height the height of the selection
+	 * @return the sub-section of this with the given parameters.
+	 */
+	public Texture getSubTexture(AssetType newType, int x, int y, int width, int height, int yComparatorOffset)
+	{
+		return new Texture(newType, getSubImage(x, y, width, height), yComparatorOffset);
+	}
+	
+	public int getYComparatorOffset()
+	{
+		return yComparatorOffset;
 	}
 	
 	@Override

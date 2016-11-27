@@ -10,9 +10,9 @@ public class DrawableEntity extends Entity
 	protected boolean cameraFollow;
 	protected DrawableAsset asset;
 	
-	public DrawableEntity(boolean isServerSide, int id, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
+	public DrawableEntity(boolean isServerSide, boolean isMicromanaged, int id, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(isServerSide, id, pos, hitboxes);
+		super(isServerSide, isMicromanaged, id, pos, hitboxes);
 		
 		this.asset = asset;
 		cameraFollow = false;

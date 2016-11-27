@@ -63,7 +63,7 @@ public class LightMap extends Texture
 	
 	public LightMap(int width, int height, Color ambientColour)
 	{
-		super(AssetType.INVALID, new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB));
+		super(AssetType.INVALID, new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), 0);
 		
 		this.ambientColour = ambientColour;
 	}

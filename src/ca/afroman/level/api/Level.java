@@ -191,19 +191,22 @@ public class Level extends ServerClientObject implements ITickable
 		// new Hitbox(false, 0, 0, 20, 20).addToLevel(this);
 		for (Hitbox box : getHitboxes())
 		{
-			StringBuilder sb = new StringBuilder();
-			sb.append(csPrefix);
-			sb.append("new Hitbox(false, ");
-			sb.append(box.getX());
-			sb.append(", ");
-			sb.append(box.getY());
-			sb.append(", ");
-			sb.append(box.getWidth());
-			sb.append(", ");
-			sb.append(box.getHeight());
-			sb.append(").addToLevel(this);");
-			
-			lines.add(sb.toString());
+			if (!box.isMicroManaged())
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.append(csPrefix);
+				sb.append("new Hitbox(false, ");
+				sb.append(box.getX());
+				sb.append(", ");
+				sb.append(box.getY());
+				sb.append(", ");
+				sb.append(box.getWidth());
+				sb.append(", ");
+				sb.append(box.getHeight());
+				sb.append(").addToLevel(this);");
+				
+				lines.add(sb.toString());
+			}
 		}
 		
 		// client only
@@ -221,19 +224,22 @@ public class Level extends ServerClientObject implements ITickable
 			
 			for (Tile tile : layer)
 			{
-				StringBuilder sb = new StringBuilder();
-				sb.append(cPrefix);
-				sb.append("new Tile(");
-				sb.append(i);
-				sb.append(", Assets.getDrawableAsset(AssetType.");
-				sb.append(tile.getAsset().getAssetType().name());
-				sb.append(").clone(), new Vector2DDouble(");
-				sb.append(tile.getPosition().getX());
-				sb.append(", ");
-				sb.append(tile.getPosition().getY());
-				sb.append(")).addToLevel(this);");
-				
-				lines.add(sb.toString());
+				if (!tile.isMicroManaged())
+				{
+					StringBuilder sb = new StringBuilder();
+					sb.append(cPrefix);
+					sb.append("new Tile(");
+					sb.append(i);
+					sb.append(", false, Assets.getDrawableAsset(AssetType.");
+					sb.append(tile.getAsset().getAssetType().name());
+					sb.append(").clone(), new Vector2DDouble(");
+					sb.append(tile.getPosition().getX());
+					sb.append(", ");
+					sb.append(tile.getPosition().getY());
+					sb.append(")).addToLevel(this);");
+					
+					lines.add(sb.toString());
+				}
 			}
 			
 			lines.add(cPrefix);
@@ -245,46 +251,49 @@ public class Level extends ServerClientObject implements ITickable
 		// Lights
 		for (PointLight light : getPointLights())
 		{
-			if (light instanceof FlickeringLight)
+			if (!light.isMicroManaged())
 			{
-				// FlickeringLight
-				// Format looks like this
-				// new FlickeringLight(false, new Vector2DDouble(40.0, 24.0), 18.0, 20.0, 10).addToLevel(this);
-				FlickeringLight flight = (FlickeringLight) light;
-				
-				StringBuilder sb = new StringBuilder();
-				sb.append(cPrefix);
-				sb.append("new FlickeringLight(false, new Vector2DDouble(");
-				sb.append(light.getPosition().getX());
-				sb.append(", ");
-				sb.append(light.getPosition().getY());
-				sb.append("), ");
-				sb.append(light.getRadius());
-				sb.append(", ");
-				sb.append(flight.getRadius2());
-				sb.append(", ");
-				sb.append(flight.getTicksPerFrame());
-				sb.append(").addToLevel(this);");
-				
-				lines.add(sb.toString());
-			}
-			else
-			{
-				// PointLight
-				// Format looks like this
-				// new PointLight(isServerSide, false, new Vector2DDouble(10.0, -20.0), 20).addToLevel(this);
-				
-				StringBuilder sb = new StringBuilder();
-				sb.append(cPrefix);
-				sb.append("new PointLight(false, new Vector2DDouble(");
-				sb.append(light.getPosition().getX());
-				sb.append(", ");
-				sb.append(light.getPosition().getY());
-				sb.append("), ");
-				sb.append(light.getRadius());
-				sb.append(").addToLevel(this);");
-				
-				lines.add(sb.toString());
+				if (light instanceof FlickeringLight)
+				{
+					// FlickeringLight
+					// Format looks like this
+					// new FlickeringLight(false, new Vector2DDouble(40.0, 24.0), 18.0, 20.0, 10).addToLevel(this);
+					FlickeringLight flight = (FlickeringLight) light;
+					
+					StringBuilder sb = new StringBuilder();
+					sb.append(cPrefix);
+					sb.append("new FlickeringLight(false, new Vector2DDouble(");
+					sb.append(light.getPosition().getX());
+					sb.append(", ");
+					sb.append(light.getPosition().getY());
+					sb.append("), ");
+					sb.append(light.getRadius());
+					sb.append(", ");
+					sb.append(flight.getRadius2());
+					sb.append(", ");
+					sb.append(flight.getTicksPerFrame());
+					sb.append(").addToLevel(this);");
+					
+					lines.add(sb.toString());
+				}
+				else
+				{
+					// PointLight
+					// Format looks like this
+					// new PointLight(isServerSide, false, new Vector2DDouble(10.0, -20.0), 20).addToLevel(this);
+					
+					StringBuilder sb = new StringBuilder();
+					sb.append(cPrefix);
+					sb.append("new PointLight(false, new Vector2DDouble(");
+					sb.append(light.getPosition().getX());
+					sb.append(", ");
+					sb.append(light.getPosition().getY());
+					sb.append("), ");
+					sb.append(light.getRadius());
+					sb.append(").addToLevel(this);");
+					
+					lines.add(sb.toString());
+				}
 			}
 		}
 		
@@ -445,7 +454,7 @@ public class Level extends ServerClientObject implements ITickable
 			PointLight light = getPointLights().get(i);
 			
 			// If the light is not unnamed
-			if (light.getID() != -1) ;
+			if (!light.isMicroManaged()) ;
 			{
 				double radius = light.getRadius();
 				
@@ -489,50 +498,53 @@ public class Level extends ServerClientObject implements ITickable
 		{
 			Entity tile = tiles.get(i);
 			
-			if (tile instanceof DrawableEntity)
+			if (!tile.isMicroManaged())
 			{
-				DrawableAsset asset = ((DrawableEntity) tile).getAsset();
-				
-				Vector2DDouble textureP = tile.getPosition();
-				Vector2DDouble mouseRelativeToTexture = pos.clone().add(-textureP.getX(), -textureP.getY());
-				
-				boolean isClickWithinTexture = new Rectangle(0, 0, asset.getWidth(), asset.getHeight()).contains(mouseRelativeToTexture.getX(), mouseRelativeToTexture.getY());
-				
-				if (isClickWithinTexture)
+				if (tile instanceof DrawableEntity)
 				{
-					// If the asset has an accessible Texture, refine the click search pixel by pixel
-					if (asset instanceof ITextureDrawable)
+					DrawableAsset asset = ((DrawableEntity) tile).getAsset();
+					
+					Vector2DDouble textureP = tile.getPosition();
+					Vector2DDouble mouseRelativeToTexture = pos.clone().add(-textureP.getX(), -textureP.getY());
+					
+					boolean isClickWithinTexture = new Rectangle(0, 0, asset.getWidth(), asset.getHeight()).contains(mouseRelativeToTexture.getX(), mouseRelativeToTexture.getY());
+					
+					if (isClickWithinTexture)
 					{
-						Texture texture = ((ITextureDrawable) asset).getDisplayedTexture();
-						
-						int colour = texture.getImage().getRGB((int) mouseRelativeToTexture.getX(), (int) mouseRelativeToTexture.getY());
-						boolean isClicked = !ColourUtil.isTransparent(colour);
-						
-						if (isClicked)
+						// If the asset has an accessible Texture, refine the click search pixel by pixel
+						if (asset instanceof ITextureDrawable)
+						{
+							Texture texture = ((ITextureDrawable) asset).getDisplayedTexture();
+							
+							int colour = texture.getImage().getRGB((int) mouseRelativeToTexture.getX(), (int) mouseRelativeToTexture.getY());
+							boolean isClicked = !ColourUtil.isTransparent(colour);
+							
+							if (isClicked)
+							{
+								return tile;
+							}
+						}
+						else // If not, then just accept it
 						{
 							return tile;
 						}
 					}
-					else // If not, then just accept it
+				}
+				else if (tile.hasHitbox())
+				{
+					for (Hitbox h : tile.hitboxInLevel())
+					{
+						if (h.contains(pos.getX(), pos.getY())) return tile;
+					}
+				}
+				else
+				{
+					Hitbox surrounding = new Hitbox(true, tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
+					
+					if (surrounding.contains(pos.getX(), pos.getY()))
 					{
 						return tile;
 					}
-				}
-			}
-			else if (tile.hasHitbox())
-			{
-				for (Hitbox h : tile.hitboxInLevel())
-				{
-					if (h.contains(pos.getX(), pos.getY())) return tile;
-				}
-			}
-			else
-			{
-				Hitbox surrounding = new Hitbox(true, tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
-				
-				if (surrounding.contains(pos.getX(), pos.getY()))
-				{
-					return tile;
 				}
 			}
 		}
@@ -710,13 +722,13 @@ public class Level extends ServerClientObject implements ITickable
 						}
 					}
 				}
+				
+				// Draws the tile on the cursor below the lighting
+				if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.TILE)
+				{
+					cursorAsset.render(renderTo, worldToScreen(screenToWorld(ClientGame.instance().input().getMousePos().clone()).alignToGrid(grid.getGridSize())));
+				}
 			}
-		}
-		
-		// Draws the tile on the cursor below the lighting
-		if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.TILE)
-		{
-			cursorAsset.render(renderTo, worldToScreen(screenToWorld(ClientGame.instance().input().getMousePos().clone()).alignToGrid(grid.getGridSize())));
 		}
 		
 		// https://www.youtube.com/watch?v=6qIFmeRcY3c
@@ -1008,7 +1020,7 @@ public class Level extends ServerClientObject implements ITickable
 					case TILE:
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							Tile tileToAdd = new Tile(editingLayer, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()));
+							Tile tileToAdd = new Tile(editingLayer, false, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()));
 							tileToAdd.addToLevel(this);
 						}
 						

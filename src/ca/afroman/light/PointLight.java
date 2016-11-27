@@ -11,15 +11,13 @@ public class PointLight extends Entity
 {
 	protected Color colour;
 	protected double radius;
-	private boolean isMicromanaged;
 	
 	private PointLight(boolean isServerSide, boolean isMicromanaged, Vector2DDouble pos, double radius, Color colour)
 	{
-		super(isServerSide, -1, pos);
+		super(isServerSide, isMicromanaged, MICROMANAGED_ID, pos);
 		
 		this.colour = colour;
 		this.radius = radius;
-		this.isMicromanaged = isMicromanaged;
 	}
 	
 	public PointLight(boolean isMicromanaged, Vector2DDouble pos, double radius)
@@ -59,16 +57,6 @@ public class PointLight extends Entity
 	public double getRadius()
 	{
 		return radius;
-	}
-	
-	/**
-	 * Tells if this light is managed by a manager such as aa Entity object.
-	 * 
-	 * @return if the id of this light is -1
-	 */
-	public boolean isMicroManaged()
-	{
-		return isMicromanaged;
 	}
 	
 	@SuppressWarnings("deprecation")
