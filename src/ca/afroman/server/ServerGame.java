@@ -376,14 +376,14 @@ public class ServerGame extends Game
 			loadLevels();
 			
 			players.clear();
-			players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80, 50)));
-			players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(20, 20)));
+			players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80.0, 80.0)));
+			players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(112.0, 80.0)));
 			
 			for (int i = 0; i < players.size(); i++)
 			{
 				PlayerEntity player = players.get(i);
 				player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
-				player.setPosition(new Vector2DDouble(10 + (i * 18), 20));
+				player.setPosition(player.getPosition());
 			}
 		}
 		else

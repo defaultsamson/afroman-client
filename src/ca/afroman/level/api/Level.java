@@ -235,6 +235,8 @@ public class Level extends ServerClientObject implements ITickable
 				
 				lines.add(sb.toString());
 			}
+			
+			lines.add(cPrefix);
 		}
 		
 		lines.add(cPrefix);
@@ -492,7 +494,7 @@ public class Level extends ServerClientObject implements ITickable
 				DrawableAsset asset = ((DrawableEntity) tile).getAsset();
 				
 				Vector2DDouble textureP = tile.getPosition();
-				Vector2DDouble mouseRelativeToTexture = pos.add(-textureP.getX(), -textureP.getY());
+				Vector2DDouble mouseRelativeToTexture = pos.clone().add(-textureP.getX(), -textureP.getY());
 				
 				boolean isClickWithinTexture = new Rectangle(0, 0, asset.getWidth(), asset.getHeight()).contains(mouseRelativeToTexture.getX(), mouseRelativeToTexture.getY());
 				
@@ -521,7 +523,7 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				for (Hitbox h : tile.hitboxInLevel())
 				{
-					h.contains(pos.getX(), pos.getY());
+					if (h.contains(pos.getX(), pos.getY())) return tile;
 				}
 			}
 			else
@@ -714,7 +716,7 @@ public class Level extends ServerClientObject implements ITickable
 		// Draws the tile on the cursor below the lighting
 		if (ClientGame.instance().isBuildMode() && buildMode == BuildMode.TILE)
 		{
-			cursorAsset.render(renderTo, ClientGame.instance().input().getMousePos());
+			cursorAsset.render(renderTo, worldToScreen(screenToWorld(ClientGame.instance().input().getMousePos().clone()).alignToGrid(grid.getGridSize())));
 		}
 		
 		// https://www.youtube.com/watch?v=6qIFmeRcY3c
