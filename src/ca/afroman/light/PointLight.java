@@ -13,11 +13,6 @@ public class PointLight extends Entity
 	protected double radius;
 	private boolean isMicromanaged;
 	
-	public PointLight(boolean isServerSide, boolean isMicromanaged, Vector2DDouble pos, double radius)
-	{
-		this(isServerSide, isMicromanaged, pos, radius, ColourUtil.TRANSPARENT);
-	}
-	
 	private PointLight(boolean isServerSide, boolean isMicromanaged, Vector2DDouble pos, double radius, Color colour)
 	{
 		super(isServerSide, -1, pos);
@@ -25,6 +20,11 @@ public class PointLight extends Entity
 		this.colour = colour;
 		this.radius = radius;
 		this.isMicromanaged = isMicromanaged;
+	}
+	
+	public PointLight(boolean isMicromanaged, Vector2DDouble pos, double radius)
+	{
+		this(false, isMicromanaged, pos, radius, ColourUtil.TRANSPARENT);
 	}
 	
 	/**

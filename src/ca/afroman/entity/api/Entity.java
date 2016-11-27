@@ -14,6 +14,8 @@ public class Entity extends ServerClientObject implements ITickable
 	private static final boolean HITBOX_COLLISION = true;
 	private static final boolean ENTITY_COLLISION = false;
 	
+	protected static final int MICROMANAGED_ID = -1;
+	
 	private static IDCounter idCounter = new IDCounter();
 	
 	public static IDCounter getIDCounter()
@@ -114,45 +116,6 @@ public class Entity extends ServerClientObject implements ITickable
 	public Entity(boolean isServerSide, int id, Vector2DDouble position, Hitbox... hitboxes)
 	{
 		this(isServerSide, id, position, true, hitboxes);
-	}
-	
-	/**
-	 * Removes a tile from their current level and puts them in another level.
-	 * <p>
-	 * <b>WARNING:</b> This method will add this entity to the tile layers in the level. Otherwise, for standard entities, use addToLevel()
-	 * 
-	 * @param level the new level
-	 * @param layer the new layer
-	 */
-	public void addTileToLevel(Level newLevel, int layer)
-	{
-		if (level == newLevel) return;
-		
-		if (level != null)
-		{
-			synchronized (level.getTileLayers())
-			{
-				// Searches all the old layers in case the old tile isn't on the same layer as the new one being specified
-				for (List<Entity> tiles : level.getTileLayers())
-				{
-					if (tiles.contains(this))
-					{
-						tiles.remove(this);
-					}
-				}
-			}
-		}
-		
-		// Sets the new level
-		level = newLevel;
-		
-		if (level != null)
-		{
-			synchronized (level.getTiles(layer))
-			{
-				level.getTiles(layer).add(this);
-			}
-		}
 	}
 	
 	/**
@@ -457,16 +420,6 @@ public class Entity extends ServerClientObject implements ITickable
 	public void removeFromLevel()
 	{
 		addToLevel(null);
-	}
-	
-	/**
-	 * Removes a tile from their current level.
-	 * <p>
-	 * <b>WARNING:</b> This method will remove this entity from the level. Otherwise, for standard entities, use removeFromLevel()
-	 */
-	public void removeTileFromLevel()
-	{
-		addTileToLevel(null, 0);
 	}
 	
 	/**

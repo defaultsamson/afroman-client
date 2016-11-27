@@ -11,10 +11,10 @@ public class FlickeringLight extends PointLight
 	private int tickCounter = 0;
 	private double radius2;
 	
-	public FlickeringLight(boolean isServerSide, boolean isMicromanaged, Vector2DDouble pos, double radius1, double radius2, int ticksPerFrame)
+	public FlickeringLight(boolean isMicromanaged, Vector2DDouble pos, double radius1, double radius2, int ticksPerFrame)
 	{
 		// Picks the larger of the 2 radi to use for anchoring the draw location
-		super(isServerSide, isMicromanaged, pos, (radius1 > radius2 ? radius1 : radius2));
+		super(isMicromanaged, pos, (radius1 > radius2 ? radius1 : radius2));
 		
 		// Picks the smaller of the 2 radi
 		this.radius2 = (radius1 <= radius2 ? radius1 : radius2);

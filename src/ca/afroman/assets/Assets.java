@@ -67,6 +67,18 @@ public class Assets
 		return null;
 	}
 	
+	public static DrawableAsset getDrawableAsset(AssetType type)
+	{
+		Asset asset = getAsset(type);
+		
+		if (asset != null && asset.getAssetType() == type && asset instanceof DrawableAsset)
+		{
+			return (DrawableAsset) asset;
+		}
+		
+		return null;
+	}
+	
 	public static Font getFont(AssetType type)
 	{
 		Asset asset = getAssetArray(type);

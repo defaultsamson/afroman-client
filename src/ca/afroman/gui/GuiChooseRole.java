@@ -56,8 +56,8 @@ public class GuiChooseRole extends GuiScreen
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
-		light1 = new FlickeringLight(false, true, new Vector2DDouble(p1.getX() + 8, p1.getY() + 8), 42, 44, 6);
-		light2 = new FlickeringLight(false, true, new Vector2DDouble(p2.getX() + 8, p2.getY() + 8), 42, 44, 6);
+		light1 = new FlickeringLight(true, new Vector2DDouble(p1.getX() + 8, p1.getY() + 8), 42, 44, 6);
+		light2 = new FlickeringLight(true, new Vector2DDouble(p2.getX() + 8, p2.getY() + 8), 42, 44, 6);
 	}
 	
 	@Override

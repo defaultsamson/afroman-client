@@ -13,6 +13,7 @@ import ca.afroman.assets.ITextureDrawable;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.entity.Tile;
 import ca.afroman.entity.api.DrawableEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
@@ -81,7 +82,7 @@ public class Level extends ServerClientObject implements ITickable
 	private ArrayList<PlayerEntity> players;
 	
 	// Only for client
-	private ArrayList<ArrayList<Entity>> tiles;
+	private ArrayList<ArrayList<Tile>> tiles;
 	private int dynamicLayer;
 	private ArrayList<PointLight> lights;
 	private LightMap lightmap;
@@ -106,10 +107,10 @@ public class Level extends ServerClientObject implements ITickable
 		// Initialise client-only variables
 		if (!isServerSide)
 		{
-			tiles = new ArrayList<ArrayList<Entity>>(tileLayers);
+			tiles = new ArrayList<ArrayList<Tile>>(tileLayers);
 			for (int i = 0; i < tileLayers; i++)
 			{
-				tiles.add(new ArrayList<Entity>());
+				tiles.add(new ArrayList<Tile>());
 			}
 			
 			showLayer = new boolean[] { true, true, true, true, true, true, true };
@@ -172,6 +173,122 @@ public class Level extends ServerClientObject implements ITickable
 				flickerCursor.removeFromLevel();
 				break;
 		}
+	}
+	
+	public void copyToClipboard()
+	{
+		ArrayList<String> lines = new ArrayList<String>();
+		
+		final String csPrefix = "		";
+		final String cPrefix = "			";
+		final String isServerSideText = "isServerSide";
+		
+		// Shared for both client/server
+		
+		lines.add(csPrefix + "// Hitboxes");
+		
+		// Format looks like this
+		// new Hitbox(false, 0, 0, 20, 20).addToLevel(this);
+		for (Hitbox box : getHitboxes())
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(csPrefix);
+			sb.append("new Hitbox(false, ");
+			sb.append(box.getX());
+			sb.append(", ");
+			sb.append(box.getY());
+			sb.append(", ");
+			sb.append(box.getWidth());
+			sb.append(", ");
+			sb.append(box.getHeight());
+			sb.append(").addToLevel(this);");
+			
+			lines.add(sb.toString());
+		}
+		
+		// client only
+		lines.add(csPrefix);
+		lines.add(csPrefix + "if (!" + isServerSideText + ")");
+		lines.add(csPrefix + "{");
+		
+		lines.add(cPrefix + "// Tiles");
+		
+		// Format looks like this
+		// new Tile(isServerSide, 3, Assets.getTexture(AssetType.CAT).clone(), new Vector2DDouble(20, 30)).addToLevel(this);
+		for (int i = 0; i < getTileLayers().size(); i++)
+		{
+			ArrayList<Tile> layer = getTileLayers().get(i);
+			
+			for (Tile tile : layer)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.append(cPrefix);
+				sb.append("new Tile(");
+				sb.append(i);
+				sb.append(", Assets.getDrawableAsset(AssetType.");
+				sb.append(tile.getAsset().getAssetType().name());
+				sb.append(").clone(), new Vector2DDouble(");
+				sb.append(tile.getPosition().getX());
+				sb.append(", ");
+				sb.append(tile.getPosition().getY());
+				sb.append(")).addToLevel(this);");
+				
+				lines.add(sb.toString());
+			}
+		}
+		
+		lines.add(cPrefix);
+		lines.add(cPrefix + "// Lights");
+		
+		// Lights
+		for (PointLight light : getPointLights())
+		{
+			if (light instanceof FlickeringLight)
+			{
+				// FlickeringLight
+				// Format looks like this
+				// new FlickeringLight(false, new Vector2DDouble(40.0, 24.0), 18.0, 20.0, 10).addToLevel(this);
+				FlickeringLight flight = (FlickeringLight) light;
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append(cPrefix);
+				sb.append("new FlickeringLight(false, new Vector2DDouble(");
+				sb.append(light.getPosition().getX());
+				sb.append(", ");
+				sb.append(light.getPosition().getY());
+				sb.append("), ");
+				sb.append(light.getRadius());
+				sb.append(", ");
+				sb.append(flight.getRadius2());
+				sb.append(", ");
+				sb.append(flight.getTicksPerFrame());
+				sb.append(").addToLevel(this);");
+				
+				lines.add(sb.toString());
+			}
+			else
+			{
+				// PointLight
+				// Format looks like this
+				// new PointLight(isServerSide, false, new Vector2DDouble(10.0, -20.0), 20).addToLevel(this);
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append(cPrefix);
+				sb.append("new PointLight(false, new Vector2DDouble(");
+				sb.append(light.getPosition().getX());
+				sb.append(", ");
+				sb.append(light.getPosition().getY());
+				sb.append("), ");
+				sb.append(light.getRadius());
+				sb.append(").addToLevel(this);");
+				
+				lines.add(sb.toString());
+			}
+		}
+		
+		lines.add(csPrefix + "}");
+		
+		ClientGame.instance().input().setClipboard(lines);
 	}
 	
 	public BuildMode getBuildMode()
@@ -364,7 +481,7 @@ public class Level extends ServerClientObject implements ITickable
 	 */
 	public Entity getTile(int layer, Vector2DDouble pos)
 	{
-		ArrayList<Entity> tiles = getTiles(layer);
+		ArrayList<Tile> tiles = getTiles(layer);
 		
 		for (int i = tiles.size() - 1; i >= 0; i--)
 		{
@@ -426,7 +543,7 @@ public class Level extends ServerClientObject implements ITickable
 	 * 
 	 * @return the layers of tiles.
 	 */
-	public ArrayList<ArrayList<Entity>> getTileLayers()
+	public ArrayList<ArrayList<Tile>> getTileLayers()
 	{
 		return tiles;
 	}
@@ -436,7 +553,7 @@ public class Level extends ServerClientObject implements ITickable
 	 * 
 	 * @return the tiles on the specified layer.
 	 */
-	public ArrayList<Entity> getTiles(int layer)
+	public ArrayList<Tile> getTiles(int layer)
 	{
 		return tiles.get(layer);
 	}
@@ -467,7 +584,7 @@ public class Level extends ServerClientObject implements ITickable
 			case FLICKERING_LIGHT:
 				if (leftClick)
 				{
-					FlickeringLight light = new FlickeringLight(false, false, flickerCursor.getPosition().clone(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
+					FlickeringLight light = new FlickeringLight(false, flickerCursor.getPosition().clone(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
 					light.addToLevel(this);
 					
 					flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
@@ -521,7 +638,7 @@ public class Level extends ServerClientObject implements ITickable
 			case LIGHT:
 				if (lightCursor == null)
 				{
-					lightCursor = new PointLight(false, true, new Vector2DDouble(0, 0), currentPointLightRadius);
+					lightCursor = new PointLight(true, new Vector2DDouble(0, 0), currentPointLightRadius);
 				}
 				lightCursor.addToLevel(this);
 				ClientGame.instance().setCurrentScreen(new GuiGrid(grid));
@@ -532,7 +649,7 @@ public class Level extends ServerClientObject implements ITickable
 			case FLICKERING_LIGHT:
 				if (flickerCursor == null)
 				{
-					flickerCursor = new FlickeringLight(false, true, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
+					flickerCursor = new FlickeringLight(true, new Vector2DDouble(0, 0), currentFlickerLightRadius, currentFlickerLightFlicker, 10);
 				}
 				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor(grid, flickerCursor));
 				break;
@@ -816,7 +933,7 @@ public class Level extends ServerClientObject implements ITickable
 		}
 		else if (isCurrentlevel())
 		{
-			for (ArrayList<Entity> tileList : tiles)
+			for (ArrayList<Tile> tileList : tiles)
 			{
 				for (Entity tile : tileList)
 				{
@@ -889,8 +1006,8 @@ public class Level extends ServerClientObject implements ITickable
 					case TILE:
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							DrawableEntity tileToAdd = new DrawableEntity(false, -1, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()));
-							tileToAdd.addTileToLevel(this, editingLayer);
+							Tile tileToAdd = new Tile(editingLayer, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()));
+							tileToAdd.addToLevel(this);
 						}
 						
 						if (ClientGame.instance().input().mouseRight.isPressedFiltered())
@@ -899,7 +1016,7 @@ public class Level extends ServerClientObject implements ITickable
 							
 							if (tile != null)
 							{
-								tile.removeTileFromLevel();
+								tile.removeFromLevel();
 							}
 						}
 						
@@ -920,7 +1037,7 @@ public class Level extends ServerClientObject implements ITickable
 					case LIGHT:
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							PointLight light = new PointLight(false, false, lightCursor.getPosition().clone(), lightCursor.getRadius());
+							PointLight light = new PointLight(false, lightCursor.getPosition().clone(), lightCursor.getRadius());
 							light.addToLevel(this);
 						}
 						
