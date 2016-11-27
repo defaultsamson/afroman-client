@@ -17,7 +17,9 @@ import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
+import ca.afroman.packet.PacketPing;
 import ca.afroman.packet.PacketType;
+import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.CommandUtil;
@@ -43,6 +45,8 @@ public class ServerGame extends Game
 	
 	private boolean waitingForPlayersToLoad = false;;
 	
+	private ModulusCounter updatePing;
+	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
 		super(true, newDefaultThreadGroupInstance(), "Game", 60);
@@ -58,6 +62,8 @@ public class ServerGame extends Game
 		}
 		
 		this.password = password;
+		
+		updatePing = new ModulusCounter((int) ticksPerSecond * 2);
 		
 		int valPort = SocketManager.validatedPort(port);
 		boolean started = startSocket(ip, valPort);
@@ -109,6 +115,20 @@ public class ServerGame extends Game
 					default:
 					case INVALID:
 						logger().log(ALogType.CRITICAL, "INVALID PACKET");
+						break;
+					case TEST_PING:
+						if (sender.isPendingPingUpdate())
+						{
+							sender.updatePing(System.currentTimeMillis());
+							System.out.println("Ping[" + sender.getConnection().asReadable() + "]: " + sender.getPing());
+						}
+						else
+						{
+							
+						}
+						
+						// sockets().sender().sendPacket(new PacketPing(sender.getConnection()));
+						// sender.
 						break;
 					case LOAD_LEVELS:
 					{
@@ -293,7 +313,9 @@ public class ServerGame extends Game
 					width += 1;
 				}
 				
-				String pass = new String(Arrays.copyOfRange(packet.getContent(), passIndex, passIndex + width)).trim();
+				byte[] passa = Arrays.copyOfRange(packet.getContent(), passIndex, passIndex + width);
+				
+				String pass = new String(passa).trim();
 				
 				// Checks if there's space for the user on the server
 				if (sockets().getConnectedPlayers().size() >= Game.MAX_PLAYERS)
@@ -416,6 +438,16 @@ public class ServerGame extends Game
 		
 		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
 		if (stopServer) setIsInGame(false, true);
+		
+		if (updatePing.isAtInterval())
+		{
+			sockets().sender().sendPacketToAllClients(new PacketPing());
+			
+			for (ConnectedPlayer p : sockets().getConnectedPlayers())
+			{
+				p.setPingTestTime(System.currentTimeMillis());
+			}
+		}
 		
 		if (isInGame() && !waitingForPlayersToLoad)
 		{

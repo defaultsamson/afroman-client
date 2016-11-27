@@ -57,6 +57,7 @@ import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketLogin;
+import ca.afroman.packet.PacketPing;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
@@ -79,7 +80,7 @@ public class ClientGame extends Game
 	public static final String NAME = "The Adventures of Afro Man";
 	public static final BufferedImage ICON = Texture.fromResource(AssetType.INVALID, "icon/32x.png").getImage();
 	
-	public static final int RECEIVE_PACKET_BUFFER_LIMIT = 128;
+	public static final int RECEIVE_PACKET_BUFFER_LIMIT = 64;
 	
 	private static ClientGame game;
 	
@@ -293,6 +294,9 @@ public class ClientGame extends Game
 						default:
 						case INVALID:
 							logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
+							break;
+						case TEST_PING:
+							sockets().sender().sendPacket(new PacketPing());
 							break;
 						case DENY_JOIN:
 						{
@@ -778,48 +782,6 @@ public class ClientGame extends Game
 	{
 		buildMode = isBuild;
 	}
-	
-	// public void setFullScreen(boolean isFullscreen)
-	// {
-	// GraphicsDevice device = frame.getGraphicsConfiguration().getDevice();
-	//
-	// if (device.isFullScreenSupported())
-	// {
-	// if (isFullscreen)
-	// {
-	// frame.setUndecorated(true);
-	// frame.setResizable(true);
-	//
-	// frame.addFocusListener(new FocusListener()
-	// {
-	//
-	// @Override
-	// public void focusGained(FocusEvent arg0)
-	// {
-	// frame.setAlwaysOnTop(true);
-	// }
-	//
-	// @Override
-	// public void focusLost(FocusEvent arg0)
-	// {
-	// frame.setAlwaysOnTop(false);
-	// }
-	// });
-	//
-	// frame.pack();
-	//
-	// device.setFullScreenWindow(frame);
-	// }
-	// else
-	// {
-	// device.setFullScreenWindow(null);
-	// }
-	// }
-	// else
-	// {
-	// logger().log(ALogType.WARNING, "Fullscreen mode not supported");
-	// }
-	// }
 	
 	@Override
 	public void setIsInGame(boolean isInGame)

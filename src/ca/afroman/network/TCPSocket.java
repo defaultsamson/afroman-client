@@ -61,6 +61,7 @@ public class TCPSocket
 		catch (Exception e)
 		{
 			// TODO this is hidden
+			e.printStackTrace();
 		}
 		
 		return null;

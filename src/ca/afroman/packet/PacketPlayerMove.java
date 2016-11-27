@@ -6,6 +6,7 @@ public class PacketPlayerMove extends BytePacket
 {
 	private byte[] toSend;
 	
+	@Deprecated
 	public PacketPlayerMove(byte xa, byte ya, IPConnection... connection)
 	{
 		// TODO make false? typically movement packets should never be forces, and should only use UDP

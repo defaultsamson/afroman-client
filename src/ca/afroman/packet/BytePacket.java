@@ -1,20 +1,16 @@
 package ca.afroman.packet;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import ca.afroman.network.IPConnection;
-import ca.afroman.util.ArrayUtil;
-import ca.afroman.util.ByteUtil;
 
 public class BytePacket
 {
 	private PacketType type;
 	private byte[] content;
 	
-	private List<IPConnection> connections;
+	private IPConnection[] connections;
 	private boolean mustSend;
 	
 	/**
@@ -29,12 +25,15 @@ public class BytePacket
 		{
 			ByteBuffer buf = ByteBuffer.wrap(rawData);
 			
-			type = PacketType.fromOrdinal(buf.getShort(0));
-			content = Arrays.copyOfRange(rawData, ByteUtil.SHORT_BYTE_COUNT, rawData.length);
-			connections = new ArrayList<IPConnection>();
+			type = PacketType.fromOrdinal(buf.get(0));
+			content = Arrays.copyOfRange(rawData, 1, rawData.length);
+			connections = null; // new IPConnection[0];
 		}
 		catch (Exception e)
 		{
+			type = PacketType.INVALID;
+			content = new byte[0];
+			connections = null;
 			// System.err.println("Well shit, this packet is fucked");
 			// e.printStackTrace();
 		}
@@ -51,23 +50,24 @@ public class BytePacket
 	{
 		this.type = type;
 		this.mustSend = mustSend;
+		connections = receivers;
 		
-		if (receivers != null)
-		{
-			connections = new ArrayList<IPConnection>(receivers.length);
-			
-			for (IPConnection con : receivers)
-			{
-				connections.add(con);
-			}
-		}
-		else
-		{
-			connections = new ArrayList<IPConnection>();
-		}
+		// if (receivers != null)
+		// {
+		// connections = new ArrayList<IPConnection>(receivers.length);
+		//
+		// for (IPConnection con : receivers)
+		// {
+		// connections.add(con);
+		// }
+		// }
+		// else
+		// {
+		// connections = new ArrayList<IPConnection>();
+		// }
 	}
 	
-	public List<IPConnection> getConnections()
+	public IPConnection[] getConnections()
 	{
 		return connections;
 	}
@@ -88,10 +88,15 @@ public class BytePacket
 	 */
 	public final byte[] getData()
 	{
-		byte[] type = ByteUtil.shortAsBytes((short) getType().ordinal());
 		byte[] content = getUniqueData();
+		byte[] toRet = new byte[content.length + 1];
 		
-		return ArrayUtil.concatByteArrays(type, content);
+		toRet[0] = (byte) getType().ordinal();
+		
+		for (int i = 1; i < toRet.length; i++)
+			toRet[i] = content[i - 1];
+		
+		return toRet;
 	}
 	
 	public PacketType getType()
@@ -115,11 +120,6 @@ public class BytePacket
 	}
 	
 	public void setConnections(IPConnection... con)
-	{// TODO use an array
-		this.connections = Arrays.asList(con);
-	}
-	
-	public void setConnections(List<IPConnection> con)
 	{
 		this.connections = con;
 	}

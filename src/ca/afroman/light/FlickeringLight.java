@@ -50,10 +50,8 @@ public class FlickeringLight extends PointLight
 		}
 		else
 		{
-			offsetPos = new Vector2DInt((int) position.getX(), (int) position.getY());
+			offsetPos = position.clone().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
 		}
-		
-		// System.out.println("Cancer");
 		
 		offsetPos.add((int) -displayRadius, (int) -displayRadius);
 		

@@ -185,7 +185,7 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WATER, 16 * 2, 16 * 0, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_OBJECT_POST, 16 * 6, 16 * 1, 16, 16, 1));
+		assets.add(sheet.getSubTexture(AssetType.TILE_OBJECT_POST, 16 * 6, 16 * 1, 16, 16, -2));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WALL, 16 * 1, 16 * 0, 16, 16));
 		Texture wallGrass = sheet.getSubTexture(AssetType.TILE_WALL_GRASS, 16 * 1, 16 * 1, 16, 16);

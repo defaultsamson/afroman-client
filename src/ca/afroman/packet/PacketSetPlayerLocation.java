@@ -10,6 +10,7 @@ public class PacketSetPlayerLocation extends BytePacket
 {
 	private byte[] toSend;
 	
+	@Deprecated
 	public PacketSetPlayerLocation(PlayerEntity player, IPConnection... connection)
 	{
 		// TODO make false? typically movement packets should never be forces, and should only use UDP

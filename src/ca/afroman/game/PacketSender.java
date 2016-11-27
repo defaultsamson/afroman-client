@@ -3,6 +3,7 @@ package ca.afroman.game;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.List;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
@@ -63,9 +64,7 @@ public class PacketSender extends DynamicTickThread
 			packet.setConnections(ClientGame.instance().sockets().getServerConnection());
 		}
 		
-		// addPacket(packet);
-		
-		if (packet.mustSend()) // TODO Use TCP
+		if (packet.mustSend())
 		{
 			for (IPConnection con : packet.getConnections())
 			{
@@ -97,12 +96,19 @@ public class PacketSender extends DynamicTickThread
 	{
 		if (isServerSide()) // Pend all connected players
 		{
-			packet.getConnections().clear();
+			// ArrayList<IPConnection> cons = new ArrayList<IPConnection>();
 			
-			for (ConnectedPlayer connection : manager.getConnectedPlayers())
+			List<ConnectedPlayer> players = manager.getConnectedPlayers();
+			
+			IPConnection[] cons = new IPConnection[players.size()];
+			
+			for (int i = 0; i < cons.length; i++)
 			{
-				if (connection instanceof IPConnectedPlayer) packet.getConnections().add(((IPConnectedPlayer) connection).getConnection());
+				// just assume that they're all connected players to speed up process
+				cons[i] = ((IPConnectedPlayer) players.get(i)).getConnection();
 			}
+			
+			packet.setConnections(cons);
 		}
 		else
 		{

@@ -55,7 +55,7 @@ public class UpdateUtil
 				{
 					switch (UpdateUtil.runningFile)
 					{
-						case EXE:// TODO test on windows
+						case EXE:
 							Runtime.getRuntime().exec(UpdateUtil.selfName);
 							break;
 						case JAR: // TODO test on mac

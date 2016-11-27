@@ -1131,7 +1131,7 @@ public class Level extends ServerClientObject implements ITickable
 							{
 								if (hitboxClickCount == 0)
 								{
-									hitboxClickCount = 1; // TODO hitbox
+									hitboxClickCount = 1;
 									hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 									
 									if (buildMode == BuildMode.FLICKERING_LIGHT)

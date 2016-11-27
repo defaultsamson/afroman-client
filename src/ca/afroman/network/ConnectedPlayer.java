@@ -17,6 +17,9 @@ public class ConnectedPlayer
 	private short id;
 	
 	private boolean isLoadingLevels;
+	private int ping = 0;
+	private long pingTestTime = 0;
+	private boolean isPendingPingUpdate = false;
 	
 	/**
 	 * A player object with a role, username, and ID number.
@@ -42,6 +45,11 @@ public class ConnectedPlayer
 		return id;
 	}
 	
+	public int getPing()
+	{
+		return ping;
+	}
+	
 	/**
 	 * @return this player's role.
 	 */
@@ -63,6 +71,11 @@ public class ConnectedPlayer
 		return isLoadingLevels;
 	}
 	
+	public boolean isPendingPingUpdate()
+	{
+		return isPendingPingUpdate;
+	}
+	
 	public void setID(short id)
 	{
 		this.id = id;
@@ -73,6 +86,12 @@ public class ConnectedPlayer
 		isLoadingLevels = isLoading;
 	}
 	
+	public void setPingTestTime(long currentTime)
+	{
+		isPendingPingUpdate = true;
+		pingTestTime = currentTime;
+	}
+	
 	/**
 	 * Sets the role of this player.
 	 * 
@@ -81,5 +100,18 @@ public class ConnectedPlayer
 	public void setRole(Role newRole)
 	{
 		this.role = newRole;
+	}
+	
+	public void updatePing(long currentTime)
+	{
+		if (isPendingPingUpdate)
+		{
+			isPendingPingUpdate = false;
+			ping = (int) (currentTime - pingTestTime);
+		}
+		else
+		{
+			System.err.println("Ping text must be setup using setPingTestTime() first.");
+		}
 	}
 }
