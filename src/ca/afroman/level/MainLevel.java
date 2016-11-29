@@ -10,10 +10,10 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.Tile;
+import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.events.Event;
-import ca.afroman.events.HitboxToggle;
+import ca.afroman.events.DoorEvent;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.TriggerType;
 import ca.afroman.level.api.Level;
@@ -47,16 +47,20 @@ public class MainLevel extends Level
 		List<Integer> inTrig = new ArrayList<Integer>();
 		inTrig.add(doorID);
 		
-		HitboxToggle door = new HitboxToggle(isServerSide, Event.getIDCounter(isServerSide).getNext(), 98.0, 52.0, 12.0, 8.0, inTrig, null);
-		door.addToLevel(this);
-		door.setEnabled(false);
+		// HitboxToggle door = new HitboxToggle(isServerSide, 98.0, 52.0, 12.0, 8.0, inTrig, null);
+		// door.addToLevel(this);
+		// door.setEnabled(false);
 		
 		List<TriggerType> type = new ArrayList<TriggerType>();
 		type.add(TriggerType.PLAYER_COLLIDE);
 		type.add(TriggerType.PLAYER_UNCOLLIDE);
 		
-		HitboxTrigger plate = new HitboxTrigger(isServerSide, Event.getIDCounter(isServerSide).getNext(), 68.0, 6.0, 8.0, 5.0, type, null, inTrig);
+		HitboxTrigger plate = new HitboxTrigger(isServerSide, 68.0, 6.0, 8.0, 5.0, type, null, inTrig);
 		plate.addToLevel(this);
+		
+		DoorEvent dora = new DoorEvent(isServerSide, Direction.UP, 80.0, 48.0, inTrig, null);
+		dora.addToLevel(this);
+		dora.setEnabled(false);
 		
 		if (!isServerSide)
 		{
@@ -137,7 +141,7 @@ public class MainLevel extends Level
 			new Tile(2, false, Assets.getDrawableAsset(AssetType.TILE_PLATE_TEST).clone(), new Vector2DDouble(64.0, 0.0)).addToLevel(this);
 			
 			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone(), new Vector2DDouble(118.0, -14.0)).addToLevel(this);
-			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_DOOR_FRONT_OPEN).clone(), new Vector2DDouble(80.0, 48.0)).addToLevel(this);
+			// new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_DOOR_UP_OPEN).clone(), new Vector2DDouble(80.0, 48.0)).addToLevel(this);
 			
 			// Lights
 			new PointLight(false, new Vector2DDouble(104.0, 72.0), 42.0).addToLevel(this);

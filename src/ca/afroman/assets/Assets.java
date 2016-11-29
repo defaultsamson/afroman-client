@@ -223,16 +223,16 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BRIDGE_WOOD_SIDE, 16 * 7, 16 * 7, 24, 24));
 		
-		Texture openDoor = sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_OPEN, 16 * 7, 16 * 1, 48, 16);
-		Texture closedDoor = sheet.getSubTexture(AssetType.TILE_DOOR_FRONT_CLOSED, 16 * 7, 16 * 0, 48, 16);
+		Texture openDoor = sheet.getSubTexture(AssetType.TILE_DOOR_UP_OPEN, 16 * 7, 16 * 1, 48, 16);
+		Texture closedDoor = sheet.getSubTexture(AssetType.TILE_DOOR_UP_CLOSED, 16 * 7, 16 * 0, 48, 16);
 		Texture openDoorSide = sheet.getSubTexture(AssetType.TILE_DOOR_RIGHT_OPEN, 16 * 13, 16 * 0, 16, 48);
 		Texture closedDoorSide = sheet.getSubTexture(AssetType.TILE_DOOR_RIGHT_CLOSED, 16 * 12, 16 * 0, 16, 58);
 		assets.add(openDoor);
 		assets.add(closedDoor);
 		assets.add(openDoorSide);
 		assets.add(closedDoorSide);
-		assets.add(openDoor.clone(AssetType.TILE_DOOR_BOTTOM_OPEN).flipY());
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_BOTTOM_CLOSED).flipY());
+		assets.add(openDoor.clone(AssetType.TILE_DOOR_DOWN_OPEN).flipY());
+		assets.add(closedDoor.clone(AssetType.TILE_DOOR_DOWN_CLOSED).flipY());
 		assets.add(openDoorSide.clone(AssetType.TILE_DOOR_LEFT_OPEN).flipX());
 		assets.add(closedDoorSide.clone(AssetType.TILE_DOOR_LEFT_CLOSED).flipX());
 		

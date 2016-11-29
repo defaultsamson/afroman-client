@@ -18,9 +18,9 @@ public class TPTrigger extends Event
 	private double tpX;
 	private double tpY;
 	
-	public TPTrigger(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public TPTrigger(boolean isServerSide, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		super(isServerSide, id, x, y, width, height, inTriggers, outTriggers);
+		super(isServerSide, x, y, width, height, inTriggers, outTriggers);
 		
 		tpTo = null;
 		tpX = 0;

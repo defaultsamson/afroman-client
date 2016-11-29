@@ -44,7 +44,7 @@ import ca.afroman.util.ShapeUtil;
 public class Level extends ServerClientObject implements ITickable
 {
 	private static final int DEFAULT_TILE_LAYERS = 7;
-	private static final int DEFAULT_DYNAMIC_TILE_LAYER_INDEX = 3;
+	public static final int DEFAULT_DYNAMIC_TILE_LAYER_INDEX = 3;
 	
 	// Build mode
 	private static final int MAX_TOOLTIP_TIME = (60 * 3); // Time in ticks
@@ -315,6 +315,11 @@ public class Level extends ServerClientObject implements ITickable
 	public Vector2DDouble getCameraOffset()
 	{
 		return camOffset;
+	}
+	
+	public int getDynamicLayer()
+	{
+		return dynamicLayer;
 	}
 	
 	public int getEditingLayer()

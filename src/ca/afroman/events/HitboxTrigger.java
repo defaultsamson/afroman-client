@@ -18,9 +18,9 @@ public class HitboxTrigger extends Event
 	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
 	private Entity lastHit = null;
 	
-	public HitboxTrigger(boolean isServerSide, int id, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxTrigger(boolean isServerSide, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		super(isServerSide, id, x, y, width, height, inTriggers, outTriggers);
+		super(isServerSide, x, y, width, height, inTriggers, outTriggers);
 		
 		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
 		input = new InputType();

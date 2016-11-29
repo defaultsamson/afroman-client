@@ -7,11 +7,11 @@ import ca.afroman.level.api.Level;
 
 public class HitboxToggle extends Event
 {
-	private boolean enabled;
+	protected boolean enabled;
 	
-	public HitboxToggle(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxToggle(boolean isServerSide, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		super(isServerSide, id, x, y, width, height, inTriggers, outTriggers);
+		super(isServerSide, x, y, width, height, inTriggers, outTriggers);
 		
 		enabled = false;
 	}

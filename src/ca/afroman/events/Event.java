@@ -5,11 +5,12 @@ import java.util.List;
 
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ServerClientObject;
 
-public class Event extends ServerClientObject
+public class Event extends ServerClientObject implements ITickable
 {
 	private static IDCounter serverIdCounter = new IDCounter();
 	private static IDCounter clientIdCounter = new IDCounter();
@@ -25,7 +26,7 @@ public class Event extends ServerClientObject
 	protected Hitbox hitbox;
 	private int id;
 	
-	public Event(boolean isServerSide, int id, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public Event(boolean isServerSide, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
 		super(isServerSide);
 		
@@ -33,7 +34,6 @@ public class Event extends ServerClientObject
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
 		hitbox = new Hitbox(true, x, y, width, height);
-		this.id = id;
 	}
 	
 	public void addToLevel(Level newLevel)
@@ -116,6 +116,7 @@ public class Event extends ServerClientObject
 		outTriggers = trigs;
 	}
 	
+	@Override
 	public void tick()
 	{
 		
