@@ -11,14 +11,13 @@ import ca.afroman.resource.ServerClientObject;
 
 public class Event extends ServerClientObject
 {
-	private static IDCounter idCounter = new IDCounter();
+	private static IDCounter serverIdCounter = new IDCounter();
+	private static IDCounter clientIdCounter = new IDCounter();
 	
-	public static IDCounter getIDCounter()
+	public static IDCounter getIDCounter(boolean isServerSide)
 	{
-		return idCounter;
+		return isServerSide ? serverIdCounter : clientIdCounter;
 	}
-	
-	private boolean isServerSide;
 	
 	protected Level level;
 	protected List<Integer> inTriggers;
@@ -90,12 +89,6 @@ public class Event extends ServerClientObject
 	public List<Integer> getOutTriggers()
 	{
 		return outTriggers;
-	}
-	
-	@Override
-	public boolean isServerSide()
-	{
-		return isServerSide;
 	}
 	
 	/**

@@ -3,12 +3,19 @@ package ca.afroman.level;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.Tile;
+import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.events.Event;
+import ca.afroman.events.HitboxToggle;
+import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.TriggerType;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.light.PointLight;
@@ -35,6 +42,21 @@ public class MainLevel extends Level
 		new Hitbox(false, 80.0, 52.0, 16.0, 8.0).addToLevel(this);
 		new Hitbox(false, 112.0, 52.0, 16.0, 8.0).addToLevel(this);
 		new Hitbox(false, 112.0, 33.0, 39.0, 15.0).addToLevel(this);
+		
+		final int doorID = 20;
+		List<Integer> inTrig = new ArrayList<Integer>();
+		inTrig.add(doorID);
+		
+		HitboxToggle door = new HitboxToggle(isServerSide, Event.getIDCounter(isServerSide).getNext(), 98.0, 52.0, 12.0, 8.0, inTrig, null);
+		door.addToLevel(this);
+		door.setEnabled(false);
+		
+		List<TriggerType> type = new ArrayList<TriggerType>();
+		type.add(TriggerType.PLAYER_COLLIDE);
+		type.add(TriggerType.PLAYER_UNCOLLIDE);
+		
+		HitboxTrigger plate = new HitboxTrigger(isServerSide, Event.getIDCounter(isServerSide).getNext(), 68.0, 6.0, 8.0, 5.0, type, null, inTrig);
+		plate.addToLevel(this);
 		
 		if (!isServerSide)
 		{
@@ -120,6 +142,12 @@ public class MainLevel extends Level
 			// Lights
 			new PointLight(false, new Vector2DDouble(104.0, 72.0), 42.0).addToLevel(this);
 		}
+	}
+	
+	@Override
+	public void chainEvents(Entity triggerer, int inTrigger)
+	{
+		super.chainEvents(triggerer, inTrigger);
 	}
 	
 	@Override

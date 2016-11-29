@@ -19,6 +19,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.entity.api.YComparator;
 import ca.afroman.events.Event;
+import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
 import ca.afroman.events.TriggerType;
 import ca.afroman.game.Role;
@@ -129,7 +130,6 @@ public class Level extends ServerClientObject implements ITickable
 			
 			lights = null;
 			lightmap = null;
-			camOffset = null;
 		}
 	}
 	
@@ -769,6 +769,32 @@ public class Level extends ServerClientObject implements ITickable
 					Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
 					renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
 				}
+			}
+			
+			for (Event e : this.getEvents())
+			{
+				Vector2DInt pos = worldToScreen(new Vector2DDouble(e.getHitbox().getX(), e.getHitbox().getY()));
+				
+				Color c1; // Outline colour
+				Color c2; // Fill colour
+				
+				if (e instanceof HitboxTrigger)
+				{
+					c1 = new Color(0.75F, 0.3F, 1F, 1F);
+					c2 = new Color(0.75F, 0.3F, 1F, 0.3F);
+				}
+				else if (e instanceof HitboxToggle)
+				{
+					c1 = new Color(1F, 0.3F, 0.3F, 1F);
+					c2 = new Color(1F, 0.3F, 0.3F, 0.3F);
+				}
+				else
+				{
+					c1 = new Color(1F, 1F, 1F, 1F);
+					c2 = new Color(1F, 1F, 1F, 0.3F);
+				}
+				
+				renderTo.drawFillRect(c1, c2, pos, (int) e.getHitbox().getWidth(), (int) e.getHitbox().getHeight());
 			}
 			
 			if (ClientGame.instance().getCurrentScreen() instanceof GuiGrid)
