@@ -14,7 +14,7 @@ public class Tile extends DrawableEntity
 	
 	public Tile(int layer, boolean isMicromanaged, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
 	{
-		super(false, isMicromanaged, MICROMANAGED_ID, asset, pos, hitboxes);
+		super(false, isMicromanaged, asset, pos, hitboxes);
 		
 		this.layer = layer;
 	}

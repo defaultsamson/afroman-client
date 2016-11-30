@@ -16,11 +16,12 @@ public class Entity extends ServerClientObject implements ITickable
 	
 	protected static final int MICROMANAGED_ID = -1;
 	
-	private static IDCounter idCounter = new IDCounter();
+	private static IDCounter serverIdCounter = new IDCounter();
+	private static IDCounter clientIdCounter = new IDCounter();
 	
-	public static IDCounter getIDCounter()
+	private static IDCounter getIDCounter(boolean isServerSide)
 	{
-		return idCounter;
+		return isServerSide ? serverIdCounter : clientIdCounter;
 	}
 	
 	public static Hitbox[] hitBoxListToArray(List<Hitbox> hitboxes)
@@ -54,15 +55,12 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * Creates a new Entity without a hitbox.
 	 * 
+	 * @param isServerSide
 	 * @param id the ID of this Entity
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
-	 * @param width the width of this
-	 * @param height the height of this
 	 */
-	public Entity(boolean isServerSide, boolean isMicromanaged, int id, Vector2DDouble position)
+	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
 	{
-		this(isServerSide, isMicromanaged, id, position, false, new Hitbox[] { null });
+		this(isServerSide, isMicromanaged, position, false, new Hitbox[] { null });
 	}
 	
 	/**
@@ -74,12 +72,14 @@ public class Entity extends ServerClientObject implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	private Entity(boolean isServerSide, boolean isMicromanaged, int id, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
+	private Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
 	{
 		super(isServerSide);
 		
 		this.isMicromanaged = isMicromanaged;
-		this.id = id; // -1 if this is not an object in a level
+		
+		this.id = isMicromanaged ? MICROMANAGED_ID : getIDCounter(isServerSide).getNext(); // -1 if this is not an object in a level
+		
 		this.level = null;
 		this.position = position;
 		this.hasHitbox = hasHitbox;
@@ -115,9 +115,9 @@ public class Entity extends ServerClientObject implements ITickable
 	 * @param height the height of this
 	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
 	 */
-	public Entity(boolean isServerSide, boolean isMicromanaged, int id, Vector2DDouble position, Hitbox... hitboxes)
+	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, Hitbox... hitboxes)
 	{
-		this(isServerSide, isMicromanaged, id, position, true, hitboxes);
+		this(isServerSide, isMicromanaged, position, true, hitboxes);
 	}
 	
 	/**

@@ -5,9 +5,11 @@ import java.util.List;
 
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.input.InputType;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketActivateTrigger;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
 public class HitboxTrigger extends Event
@@ -18,17 +20,29 @@ public class HitboxTrigger extends Event
 	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
 	private Entity lastHit = null;
 	
-	public HitboxTrigger(boolean isServerSide, double x, double y, double width, double height, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes)
 	{
-		super(isServerSide, x, y, width, height, inTriggers, outTriggers);
+		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers);
 		
-		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
-		input = new InputType();
+		initTriggerTypes(triggerTypes);
+	}
+	
+	public HitboxTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes, Hitbox... hitboxes)
+	{
+		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, hitboxes);
+		
+		initTriggerTypes(triggerTypes);
 	}
 	
 	public List<TriggerType> getTriggerTypes()
 	{
 		return triggerTypes;
+	}
+	
+	private void initTriggerTypes(List<TriggerType> triggerTypes)
+	{
+		this.triggerTypes = (triggerTypes != null ? triggerTypes : new ArrayList<TriggerType>());
+		input = new InputType();
 	}
 	
 	public void setTriggerTypes(List<TriggerType> types)
@@ -84,7 +98,7 @@ public class HitboxTrigger extends Event
 		
 		for (PlayerEntity p : level.getPlayers())
 		{
-			if (p.isColliding(hitbox))
+			if (this.isColliding(p))
 			{
 				player = p;
 				break;

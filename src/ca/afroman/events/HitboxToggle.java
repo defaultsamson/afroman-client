@@ -3,15 +3,19 @@ package ca.afroman.events;
 import java.util.List;
 
 import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
+import ca.afroman.game.Game;
 import ca.afroman.level.api.Level;
+import ca.afroman.log.ALogType;
+import ca.afroman.resource.Vector2DDouble;
 
 public class HitboxToggle extends Event
 {
 	protected boolean enabled;
 	
-	public HitboxToggle(boolean isServerSide, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public HitboxToggle(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Hitbox... hitboxes)
 	{
-		super(isServerSide, x, y, width, height, inTriggers, outTriggers);
+		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, hitboxes);
 		
 		enabled = false;
 	}
@@ -60,11 +64,31 @@ public class HitboxToggle extends Event
 		
 		if (isActive)
 		{
-			hitbox.addToLevel(level);
+			if (hasHitbox())
+			{
+				for (Hitbox box : hitboxInLevel)
+				{
+					box.addToLevel(level);
+				}
+			}
+			else
+			{
+				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "HitboxToggle(id=" + getID() + ") has no hitboxes.");
+			}
 		}
 		else
 		{
-			hitbox.removeFromLevel();
+			if (hasHitbox())
+			{
+				for (Hitbox box : hitboxInLevel)
+				{
+					box.removeFromLevel();
+				}
+			}
+			else
+			{
+				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "HitboxToggle(id=" + getID() + ") has no hitboxes.");
+			}
 		}
 		
 		enabled = isActive;

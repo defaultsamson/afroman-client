@@ -14,7 +14,7 @@ public class PointLight extends Entity
 	
 	private PointLight(boolean isServerSide, boolean isMicromanaged, Vector2DDouble pos, double radius, Color colour)
 	{
-		super(isServerSide, isMicromanaged, MICROMANAGED_ID, pos);
+		super(isServerSide, isMicromanaged, pos);
 		
 		this.colour = colour;
 		this.radius = radius;

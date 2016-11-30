@@ -7,17 +7,37 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.entity.Tile;
 import ca.afroman.entity.api.Direction;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 
 public class DoorEvent extends HitboxToggle
 {
+	private static Hitbox getDefaultHitbox(Direction dir)
+	{
+		switch (dir)
+		{
+			default:
+			case UP:
+				return new Hitbox(true, 16, 6, 16, 4);
+			case DOWN:
+				return new Hitbox(true, 16, 2, 16, 12);
+			case LEFT:
+				// TODO
+				break;
+			case RIGHT:
+				// TODO
+				break;
+		}
+		return null;
+	}
 	Tile open;
+	
 	Tile closed;
 	
-	public DoorEvent(boolean isServerSide, Direction doorLooking, double x, double y, List<Integer> inTriggers, List<Integer> outTriggers)
+	public DoorEvent(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Direction doorLooking)
 	{
-		super(isServerSide, x, y, 16 + (Math.abs(doorLooking.getYAmplitude()) * 16), 16 + (Math.abs(doorLooking.getXAmplitude()) * 16), inTriggers, outTriggers);
+		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, getDefaultHitbox(doorLooking));
 		
 		if (!isServerSide)
 		{
@@ -46,8 +66,8 @@ public class DoorEvent extends HitboxToggle
 			}
 			
 			// TODO cannot move the Tile with this
-			this.open = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, open, new Vector2DDouble(x, y));
-			this.closed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, closed, new Vector2DDouble(x, y));
+			this.open = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, open, position);
+			this.closed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, closed, position);
 		}
 	}
 	

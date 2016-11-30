@@ -47,24 +47,16 @@ public class MainLevel extends Level
 		List<Integer> inTrig = new ArrayList<Integer>();
 		inTrig.add(doorID);
 		
-		// HitboxToggle door = new HitboxToggle(isServerSide, 98.0, 52.0, 12.0, 8.0, inTrig, null);
-		// door.addToLevel(this);
-		// door.setEnabled(false);
-		
 		List<TriggerType> type = new ArrayList<TriggerType>();
 		type.add(TriggerType.PLAYER_COLLIDE);
 		type.add(TriggerType.PLAYER_UNCOLLIDE);
 		
-		// HitboxTrigger plate = new HitboxTrigger(isServerSide, 68.0, 6.0, 8.0, 5.0, type, null, inTrig);
-		// plate.addToLevel(this);
-		
-		DoorEvent dora = new DoorEvent(isServerSide, Direction.UP, 80.0, 48.0, inTrig, null);
+		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP);
 		dora.addToLevel(this);
 		dora.setEnabled(false);
 		
-		//
-		
-		PlateTrigger plate = new PlateTrigger(isServerSide, 64.0, 0.0, type, null, inTrig);
+		// 50FF00 is the coolour to replace with the desired colour
+		PlateTrigger plate = new PlateTrigger(isServerSide, false, new Vector2DDouble(64.0, 0.0), null, inTrig, type);
 		plate.addToLevel(this);
 		
 		if (!isServerSide)

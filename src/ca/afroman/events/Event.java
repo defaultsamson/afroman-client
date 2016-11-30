@@ -5,39 +5,32 @@ import java.util.List;
 
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
-import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
-import ca.afroman.resource.IDCounter;
-import ca.afroman.resource.ServerClientObject;
+import ca.afroman.resource.Vector2DDouble;
 
-public class Event extends ServerClientObject implements ITickable
+public class Event extends Entity
 {
-	private static IDCounter serverIdCounter = new IDCounter();
-	private static IDCounter clientIdCounter = new IDCounter();
-	
-	public static IDCounter getIDCounter(boolean isServerSide)
-	{
-		return isServerSide ? serverIdCounter : clientIdCounter;
-	}
-	
-	protected Level level;
 	protected List<Integer> inTriggers;
 	protected List<Integer> outTriggers;
-	protected Hitbox hitbox;
-	private int id;
 	
-	public Event(boolean isServerSide, double x, double y, double width, double height, List<Integer> inTriggers, List<Integer> outTriggers)
+	public Event(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers)
 	{
-		super(isServerSide);
+		super(isServerSide, isMicromanaged, position);
 		
-		level = null;
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-		hitbox = new Hitbox(true, x, y, width, height);
 		
-		id = getIDCounter(isServerSide).getNext();
+		initTriggers(inTriggers, outTriggers);
 	}
 	
+	public Event(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Hitbox... hitboxes)
+	{
+		super(isServerSide, isMicromanaged, position, hitboxes);
+		
+		initTriggers(inTriggers, outTriggers);
+	}
+	
+	@Override
 	public void addToLevel(Level newLevel)
 	{
 		if (level == newLevel) return;
@@ -57,22 +50,6 @@ public class Event extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * @return the hitbox which corresponds with this event.
-	 */
-	public Hitbox getHitbox()
-	{
-		return hitbox;
-	}
-	
-	/**
-	 * @return the ID of this event. FOR SERVER/CLIENT REFERENCE ONLY, it does not act as a trigger.
-	 */
-	public int getID()
-	{
-		return id;
-	}
-	
-	/**
 	 * @return the ID's that will trigger this.
 	 */
 	public List<Integer> getInTriggers()
@@ -80,6 +57,7 @@ public class Event extends ServerClientObject implements ITickable
 		return inTriggers;
 	}
 	
+	@Override
 	public Level getLevel()
 	{
 		return level;
@@ -93,6 +71,12 @@ public class Event extends ServerClientObject implements ITickable
 		return outTriggers;
 	}
 	
+	private void initTriggers(List<Integer> inTriggers, List<Integer> outTriggers)
+	{
+		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
+		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
+	}
+	
 	/**
 	 * Runs when this is triggered.
 	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="hHHHHHHH" height="120" width="120">
@@ -103,6 +87,7 @@ public class Event extends ServerClientObject implements ITickable
 		
 	}
 	
+	@Override
 	public void removeFromLevel()
 	{
 		addToLevel(null);

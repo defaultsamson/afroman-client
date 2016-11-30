@@ -6,20 +6,26 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.entity.Tile;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 
 public class PlateTrigger extends HitboxTrigger
 {
+	private static final double HITBOX_WIDTH = 10;
+	private static final double HITBOX_HEIGHT = 1;
+	private static final double HITBOX_X_OFF = 3;
+	private static final double HITBOX_Y_OFF = 5;
+	
 	private Tile pressed;
 	private Tile released;
 	
-	public PlateTrigger(boolean isServerSide, double x, double y, List<TriggerType> triggerTypes, List<Integer> inTriggers, List<Integer> outTriggers)
+	public PlateTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes)
 	{
-		super(isServerSide, x, y, 16, 16, triggerTypes, inTriggers, outTriggers);
+		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, triggerTypes, new Hitbox(true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
 		
-		pressed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_DOWN), new Vector2DDouble(x, y));
-		released = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_UP), new Vector2DDouble(x, y));
+		pressed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_DOWN), position);
+		released = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_UP), position);
 	}
 	
 	@Override
