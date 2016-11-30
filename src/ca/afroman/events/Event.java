@@ -34,6 +34,8 @@ public class Event extends ServerClientObject implements ITickable
 		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
 		hitbox = new Hitbox(true, x, y, width, height);
+		
+		id = getIDCounter(isServerSide).getNext();
 	}
 	
 	public void addToLevel(Level newLevel)

@@ -14,7 +14,7 @@ import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.DoorEvent;
-import ca.afroman.events.HitboxTrigger;
+import ca.afroman.events.PlateTrigger;
 import ca.afroman.events.TriggerType;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
@@ -55,12 +55,17 @@ public class MainLevel extends Level
 		type.add(TriggerType.PLAYER_COLLIDE);
 		type.add(TriggerType.PLAYER_UNCOLLIDE);
 		
-		HitboxTrigger plate = new HitboxTrigger(isServerSide, 68.0, 6.0, 8.0, 5.0, type, null, inTrig);
-		plate.addToLevel(this);
+		// HitboxTrigger plate = new HitboxTrigger(isServerSide, 68.0, 6.0, 8.0, 5.0, type, null, inTrig);
+		// plate.addToLevel(this);
 		
 		DoorEvent dora = new DoorEvent(isServerSide, Direction.UP, 80.0, 48.0, inTrig, null);
 		dora.addToLevel(this);
 		dora.setEnabled(false);
+		
+		//
+		
+		PlateTrigger plate = new PlateTrigger(isServerSide, 64.0, 0.0, type, null, inTrig);
+		plate.addToLevel(this);
 		
 		if (!isServerSide)
 		{
@@ -137,8 +142,6 @@ public class MainLevel extends Level
 			new Tile(1, false, Assets.getDrawableAsset(AssetType.TILE_GRASS).clone(), new Vector2DDouble(112.0, -16.0)).addToLevel(this);
 			new Tile(1, false, Assets.getDrawableAsset(AssetType.TILE_WALL_GRASS).clone(), new Vector2DDouble(112.0, -32.0)).addToLevel(this);
 			new Tile(1, false, Assets.getDrawableAsset(AssetType.TILE_WALL).clone(), new Vector2DDouble(112.0, -48.0)).addToLevel(this);
-			
-			new Tile(2, false, Assets.getDrawableAsset(AssetType.TILE_PLATE_TEST).clone(), new Vector2DDouble(64.0, 0.0)).addToLevel(this);
 			
 			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone(), new Vector2DDouble(118.0, -14.0)).addToLevel(this);
 			// new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_DOOR_UP_OPEN).clone(), new Vector2DDouble(80.0, 48.0)).addToLevel(this);

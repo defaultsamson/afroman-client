@@ -464,12 +464,12 @@ public class ClientGame extends Game
 							{
 								int id = buf.getInt();
 								
-								Event eHitbox = level.getEvent(id);
+								Event event = level.getEvent(id);
 								
-								if (eHitbox != null)
+								if (event != null)
 								{
-									byte hnng = buf.get();
-									Role role = Role.fromOrdinal(hnng);
+									byte ord = buf.get();
+									Role role = Role.fromOrdinal(ord);
 									
 									if (role != null)
 									{
@@ -477,7 +477,7 @@ public class ClientGame extends Game
 										
 										if (player != null)
 										{
-											eHitbox.trigger(player);
+											event.trigger(player);
 										}
 										else
 										{
@@ -486,7 +486,7 @@ public class ClientGame extends Game
 									}
 									else
 									{
-										logger().log(ALogType.WARNING, "No role found with ordinal " + hnng);
+										logger().log(ALogType.WARNING, "No role found with ordinal " + ord);
 									}
 								}
 								else

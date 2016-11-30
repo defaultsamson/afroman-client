@@ -126,9 +126,6 @@ public class ServerGame extends Game
 						{
 							
 						}
-						
-						// sockets().sender().sendPacket(new PacketPing(sender.getConnection()));
-						// sender.
 						break;
 					case LOAD_LEVELS:
 					{

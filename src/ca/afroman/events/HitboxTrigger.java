@@ -13,7 +13,7 @@ import ca.afroman.server.ServerGame;
 public class HitboxTrigger extends Event
 {
 	private List<TriggerType> triggerTypes;
-	private InputType input;
+	protected InputType input;
 	
 	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
 	private Entity lastHit = null;
@@ -47,18 +47,7 @@ public class HitboxTrigger extends Event
 			
 			if (playerCollide || playerUncollide)
 			{
-				PlayerEntity player = null;
-				
-				for (PlayerEntity p : level.getPlayers())
-				{
-					if (p.isColliding(hitbox))
-					{
-						player = p;
-						break;
-					}
-				}
-				
-				input.setPressed(player != null);
+				PlayerEntity player = updateInput();
 				
 				if (playerCollide && input.isPressedFiltered())
 				{
@@ -82,5 +71,28 @@ public class HitboxTrigger extends Event
 				lastHit = player;
 			}
 		}
+	}
+	
+	/**
+	 * Updates this's input object based on collisions
+	 * 
+	 * @return the player that is colliding with this
+	 */
+	protected PlayerEntity updateInput()
+	{
+		PlayerEntity player = null;
+		
+		for (PlayerEntity p : level.getPlayers())
+		{
+			if (p.isColliding(hitbox))
+			{
+				player = p;
+				break;
+			}
+		}
+		
+		input.setPressed(player != null);
+		
+		return player;
 	}
 }
