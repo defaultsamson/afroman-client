@@ -43,23 +43,7 @@ public class MainLevel extends Level
 		new Hitbox(false, 80.0, 52.0, 16.0, 8.0).addToLevel(this);
 		new Hitbox(false, 112.0, 52.0, 16.0, 8.0).addToLevel(this);
 		new Hitbox(false, 112.0, 33.0, 39.0, 15.0).addToLevel(this);
-		
-		final int doorID = 20;
-		List<Integer> inTrig = new ArrayList<Integer>();
-		inTrig.add(doorID);
-		
-		List<TriggerType> type = new ArrayList<TriggerType>();
-		type.add(TriggerType.PLAYER_COLLIDE);
-		type.add(TriggerType.PLAYER_UNCOLLIDE);
-		
-		int doorColour = ColourUtil.TILE_REPLACE_COLOUR_RED;
-		
-		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP, doorColour);
-		dora.addToLevel(this);
-		dora.setEnabled(false);
-		
-		PlateTrigger plate = new PlateTrigger(isServerSide, false, new Vector2DDouble(64.0, 0.0), null, inTrig, type, doorColour);
-		plate.addToLevel(this);
+		new Hitbox(false, 131.0, 23.0, 10.0, 6.0).addToLevel(this);
 		
 		if (!isServerSide)
 		{
@@ -138,7 +122,7 @@ public class MainLevel extends Level
 			new Tile(1, false, Assets.getDrawableAsset(AssetType.TILE_WALL).clone(), new Vector2DDouble(112.0, -48.0)).addToLevel(this);
 			
 			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone(), new Vector2DDouble(118.0, -14.0)).addToLevel(this);
-			// new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_DOOR_UP_OPEN).clone(), new Vector2DDouble(80.0, 48.0)).addToLevel(this);
+			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone(), new Vector2DDouble(128.0, 16.0)).addToLevel(this);
 			
 			// Lights
 			new PointLight(false, new Vector2DDouble(104.0, 72.0), 42.0).addToLevel(this);

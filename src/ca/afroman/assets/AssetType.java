@@ -91,6 +91,9 @@ public enum AssetType
 	TILE_PLATE_UP(true),
 	TILE_PLATE_DOWN(true),
 	
+	TILE_SWITCH_LEFT(true),
+	TILE_SWITCH_RIGHT(true),
+	
 	TILE_AURA(true),
 	
 	TILE_ROCK(true),
