@@ -6,8 +6,8 @@ public abstract class DrawableAsset extends Asset
 {
 	// This simply acts as a class to relate all the assets together for the Assets class
 	
-	private int width;
-	private int height;
+	protected int width;
+	protected int height;
 	
 	public DrawableAsset(AssetType type, int width, int height)
 	{

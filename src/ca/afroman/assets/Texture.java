@@ -274,11 +274,15 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	
 	public Texture rotate(double degrees)
 	{
-		AffineTransform at = AffineTransform.getTranslateInstance(this.getWidth() / 2, this.getHeight() / 2);
+		AffineTransform at = AffineTransform.getTranslateInstance(this.getHeight() / 2, this.getWidth() / 2);
+		
 		at.rotate(Math.toRadians(degrees));
 		at.translate(-this.getWidth() / 2, -this.getHeight() / 2);
 		AffineTransformOp op = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		image = op.filter(image, null);
+		
+		width = image.getWidth();
+		height = image.getWidth();
 		
 		return this;
 	}
