@@ -59,10 +59,6 @@ public enum AssetType
 	TILE_WALL_GRASS_FLIP(true),
 	TILE_WALL_GRASS_SIDE(true),
 	TILE_WALL_GRASS_SIDE_FLIP(true),
-	TILE_WALL_WALL_N(true),
-	TILE_WALL_WALL_E(true),
-	TILE_WALL_WALL_S(true),
-	TILE_WALL_WALL_W(true),
 	
 	TILE_WALL_OUTCORNER_N(true),
 	TILE_WALL_OUTCORNER_E(true),

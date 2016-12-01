@@ -194,11 +194,6 @@ public class Assets
 		Texture wallSide = sheet.getSubTexture(AssetType.TILE_WALL_GRASS_SIDE, 16 * 4, 0, 16, 16);
 		assets.add(wallSide);
 		assets.add(wallSide.clone(AssetType.TILE_WALL_GRASS_SIDE_FLIP).rotate(180));
-		Texture wallWall = sheet.getSubTexture(AssetType.TILE_WALL_WALL_N, 16 * 10, 16 * 1, 16, 16);
-		assets.add(wallWall);
-		assets.add(wallWall.clone(AssetType.TILE_WALL_WALL_E).rotate(90));
-		assets.add(wallWall.clone(AssetType.TILE_WALL_WALL_S).rotate(180));
-		assets.add(wallWall.clone(AssetType.TILE_WALL_WALL_W).rotate(270));
 		
 		Texture inCornerL = sheet.getSubTexture(AssetType.TILE_WALL_INCORNER_TOP_L, 16 * 3, 16, 16, 16);
 		assets.add(inCornerL);
