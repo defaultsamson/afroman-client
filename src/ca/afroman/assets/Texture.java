@@ -46,18 +46,9 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		BufferedImage image = new BufferedImage(inImage.getWidth(), inImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		image.createGraphics().drawImage(inImage, 0, 0, null);
 		
-		// Filters all the purple colours to transparent
-		for (int y = 0; y < image.getHeight(); ++y)
-		{
-			for (int x = 0; x < image.getWidth(); ++x)
-			{
-				int argb = image.getRGB(x, y);
-				if (argb == ColourUtil.ALPHA_COLOUR1 || argb == ColourUtil.ALPHA_COLOUR2)
-				{
-					image.setRGB(x, y, 0x00000000);
-				}
-			}
-		}
+		Texture text = new Texture(type, image, yComparatorOffset);
+		text.replaceColour(ColourUtil.ALPHA_COLOUR1, 0x00000000);
+		text.replaceColour(ColourUtil.ALPHA_COLOUR2, 0x00000000);
 		
 		// Colour format
 		// 0xAARRGGBB
@@ -69,7 +60,7 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		// int green = (pixels[i] >>> 8) & 0xFF;
 		// int blue = (pixels[i] >>> 0) & 0xFF;
 		
-		return new Texture(type, image, yComparatorOffset);
+		return text;
 	}
 	
 	private BufferedImage image;
@@ -262,6 +253,23 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	public void render(Texture renderTo, Vector2DInt pos)
 	{
 		renderTo.draw(this, pos);
+	}
+	
+	@Override
+	public Texture replaceColour(int from, int to)
+	{
+		for (int y = 0; y < image.getHeight(); ++y)
+		{
+			for (int x = 0; x < image.getWidth(); ++x)
+			{
+				if (image.getRGB(x, y) == from)
+				{
+					image.setRGB(x, y, to);
+				}
+			}
+		}
+		
+		return this;
 	}
 	
 	public Texture rotate(double degrees)

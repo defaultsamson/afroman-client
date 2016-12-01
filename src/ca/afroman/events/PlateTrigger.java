@@ -9,6 +9,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.util.ColourUtil;
 
 public class PlateTrigger extends HitboxTrigger
 {
@@ -20,12 +21,12 @@ public class PlateTrigger extends HitboxTrigger
 	private Tile pressed;
 	private Tile released;
 	
-	public PlateTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes)
+	public PlateTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes, int doorColour)
 	{
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, triggerTypes, new Hitbox(true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
 		
-		pressed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_DOWN), position);
-		released = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_UP), position);
+		pressed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_DOWN).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour), position);
+		released = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_PLATE_UP).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour), position);
 	}
 	
 	@Override

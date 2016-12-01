@@ -31,4 +31,6 @@ public abstract class DrawableAsset extends Asset
 	}
 	
 	public abstract void render(Texture renderTo, Vector2DInt pos);
+	
+	public abstract DrawableAsset replaceColour(int from, int to);
 }

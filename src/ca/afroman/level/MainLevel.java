@@ -20,6 +20,7 @@ import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.light.PointLight;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.util.ColourUtil;
 
 public class MainLevel extends Level
 {
@@ -51,12 +52,13 @@ public class MainLevel extends Level
 		type.add(TriggerType.PLAYER_COLLIDE);
 		type.add(TriggerType.PLAYER_UNCOLLIDE);
 		
-		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP);
+		int doorColour = ColourUtil.TILE_REPLACE_COLOUR_RED;
+		
+		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP, doorColour);
 		dora.addToLevel(this);
 		dora.setEnabled(false);
 		
-		// 50FF00 is the coolour to replace with the desired colour
-		PlateTrigger plate = new PlateTrigger(isServerSide, false, new Vector2DDouble(64.0, 0.0), null, inTrig, type);
+		PlateTrigger plate = new PlateTrigger(isServerSide, false, new Vector2DDouble(64.0, 0.0), null, inTrig, type, doorColour);
 		plate.addToLevel(this);
 		
 		if (!isServerSide)

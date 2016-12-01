@@ -80,4 +80,15 @@ public class DrawableAssetArray extends DrawableAsset
 	{
 		
 	}
+	
+	@Override
+	public DrawableAssetArray replaceColour(int from, int to)
+	{
+		for (DrawableAsset a : assets)
+		{
+			a.replaceColour(from, to);
+		}
+		
+		return this;
+	}
 }

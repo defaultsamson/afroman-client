@@ -10,6 +10,7 @@ import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.util.ColourUtil;
 
 public class DoorEvent extends HitboxToggle
 {
@@ -31,11 +32,11 @@ public class DoorEvent extends HitboxToggle
 		}
 		return null;
 	}
-	Tile open;
 	
+	Tile open;
 	Tile closed;
 	
-	public DoorEvent(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Direction doorLooking)
+	public DoorEvent(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Direction doorLooking, int doorColour)
 	{
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, getDefaultHitbox(doorLooking));
 		
@@ -64,6 +65,9 @@ public class DoorEvent extends HitboxToggle
 					closed = Assets.getDrawableAsset(AssetType.TILE_DOOR_RIGHT_CLOSED);
 					break;
 			}
+			
+			open = open.clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour);
+			closed = closed.clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour);
 			
 			// TODO cannot move the Tile with this
 			this.open = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, open, position);
