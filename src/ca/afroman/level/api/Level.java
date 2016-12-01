@@ -650,7 +650,7 @@ public class Level extends ServerClientObject implements ITickable
 			case TILE:
 				if (cursorAsset == null)
 				{
-					cursorAsset = (DrawableAsset) Assets.getAsset(AssetType.fromOrdinal(0).getNextDrawableAsset()).clone();
+					cursorAsset = (DrawableAsset) Assets.getAsset(AssetType.fromOrdinal(0).getNextBuildModeAsset()).clone();
 				}
 				ClientGame.instance().setCurrentScreen(new GuiTileEditor(grid));
 				break;
@@ -1080,13 +1080,13 @@ public class Level extends ServerClientObject implements ITickable
 						if (ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 						{
 							cursorAsset.dispose();
-							cursorAsset = (DrawableAsset) Assets.getAsset(cursorAsset.getAssetType().getLastDrawableAsset()).clone();
+							cursorAsset = (DrawableAsset) Assets.getAsset(cursorAsset.getAssetType().getLastBuildModeAsset()).clone();
 						}
 						
 						if (ClientGame.instance().input().mouseWheelUp.isPressedFiltered())
 						{
 							cursorAsset.dispose();
-							cursorAsset = (DrawableAsset) Assets.getAsset(cursorAsset.getAssetType().getNextDrawableAsset()).clone();
+							cursorAsset = (DrawableAsset) Assets.getAsset(cursorAsset.getAssetType().getNextBuildModeAsset()).clone();
 						}
 						
 						if (cursorAsset instanceof ITickable) ((ITickable) cursorAsset).tick();
