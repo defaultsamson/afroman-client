@@ -29,6 +29,23 @@ public class MainLevel extends Level
 	{
 		super(isServerSide, LevelType.MAIN);
 		
+		final int doorID = 20;
+		List<Integer> inTrig = new ArrayList<Integer>();
+		inTrig.add(doorID);
+		
+		List<TriggerType> type = new ArrayList<TriggerType>();
+		type.add(TriggerType.PLAYER_COLLIDE);
+		type.add(TriggerType.PLAYER_UNCOLLIDE);
+		
+		int doorColour = ColourUtil.TILE_REPLACE_COLOUR_RED;
+		
+		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP, doorColour);
+		dora.addToLevel(this);
+		dora.setEnabled(false);
+		
+		PlateTrigger plate = new PlateTrigger(isServerSide, false, new Vector2DDouble(64.0, 0.0), null, inTrig, type, doorColour);
+		plate.addToLevel(this);
+		
 		// Hitboxes
 		new Hitbox(false, 48.0, -48.0, 16.0, 80.0).addToLevel(this);
 		new Hitbox(false, 144.0, -48.0, 16.0, 80.0).addToLevel(this);
