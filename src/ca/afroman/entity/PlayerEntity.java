@@ -10,7 +10,6 @@ import ca.afroman.game.Role;
 import ca.afroman.level.api.Level;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketPlayerInteract;
-import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketSetPlayerLevel;
 import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.resource.Vector2DDouble;
@@ -113,40 +112,21 @@ public class PlayerEntity extends DrawableEntityDirectional
 		return role;
 	}
 	
-	@Override
-	public void onMove(byte xa, byte ya)
-	{
-		super.onMove(xa, ya);
-		if (isServerSide())
-		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
-		}
-		else
-		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(xa, ya));
-		}
-	}
-	
 	public void reset()
 	{
 		setCameraToFollow(false);
 		removeFromLevel();
 	}
 	
-	public void setPosition(boolean updateClientPosition, Vector2DDouble position)
-	{
-		super.setPosition(position);
-		
-		if (updateClientPosition && isServerSide())
-		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(this));
-		}
-	}
-	
 	@Override
 	public void setPosition(Vector2DDouble position)
 	{
-		setPosition(true, position);
+		super.setPosition(position);
+		
+		if (isServerSide())
+		{
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(getRole(), position));
+		}
 	}
 	
 	@Override

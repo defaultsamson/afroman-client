@@ -18,6 +18,7 @@ import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketPing;
+import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -120,7 +121,7 @@ public class ServerGame extends Game
 						if (sender.isPendingPingUpdate())
 						{
 							sender.updatePing(System.currentTimeMillis());
-							System.out.println("Ping[" + sender.getConnection().asReadable() + "]: " + sender.getPing());
+							// System.out.println("Ping[" + sender.getConnection().asReadable() + "]: " + sender.getPing());
 						}
 						else
 						{
@@ -224,7 +225,7 @@ public class ServerGame extends Game
 							logger().log(ALogType.CRITICAL, "A non-host user was trying to start the server: " + sender.getConnection().asReadable());
 						}
 						break;
-					case REQUEST_PLAYER_MOVE:
+					case PLAYER_MOVE:
 					{
 						Role role = sender.getRole();
 						if (role != Role.SPECTATOR)
@@ -232,10 +233,12 @@ public class ServerGame extends Game
 							PlayerEntity player = getPlayer(role);
 							if (player != null)
 							{
-								byte x = packet.getContent()[0];
-								byte y = packet.getContent()[1];
+								byte x = packet.getContent()[1];
+								byte y = packet.getContent()[2];
 								
-								player.move(x, y);
+								player.autoMove(x, y);
+								
+								sockets().sender().sendPacketToAllClients(new PacketPlayerMove(role, x, y), sender.getConnection());
 							}
 						}
 					}

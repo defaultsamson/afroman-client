@@ -2,9 +2,13 @@ package ca.afroman.entity.api;
 
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
+import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.resource.IDCounter;
+import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
 
@@ -51,6 +55,13 @@ public class Entity extends ServerClientObject implements ITickable
 	protected int numSteps;
 	protected Direction direction;
 	protected Direction lastDirection;
+	
+	private byte deltaXa = 0;
+	
+	private byte deltaYa = 0;
+	
+	// private ModulusCounter setPosCounter = new ModulusCounter(60 * 5);
+	private ModulusCounter deltaMoveCounter = new ModulusCounter(10);
 	
 	/**
 	 * Creates a new Entity without a hitbox.
@@ -145,6 +156,19 @@ public class Entity extends ServerClientObject implements ITickable
 		}
 	}
 	
+	/**
+	 * Only designed to be used by packet parsers for
+	 * parsing movement.
+	 * 
+	 * @param dXa the change in X amplitude
+	 * @param dYa the change in Y amplitude
+	 */
+	public void autoMove(byte dXa, byte dYa)
+	{
+		this.deltaXa += dXa;
+		this.deltaYa += dYa;
+	}
+	
 	public Direction getDirection()
 	{
 		return direction;
@@ -192,6 +216,11 @@ public class Entity extends ServerClientObject implements ITickable
 		return hasHitbox;
 	}
 	
+	protected boolean hasMoved()
+	{
+		return deltaXa != 0 || deltaYa != 0;
+	}
+	
 	/**
 	 * @return the hitbox with the offset of this Entity's in-level coordinates.
 	 */
@@ -214,7 +243,6 @@ public class Entity extends ServerClientObject implements ITickable
 		}
 		return false;
 	}
-	
 	public boolean isColliding(Hitbox... worldHitboxes)
 	{
 		if (hitboxInLevel() != null)
@@ -247,8 +275,13 @@ public class Entity extends ServerClientObject implements ITickable
 		return direction != Direction.NONE;
 	}
 	
-	@SuppressWarnings("unused")
 	public void move(byte xa, byte ya)
+	{
+		move(xa, ya, false);
+	}
+	
+	@SuppressWarnings("unused")
+	private void move(byte xa, byte ya, boolean autoMoved)
 	{
 		if (getLevel() == null)
 		{
@@ -404,11 +437,20 @@ public class Entity extends ServerClientObject implements ITickable
 			numSteps++;
 			
 			direction = Direction.fromAmplitudes(deltaX, deltaY);
+			
+			if (!autoMoved)
+			{
+				deltaXa += direction.getXAmplitude();
+				deltaYa += direction.getYAmplitude();
+				
+				// System.out.println("Delta: " + deltaXa + ", " + deltaYa);
+			}
 		}
 		
-		if (sendPacket)
+		if (sendPacket && !autoMoved)
 		{
 			onMove(xa, ya);
+			System.out.println("Dong: " + isServerSide());
 		}
 	}
 	
@@ -487,7 +529,97 @@ public class Entity extends ServerClientObject implements ITickable
 	@Override
 	public void tick()
 	{
+		// if (isServerSide())
+		// {
+		// if (setPosCounter.isAtInterval())
+		// {
+		// if (hasMoved())
+		// {
+		// if (this instanceof PlayerEntity)
+		// {
+		// System.out.println("Cancer1");
+		// ClientGame.instance().sockets().sender().sendPacket(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position));
+		// }
+		// else
+		// {
+		// // TODO entity move packet
+		// // ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
+		// }
+		// }
+		// }
+		// }
+		// else
+		// {
+		// if (hasMoved())
+		// {
+		// if (deltaMoveCounter.isAtInterval())
+		// {
+		// if (this instanceof PlayerEntity)
+		// {
+		// ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
+		// }
+		// else
+		// {
+		// ClientGame.instance().logger().log(ALogType.WARNING, "Only PlayerEntities are the only entities supposed to be controlled by the client side, not: " + this);
+		// }
+		//
+		// deltaXa = 0;
+		// deltaYa = 0;
+		// }
+		// }
+		// }
 		
+		// if (isMicromanaged) // && !(this instanceof PlayerEntity)
+		// {
+		//
+		// }
+		
+		// If it's the client side player that is controlled by the keyboard input
+		// Then use the deltaX and deltaY to tell the server where it's moved
+		if (this instanceof PlayerEntity && !isServerSide() && ((PlayerEntity) this).getRole() == ClientGame.instance().getRole())
+		{
+			if (hasMoved())
+			{
+				if (deltaMoveCounter.isAtInterval())
+				{
+					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
+					
+					deltaXa = 0;
+					deltaYa = 0;
+				}
+			}
+		}
+		else
+		// If it's not a player that is controlled by the ClientGame instance (the keyboard input)
+		// Then automatically move it using its deltaX and deltaY
+		{
+			byte xa = 0;
+			byte ya = 0;
+			
+			if (deltaXa > 0)
+			{
+				xa = 1;
+				deltaXa -= 1;
+			}
+			else if (deltaXa < 0)
+			{
+				xa = -1;
+				deltaXa += 1;
+			}
+			
+			if (deltaYa > 0)
+			{
+				ya = 1;
+				deltaYa -= 1;
+			}
+			else if (deltaYa < 0)
+			{
+				ya = -1;
+				deltaYa += 1;
+			}
+			
+			move(xa, ya, true);
+		}
 	}
 	
 	private void updateHitboxInLevel()

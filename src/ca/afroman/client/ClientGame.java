@@ -29,7 +29,6 @@ import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.PlayerEntity;
-import ca.afroman.entity.api.Direction;
 import ca.afroman.events.Event;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -332,6 +331,24 @@ public class ClientGame extends Game
 							
 							sockets().initServerTCPConnection();
 							break;
+						case PLAYER_MOVE:
+						{
+							Role role = Role.fromOrdinal(packet.getContent()[0]);
+							if (role != Role.SPECTATOR && role != getRole())
+							{
+								PlayerEntity player = getPlayer(role);
+								if (player != null)
+								{
+									byte x = packet.getContent()[1];
+									byte y = packet.getContent()[2];
+									
+									player.autoMove(x, y);
+									
+									// System.out.println("Sauce: " + x + ", " + y);
+								}
+							}
+						}
+							break;
 						case UPDATE_PLAYERLIST:
 						{
 							updatePlayerList();
@@ -443,8 +460,8 @@ public class ClientGame extends Game
 							
 							if (player != null)
 							{
-								player.setDirection(Direction.fromOrdinal(buf.get()));
-								player.setLastDirection(Direction.fromOrdinal(buf.get()));
+								// player.setDirection(Direction.fromOrdinal(buf.get()));
+								// player.setLastDirection(Direction.fromOrdinal(buf.get()));
 								player.setPosition(new Vector2DDouble(buf.getInt(), buf.getInt()));
 							}
 							else

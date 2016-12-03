@@ -1,18 +1,17 @@
 package ca.afroman.packet;
 
+import ca.afroman.game.Role;
 import ca.afroman.network.IPConnection;
 
 public class PacketPlayerMove extends BytePacket
 {
 	private byte[] toSend;
 	
-	@Deprecated
-	public PacketPlayerMove(byte xa, byte ya, IPConnection... connection)
+	public PacketPlayerMove(Role player, byte dXa, byte dYa, IPConnection... connection)
 	{
-		// TODO make false? typically movement packets should never be forces, and should only use UDP
-		super(PacketType.REQUEST_PLAYER_MOVE, true, connection);
+		super(PacketType.PLAYER_MOVE, false, connection);
 		
-		toSend = new byte[] { xa, ya };
+		toSend = new byte[] { (byte) player.ordinal(), dXa, dYa };
 	}
 	
 	@Override

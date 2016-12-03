@@ -88,11 +88,11 @@ public class PacketSender extends DynamicTickThread
 	}
 	
 	/**
-	 * Sends a packet to the server.
+	 * Sends a packet from the server.
 	 * 
 	 * @param packet the packet
 	 */
-	public void sendPacketToAllClients(BytePacket packet)
+	public void sendPacketToAllClients(BytePacket packet, IPConnection... exceptedConnections)
 	{
 		if (isServerSide()) // Pend all connected players
 		{
@@ -105,7 +105,19 @@ public class PacketSender extends DynamicTickThread
 			for (int i = 0; i < cons.length; i++)
 			{
 				// just assume that they're all connected players to speed up process
-				cons[i] = ((IPConnectedPlayer) players.get(i)).getConnection();
+				IPConnection con = ((IPConnectedPlayer) players.get(i)).getConnection();
+				
+				boolean isAllowed = true;
+				for (IPConnection exc : exceptedConnections)
+				{
+					if (exc == con)
+					{
+						isAllowed = false;
+						break;
+					}
+				}
+				
+				if (isAllowed) cons[i] = con;
 			}
 			
 			packet.setConnections(cons);

@@ -21,6 +21,8 @@ public class PlateTrigger extends HitboxTrigger
 	private Tile pressed;
 	private Tile released;
 	
+	private boolean lastIsPressed = false;
+	
 	public PlateTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes, int doorColour)
 	{
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, triggerTypes, new Hitbox(true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
@@ -55,7 +57,7 @@ public class PlateTrigger extends HitboxTrigger
 				pressed.setLayer(level.getDynamicLayer() - 1);
 				released.setLayer(level.getDynamicLayer() - 1);
 				
-				updateTile();
+				updateTile(true);
 			}
 			
 			level.getEvents().add(this);
@@ -71,25 +73,43 @@ public class PlateTrigger extends HitboxTrigger
 		// {
 		// System.out.println("Succ: " + ((PlayerEntity) triggerer).getRole());
 		// }
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
 		
 		updateTile();
 	}
 	
 	private void updateTile()
 	{
+		updateTile(false);
+	}
+	
+	private void updateTile(boolean forceUpdate)
+	{
 		if (!isServerSide())
 		{
 			updateInput();
 			
-			if (input.isPressed())
+			boolean isPressed = input.isPressed();
+			
+			if (isPressed != lastIsPressed || forceUpdate)
 			{
-				pressed.addToLevel(level);
-				released.removeFromLevel();
-			}
-			else
-			{
-				released.addToLevel(level);
-				pressed.removeFromLevel();
+				if (isPressed)
+				{
+					pressed.addToLevel(level);
+					released.removeFromLevel();
+				}
+				else
+				{
+					released.addToLevel(level);
+					pressed.removeFromLevel();
+				}
+				
+				lastIsPressed = isPressed;
 			}
 		}
 	}

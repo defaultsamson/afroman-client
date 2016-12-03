@@ -2,28 +2,32 @@ package ca.afroman.packet;
 
 import java.nio.ByteBuffer;
 
-import ca.afroman.entity.PlayerEntity;
+import ca.afroman.game.Role;
 import ca.afroman.network.IPConnection;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
 
 public class PacketSetPlayerLocation extends BytePacket
 {
 	private byte[] toSend;
 	
-	@Deprecated
-	public PacketSetPlayerLocation(PlayerEntity player, IPConnection... connection)
+	/**
+	 * Designed to be only sent from the server to client
+	 * 
+	 * @param player
+	 * @param pos
+	 * @param connection
+	 */
+	public PacketSetPlayerLocation(Role player, Vector2DDouble pos, IPConnection... connection)
 	{
-		// TODO make false? typically movement packets should never be forces, and should only use UDP
-		super(PacketType.SET_PLAYER_LOCATION, true, connection);
+		super(PacketType.SET_PLAYER_LOCATION, false, connection);
 		
-		ByteBuffer buf = ByteBuffer.allocate(3 + (2 * ByteUtil.DOUBLE_BYTE_COUNT));
+		ByteBuffer buf = ByteBuffer.allocate(1 + (2 * ByteUtil.INT_BYTE_COUNT));
 		
-		buf.put((byte) player.getRole().ordinal());
-		buf.put((byte) player.getDirection().ordinal());
-		buf.put((byte) player.getLastDirection().ordinal());
+		buf.put((byte) player.ordinal());
 		
-		buf.putInt((int) player.getPosition().getX());
-		buf.putInt((int) player.getPosition().getY());
+		buf.putInt((int) pos.getX());
+		buf.putInt((int) pos.getY());
 		
 		toSend = buf.array();
 	}
