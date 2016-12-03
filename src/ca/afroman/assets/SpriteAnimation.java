@@ -6,12 +6,19 @@ import ca.afroman.resource.Vector2DInt;
 
 public class SpriteAnimation extends DrawableAssetArray implements ITickable, ITextureDrawable
 {
-	/** Holds the textures for each frame. */
 	protected int currentFrameIndex = 0;
 	protected boolean pingPong;
 	private boolean goingUp = true;
 	protected ModulusCounter tickCounter;
 	
+	/**
+	 * An animated sprite.
+	 * 
+	 * @param type the AssetType that corresponds with this
+	 * @param pingPong whether this animation should cycle back and forth, or return back to the first frame after passing the final frame
+	 * @param ticksPerFrame the number of ticks that must pass before the next frame of this should be shown
+	 * @param frames the frames
+	 */
 	public SpriteAnimation(AssetType type, boolean pingPong, int ticksPerFrame, Texture... frames)
 	{
 		super(type, frames);
@@ -23,28 +30,28 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 	@Override
 	public SpriteAnimation clone()
 	{
-		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), (Texture[]) getAssets());
+		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), (Texture[]) getDrawableAssets());
 	}
 	
 	@Override
 	public SpriteAnimation cloneWithAllSubAssets()
 	{
-		Texture[] newTextures = new Texture[frameCount()];
+		Texture[] newTextures = new Texture[size()];
 		
 		for (int i = 0; i < newTextures.length; i++)
 		{
-			newTextures[i] = ((Texture[]) getAssets())[i].clone();
+			newTextures[i] = ((Texture[]) getDrawableAssets())[i].clone();
 		}
 		
 		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), newTextures);
 	}
 	
 	/**
-	 * Flips this horizontally.
+	 * Flips this horizontally along the x axis.
 	 */
 	public SpriteAnimation flipX()
 	{
-		for (Asset as : getAssets())
+		for (Asset as : getDrawableAssets())
 		{
 			if (as instanceof Texture)
 			{
@@ -57,11 +64,11 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 	}
 	
 	/**
-	 * Flips this horizontally.
+	 * Flips this vertically along the y avid.
 	 */
 	public SpriteAnimation flipY()
 	{
-		for (Asset as : getAssets())
+		for (Asset as : getDrawableAssets())
 		{
 			if (as instanceof Texture)
 			{
@@ -73,15 +80,10 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 		return this;
 	}
 	
-	public int frameCount()
-	{
-		return ((Texture[]) getAssets()).length;
-	}
-	
 	@Override
 	public Texture getDisplayedTexture()
 	{
-		return ((Texture[]) getAssets())[currentFrameIndex];
+		return ((Texture[]) getDrawableAssets())[currentFrameIndex];
 	}
 	
 	@Override
@@ -102,15 +104,17 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 		renderTo.draw(getDisplayedTexture(), pos);
 	}
 	
+	/**
+	 * Sets this to be on a certain frame.
+	 * 
+	 * @param frame the new frame
+	 */
 	public void setFrame(int frame)
 	{
 		currentFrameIndex = frame;
 		tickCounter.reset();
 	}
 	
-	/**
-	 * Progresses this to the next frame.
-	 */
 	@Override
 	public void tick()
 	{
@@ -129,7 +133,7 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 				}
 				
 				// If it's going over the limit, loop back to frame 1, or ping pong
-				if (currentFrameIndex > frameCount() - 1)
+				if (currentFrameIndex > size() - 1)
 				{
 					if (pingPong)
 					{

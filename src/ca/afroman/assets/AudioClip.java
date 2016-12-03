@@ -24,15 +24,21 @@ public class AudioClip extends Asset
 	private static final String MP3_DIR = "mp3/";
 	private static final String WAV_DIR = "wav/";
 	
-	private static AudioFileType FILE_TYPE = AudioFileType.INVALID;
+	private static AudioFileType FILE_TYPE = AudioFileType.UNCHECKED;
 	private static final String USE_MP3_TEST = "music/menu";
 	
 	/**
-	 * @return which audio files this distribustion is using.
+	 * Searches through the audio directories within the running jar's resources
+	 * and uses the available files to determine whether to use .wav or .mp3 files
+	 * for audio playback. By default, the game will use .wav files if they are
+	 * available, because they provide smoother, higher quality playback, and
+	 * abide by the rules of using no external libraries.
+	 * 
+	 * @return which audio files this distribution is using.
 	 */
 	public static AudioFileType fileType()
 	{
-		if (FILE_TYPE == AudioFileType.INVALID)
+		if (FILE_TYPE == AudioFileType.UNCHECKED)
 		{
 			if (AudioClip.class.getResource(AUDIO_DIR + WAV_DIR + USE_MP3_TEST + ".wav") != null)
 			{
@@ -53,7 +59,15 @@ public class AudioClip extends Asset
 		return FILE_TYPE;
 	}
 	
-	public static AudioClip fromResource(AssetType type, AudioType audioType, String path)
+	/**
+	 * Creates an AudioClip object from the resources within the running jar.
+	 * 
+	 * @param type the AssetType to assign to the AudioClip
+	 * @param audioType the AudioType used for telling the category of audio that this is in
+	 * @param path the path of the audio resource
+	 * @return an AudioClip from the running jar's resources.
+	 */
+	public static AudioClip fromResource(AssetType type, String path, AudioType audioType)
 	{
 		URL url = null;
 		
@@ -162,7 +176,7 @@ public class AudioClip extends Asset
 	
 	/**
 	 * Updates the volume of all the AudioClips, whether playing or not, from the
-	 * Options instance values for volume (range is 0-100.
+	 * Options instance values for volume (range is 0-100).
 	 */
 	public static void updateVolumesFromOptions()
 	{
@@ -172,6 +186,7 @@ public class AudioClip extends Asset
 			{
 				AudioClip audio = (AudioClip) as;
 				
+				// Sets the volume for this based on whether it is defined as music or a sound effect
 				int volume = (audio.getAudioType() == AudioType.MUSIC ? Options.instance().musicVolume : (audio.getAudioType() == AudioType.SFX ? Options.instance().sfxVolume : 0));
 				
 				audio.setVolume(volume / 100D);
@@ -180,9 +195,15 @@ public class AudioClip extends Asset
 	}
 	
 	private AudioType type;
-	
 	private Clip clip;
 	
+	/**
+	 * An Asset that can playback audio.
+	 * 
+	 * @param type the AssetType that corresponds with this
+	 * @param audioType the AudioType used for telling the category of audio that this is in
+	 * @param clip the Clip object containing the audio data for playback
+	 */
 	public AudioClip(AssetType type, AudioType audioType, Clip clip)
 	{
 		super(type);
@@ -191,10 +212,14 @@ public class AudioClip extends Asset
 		this.clip = clip;
 	}
 	
+	/**
+	 * @deprecated this method will always return null.
+	 */
 	@Override
+	@Deprecated
 	public Asset clone()
 	{
-		// TODO Maybe? hHHHHHHH
+		// TODO There's no documentation or found information for this, so for now, assume that it will never have to be cloned
 		return null;
 	}
 	
@@ -209,11 +234,19 @@ public class AudioClip extends Asset
 		}
 	}
 	
+	/**
+	 * @return the AudioType of this
+	 */
 	public AudioType getAudioType()
 	{
 		return type;
 	}
 	
+	/**
+	 * Tells whether or not this is currently being played back.
+	 * 
+	 * @return is this is playing.
+	 */
 	public boolean isRunning()
 	{
 		if (clip == null) return false;
@@ -221,11 +254,22 @@ public class AudioClip extends Asset
 		return clip.isActive();
 	}
 	
+	/**
+	 * Sets the volume of this immediately.
+	 * 
+	 * @param percentage the new volume of this as a percentage in decimal form (0.0 - 1.0)
+	 */
 	public void setVolume(double percentage)
 	{
 		setVolume(percentage, 0L);
 	}
 	
+	/**
+	 * Sets the volume of this over a period of time.
+	 * 
+	 * @param percentage the new volume of this as a percentage in decimal form (0.0 - 1.0)
+	 * @param duration the time in milliseconds that the operation should take
+	 */
 	public void setVolume(double percentage, long duration)
 	{
 		if (percentage < 0.0)
@@ -241,11 +285,22 @@ public class AudioClip extends Asset
 		setVolume(dB, duration);
 	}
 	
+	/**
+	 * Sets the volume of this immediately.
+	 * 
+	 * @param dB the new volume of this in decibels
+	 */
 	public void setVolume(float dB)
 	{
 		setVolume(dB, 0L);
 	}
 	
+	/**
+	 * Sets the volume of this over a period of time.
+	 * 
+	 * @param dB the new volume of this in decibels
+	 * @param duration the time in milliseconds that the operation should take
+	 */
 	public void setVolume(final float dB, final long duration)
 	{
 		if (clip != null)
@@ -298,6 +353,10 @@ public class AudioClip extends Asset
 		}
 	}
 	
+	/**
+	 * Begins playback of this. If this is already
+	 * being played back, it will restart from the beginning.
+	 */
 	public void start()
 	{
 		if (clip == null) return;
@@ -306,6 +365,10 @@ public class AudioClip extends Asset
 		clip.start();
 	}
 	
+	/**
+	 * Begins playback of this, looping infinitely until
+	 * the method <code>AudioClip.stop()</code> is used.
+	 */
 	public void startLoop()
 	{
 		if (clip == null) return;
@@ -315,6 +378,9 @@ public class AudioClip extends Asset
 		clip.start();
 	}
 	
+	/**
+	 * Stops playback of this.
+	 */
 	public void stop()
 	{
 		if (clip == null) return;

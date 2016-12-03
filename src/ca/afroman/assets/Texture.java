@@ -22,11 +22,26 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 {
 	public static final String TEXTURE_PATH = "/texture/";
 	
+	/**
+	 * Creates a Texture object from the resources within the running jar.
+	 * 
+	 * @param type the AssetType to assign to the Texture
+	 * @param path the path of the audio resource
+	 * @return a Texture from the running jar's resources.
+	 */
 	public static Texture fromResource(AssetType type, String path)
 	{
 		return fromResource(type, path, 0);
 	}
 	
+	/**
+	 * Creates a Texture object from the resources within the running jar.
+	 * 
+	 * @param type the AssetType to assign to the Texture
+	 * @param path the path of the audio resource
+	 * @param yComparatorOffset the offset to use in the YComparator
+	 * @return a Texture from the running jar's resources.
+	 */
 	public static Texture fromResource(AssetType type, String path, int yComparatorOffset)
 	{
 		// Loads the image
@@ -67,6 +82,12 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	private Graphics2D graphics;
 	private int yComparatorOffset;
 	
+	/**
+	 * 
+	 * @param type the AssetType to assign to the Texture
+	 * @param image the BufferedImage to use internally
+	 * @param yComparatorOffset the offset to use in the YComparator
+	 */
 	public Texture(AssetType type, BufferedImage image, int yComparatorOffset)
 	{
 		super(type, image.getWidth(), image.getHeight());
@@ -82,6 +103,12 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		return clone(getAssetType());
 	}
 	
+	/**
+	 * Clones this, but uses the provided AssetType instead of the current one of this.
+	 * 
+	 * @param newAssetType the new AssetType to use
+	 * @return the cloned Texture.
+	 */
 	public Texture clone(AssetType newAssetType)
 	{
 		ColorModel cm = image.getColorModel();
@@ -159,7 +186,7 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	}
 	
 	/**
-	 * Flips this horizontally.
+	 * Flips this horizontally along the x axis.
 	 */
 	public Texture flipX()
 	{
@@ -172,7 +199,7 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	}
 	
 	/**
-	 * Flips this vertically.
+	 * Flips this vertically along the y axis.
 	 */
 	public Texture flipY()
 	{
@@ -190,6 +217,9 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		return this;
 	}
 	
+	/**
+	 * @return the Graphics2D object of the internal BufferedImage in this.
+	 */
 	public Graphics2D getGraphics()
 	{
 		return graphics;
@@ -244,6 +274,14 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		return new Texture(newType, getSubImage(x, y, width, height), yComparatorOffset);
 	}
 	
+	/**
+	 * Gets the offset (in pixels) to use for when Entities are being
+	 * compared via the YComparator class. This is useful for Textures
+	 * where the designed bottom of the drawn object is not the bottom
+	 * of the image.
+	 * 
+	 * @return the offset
+	 */
 	public int getYComparatorOffset()
 	{
 		return yComparatorOffset;
@@ -272,8 +310,15 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 		return this;
 	}
 	
+	/**
+	 * Rotates this in degrees.
+	 * 
+	 * @param degrees
+	 * @return
+	 */
 	public Texture rotate(double degrees)
 	{
+		// TODO this will give errors for anything that's not rotated by 90 degrees
 		AffineTransform at = AffineTransform.getTranslateInstance(this.getHeight() / 2, this.getWidth() / 2);
 		
 		at.rotate(Math.toRadians(degrees));
@@ -301,7 +346,7 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	}
 	
 	/**
-	 * Converts the greyscale to alpha mask.
+	 * Converts the greyscale (sampled from the red channel) to alpha mask.
 	 */
 	public void setFromGreyscaleToAlphaMask()
 	{
@@ -320,7 +365,7 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	}
 	
 	/**
-	 * Creates an array of textures from a this.
+	 * Creates an array of textures from this, with the same AssetType.
 	 * <p>
 	 * <b>WARNING: </b> This constructor assumes that the width and height of each texture
 	 * is the same. If not all the textures have the same dimensions, this will break.

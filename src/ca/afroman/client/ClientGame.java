@@ -427,7 +427,7 @@ public class ClientGame extends Game
 							}
 						}
 							break;
-						case ADD_LEVEL_PLAYER:
+						case SET_PLAYER_LEVEL:
 						{
 							Role role = Role.fromOrdinal(packet.getContent()[0]);
 							
@@ -449,7 +449,7 @@ public class ClientGame extends Game
 							}
 						}
 							break;
-						case SET_PLAYER_LOCATION:
+						case SET_PLAYER_POSITION:
 						{
 							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
 							Role role = Role.fromOrdinal(buf.get());

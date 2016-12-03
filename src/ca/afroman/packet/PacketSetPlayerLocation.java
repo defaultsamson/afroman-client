@@ -20,7 +20,7 @@ public class PacketSetPlayerLocation extends BytePacket
 	 */
 	public PacketSetPlayerLocation(Role player, Vector2DDouble pos, IPConnection... connection)
 	{
-		super(PacketType.SET_PLAYER_LOCATION, false, connection);
+		super(PacketType.SET_PLAYER_POSITION, true, connection);
 		
 		ByteBuffer buf = ByteBuffer.allocate(1 + (2 * ByteUtil.INT_BYTE_COUNT));
 		

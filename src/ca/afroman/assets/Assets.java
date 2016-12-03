@@ -9,6 +9,9 @@ public class Assets
 	
 	private static List<Asset> assets = new ArrayList<Asset>();
 	
+	/**
+	 * Disposes of all the assets loaded in the static instance of Assets.
+	 */
 	public static void dispose()
 	{
 		for (DrawableAssetArray asset : assetArrays)
@@ -22,6 +25,14 @@ public class Assets
 		}
 	}
 	
+	/**
+	 * Gets an Asset who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching Asset.
+	 *         <p>
+	 *         <code>null</code> if no matching Asset object could be found.
+	 */
 	public static Asset getAsset(AssetType type)
 	{
 		if (type == null) return null;
@@ -36,6 +47,14 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Gets a DrawableAssetArray who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching DrawableAssetArray.
+	 *         <p>
+	 *         <code>null</code> if no matching DrawableAssetArray object could be found.
+	 */
 	public static DrawableAssetArray getAssetArray(AssetType type)
 	{
 		if (type == null) return null;
@@ -55,6 +74,14 @@ public class Assets
 		return assets;
 	}
 	
+	/**
+	 * Gets a AudioClip who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching AudioClip.
+	 *         <p>
+	 *         <code>null</code> if no matching AudioClip object could be found.
+	 */
 	public static AudioClip getAudioClip(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -67,6 +94,14 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Gets a DrawableAsset who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching DrawableAsset.
+	 *         <p>
+	 *         <code>null</code> if no matching DrawableAsset object could be found.
+	 */
 	public static DrawableAsset getDrawableAsset(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -79,6 +114,14 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Gets a Font who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching Font.
+	 *         <p>
+	 *         <code>null</code> if no matching Font object could be found.
+	 */
 	public static Font getFont(AssetType type)
 	{
 		Asset asset = getAssetArray(type);
@@ -91,6 +134,14 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Gets a SpriteAnimation who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching SpriteAnimation.
+	 *         <p>
+	 *         <code>null</code> if no matching SpriteAnimation object could be found.
+	 */
 	public static SpriteAnimation getSpriteAnimation(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -103,6 +154,14 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Gets a StepSpriteAnimation who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching StepSpriteAnimation.
+	 *         <p>
+	 *         <code>null</code> if no matching StepSpriteAnimation object could be found.
+	 */
 	public static StepSpriteAnimation getStepSpriteAnimation(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -115,6 +174,14 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Gets a Texture who's AssetType corresponds with the provided AssetType.
+	 * 
+	 * @param type the provided AssetType
+	 * @return the matching Texture.
+	 *         <p>
+	 *         <code>null</code> if no matching Texture object could be found.
+	 */
 	public static Texture getTexture(AssetType type)
 	{
 		Asset asset = getAsset(type);
@@ -127,6 +194,11 @@ public class Assets
 		return null;
 	}
 	
+	/**
+	 * Loads all the game's local Assets to be used. These files should
+	 * all be from the resource, meaning that each Asset's file(s) should
+	 * be found within the running jar file when this is compiled.
+	 */
 	public static void load()
 	{
 		Texture sheet = Texture.fromResource(AssetType.INVALID, "spritesheet.png");
@@ -146,26 +218,26 @@ public class Assets
 		assetArrays.add(new DrawableAssetArray(AssetType.PLAYER_ONE_RAW, Texture.fromResource(AssetType.PLAYER_ONE_RAW, "player1.png").toTextureArray(3, 4)));
 		
 		DrawableAssetArray player = Assets.getAssetArray(AssetType.PLAYER_ONE_RAW);
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_UP, true, 10, (Texture) player.getAsset(9), (Texture) player.getAsset(10), (Texture) player.getAsset(11)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_DOWN, true, 10, (Texture) player.getAsset(0), (Texture) player.getAsset(1), (Texture) player.getAsset(2)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_LEFT, true, 10, (Texture) player.getAsset(3), (Texture) player.getAsset(4), (Texture) player.getAsset(5)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_RIGHT, true, 10, (Texture) player.getAsset(6), (Texture) player.getAsset(7), (Texture) player.getAsset(8)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP, true, 0, (Texture) player.getAsset(10)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN, true, 0, (Texture) player.getAsset(1)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT, true, 0, (Texture) player.getAsset(4)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT, true, 0, (Texture) player.getAsset(7)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_UP, true, 10, (Texture) player.getDrawableAsset(9), (Texture) player.getDrawableAsset(10), (Texture) player.getDrawableAsset(11)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_DOWN, true, 10, (Texture) player.getDrawableAsset(0), (Texture) player.getDrawableAsset(1), (Texture) player.getDrawableAsset(2)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_LEFT, true, 10, (Texture) player.getDrawableAsset(3), (Texture) player.getDrawableAsset(4), (Texture) player.getDrawableAsset(5)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_RIGHT, true, 10, (Texture) player.getDrawableAsset(6), (Texture) player.getDrawableAsset(7), (Texture) player.getDrawableAsset(8)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_UP, true, 0, (Texture) player.getDrawableAsset(10)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN, true, 0, (Texture) player.getDrawableAsset(1)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_LEFT, true, 0, (Texture) player.getDrawableAsset(4)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_IDLE_RIGHT, true, 0, (Texture) player.getDrawableAsset(7)));
 		
 		assetArrays.add(new DrawableAssetArray(AssetType.PLAYER_TWO_RAW, Texture.fromResource(AssetType.PLAYER_TWO_RAW, "player2.png").toTextureArray(3, 4)));
 		
 		DrawableAssetArray player2 = Assets.getAssetArray(AssetType.PLAYER_TWO_RAW);
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_UP, true, 10, (Texture) player2.getAsset(9), (Texture) player2.getAsset(10), (Texture) player2.getAsset(11)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_DOWN, true, 10, (Texture) player2.getAsset(0), (Texture) player2.getAsset(1), (Texture) player2.getAsset(2)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_LEFT, true, 10, (Texture) player2.getAsset(3), (Texture) player2.getAsset(4), (Texture) player2.getAsset(5)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_RIGHT, true, 10, (Texture) player2.getAsset(6), (Texture) player2.getAsset(7), (Texture) player2.getAsset(8)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP, true, 0, (Texture) player2.getAsset(10)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN, true, 0, (Texture) player2.getAsset(1)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT, true, 0, (Texture) player2.getAsset(4)));
-		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT, true, 0, (Texture) player2.getAsset(7)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_UP, true, 10, (Texture) player2.getDrawableAsset(9), (Texture) player2.getDrawableAsset(10), (Texture) player2.getDrawableAsset(11)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_DOWN, true, 10, (Texture) player2.getDrawableAsset(0), (Texture) player2.getDrawableAsset(1), (Texture) player2.getDrawableAsset(2)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_LEFT, true, 10, (Texture) player2.getDrawableAsset(3), (Texture) player2.getDrawableAsset(4), (Texture) player2.getDrawableAsset(5)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_RIGHT, true, 10, (Texture) player2.getDrawableAsset(6), (Texture) player2.getDrawableAsset(7), (Texture) player2.getDrawableAsset(8)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_UP, true, 0, (Texture) player2.getDrawableAsset(10)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN, true, 0, (Texture) player2.getDrawableAsset(1)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT, true, 0, (Texture) player2.getDrawableAsset(4)));
+		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT, true, 0, (Texture) player2.getDrawableAsset(7)));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS, 16 * 0, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_INNER_TOPLEFT, 16 * 3, 16 * 3, 16, 16));
@@ -267,8 +339,8 @@ public class Assets
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 		
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, AudioType.SFX, "but_down"));
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, AudioType.SFX, "but_up"));
-		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, AudioType.MUSIC, "music/menu"));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down", AudioType.SFX));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up", AudioType.SFX));
+		assets.add(AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu", AudioType.MUSIC));
 	}
 }

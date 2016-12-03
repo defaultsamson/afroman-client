@@ -544,7 +544,7 @@ public class Entity extends ServerClientObject implements ITickable
 					}
 					else
 					{
-						// Entity set position
+						// TODO Entity set position
 					}
 					
 					hasMovedSince = false;
@@ -560,6 +560,7 @@ public class Entity extends ServerClientObject implements ITickable
 			{
 				if (deltaMoveCounter.isAtInterval())
 				{
+					// TODO Entity delta movement
 					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
 					
 					deltaXa = 0;

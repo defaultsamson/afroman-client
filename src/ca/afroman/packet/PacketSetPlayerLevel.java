@@ -11,7 +11,7 @@ public class PacketSetPlayerLevel extends BytePacket
 	
 	public PacketSetPlayerLevel(Role role, LevelType levelType, IPConnection... connection)
 	{
-		super(PacketType.ADD_LEVEL_PLAYER, true, connection);
+		super(PacketType.SET_PLAYER_LEVEL, true, connection);
 		
 		byte[] level = ByteUtil.shortAsBytes((byte) levelType.ordinal());
 		

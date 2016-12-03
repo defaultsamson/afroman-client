@@ -9,6 +9,12 @@ public class DrawableAssetArray extends DrawableAsset
 	/** Holds the assets. */
 	private DrawableAsset[] assets;
 	
+	/**
+	 * A wrapper for an array of DrawableAssets.
+	 * 
+	 * @param type the AssetType that corresponds with this
+	 * @param assets the array of DrawableAssets to wrap
+	 */
 	public DrawableAssetArray(AssetType type, DrawableAsset... assets)
 	{
 		super(type, assets[0].getWidth(), assets[0].getHeight());
@@ -50,32 +56,54 @@ public class DrawableAssetArray extends DrawableAsset
 		}
 	}
 	
-	public Asset getAsset(int index)
+	/**
+	 * Gets the DrawableAsset from this at the provided index.
+	 * 
+	 * @param index the index
+	 * @return the DrawableAsset at the given index.
+	 *         <p>
+	 *         <code>null</code> if the provided index is out of bounds of the internal array in this.
+	 */
+	public DrawableAsset getDrawableAsset(int index)
 	{
+		if (index < 0 || index >= assets.length) return null;
+		
 		return assets[index];
 	}
 	
-	public Asset[] getAssets()
+	/**
+	 * @return the internal array of DrawableAssets.
+	 */
+	public DrawableAsset[] getDrawableAssets()
 	{
 		return assets;
 	}
 	
-	public Asset getRandomAsset()
+	/**
+	 * @return a random DrawableAsset from this.
+	 */
+	public DrawableAsset getRandomDrawableAsset()
 	{
-		return getAsset(new Random().nextInt(length()));
+		return getDrawableAsset(new Random().nextInt(size()));
 	}
 	
-	public Asset getRandomAsset(int xSeed, int ySeed)
+	/**
+	 * Gets a random DrawableAsset from this with a provided seed in coordinate form.
+	 * 
+	 * @param xSeed the x seed
+	 * @param ySeed the y seed
+	 * @return a random DrawableAsset from this with a seed.
+	 */
+	public DrawableAsset getRandomDrawableAsset(int xSeed, int ySeed)
 	{
-		return getAsset(new Random(xSeed << 16 + ySeed).nextInt(length()));
+		return getDrawableAsset(new Random(xSeed << 16 + ySeed).nextInt(size()));
 	}
 	
-	public int length()
-	{
-		return assets.length;
-	}
-	
+	/**
+	 * @deprecated Cannot draw a DrawableAssetArray.
+	 */
 	@Override
+	@Deprecated
 	public void render(Texture renderTo, Vector2DInt pos)
 	{
 		
@@ -90,5 +118,13 @@ public class DrawableAssetArray extends DrawableAsset
 		}
 		
 		return this;
+	}
+	
+	/**
+	 * @return the number of DrawableAssets in this.
+	 */
+	public int size()
+	{
+		return assets.length;
 	}
 }

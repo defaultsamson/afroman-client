@@ -118,6 +118,12 @@ public enum AssetType
 	AUDIO_BUTTON_RELEASE(false),
 	AUDIO_MENU_MUSIC(false);
 	
+	/**
+	 * Gets the AssetType value with the corresponding ordinal value.
+	 * 
+	 * @param ordinal the ordinal value
+	 * @return the matching AssetType.
+	 */
 	public static AssetType fromOrdinal(int ordinal)
 	{
 		if (ordinal < 0 || ordinal > values().length - 1) return null;
@@ -127,6 +133,11 @@ public enum AssetType
 	
 	private boolean isPlacableInBuildMode;
 	
+	/**
+	 * A type value used to define and differentiate Asset objects from one another.
+	 * 
+	 * @param isPlacableInBuildMode whether or not the Asset object with this type should be placeable from within build mode
+	 */
 	AssetType(boolean isPlacableInBuildMode)
 	{
 		this.isPlacableInBuildMode = isPlacableInBuildMode;
