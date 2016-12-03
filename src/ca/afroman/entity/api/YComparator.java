@@ -12,21 +12,27 @@ public class YComparator implements Comparator<DrawableEntity>
 	@Override
 	public int compare(DrawableEntity e1, DrawableEntity e2)
 	{
-		if (e1 == null || e2 == null || e1.getAsset() == null || e2.getAsset() == null || e1.getPosition() == null || e2.getPosition() == null) return 0;
+		// If one of the entities is null, or doesn't have an asset or position, then simply return that they are equals
+		if (e1 == null || e2 == null || e1.getDrawableAsset() == null || e2.getDrawableAsset() == null || e1.getPosition() == null || e2.getPosition() == null) return 0;
 		
-		int e1Y = (int) (e1.getAsset().getHeight() + e1.getPosition().getY());
-		int e2Y = (int) (e2.getAsset().getHeight() + e2.getPosition().getY());
+		// Finds the y position to compare for each entity
+		int e1Y = (int) (e1.getDrawableAsset().getHeight() + e1.getPosition().getY());
+		int e2Y = (int) (e2.getDrawableAsset().getHeight() + e2.getPosition().getY());
 		
-		if (e1.getAsset() instanceof ITextureDrawable)
+		// Also adds any YComparatorOffset if any exists
+		if (e1.getDrawableAsset() instanceof ITextureDrawable)
 		{
-			e1Y += ((ITextureDrawable) e1.getAsset()).getDisplayedTexture().getYComparatorOffset();
+			e1Y += ((ITextureDrawable) e1.getDrawableAsset()).getDisplayedTexture().getYComparatorOffset();
+		}
+		if (e2.getDrawableAsset() instanceof ITextureDrawable)
+		{
+			e2Y += ((ITextureDrawable) e2.getDrawableAsset()).getDisplayedTexture().getYComparatorOffset();
 		}
 		
-		if (e1.getAsset() instanceof ITextureDrawable)
-		{
-			e2Y += ((ITextureDrawable) e2.getAsset()).getDisplayedTexture().getYComparatorOffset();
-		}
+		// End equation for each Y value is
+		// yPosition = position + drawHeight + yComparatorOffset
 		
+		// Then returns results based on which Entity appears farther back (higher) than the other
 		if (e1Y > e2Y)
 		{
 			return 1;

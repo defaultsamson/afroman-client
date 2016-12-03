@@ -231,7 +231,7 @@ public class Level extends ServerClientObject implements ITickable
 					sb.append("new Tile(");
 					sb.append(i);
 					sb.append(", false, Assets.getDrawableAsset(AssetType.");
-					sb.append(tile.getAsset().getAssetType().name());
+					sb.append(tile.getDrawableAsset().getAssetType().name());
 					sb.append(").clone(), new Vector2DDouble(");
 					sb.append(tile.getPosition().getX());
 					sb.append(", ");
@@ -507,7 +507,7 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				if (tile instanceof DrawableEntity)
 				{
-					DrawableAsset asset = ((DrawableEntity) tile).getAsset();
+					DrawableAsset asset = ((DrawableEntity) tile).getDrawableAsset();
 					
 					Vector2DDouble textureP = tile.getPosition();
 					Vector2DDouble mouseRelativeToTexture = pos.clone().add(-textureP.getX(), -textureP.getY());

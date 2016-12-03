@@ -18,7 +18,7 @@ public class DrawableEntity extends Entity
 		cameraFollow = false;
 	}
 	
-	public DrawableAsset getAsset()
+	public DrawableAsset getDrawableAsset()
 	{
 		return asset;
 	}
