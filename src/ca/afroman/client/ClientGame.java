@@ -343,8 +343,6 @@ public class ClientGame extends Game
 									byte y = packet.getContent()[2];
 									
 									player.autoMove(x, y);
-									
-									// System.out.println("Sauce: " + x + ", " + y);
 								}
 							}
 						}
@@ -457,6 +455,8 @@ public class ClientGame extends Game
 							Role role = Role.fromOrdinal(buf.get());
 							
 							PlayerEntity player = getPlayer(role);
+							
+							System.out.println("Setting player location: " + role);
 							
 							if (player != null)
 							{

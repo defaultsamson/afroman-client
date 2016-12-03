@@ -7,10 +7,12 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
 import ca.afroman.packet.PacketPlayerMove;
+import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.server.ServerGame;
 
 public class Entity extends ServerClientObject implements ITickable
 {
@@ -57,10 +59,10 @@ public class Entity extends ServerClientObject implements ITickable
 	protected Direction lastDirection;
 	
 	private byte deltaXa = 0;
-	
 	private byte deltaYa = 0;
 	
-	// private ModulusCounter setPosCounter = new ModulusCounter(60 * 5);
+	private boolean hasMovedSince = false;
+	private ModulusCounter setPosCounter = new ModulusCounter(60 * 5);
 	private ModulusCounter deltaMoveCounter = new ModulusCounter(10);
 	
 	/**
@@ -208,17 +210,17 @@ public class Entity extends ServerClientObject implements ITickable
 		return position;
 	}
 	
+	private boolean hasDeltaMovement()
+	{
+		return deltaXa != 0 || deltaYa != 0;
+	}
+	
 	/**
 	 * @return is this Entity has a hitbox.
 	 */
 	public boolean hasHitbox()
 	{
 		return hasHitbox;
-	}
-	
-	protected boolean hasMoved()
-	{
-		return deltaXa != 0 || deltaYa != 0;
 	}
 	
 	/**
@@ -243,6 +245,7 @@ public class Entity extends ServerClientObject implements ITickable
 		}
 		return false;
 	}
+	
 	public boolean isColliding(Hitbox... worldHitboxes)
 	{
 		if (hitboxInLevel() != null)
@@ -442,15 +445,15 @@ public class Entity extends ServerClientObject implements ITickable
 			{
 				deltaXa += direction.getXAmplitude();
 				deltaYa += direction.getYAmplitude();
-				
-				// System.out.println("Delta: " + deltaXa + ", " + deltaYa);
 			}
+			
+			hasMovedSince = true;
 		}
 		
 		if (sendPacket && !autoMoved)
 		{
 			onMove(xa, ya);
-			System.out.println("Dong: " + isServerSide());
+			// System.out.println("Dong: " + isServerSide());
 		}
 	}
 	
@@ -529,56 +532,31 @@ public class Entity extends ServerClientObject implements ITickable
 	@Override
 	public void tick()
 	{
-		// if (isServerSide())
-		// {
-		// if (setPosCounter.isAtInterval())
-		// {
-		// if (hasMoved())
-		// {
-		// if (this instanceof PlayerEntity)
-		// {
-		// System.out.println("Cancer1");
-		// ClientGame.instance().sockets().sender().sendPacket(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position));
-		// }
-		// else
-		// {
-		// // TODO entity move packet
-		// // ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
-		// }
-		// }
-		// }
-		// }
-		// else
-		// {
-		// if (hasMoved())
-		// {
-		// if (deltaMoveCounter.isAtInterval())
-		// {
-		// if (this instanceof PlayerEntity)
-		// {
-		// ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
-		// }
-		// else
-		// {
-		// ClientGame.instance().logger().log(ALogType.WARNING, "Only PlayerEntities are the only entities supposed to be controlled by the client side, not: " + this);
-		// }
-		//
-		// deltaXa = 0;
-		// deltaYa = 0;
-		// }
-		// }
-		// }
-		
-		// if (isMicromanaged) // && !(this instanceof PlayerEntity)
-		// {
-		//
-		// }
+		if (isServerSide())
+		{
+			if (setPosCounter.isAtInterval())
+			{
+				if (hasMovedSince)
+				{
+					if (this instanceof PlayerEntity)
+					{
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position));
+					}
+					else
+					{
+						// Entity set position
+					}
+					
+					hasMovedSince = false;
+				}
+			}
+		}
 		
 		// If it's the client side player that is controlled by the keyboard input
 		// Then use the deltaX and deltaY to tell the server where it's moved
 		if (this instanceof PlayerEntity && !isServerSide() && ((PlayerEntity) this).getRole() == ClientGame.instance().getRole())
 		{
-			if (hasMoved())
+			if (hasDeltaMovement())
 			{
 				if (deltaMoveCounter.isAtInterval())
 				{
