@@ -15,6 +15,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.events.DoorEvent;
 import ca.afroman.events.PlateTrigger;
+import ca.afroman.events.SwitchTrigger;
 import ca.afroman.events.TriggerType;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
@@ -37,7 +38,11 @@ public class MainLevel extends Level
 		type.add(TriggerType.PLAYER_COLLIDE);
 		type.add(TriggerType.PLAYER_UNCOLLIDE);
 		
+		List<TriggerType> switchTrig = new ArrayList<TriggerType>();
+		switchTrig.add(TriggerType.PLAYER_INTERACT);
+		
 		int doorColour = ColourUtil.TILE_REPLACE_COLOUR_RED;
+		int offColour = ColourUtil.TILE_REPLACE_COLOUR_DARKGREY;
 		
 		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP, doorColour);
 		dora.addToLevel(this);
@@ -45,6 +50,9 @@ public class MainLevel extends Level
 		
 		PlateTrigger plate = new PlateTrigger(isServerSide, false, new Vector2DDouble(64.0, 0.0), null, inTrig, type, doorColour);
 		plate.addToLevel(this);
+		
+		SwitchTrigger switchToggle = new SwitchTrigger(isServerSide, false, new Vector2DDouble(128.0, 16.0), null, inTrig, switchTrig, doorColour, offColour);
+		switchToggle.addToLevel(this);
 		
 		// Hitboxes
 		new Hitbox(false, 48.0, -48.0, 16.0, 80.0).addToLevel(this);
@@ -60,7 +68,6 @@ public class MainLevel extends Level
 		new Hitbox(false, 80.0, 52.0, 16.0, 8.0).addToLevel(this);
 		new Hitbox(false, 112.0, 52.0, 16.0, 8.0).addToLevel(this);
 		new Hitbox(false, 112.0, 33.0, 39.0, 15.0).addToLevel(this);
-		new Hitbox(false, 131.0, 23.0, 10.0, 6.0).addToLevel(this);
 		
 		if (!isServerSide)
 		{
@@ -139,7 +146,6 @@ public class MainLevel extends Level
 			new Tile(1, false, Assets.getDrawableAsset(AssetType.TILE_WALL).clone(), new Vector2DDouble(112.0, -48.0)).addToLevel(this);
 			
 			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone(), new Vector2DDouble(118.0, -14.0)).addToLevel(this);
-			new Tile(3, false, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone(), new Vector2DDouble(128.0, 16.0)).addToLevel(this);
 			
 			// Lights
 			new PointLight(false, new Vector2DDouble(104.0, 72.0), 42.0).addToLevel(this);

@@ -3,6 +3,7 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
@@ -58,13 +59,15 @@ public class HitboxTrigger extends Event
 		{
 			boolean playerCollide = this.triggerTypes.contains(TriggerType.PLAYER_COLLIDE);
 			boolean playerUncollide = this.triggerTypes.contains(TriggerType.PLAYER_UNCOLLIDE);
+			boolean playerInteract = this.triggerTypes.contains(TriggerType.PLAYER_INTERACT);
 			
-			if (playerCollide || playerUncollide)
+			if (playerCollide || playerUncollide || playerInteract)
 			{
 				PlayerEntity player = updateInput();
 				
 				if (playerCollide && input.isPressedFiltered())
 				{
+					System.out.println("yeah mang");
 					trigger(player);
 					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), player.getRole()));
 				}
@@ -79,6 +82,17 @@ public class HitboxTrigger extends Event
 					else
 					{
 						ServerGame.instance().logger().log(ALogType.WARNING, "The last hit player was unable to be found.");
+					}
+				}
+				
+				if (playerInteract && input.isPressed())
+				{
+					System.out.println("switch is near");
+					if (ClientGame.instance().input().space.isPressedFiltered())
+					{
+						System.out.println("space was pressed");
+						trigger(player);
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), player.getRole()));
 					}
 				}
 				

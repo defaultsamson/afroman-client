@@ -13,6 +13,7 @@ public class ColourUtil
 	public static final int TILE_REPLACE_COLOUR_GREEN = ColourUtil.fromHex("0xFF87A642").getRGB();
 	public static final int TILE_REPLACE_COLOUR_ORANGE = ColourUtil.fromHex("0xFFFF9350").getRGB();
 	public static final int TILE_REPLACE_COLOUR_PURPLE = ColourUtil.fromHex("0xFF806CB3").getRGB();
+	public static final int TILE_REPLACE_COLOUR_DARKGREY = ColourUtil.fromHex("0xFF221C1B").getRGB();
 	
 	public static final int BUFFER_WASTE = ColourUtil.fromHex("0x00FF00FF").getRGB(); // A random colour that will never be used on the lightmap
 	public static final Color AMBIENT_COLOUR = ColourUtil.fromHex("0xCC000000");
