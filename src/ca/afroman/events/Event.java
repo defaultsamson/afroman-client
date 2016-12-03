@@ -13,16 +13,6 @@ public class Event extends Entity
 	protected List<Integer> inTriggers;
 	protected List<Integer> outTriggers;
 	
-	public Event(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers)
-	{
-		super(isServerSide, isMicromanaged, position);
-		
-		this.inTriggers = (inTriggers != null ? inTriggers : new ArrayList<Integer>());
-		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
-		
-		initTriggers(inTriggers, outTriggers);
-	}
-	
 	public Event(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Hitbox... hitboxes)
 	{
 		super(isServerSide, isMicromanaged, position, hitboxes);

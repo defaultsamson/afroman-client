@@ -68,27 +68,14 @@ public class Entity extends ServerClientObject implements ITickable
 	private ModulusCounter deltaMoveCounter = new ModulusCounter(10);
 	
 	/**
-	 * Creates a new Entity without a hitbox.
-	 * 
-	 * @param isServerSide whether this is on the server instance or not
-	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
-	 * @param position the position
-	 */
-	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
-	{
-		this(isServerSide, isMicromanaged, position, false, new Hitbox[] { null });
-	}
-	
-	/**
 	 * Creates a new Entity.
 	 * 
 	 * @param isServerSide whether this is on the server instance or not
 	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
 	 * @param position the position
-	 * @param hasHitbox whether this has hitboxes or not
 	 * @param hitboxes the hitboxes (if any)
 	 */
-	private Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
+	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, Hitbox... hitboxes)
 	{
 		super(isServerSide);
 		
@@ -98,7 +85,7 @@ public class Entity extends ServerClientObject implements ITickable
 		
 		this.level = null;
 		this.position = position;
-		this.hasHitbox = hasHitbox; // TODO problem with hasHitbox. Anything like a DrawableEntity that's not given a hitbox will by default think it has one
+		this.hasHitbox = hitboxes.length > 0;
 		hitbox = hasHitbox ? hitboxes : null;
 		
 		if (hasHitbox)
@@ -120,19 +107,6 @@ public class Entity extends ServerClientObject implements ITickable
 		direction = Direction.NONE;
 		lastDirection = direction;
 		cameraFollow = false;
-	}
-	
-	/**
-	 * Creates a new Entity with a hitbox.
-	 * 
-	 * @param isServerSide whether this is on the server instance or not
-	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
-	 * @param position the position
-	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
-	 */
-	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, Hitbox... hitboxes)
-	{
-		this(isServerSide, isMicromanaged, position, true, hitboxes);
 	}
 	
 	/**

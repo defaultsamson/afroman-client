@@ -456,12 +456,8 @@ public class ClientGame extends Game
 							
 							PlayerEntity player = getPlayer(role);
 							
-							System.out.println("Setting player location: " + role);
-							
 							if (player != null)
 							{
-								// player.setDirection(Direction.fromOrdinal(buf.get()));
-								// player.setLastDirection(Direction.fromOrdinal(buf.get()));
 								player.setPosition(new Vector2DDouble(buf.getInt(), buf.getInt()));
 							}
 							else
