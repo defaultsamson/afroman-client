@@ -7,38 +7,43 @@ import ca.afroman.resource.Vector2DDouble;
 
 public class DrawableEntity extends Entity
 {
-	protected boolean cameraFollow;
 	protected DrawableAsset asset;
 	
-	public DrawableEntity(boolean isServerSide, boolean isMicromanaged, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
+	/**
+	 * Creates a new Entity with a hitbox.
+	 * 
+	 * @param isServerSide whether this is on the server instance or not
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param position the position
+	 * @param asset the DrawableAsset to render this as
+	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
+	 */
+	public DrawableEntity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, DrawableAsset asset, Hitbox... hitboxes)
 	{
-		super(isServerSide, isMicromanaged, pos, hitboxes);
+		super(isServerSide, isMicromanaged, position, hitboxes);
 		
 		this.asset = asset;
-		cameraFollow = false;
 	}
 	
+	/**
+	 * @return the DrawableAsset that this is being drawn as.
+	 */
 	public DrawableAsset getDrawableAsset()
 	{
 		return asset;
 	}
 	
+	/**
+	 * Draws this's DrawableAsset to the provided Texture at this's position in on-screen coordinates.
+	 * 
+	 * @param renderTo the Texture to draw this to
+	 */
 	public void render(Texture renderTo)
 	{
 		if (asset != null && getLevel() != null)
 		{
 			asset.render(renderTo, getLevel().worldToScreen(position));
 		}
-	}
-	
-	/**
-	 * Makes the level camera follow this Entity or not.
-	 * 
-	 * @param follow whether or not to follow
-	 */
-	public void setCameraToFollow(boolean follow)
-	{
-		cameraFollow = follow;
 	}
 	
 	@Override
@@ -49,11 +54,6 @@ public class DrawableEntity extends Entity
 		if (!isServerSide())
 		{
 			if (asset instanceof ITickable) ((ITickable) asset).tick();
-			
-			if (cameraFollow)
-			{
-				getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
-			}
 		}
 	}
 }

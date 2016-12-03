@@ -65,7 +65,7 @@ public class Vector2DInt
 		return y;
 	}
 	
-	public Vector2DInt setPosition(int x, int y)
+	public Vector2DInt setVector(int x, int y)
 	{
 		this.x = x;
 		this.y = y;
@@ -73,9 +73,9 @@ public class Vector2DInt
 		return this;
 	}
 	
-	public Vector2DInt setPosition(Vector2DInt pos)
+	public Vector2DInt setVector(Vector2DInt pos)
 	{
-		setPosition(pos.getX(), pos.getY());
+		setVector(pos.getX(), pos.getY());
 		
 		return this;
 	}

@@ -12,13 +12,15 @@ public class Hitbox extends Rectangle2D.Double
 	public Level level = null;
 	
 	/**
-	 * A level hitbox. This is invisible to standard hitbox operations such as adding and removing (excluding collision. Collision still is active against this hitbox)
+	 * A hitbox.
+	 * <p>
+	 * TODO make a better Hitbox system (extend Entity)
 	 * 
-	 * @param id
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param x the x ordinate of this
+	 * @param y the y ordinate of this
+	 * @param width the width of this
+	 * @param height the height of this
 	 */
 	public Hitbox(boolean isMicroManaged, double x, double y, double width, double height)
 	{
@@ -58,6 +60,9 @@ public class Hitbox extends Rectangle2D.Double
 		return box;
 	}
 	
+	/**
+	 * @return
+	 */
 	public Level getLevel()
 	{
 		return level;

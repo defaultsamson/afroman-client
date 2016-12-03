@@ -239,7 +239,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		// The Game resolution height / canvas height (ONLY the canvas, no black borders or JFrame)
 		double yRatio = ClientGame.HEIGHT / (double) ClientGame.instance().getCanvas().getHeight();
 		
-		mousePos.setPosition((int) (e.getX() * xRatio), (int) (e.getY() * yRatio));
+		mousePos.setVector((int) (e.getX() * xRatio), (int) (e.getY() * yRatio));
 		
 		ClientGame.instance().updateCursorHiding(true);
 	}

@@ -124,7 +124,7 @@ public class Vector2DDouble
 		return y;
 	}
 	
-	public Vector2DDouble setPosition(double x, double y)
+	public Vector2DDouble setVector(double x, double y)
 	{
 		this.x = x;
 		this.y = y;
@@ -132,9 +132,9 @@ public class Vector2DDouble
 		return this;
 	}
 	
-	public Vector2DDouble setPosition(Vector2DDouble pos)
+	public Vector2DDouble setVector(Vector2DDouble pos)
 	{
-		setPosition(pos.getX(), pos.getY());
+		setVector(pos.getX(), pos.getY());
 		
 		return this;
 	}

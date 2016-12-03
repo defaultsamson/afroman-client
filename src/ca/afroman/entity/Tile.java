@@ -12,19 +12,20 @@ public class Tile extends DrawableEntity
 {
 	private int layer;
 	
-	public Tile(int layer, boolean isMicromanaged, DrawableAsset asset, Vector2DDouble pos, Hitbox... hitboxes)
+	/**
+	 * @param layer the layer that this is on in the level
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param position the position
+	 * @param asset the DrawableAsset to render this as
+	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
+	 */
+	public Tile(int layer, boolean isMicromanaged, Vector2DDouble position, DrawableAsset asset, Hitbox... hitboxes)
 	{
-		super(false, isMicromanaged, asset, pos, hitboxes);
+		super(false, isMicromanaged, position, asset, hitboxes);
 		
 		this.layer = layer;
 	}
 	
-	/**
-	 * Removes a tile from their current level and puts them in another level.
-	 * 
-	 * @param level the new level
-	 * @param layer the new layer
-	 */
 	@Override
 	public void addToLevel(Level newLevel)
 	{
@@ -61,18 +62,12 @@ public class Tile extends DrawableEntity
 		}
 	}
 	
+	/**
+	 * @return the current layer that this is on in the current level that it is in.
+	 */
 	public int getLayer()
 	{
 		return layer;
-	}
-	
-	/**
-	 * Removes a tile from their current level.
-	 */
-	@Override
-	public void removeFromLevel()
-	{
-		addToLevel(null);
 	}
 	
 	/**

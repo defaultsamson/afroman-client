@@ -1,7 +1,5 @@
 package ca.afroman.entity.api;
 
-import java.util.List;
-
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.ITickable;
@@ -22,24 +20,27 @@ public class Entity extends ServerClientObject implements ITickable
 	
 	protected static final int MICROMANAGED_ID = -1;
 	
-	private static IDCounter serverIdCounter = new IDCounter();
-	private static IDCounter clientIdCounter = new IDCounter();
+	private static IDCounter serverIdCounter = null;
+	private static IDCounter clientIdCounter = null;
 	
+	/**
+	 * The ID counter that keeps track of Entity ID's.
+	 * 
+	 * @param isServerSide whether this is being counted from the server or the client
+	 * @return the ID counter for the specified game instance.
+	 */
 	private static IDCounter getIDCounter(boolean isServerSide)
 	{
-		return isServerSide ? serverIdCounter : clientIdCounter;
-	}
-	
-	public static Hitbox[] hitBoxListToArray(List<Hitbox> hitboxes)
-	{
-		Hitbox[] toReturn = new Hitbox[hitboxes.size()];
-		
-		for (int i = 0; i < toReturn.length; i++)
+		if (isServerSide)
 		{
-			toReturn[i] = hitboxes.get(i);
+			if (serverIdCounter == null) serverIdCounter = new IDCounter();
+			return serverIdCounter;
 		}
-		
-		return toReturn;
+		else
+		{
+			if (clientIdCounter == null) clientIdCounter = new IDCounter();
+			return clientIdCounter;
+		}
 	}
 	
 	// All the required variables needed to create an Entity
@@ -57,6 +58,7 @@ public class Entity extends ServerClientObject implements ITickable
 	protected int numSteps;
 	protected Direction direction;
 	protected Direction lastDirection;
+	private boolean cameraFollow;
 	
 	private byte deltaXa = 0;
 	private byte deltaYa = 0;
@@ -68,8 +70,9 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * Creates a new Entity without a hitbox.
 	 * 
-	 * @param isServerSide
-	 * @param id the ID of this Entity
+	 * @param isServerSide whether this is on the server instance or not
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param position the position
 	 */
 	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
 	{
@@ -79,11 +82,11 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * Creates a new Entity.
 	 * 
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
-	 * @param width the width of this
-	 * @param height the height of this
-	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
+	 * @param isServerSide whether this is on the server instance or not
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param position the position
+	 * @param hasHitbox whether this has hitboxes or not
+	 * @param hitboxes the hitboxes (if any)
 	 */
 	private Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, boolean hasHitbox, Hitbox... hitboxes)
 	{
@@ -95,7 +98,7 @@ public class Entity extends ServerClientObject implements ITickable
 		
 		this.level = null;
 		this.position = position;
-		this.hasHitbox = hasHitbox;
+		this.hasHitbox = hasHitbox; // TODO problem with hasHitbox. Anything like a DrawableEntity that's not given a hitbox will by default think it has one
 		hitbox = hasHitbox ? hitboxes : null;
 		
 		if (hasHitbox)
@@ -116,17 +119,16 @@ public class Entity extends ServerClientObject implements ITickable
 		numSteps = 0;
 		direction = Direction.NONE;
 		lastDirection = direction;
+		cameraFollow = false;
 	}
 	
 	/**
-	 * Creates a new Entity.
+	 * Creates a new Entity with a hitbox.
 	 * 
-	 * @param id the ID of this Entity
-	 * @param x the x ordinate of this in the level
-	 * @param y the y ordinate of this in the level
-	 * @param width the width of this
-	 * @param height the height of this
-	 * @param hitboxes the hitboxes of this, only relative to this, <i>not</i> the world
+	 * @param isServerSide whether this is on the server instance or not
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param position the position
+	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
 	 */
 	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, Hitbox... hitboxes)
 	{
@@ -134,11 +136,9 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * Removes an entity from their current level and puts them in another level.
-	 * <p>
-	 * <b>WARNING:</b> If adding a tile, use addTileToLevel().
+	 * Removes an entity from its current level and puts it in another level.
 	 * 
-	 * @param level the new level.
+	 * @param level the new level
 	 */
 	public void addToLevel(Level newLevel)
 	{
@@ -160,7 +160,7 @@ public class Entity extends ServerClientObject implements ITickable
 	
 	/**
 	 * Only designed to be used by packet parsers for
-	 * parsing movement.
+	 * parsing movement across the network.
 	 * 
 	 * @param dXa the change in X amplitude
 	 * @param dYa the change in Y amplitude
@@ -171,13 +171,16 @@ public class Entity extends ServerClientObject implements ITickable
 		this.deltaYa += dYa;
 	}
 	
+	/**
+	 * @return the current direction that this is travelling in.
+	 */
 	public Direction getDirection()
 	{
 		return direction;
 	}
 	
 	/**
-	 * @return the hitbox of this Entity relative to itself.
+	 * @return the hitbox of this Entity relative to itself, <i>not</i> the world.
 	 */
 	public Hitbox[] getHitbox()
 	{
@@ -185,38 +188,48 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * @return this entity's ID.
+	 * @return this entity's ID (-1 if this is micromanaged because it's redundant).
 	 */
 	public int getID()
 	{
 		return id;
 	}
 	
+	/**
+	 * @return the last direction that this was travelling in before it stopped.
+	 */
 	public Direction getLastDirection()
 	{
 		return lastDirection;
 	}
 	
+	/**
+	 * @return the level that this is in.
+	 */
 	public Level getLevel()
 	{
 		return level;
 	}
 	
 	/**
-	 * @return the position of this entity.
+	 * @return the position of this.
 	 */
 	public Vector2DDouble getPosition()
 	{
 		return position;
 	}
 	
+	/**
+	 * @return if this has a change in xa or ya to
+	 *         relay, or that has been relayed across the network.
+	 */
 	private boolean hasDeltaMovement()
 	{
 		return deltaXa != 0 || deltaYa != 0;
 	}
 	
 	/**
-	 * @return is this Entity has a hitbox.
+	 * @return whether this Entity has a hitbox or not.
 	 */
 	public boolean hasHitbox()
 	{
@@ -224,7 +237,7 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * @return the hitbox with the offset of this Entity's in-level coordinates.
+	 * @return the hitbox of this with the offset of this's in-level coordinates.
 	 */
 	public Hitbox[] hitboxInLevel()
 	{
@@ -232,7 +245,7 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * Tells if this Entity's hitbox is intersecting another.
+	 * Tells if this's hitbox is intersecting another.
 	 * 
 	 * @param other the other Entity
 	 * @return if the hitboxes are colliding.
@@ -246,13 +259,19 @@ public class Entity extends ServerClientObject implements ITickable
 		return false;
 	}
 	
-	public boolean isColliding(Hitbox... worldHitboxes)
+	/**
+	 * Tells if this's hitboxes are intersecting an array on in-level hitboxes.
+	 * 
+	 * @param other the other Entity
+	 * @return if the hitboxes are colliding.
+	 */
+	public boolean isColliding(Hitbox... levelHitboxes)
 	{
 		if (hitboxInLevel() != null)
 		{
 			for (Hitbox box : hitboxInLevel())
 			{
-				for (Hitbox oBox : worldHitboxes)
+				for (Hitbox oBox : levelHitboxes)
 				{
 					// If the hitboxes are colliding in world
 					if (oBox.intersects(box)) return true;
@@ -263,7 +282,7 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * @return if this entity is managed by a manager such as an Event object.
+	 * @return if this is managed by a manager such as an Event object.
 	 */
 	public boolean isMicroManaged()
 	{
@@ -271,18 +290,31 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * @return if this Entity is currently in motion.
+	 * @return if this is currently in motion.
 	 */
 	public boolean isMoving()
 	{
 		return direction != Direction.NONE;
 	}
 	
+	/**
+	 * Moves this by the provided amplitudes, at this's speed.
+	 * 
+	 * @param xa the horizontal amplitude
+	 * @param ya the vertical amplitude
+	 */
 	public void move(byte xa, byte ya)
 	{
 		move(xa, ya, false);
 	}
 	
+	/**
+	 * Moves this by the provided amplitudes, at this's speed.
+	 * 
+	 * @param xa the horizontal amplitude
+	 * @param ya the vertical amplitude
+	 * @param autoMoved whether this is being moved automatically by the network, or being controlled locally
+	 */
 	@SuppressWarnings("unused")
 	private void move(byte xa, byte ya, boolean autoMoved)
 	{
@@ -413,17 +445,11 @@ public class Entity extends ServerClientObject implements ITickable
 		
 		updateHitboxInLevel();
 		
-		// Used to send packets from the server to the client to update the player direction after it's stopped moving to stop the animation
-		boolean sendPacket = false;
-		
 		if (direction != Direction.NONE) lastDirection = direction;
 		
 		// If hasn't moved (Either isn't allowed to or simply isn't moving)
 		if (deltaX == 0 && deltaY == 0)
 		{
-			// If the direction isn't already none, then send a packet after it has been set to none.
-			if (direction != Direction.NONE) sendPacket = true;
-			
 			direction = Direction.NONE;
 			
 			// Change the last direction so this entity faces in the direction that it tried to move in
@@ -435,8 +461,6 @@ public class Entity extends ServerClientObject implements ITickable
 		}
 		else
 		{
-			sendPacket = true;
-			
 			numSteps++;
 			
 			direction = Direction.fromAmplitudes(deltaX, deltaY);
@@ -449,28 +473,18 @@ public class Entity extends ServerClientObject implements ITickable
 			
 			hasMovedSince = true;
 		}
-		
-		if (sendPacket && !autoMoved)
-		{
-			onMove(xa, ya);
-			// System.out.println("Dong: " + isServerSide());
-		}
-	}
-	
-	public void onInteract()
-	{
-		
-	}
-	
-	public void onMove(byte xa, byte ya)
-	{
-		
 	}
 	
 	/**
-	 * Removes an entity from their current level.
-	 * <p>
-	 * <b>WARNING:</b> If adding a tile, use removeTileFromLevel().
+	 * Method runs when this has been interacted with.
+	 */
+	public void onInteract()
+	{
+		// TODO actually trigger this? or should this be trashed?
+	}
+	
+	/**
+	 * Removes this from its current level.
 	 */
 	public void removeFromLevel()
 	{
@@ -478,7 +492,7 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * Puts the speed back to the original speed.
+	 * Puts this's speed back to the original speed.
 	 */
 	public void resetSpeed()
 	{
@@ -486,14 +500,13 @@ public class Entity extends ServerClientObject implements ITickable
 	}
 	
 	/**
-	 * Sets a new direction for this, and sets the previous direction to whatever it was previously.
+	 * Makes the level camera follow this Entity or not.
 	 * 
-	 * @param dir the direction to set
+	 * @param follow whether or not to follow
 	 */
-	public void setDirection(Direction dir)
+	public void setCameraToFollow(boolean follow)
 	{
-		lastDirection = direction;
-		direction = dir;
+		cameraFollow = follow;
 	}
 	
 	/**
@@ -505,24 +518,27 @@ public class Entity extends ServerClientObject implements ITickable
 	 */
 	public void setLastDirection(Direction dir)
 	{
+		// TODO this is unused. Remove?.. Make sure you won't need this later
 		lastDirection = dir;
 	}
 	
 	/**
-	 * Designed for use from the server only.
+	 * <i>Designed for use from the server only.</i>
+	 * <p>
+	 * Sets the position of this to the provided position.
 	 * 
-	 * @param position
+	 * @param position the new position
 	 */
 	public void setPosition(Vector2DDouble position)
 	{
-		this.position.setPosition(position);
+		this.position.setVector(position);
 		updateHitboxInLevel();
 	}
 	
 	/**
-	 * Sets the speed of this.
+	 * Sets this's speed.
 	 * 
-	 * @param speed the new speed.
+	 * @param speed the new speed
 	 */
 	public void setSpeed(double speed)
 	{
@@ -532,12 +548,18 @@ public class Entity extends ServerClientObject implements ITickable
 	@Override
 	public void tick()
 	{
+		// if this is serverside
 		if (isServerSide())
 		{
+			// TODO move this to the level code?
+			// And is at the set interval for sending position updates
 			if (setPosCounter.isAtInterval())
 			{
+				// And this has moved since the last time
 				if (hasMovedSince)
 				{
+					// Update the position
+					// TODO implement a smooth movement change so it isn't as choppy
 					if (this instanceof PlayerEntity)
 					{
 						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position));
@@ -549,6 +571,13 @@ public class Entity extends ServerClientObject implements ITickable
 					
 					hasMovedSince = false;
 				}
+			}
+		}
+		else // Client side
+		{
+			if (cameraFollow)
+			{
+				getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
 			}
 		}
 		
@@ -601,6 +630,9 @@ public class Entity extends ServerClientObject implements ITickable
 		}
 	}
 	
+	/**
+	 * Updates this's in-level hitboxes so that they match the current position of this.
+	 */
 	private void updateHitboxInLevel()
 	{
 		if (hasHitbox)

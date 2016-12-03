@@ -230,13 +230,13 @@ public class Level extends ServerClientObject implements ITickable
 					sb.append(cPrefix);
 					sb.append("new Tile(");
 					sb.append(i);
-					sb.append(", false, Assets.getDrawableAsset(AssetType.");
-					sb.append(tile.getDrawableAsset().getAssetType().name());
-					sb.append(").clone(), new Vector2DDouble(");
+					sb.append(", false, new Vector2DDouble(");
 					sb.append(tile.getPosition().getX());
 					sb.append(", ");
 					sb.append(tile.getPosition().getY());
-					sb.append(")).addToLevel(this);");
+					sb.append("), Assets.getDrawableAsset(AssetType.");
+					sb.append(tile.getDrawableAsset().getAssetType().name());
+					sb.append(").clone()).addToLevel(this);");
 					
 					lines.add(sb.toString());
 				}
@@ -955,7 +955,7 @@ public class Level extends ServerClientObject implements ITickable
 	 */
 	public void setCameraCenterInWorld(Vector2DDouble point)
 	{
-		camOffset.setPosition(point.getX() - ClientGame.WIDTH / 2, point.getY() - ClientGame.HEIGHT / 2);
+		camOffset.setVector(point.getX() - ClientGame.WIDTH / 2, point.getY() - ClientGame.HEIGHT / 2);
 	}
 	
 	public void setEditingLayer(int layer)
@@ -1063,7 +1063,7 @@ public class Level extends ServerClientObject implements ITickable
 					case TILE:
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
-							Tile tileToAdd = new Tile(editingLayer, false, cursorAsset.clone(), screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()));
+							Tile tileToAdd = new Tile(editingLayer, false, screenToWorld(ClientGame.instance().input().getMousePos()).alignToGrid(grid.getGridSize()), cursorAsset.clone());
 							tileToAdd.addToLevel(this);
 						}
 						
@@ -1175,7 +1175,7 @@ public class Level extends ServerClientObject implements ITickable
 								if (hitboxClickCount == 0)
 								{
 									hitboxClickCount = 1;
-									hitbox1.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
+									hitbox1.setVector(screenToWorld(ClientGame.instance().input().getMousePos())).add(1, 1);
 									
 									if (buildMode == BuildMode.FLICKERING_LIGHT)
 									{
@@ -1213,7 +1213,7 @@ public class Level extends ServerClientObject implements ITickable
 				// Sets up the hitbox when it's been clicked
 				if (hitboxClickCount > 0)
 				{
-					hitbox2.setPosition(screenToWorld(ClientGame.instance().input().getMousePos())); // .add(1, 1)
+					hitbox2.setVector(screenToWorld(ClientGame.instance().input().getMousePos())); // .add(1, 1)
 				}
 			}
 			else if (ClientGame.instance().getRole() == Role.SPECTATOR)

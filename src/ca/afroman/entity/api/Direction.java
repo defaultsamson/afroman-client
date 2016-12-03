@@ -15,6 +15,13 @@ public enum Direction
 	DOWN_LEFT(-1, 1),
 	DOWN_RIGHT(1, 1);
 	
+	/**
+	 * Gets a direction from raw amplitudes.
+	 * 
+	 * @param xa the horizontal amplitude
+	 * @param ya the vertical amplitude
+	 * @return the Direction value that matches the privided amplitudes.
+	 */
 	public static Direction fromAmplitudes(byte xa, byte ya)
 	{
 		for (Direction d : values())
@@ -25,6 +32,13 @@ public enum Direction
 		return null;
 	}
 	
+	/**
+	 * Gets a direction from amplitudes.
+	 * 
+	 * @param xa the horizontal amplitude
+	 * @param ya the vertical amplitude
+	 * @return the Direction value that matches the provided amplitudes.
+	 */
 	public static Direction fromAmplitudes(double xa, double ya)
 	{
 		// Normalizes all amplitudes to find direction
@@ -60,20 +74,31 @@ public enum Direction
 	}
 	
 	private int xa;
-	
 	private int ya;
 	
+	/**
+	 * A value that specifies amplitudes in the horizontal and vertical plane.
+	 * 
+	 * @param xa the horizontal amplitude
+	 * @param ya the vertical amplitude
+	 */
 	Direction(int xa, int ya)
 	{
 		this.xa = xa;
 		this.ya = ya;
 	}
 	
+	/**
+	 * @return the horizontal amplitude.
+	 */
 	public int getXAmplitude()
 	{
 		return xa;
 	}
 	
+	/**
+	 * @return the vertical amplitude.
+	 */
 	public int getYAmplitude()
 	{
 		return ya;

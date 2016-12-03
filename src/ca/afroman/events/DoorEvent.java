@@ -70,8 +70,8 @@ public class DoorEvent extends HitboxToggle
 			closed = closed.clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour);
 			
 			// TODO cannot move the Tile with this
-			this.open = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, open, position);
-			this.closed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, closed, position);
+			this.open = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, open);
+			this.closed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, closed);
 		}
 	}
 	

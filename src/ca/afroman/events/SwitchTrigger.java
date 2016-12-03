@@ -28,8 +28,8 @@ public class SwitchTrigger extends HitboxTrigger
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, triggerTypes, new Hitbox(true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
 		box = new Hitbox(true, position.getX() + HITBOX_X_OFF + 1, position.getY() + HITBOX_Y_OFF + 1, HITBOX_WIDTH - 2, HITBOX_HEIGHT - 2);
 		
-		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour), position);
-		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, rightColour), position);
+		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour));
+		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, rightColour));
 	}
 	
 	@Override

@@ -17,9 +17,6 @@ import ca.afroman.server.ServerGame;
 
 public class PlayerEntity extends DrawableEntityDirectional
 {
-	public static final AssetType PLAYER1_ASSET = AssetType.PLAYER_ONE_RAW;
-	public static final AssetType PLAYER2_ASSET = AssetType.PLAYER_TWO_RAW;
-	
 	private static SpriteAnimation getDown(boolean isServerSide, Role role)
 	{
 		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_DOWN).clone();
@@ -63,13 +60,15 @@ public class PlayerEntity extends DrawableEntityDirectional
 	private Role role;
 	
 	/**
-	 * Creates a new ClientPlayerEntity.
+	 * An entity representing a human player.
 	 * 
-	 * @param pos the position
+	 * @param isServerSide whether this is on the server instance or not
+	 * @param role the Role assigned to this player
+	 * @param position the position
 	 */
-	public PlayerEntity(boolean isServerSide, Role role, Vector2DDouble pos)
+	public PlayerEntity(boolean isServerSide, Role role, Vector2DDouble position)
 	{
-		super(isServerSide, true, getUp(isServerSide, role), getDown(isServerSide, role), getLeft(isServerSide, role), getRight(isServerSide, role), getIdleUp(isServerSide, role), getIdleDown(isServerSide, role), getIdleLeft(isServerSide, role), getIdleRight(isServerSide, role), pos, new Hitbox(true, 3, 5, 10, 11));
+		super(isServerSide, true, position, getUp(isServerSide, role), getDown(isServerSide, role), getLeft(isServerSide, role), getRight(isServerSide, role), getIdleUp(isServerSide, role), getIdleDown(isServerSide, role), getIdleLeft(isServerSide, role), getIdleRight(isServerSide, role), new Hitbox(true, 3, 5, 10, 11));
 		
 		this.role = role;
 	}
@@ -107,11 +106,17 @@ public class PlayerEntity extends DrawableEntityDirectional
 		}
 	}
 	
+	/**
+	 * @return the role of this.
+	 */
 	public Role getRole()
 	{
 		return role;
 	}
 	
+	/**
+	 * Stop the camera from following this, and removes this from the level.
+	 */
 	public void reset()
 	{
 		setCameraToFollow(false);

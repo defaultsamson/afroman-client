@@ -5,18 +5,34 @@ import ca.afroman.resource.Vector2DDouble;
 
 public class DrawableEntityDirectional extends DrawableEntity
 {
-	protected DrawableAsset up;
-	protected DrawableAsset down;
-	protected DrawableAsset left;
-	protected DrawableAsset right;
-	protected DrawableAsset idleUp;
-	protected DrawableAsset idleDown;
-	protected DrawableAsset idleLeft;
-	protected DrawableAsset idleRight;
+	private DrawableAsset up;
+	private DrawableAsset down;
+	private DrawableAsset left;
+	private DrawableAsset right;
+	private DrawableAsset idleUp;
+	private DrawableAsset idleDown;
+	private DrawableAsset idleLeft;
+	private DrawableAsset idleRight;
 	
-	public DrawableEntityDirectional(boolean isServerSide, boolean isMicromanaged, DrawableAsset up, DrawableAsset down, DrawableAsset left, DrawableAsset right, DrawableAsset idleUp, DrawableAsset idleDown, DrawableAsset idleLeft, DrawableAsset idleRight, Vector2DDouble pos, Hitbox... hitboxes)
+	/**
+	 * Creates a new Entity with a hitbox.
+	 * 
+	 * @param isServerSide whether this is on the server instance or not
+	 * @param isMicromanaged whether this is managed by an external manager (such as an Event), as opposed to directly being managed by the level
+	 * @param position the position
+	 * @param up the DrawableAsset to render this as when moving up
+	 * @param down the DrawableAsset to render this as when moving down
+	 * @param left the DrawableAsset to render this as when moving left
+	 * @param right the DrawableAsset to render this as when moving right
+	 * @param idleUp the DrawableAsset to render this as when idle and facing up
+	 * @param idleDown the DrawableAsset to render this as when idle and facing down
+	 * @param idleLeft the DrawableAsset to render this as when idle and facing left
+	 * @param idleRight the DrawableAsset to render this as when idle and facing right
+	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
+	 */
+	public DrawableEntityDirectional(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, DrawableAsset up, DrawableAsset down, DrawableAsset left, DrawableAsset right, DrawableAsset idleUp, DrawableAsset idleDown, DrawableAsset idleLeft, DrawableAsset idleRight, Hitbox... hitboxes)
 	{
-		super(isServerSide, isMicromanaged, null, pos, hitboxes);
+		super(isServerSide, isMicromanaged, position, null, hitboxes);
 		
 		this.up = up;
 		this.down = down;
