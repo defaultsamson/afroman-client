@@ -22,14 +22,14 @@ public class PacketSetPlayerLocation extends BytePacket
 	{
 		super(PacketType.SET_PLAYER_POSITION, forcePos, connection);
 		
-		ByteBuffer buf = ByteBuffer.allocate(2 + (2 * ByteUtil.INT_BYTE_COUNT));
+		ByteBuffer buf = ByteBuffer.allocate(1 + (2 * ByteUtil.INT_BYTE_COUNT));
 		
-		buf.put((byte) player.ordinal());
+		buf.put((byte) (player.ordinal() + (forcePos ? Role.values().length : 0)));
 		
 		buf.putInt((int) pos.getX());
 		buf.putInt((int) pos.getY());
 		
-		buf.put(forcePos ? (byte) 1 : 0);
+		// buf.put(forcePos ? (byte) 1 : 0);
 		
 		toSend = buf.array();
 	}

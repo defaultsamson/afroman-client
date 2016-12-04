@@ -452,15 +452,23 @@ public class ClientGame extends Game
 						case SET_PLAYER_POSITION:
 						{
 							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-							Role role = Role.fromOrdinal(buf.get());
+							
+							boolean forcePos = false;
+							byte roleOrd = buf.get();
+							
+							if (roleOrd >= Role.values().length)
+							{
+								forcePos = true;
+								roleOrd -= Role.values().length;
+							}
+							
+							Role role = Role.fromOrdinal(roleOrd);
 							
 							PlayerEntity player = getPlayer(role);
 							
 							if (player != null)
 							{
 								Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
-								
-								boolean forcePos = buf.get() == 1;
 								
 								// If force the position, then force it.
 								// Else, if the player is outside a given range of the server position force it into positionThe ho
