@@ -59,8 +59,8 @@ public class Entity extends PositionLevelObject implements ITickable
 	private byte deltaYa = 0;
 	
 	private boolean hasMovedSince = false;
-	private ModulusCounter setPosCounter = new ModulusCounter(60 * 5);
-	private ModulusCounter deltaMoveCounter = new ModulusCounter(10);
+	private ModulusCounter setPosCounter = new ModulusCounter(60 * 2); // Every 2 seconds
+	private ModulusCounter deltaMoveCounter = new ModulusCounter(60 / 15); // 15 times per second
 	
 	/**
 	 * Creates a new Entity.
@@ -514,7 +514,7 @@ public class Entity extends PositionLevelObject implements ITickable
 					// TODO implement a smooth movement change so it isn't as choppy
 					if (this instanceof PlayerEntity)
 					{
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position));
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position, !hasDeltaMovement()));
 					}
 					else
 					{

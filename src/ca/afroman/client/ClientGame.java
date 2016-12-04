@@ -458,7 +458,16 @@ public class ClientGame extends Game
 							
 							if (player != null)
 							{
-								player.setPosition(new Vector2DDouble(buf.getInt(), buf.getInt()));
+								Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
+								
+								boolean forcePos = buf.get() == 1;
+								
+								// If force the position, then force it.
+								// Else, if the player is outside a given range of the server position force it into positionThe ho
+								if (forcePos || player.getPosition().isDistanceGreaterThan(pos, 10D))
+								{
+									player.setPosition(pos);
+								}
 							}
 							else
 							{

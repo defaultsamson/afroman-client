@@ -124,6 +124,23 @@ public class Vector2DDouble
 		return y;
 	}
 	
+	/**
+	 * Tests the difference between this and the provided vector.
+	 * If the distance exceeds the value of toTest, this will return
+	 * true, otherwise it returns false.
+	 * 
+	 * @param vec the other vector to measure the distance with
+	 * @param toTest the distance to check for
+	 * @return if the distance between this and <b>vec</b> exceeds <b>toTest</b>
+	 */
+	public boolean isDistanceGreaterThan(Vector2DDouble vec, double toTest)
+	{
+		double dX = vec.getX() - this.getX();
+		double dY = vec.getY() - this.getY();
+		
+		return dX * dX + dY * dY > toTest * toTest;
+	}
+	
 	public Vector2DDouble setVector(double x, double y)
 	{
 		this.x = x;

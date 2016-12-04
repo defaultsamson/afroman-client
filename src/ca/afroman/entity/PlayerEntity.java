@@ -130,7 +130,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 		
 		if (isServerSide())
 		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(getRole(), position));
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(getRole(), position, true));
 		}
 	}
 	

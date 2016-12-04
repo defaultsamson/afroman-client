@@ -18,16 +18,18 @@ public class PacketSetPlayerLocation extends BytePacket
 	 * @param pos
 	 * @param connection
 	 */
-	public PacketSetPlayerLocation(Role player, Vector2DDouble pos, IPConnection... connection)
+	public PacketSetPlayerLocation(Role player, Vector2DDouble pos, boolean forcePos, IPConnection... connection)
 	{
-		super(PacketType.SET_PLAYER_POSITION, true, connection);
+		super(PacketType.SET_PLAYER_POSITION, forcePos, connection);
 		
-		ByteBuffer buf = ByteBuffer.allocate(1 + (2 * ByteUtil.INT_BYTE_COUNT));
+		ByteBuffer buf = ByteBuffer.allocate(2 + (2 * ByteUtil.INT_BYTE_COUNT));
 		
 		buf.put((byte) player.ordinal());
 		
 		buf.putInt((int) pos.getX());
 		buf.putInt((int) pos.getY());
+		
+		buf.put(forcePos ? (byte) 1 : 0);
 		
 		toSend = buf.array();
 	}
