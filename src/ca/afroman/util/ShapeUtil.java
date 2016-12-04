@@ -8,7 +8,7 @@ import ca.afroman.resource.Vector2DInt;
 
 public class ShapeUtil
 {
-	public static boolean areColliding(int inX, int inY, int inWidth, int inHeight, int outX, int outY, int outWidth, int outHeight)
+	public static boolean areColliding(double inX, double inY, double inWidth, double inHeight, double outX, double outY, double outWidth, double outHeight)
 	{
 		return inX < outX + outWidth && inX + inWidth > outX && inY < outY + outHeight && inY + inHeight > outY;
 	}

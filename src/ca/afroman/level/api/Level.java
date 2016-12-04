@@ -37,6 +37,7 @@ import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
+import ca.afroman.util.CastUtil;
 import ca.afroman.util.ColourUtil;
 import ca.afroman.util.ListUtil;
 import ca.afroman.util.ShapeUtil;
@@ -182,6 +183,10 @@ public class Level extends ServerClientObject implements ITickable
 		final String csPrefix = "		";
 		final String cPrefix = "			";
 		final String isServerSideText = "isServerSide";
+		final String lineBreaker = "//////////// HIGHLIGHT ME ////////////";
+		
+		lines.add(csPrefix + lineBreaker);
+		lines.add(csPrefix);
 		
 		// Shared for both client/server
 		
@@ -195,14 +200,16 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				StringBuilder sb = new StringBuilder();
 				sb.append(csPrefix);
-				sb.append("new Hitbox(false, ");
-				sb.append(box.getX());
+				sb.append("new Hitbox(");
+				sb.append(isServerSideText);
+				sb.append(", false, ");
+				sb.append(CastUtil.normalizeDouble(box.getX()));
 				sb.append(", ");
-				sb.append(box.getY());
+				sb.append(CastUtil.normalizeDouble(box.getY()));
 				sb.append(", ");
-				sb.append(box.getWidth());
+				sb.append(CastUtil.normalizeDouble(box.getWidth()));
 				sb.append(", ");
-				sb.append(box.getHeight());
+				sb.append(CastUtil.normalizeDouble(box.getHeight()));
 				sb.append(").addToLevel(this);");
 				
 				lines.add(sb.toString());
@@ -222,6 +229,7 @@ public class Level extends ServerClientObject implements ITickable
 		{
 			ArrayList<Tile> layer = getTileLayers().get(i);
 			
+			boolean wroteSomething = false;
 			for (Tile tile : layer)
 			{
 				if (!tile.isMicroManaged())
@@ -231,21 +239,24 @@ public class Level extends ServerClientObject implements ITickable
 					sb.append("new Tile(");
 					sb.append(i);
 					sb.append(", false, new Vector2DDouble(");
-					sb.append(tile.getPosition().getX());
+					sb.append(CastUtil.normalizeDouble(tile.getPosition().getX()));
 					sb.append(", ");
-					sb.append(tile.getPosition().getY());
+					sb.append(CastUtil.normalizeDouble(tile.getPosition().getY()));
 					sb.append("), Assets.getDrawableAsset(AssetType.");
 					sb.append(tile.getDrawableAsset().getAssetType().name());
 					sb.append(").clone()).addToLevel(this);");
 					
 					lines.add(sb.toString());
+					
+					wroteSomething = true;
 				}
 			}
 			
-			lines.add(cPrefix);
+			// Adds a space inbetween layers if something was written, and it's not the last one (because it adds a space on the next layer anyways)
+			if (wroteSomething) lines.add(cPrefix);
 		}
 		
-		lines.add(cPrefix);
+		// lines.add(cPrefix);
 		lines.add(cPrefix + "// Lights");
 		
 		// Lights
@@ -263,13 +274,13 @@ public class Level extends ServerClientObject implements ITickable
 					StringBuilder sb = new StringBuilder();
 					sb.append(cPrefix);
 					sb.append("new FlickeringLight(false, new Vector2DDouble(");
-					sb.append(light.getPosition().getX());
+					sb.append(CastUtil.normalizeDouble(light.getPosition().getX()));
 					sb.append(", ");
-					sb.append(light.getPosition().getY());
+					sb.append(CastUtil.normalizeDouble(light.getPosition().getY()));
 					sb.append("), ");
-					sb.append(light.getRadius());
+					sb.append(CastUtil.normalizeDouble(light.getRadius()));
 					sb.append(", ");
-					sb.append(flight.getRadius2());
+					sb.append(CastUtil.normalizeDouble(flight.getRadius2()));
 					sb.append(", ");
 					sb.append(flight.getTicksPerFrame());
 					sb.append(").addToLevel(this);");
@@ -285,11 +296,11 @@ public class Level extends ServerClientObject implements ITickable
 					StringBuilder sb = new StringBuilder();
 					sb.append(cPrefix);
 					sb.append("new PointLight(false, new Vector2DDouble(");
-					sb.append(light.getPosition().getX());
+					sb.append(CastUtil.normalizeDouble(light.getPosition().getX()));
 					sb.append(", ");
-					sb.append(light.getPosition().getY());
+					sb.append(CastUtil.normalizeDouble(light.getPosition().getY()));
 					sb.append("), ");
-					sb.append(light.getRadius());
+					sb.append(CastUtil.normalizeDouble(light.getRadius()));
 					sb.append(").addToLevel(this);");
 					
 					lines.add(sb.toString());
@@ -298,6 +309,9 @@ public class Level extends ServerClientObject implements ITickable
 		}
 		
 		lines.add(csPrefix + "}");
+		
+		lines.add(csPrefix);
+		lines.add(csPrefix + lineBreaker);
 		
 		ClientGame.instance().input().setClipboard(lines);
 	}
@@ -537,14 +551,14 @@ public class Level extends ServerClientObject implements ITickable
 				}
 				else if (tile.hasHitbox())
 				{
-					for (Hitbox h : tile.hitboxInLevel())
+					for (Hitbox h : tile.getHitbox())
 					{
 						if (h.contains(pos.getX(), pos.getY())) return tile;
 					}
 				}
 				else
 				{
-					Hitbox surrounding = new Hitbox(true, tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
+					Hitbox surrounding = new Hitbox(isServerSide(), true, tile.getPosition().getX(), tile.getPosition().getY(), 16, 16);
 					
 					if (surrounding.contains(pos.getX(), pos.getY()))
 					{
@@ -588,7 +602,7 @@ public class Level extends ServerClientObject implements ITickable
 				if (leftClick)
 				{
 					Rectangle2D box = ShapeUtil.pointsToRectangle(hitbox1, hitbox2);
-					new Hitbox(false, box.getX(), box.getY(), box.getWidth(), box.getHeight()).addToLevel(this);
+					new Hitbox(isServerSide(), false, box.getX(), box.getY(), box.getWidth(), box.getHeight()).addToLevel(this);
 				}
 				else
 				{
@@ -762,7 +776,7 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				if (entity.hasHitbox())
 				{
-					for (Hitbox box : entity.hitboxInLevel())
+					for (Hitbox box : entity.getHitbox())
 					{
 						Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
 						renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
@@ -774,7 +788,7 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				if (entity.hasHitbox())
 				{
-					for (Hitbox box : entity.hitboxInLevel())
+					for (Hitbox box : entity.getHitbox())
 					{
 						Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
 						renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
@@ -786,7 +800,7 @@ public class Level extends ServerClientObject implements ITickable
 			{
 				if (e.hasHitbox())
 				{
-					for (Hitbox box : e.hitboxInLevel())
+					for (Hitbox box : e.getHitbox())
 					{
 						Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
 						

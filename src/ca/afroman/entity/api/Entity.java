@@ -8,11 +8,10 @@ import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
-import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class Entity extends ServerClientObject implements ITickable
+public class Entity extends PositionLevelObject implements ITickable
 {
 	private static final boolean PLAYER_COLLISION = false;
 	private static final boolean HITBOX_COLLISION = true;
@@ -45,12 +44,8 @@ public class Entity extends ServerClientObject implements ITickable
 	
 	// All the required variables needed to create an Entity
 	private int id;
-	private boolean isMicromanaged;
-	protected Level level;
-	protected Vector2DDouble position;
 	protected boolean hasHitbox;
 	protected Hitbox[] hitbox;
-	protected Hitbox[] hitboxInLevel;
 	
 	// All the movement related variables
 	protected double speed;
@@ -77,28 +72,12 @@ public class Entity extends ServerClientObject implements ITickable
 	 */
 	public Entity(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, Hitbox... hitboxes)
 	{
-		super(isServerSide);
-		
-		this.isMicromanaged = isMicromanaged;
+		super(isServerSide, isMicromanaged, position);
 		
 		this.id = isMicromanaged ? MICROMANAGED_ID : getIDCounter(isServerSide).getNext(); // -1 if this is not an object in a level
 		
-		this.level = null;
-		this.position = position;
 		this.hasHitbox = hitboxes.length > 0;
 		hitbox = hasHitbox ? hitboxes : null;
-		
-		if (hasHitbox)
-		{
-			hitboxInLevel = new Hitbox[hitbox.length];
-			
-			for (int i = 0; i < hitbox.length; i++)
-				hitboxInLevel[i] = hitbox[i].clone();
-		}
-		else
-		{
-			hitboxInLevel = null;
-		}
 		updateHitboxInLevel();
 		
 		speed = 1.0;
@@ -114,6 +93,7 @@ public class Entity extends ServerClientObject implements ITickable
 	 * 
 	 * @param level the new level
 	 */
+	@Override
 	public void addToLevel(Level newLevel)
 	{
 		if (level == newLevel) return;
@@ -180,6 +160,7 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * @return the level that this is in.
 	 */
+	@Override
 	public Level getLevel()
 	{
 		return level;
@@ -188,6 +169,7 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * @return the position of this.
 	 */
+	@Override
 	public Vector2DDouble getPosition()
 	{
 		return position;
@@ -210,14 +192,15 @@ public class Entity extends ServerClientObject implements ITickable
 		return hasHitbox;
 	}
 	
-	/**
-	 * @return the hitbox of this with the offset of this's in-level coordinates.
-	 */
-	public Hitbox[] hitboxInLevel()
-	{
-		return hitboxInLevel;
-	}
-	
+	//
+	// /**
+	// * @return the hitbox of this with the offset of this's in-level coordinates.
+	// */
+	// public Hitbox[] hitboxInLevel()
+	// {
+	// return hitboxInLevel;
+	// }
+	//
 	/**
 	 * Tells if this's hitbox is intersecting another.
 	 * 
@@ -228,7 +211,7 @@ public class Entity extends ServerClientObject implements ITickable
 	{
 		if (this.hasHitbox() && other.hasHitbox())
 		{
-			return isColliding(other.hitboxInLevel());
+			return isColliding(other.getHitbox());
 		}
 		return false;
 	}
@@ -241,26 +224,18 @@ public class Entity extends ServerClientObject implements ITickable
 	 */
 	public boolean isColliding(Hitbox... levelHitboxes)
 	{
-		if (hitboxInLevel() != null)
+		if (hasHitbox)
 		{
-			for (Hitbox box : hitboxInLevel())
+			for (Hitbox box : getHitbox())
 			{
 				for (Hitbox oBox : levelHitboxes)
 				{
 					// If the hitboxes are colliding in world
-					if (oBox.intersects(box)) return true;
+					if (oBox.isColliding(box)) return true;
 				}
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * @return if this is managed by a manager such as an Event object.
-	 */
-	public boolean isMicroManaged()
-	{
-		return isMicromanaged;
 	}
 	
 	/**
@@ -340,7 +315,7 @@ public class Entity extends ServerClientObject implements ITickable
 			{
 				for (Entity player : getLevel().getPlayers())
 				{
-					for (Hitbox hitbox : player.hitboxInLevel())
+					for (Hitbox hitbox : player.getHitbox())
 					{
 						if (this != player && this.isColliding(hitbox))
 						{
@@ -398,7 +373,7 @@ public class Entity extends ServerClientObject implements ITickable
 			{
 				for (Entity player : getLevel().getPlayers())
 				{
-					for (Hitbox hitbox : player.hitboxInLevel())
+					for (Hitbox hitbox : player.getHitbox())
 					{
 						if (this != player && this.isColliding(hitbox))
 						{
@@ -452,6 +427,7 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * Method runs when this has been interacted with.
 	 */
+	@Override
 	public void onInteract()
 	{
 		// TODO actually trigger this? or should this be trashed?
@@ -460,6 +436,7 @@ public class Entity extends ServerClientObject implements ITickable
 	/**
 	 * Removes this from its current level.
 	 */
+	@Override
 	public void removeFromLevel()
 	{
 		addToLevel(null);
@@ -503,6 +480,7 @@ public class Entity extends ServerClientObject implements ITickable
 	 * 
 	 * @param position the new position
 	 */
+	@Override
 	public void setPosition(Vector2DDouble position)
 	{
 		this.position.setVector(position);
@@ -611,10 +589,9 @@ public class Entity extends ServerClientObject implements ITickable
 	{
 		if (hasHitbox)
 		{
-			for (int i = 0; i < hitboxInLevel.length; i++)
+			for (int i = 0; i < hitbox.length; i++)
 			{
-				hitboxInLevel[i].x = hitbox[i].getX() + position.getX();
-				hitboxInLevel[i].y = hitbox[i].getY() + position.getY();
+				hitbox[i].updateRelativeHitboxToPosition(position);
 			}
 		}
 	}

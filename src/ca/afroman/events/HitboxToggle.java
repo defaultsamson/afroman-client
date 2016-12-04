@@ -66,7 +66,7 @@ public class HitboxToggle extends Event
 		{
 			if (hasHitbox())
 			{
-				for (Hitbox box : hitboxInLevel)
+				for (Hitbox box : getHitbox())
 				{
 					box.addToLevel(level);
 				}
@@ -80,7 +80,7 @@ public class HitboxToggle extends Event
 		{
 			if (hasHitbox())
 			{
-				for (Hitbox box : hitboxInLevel)
+				for (Hitbox box : getHitbox())
 				{
 					box.removeFromLevel();
 				}

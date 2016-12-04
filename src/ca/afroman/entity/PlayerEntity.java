@@ -68,7 +68,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 	 */
 	public PlayerEntity(boolean isServerSide, Role role, Vector2DDouble position)
 	{
-		super(isServerSide, true, position, getUp(isServerSide, role), getDown(isServerSide, role), getLeft(isServerSide, role), getRight(isServerSide, role), getIdleUp(isServerSide, role), getIdleDown(isServerSide, role), getIdleLeft(isServerSide, role), getIdleRight(isServerSide, role), new Hitbox(true, 3, 5, 10, 11));
+		super(isServerSide, true, position, getUp(isServerSide, role), getDown(isServerSide, role), getLeft(isServerSide, role), getRight(isServerSide, role), getIdleUp(isServerSide, role), getIdleDown(isServerSide, role), getIdleLeft(isServerSide, role), getIdleRight(isServerSide, role), new Hitbox(isServerSide, true, 3, 5, 10, 11));
 		
 		this.role = role;
 	}

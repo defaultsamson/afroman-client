@@ -3,13 +3,11 @@ package ca.afroman.entity.api;
 import java.awt.geom.Rectangle2D;
 
 import ca.afroman.level.api.Level;
+import ca.afroman.resource.Vector2DDouble;
 
-public class Hitbox extends Rectangle2D.Double
+public class Hitbox extends PositionLevelObject implements Cloneable
 {
-	private static final long serialVersionUID = -318324421701678550L;
-	
-	private boolean isMicroManaged;
-	public Level level = null;
+	private Rectangle2D.Double box;
 	
 	/**
 	 * A hitbox.
@@ -22,11 +20,14 @@ public class Hitbox extends Rectangle2D.Double
 	 * @param width the width of this
 	 * @param height the height of this
 	 */
-	public Hitbox(boolean isMicroManaged, double x, double y, double width, double height)
+	public Hitbox(boolean isServerSide, boolean isMicroManaged, double x, double y, double width, double height)
 	{
-		super(x, y, width, height);
+		super(isServerSide, isMicroManaged, new Vector2DDouble(x, y));
 		
-		this.isMicroManaged = isMicroManaged;
+		// If level hitbox, this.position and box.x & box.y both hold the same world coordinates
+		// If relative hitbox, this.position holds the relative coordinates, and box.x & box.y hold the world coordinates
+		
+		box = new Rectangle2D.Double(x, y, width, height);
 	}
 	
 	/**
@@ -34,6 +35,7 @@ public class Hitbox extends Rectangle2D.Double
 	 * 
 	 * @param level the new level.
 	 */
+	@Override
 	public void addToLevel(Level newLevel)
 	{
 		if (level == newLevel) return;
@@ -55,43 +57,96 @@ public class Hitbox extends Rectangle2D.Double
 	@Override
 	public Hitbox clone()
 	{
-		Hitbox box = new Hitbox(isMicroManaged, x, y, width, height);
+		Hitbox box = new Hitbox(isServerSide(), isMicroManaged(), position.getX(), position.getY(), getWidth(), getHeight());
 		box.addToLevel(level);
 		return box;
 	}
 	
 	/**
-	 * @return
+	 * @param x the x ordinate to test for
+	 * @param y the y ordinate to test for
+	 * @return whether or not this contains the provided point.
 	 */
-	public Level getLevel()
+	public boolean contains(double x, double y)
 	{
-		return level;
+		return box.contains(x, y);
 	}
 	
 	/**
-	 * @return if this Hitbox is managed by a manager such as a HitboxToggle object.
+	 * @return the height of this.
 	 */
-	public boolean isMicroManaged()
+	public double getHeight()
 	{
-		return isMicroManaged;
+		return box.getHeight();
 	}
 	
 	/**
-	 * Removes this hitbox from its current level.
+	 * @return the width of this.
 	 */
-	public void removeFromLevel()
+	public double getWidth()
 	{
-		addToLevel(null);
+		return box.getWidth();
 	}
 	
 	/**
-	 * <b>WARNING:</b> Used when adding a hitbox bound object to a level.
-	 * ONLY USE THIS IF YOU KNOW WHAT YOU'RE DOING.
+	 * Gets the in-level x ordinate of this. <code>Hitbox.getPosition()</code>
+	 * will retrieve the relative position of this if it belongs to an entity
+	 * and uses <code>hitbox.updateRelativeHitboxToPosition()</code> to update
+	 * the in-level x ordinate for this hitbox relative to that Entity's position.
 	 * 
-	 * @param level the new level
+	 * @return the in-level x ordinate.
 	 */
-	public void setLevel(Level level)
+	public double getX()
 	{
-		this.level = level;
+		return box.getX();
+	}
+	
+	/**
+	 * Gets the in-level y ordinate of this. <code>Hitbox.getPosition()</code>
+	 * will retrieve the relative position of this if it belongs to an entity
+	 * and uses <code>hitbox.updateRelativeHitboxToPosition()</code> to update
+	 * the in-level y ordinate for this hitbox relative to that Entity's position.
+	 * 
+	 * @return the in-level y ordinate.
+	 */
+	public double getY()
+	{
+		return box.getY();
+	}
+	
+	/**
+	 * @param other the Hitbox to test against
+	 * 
+	 * @return whether or not this is colliding with the provided Hitbox.
+	 */
+	public boolean isColliding(Hitbox other)
+	{
+		return box.intersects(other.box);
+	}
+	
+	/**
+	 * Updates this Hitbox's in-level coordinates to the provided position plus
+	 * this's relative coordinates.
+	 * <p>
+	 * e.g. This's relative coordinates are (1, 5). The Entity that this Hitbox
+	 * belongs to is at point (100, -55), and invokes this method to update the
+	 * in-level coordinates of this. <code>Hitbox.getPosition()</code> will still
+	 * result in the coordinates (1, 5), because that position represents the relative
+	 * position. Using getX() and getY() will return point (101, -50), because
+	 * the in-level coordinates of this have now updated to use the relative
+	 * coordinates relative to the provided point.
+	 * <p>
+	 * <i>NOTE:</i> Other operations such as <code>Hitbox.isColliding()</code> and
+	 * <code>Hitbox.contains()</code> will all use in-level coordinates by default.
+	 * <p>
+	 * If this Hitbox is static, then the relative position will already be the
+	 * in-level coordinates by default, so this method does not need to be invoked.
+	 * 
+	 * @param pos the position to update this to (relatively).
+	 */
+	public void updateRelativeHitboxToPosition(Vector2DDouble pos)
+	{
+		box.x = position.getX() + pos.getX();
+		box.y = position.getY() + pos.getY();
 	}
 }

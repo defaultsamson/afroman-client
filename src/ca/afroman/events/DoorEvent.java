@@ -14,15 +14,15 @@ import ca.afroman.util.ColourUtil;
 
 public class DoorEvent extends HitboxToggle
 {
-	private static Hitbox getDefaultHitbox(Direction dir)
+	private static Hitbox getDefaultHitbox(boolean isServerSide, Direction dir)
 	{
 		switch (dir)
 		{
 			default:
 			case UP:
-				return new Hitbox(true, 16, 6, 16, 4);
+				return new Hitbox(isServerSide, true, 16, 6, 16, 4);
 			case DOWN:
-				return new Hitbox(true, 16, 2, 16, 12);
+				return new Hitbox(isServerSide, true, 16, 2, 16, 12);
 			case LEFT:
 				// TODO
 				break;
@@ -38,7 +38,7 @@ public class DoorEvent extends HitboxToggle
 	
 	public DoorEvent(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, Direction doorLooking, int doorColour)
 	{
-		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, getDefaultHitbox(doorLooking));
+		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, getDefaultHitbox(isServerSide, doorLooking));
 		
 		if (!isServerSide)
 		{
