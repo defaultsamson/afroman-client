@@ -8,6 +8,7 @@ public class ColourUtil
 	public static final int ALPHA_COLOUR2 = ColourUtil.fromHex("0xFF7F007F").getRGB();
 	
 	public static final int TILE_REPLACE_COLOUR = ColourUtil.fromHex("0xFF50FF00").getRGB();
+	public static final int TILE_REPLACE_COLOUR_2 = ColourUtil.fromHex("0xFFF0FF00").getRGB();
 	public static final int TILE_REPLACE_COLOUR_RED = ColourUtil.fromHex("0xFFB62C47").getRGB();
 	public static final int TILE_REPLACE_COLOUR_BLUE = ColourUtil.fromHex("0xFF2558AA").getRGB();
 	public static final int TILE_REPLACE_COLOUR_GREEN = ColourUtil.fromHex("0xFF87A642").getRGB();
