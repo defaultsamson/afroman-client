@@ -307,7 +307,8 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_SWITCH_LEFT, 16 * 11, 16 * 3, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_SWITCH_RIGHT, 16 * 11, 16 * 4, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_BLOCK, 16 * 10, 16 * 2, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_BLOCK, 16 * 13, 16 * 2, 16, 16));
+		assets.add(new SpriteAnimation(AssetType.TILE_BlOCK_ANIMATED, false, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 12, 16 * 2, 16 * 4, 16).toTextureArray(4, 1)));
 		
 		// assets.add(new StepSpriteAnimation(new int[] { 0, 1 }, AssetType.TILE_PLATE_TEST, false, 30, sheet.getSubTexture(AssetType.TILE_PLATE_TEST, 16 * 10, 16 * 3, 16, 32).toTextureArray(1, 2)));
 		

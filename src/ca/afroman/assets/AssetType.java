@@ -95,6 +95,7 @@ public enum AssetType
 	TILE_SWITCH_RIGHT(true),
 	
 	TILE_BLOCK(true),
+	TILE_BlOCK_ANIMATED(true),
 	
 	TILE_AURA(true),
 	
