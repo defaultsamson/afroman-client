@@ -13,10 +13,10 @@ import ca.afroman.util.ColourUtil;
 
 public class SwitchTrigger extends HitboxTrigger
 {
-	private static final double HITBOX_WIDTH = 10;
-	private static final double HITBOX_HEIGHT = 5;
-	private static final double HITBOX_X_OFF = 3;
-	private static final double HITBOX_Y_OFF = 7;
+	private static final double HITBOX_WIDTH = 12;
+	private static final double HITBOX_HEIGHT = 6;
+	private static final double HITBOX_X_OFF = 2;
+	private static final double HITBOX_Y_OFF = 6;
 	private Hitbox box;
 	private boolean flop = false;
 	
@@ -26,10 +26,10 @@ public class SwitchTrigger extends HitboxTrigger
 	public SwitchTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes, int leftColour, int rightColour)
 	{
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, triggerTypes, new Hitbox(isServerSide, true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
-		box = new Hitbox(isServerSide, true, position.getX() + HITBOX_X_OFF + 1, position.getY() + HITBOX_Y_OFF + 1, HITBOX_WIDTH - 2, HITBOX_HEIGHT - 2);
+		box = new Hitbox(isServerSide, true, position.getX() + HITBOX_X_OFF + 2, position.getY() + HITBOX_Y_OFF + 2, HITBOX_WIDTH - 4, HITBOX_HEIGHT - 4);
 		
-		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour));
-		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, rightColour));
+		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
+		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
 	}
 	
 	@Override
@@ -58,7 +58,7 @@ public class SwitchTrigger extends HitboxTrigger
 				left.setLayer(level.getDynamicLayer());
 				right.setLayer(level.getDynamicLayer());
 				left.addToLevel(level);
-				// box.addToLevel(getLevel());
+				box.addToLevel(getLevel());
 				
 				updateTile();
 			}
@@ -80,22 +80,24 @@ public class SwitchTrigger extends HitboxTrigger
 		{
 			updateInput();
 			
-			if (input.isPressed())
+			if (flop)
 			{
-				if (flop)
-				{
-					left.addToLevel(level);
-					right.removeFromLevel();
-					flop = false;
-				}
-				else
-				{
-					right.addToLevel(level);
-					left.removeFromLevel();
-					flop = true;
-				}
+				left.addToLevel(level);
+				right.removeFromLevel();
+				flop = false;
+			}
+			else
+			{
+				right.addToLevel(level);
+				left.removeFromLevel();
+				flop = true;
 			}
 		}
 	}
 	
+	@Override
+	public void trigger(Entity e)
+	{
+		super.trigger(e);
+	}
 }
