@@ -253,6 +253,16 @@ public class Assets
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_OUTER_BOTTOMLEFT, 16 * 6, 16 * 4, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_OUTER_BOTTOMRIGHT, 16 * 7, 16 * 4, 16, 16));
 		
+		Texture tallGrass = sheet.getSubTexture(AssetType.TILE_GRASS_TALL_LEFT, 16 * 2, 16 * 3, 16, 16);
+		assets.add(tallGrass);
+		assets.add(tallGrass.clone(AssetType.TILE_GRASS_TALL_RIGHT).flipY());
+		Texture wideGrass = sheet.getSubTexture(AssetType.TILE_GRASS_WIDE_RIGHT, 16 * 1, 16 * 3, 16, 16);
+		assets.add(wideGrass);
+		assets.add(wideGrass.clone(AssetType.TILE_GRASS_WIDE_LEFT));
+		Texture purpleFlower = sheet.getSubTexture(AssetType.TILE_GRASS_FLOWER_RIGHT, 16 * 0, 16 * 3, 16, 16);
+		assets.add(purpleFlower);
+		assets.add(purpleFlower.clone(AssetType.TILE_GRASS_FLOWER_LEFT));
+		
 		assets.add(sheet.getSubTexture(AssetType.TILE_DIRT, 16 * 0, 16 * 1, 16, 16));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_WATER, 16 * 2, 16 * 0, 16, 16));

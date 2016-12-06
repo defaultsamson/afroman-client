@@ -24,13 +24,11 @@ public class DoorEvent extends HitboxToggle
 			case DOWN:
 				return new Hitbox(isServerSide, true, 16, 2, 16, 12);
 			case LEFT:
-				// TODO
-				break;
+				return new Hitbox(isServerSide, true, 12, 22, 2, 5);
 			case RIGHT:
-				// TODO
-				break;
+				return new Hitbox(isServerSide, true, 12, 22, 2, 5);
 		}
-		return null;
+
 	}
 	
 	Tile open;
