@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
@@ -78,19 +79,19 @@ public class TCPSocketChannel
 			SelectionKey key = keyIterator.next();
 			
 			if (key.isAcceptable())
-			{ // ready to accept connection
+			{
 			
 			}
 			else if (key.isConnectable())
-			{ // finished or failed finishing a connection
+			{
 			
 			}
 			else if (key.isReadable())
-			{ // ready to read
+			{
 				toReceive.add(read(key, bufferSize));
 			}
 			else if (key.isWritable())
-			{ // ready to write
+			{
 				for (byte[] data : toSend)
 					write(key, data, bufferSize);
 				toSend.clear();
@@ -141,22 +142,51 @@ public class TCPSocketChannel
 	public void sendData(byte[] data) throws ClosedChannelException
 	{
 		toSend.add(data);
-		socketChannel.register(selector, SelectionKey.OP_WRITE);
+		if (isServerSide)
+		{
+			serverChannel.register(selector, SelectionKey.OP_WRITE);
+		}
+		else
+		{
+			socketChannel.register(selector, SelectionKey.OP_WRITE);
+		}
 	}
 	
 	public void receiveData(byte[] destination) throws ClosedChannelException
 	{
-		socketChannel.register(selector, SelectionKey.OP_READ);
+		if (isServerSide)
+		{
+			serverChannel.register(selector, SelectionKey.OP_READ);
+		}
+		else
+		{
+			socketChannel.register(selector, SelectionKey.OP_READ);
+		}
 	}
 	
-	public SocketChannel getSocket()
+	public AbstractSelectableChannel getSocket()
 	{
-		return socketChannel;
+		if (isServerSide)
+		{
+			return serverChannel;
+		}
+		else
+		{
+			return socketChannel;
+		}
+		
 	}
 	
 	public boolean isBlocking()
 	{
-		return socketChannel.isBlocking();
+		if (isServerSide)
+		{
+			return serverChannel.isBlocking();
+		}
+		else
+		{
+			return socketChannel.isBlocking();
+		}
 	}
 	
 }
