@@ -29,8 +29,10 @@ public class TCPSocketChannel
 		this.isServerSide = isServerSide;
 	}
 	
-	public void host (SocketAddress remote) throws IOException {
-		if (isServerSide) {
+	public void host(SocketAddress remote) throws IOException
+	{
+		if (isServerSide)
+		{
 			serverChannel = ServerSocketChannel.open();
 			serverChannel.configureBlocking(false);
 			serverChannel.socket().bind(remote);
@@ -38,22 +40,27 @@ public class TCPSocketChannel
 		}
 	}
 	
-	public void connect (SocketAddress remote) throws IOException {
-		if (!isServerSide) {
+	public void connect(SocketAddress remote) throws IOException
+	{
+		if (!isServerSide)
+		{
 			socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
 			socketChannel.connect(remote);
-			while (!socketChannel.finishConnect()) {
+			while (!socketChannel.finishConnect())
+			{
 				
 			}
 			socketChannel.register(selector, SelectionKey.OP_CONNECT);
 		}
 	}
 	
-	public void accept (SelectionKey key) throws IOException {
+	public void accept(SelectionKey key) throws IOException
+	{
 		ServerSocketChannel server = (ServerSocketChannel) key.channel();
 		SocketChannel client = server.accept();
-		if (client != null) {
+		if (client != null)
+		{
 			client.configureBlocking(false);
 			client.register(selector, SelectionKey.OP_READ);
 		}
@@ -123,7 +130,7 @@ public class TCPSocketChannel
 	{
 		SocketChannel socket = (SocketChannel) key.channel();
 		ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-		buffer.wrap(data);
+		buffer = ByteBuffer.wrap(data);
 		
 		while (buffer.hasRemaining())
 		{
