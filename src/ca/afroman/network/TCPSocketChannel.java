@@ -1,6 +1,7 @@
 package ca.afroman.network;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -17,21 +18,29 @@ public class TCPSocketChannel
 	private Selector selector;
 	private ServerSocketChannel serverChannel;
 	private SocketChannel socketChannel;
-	private ArrayList<byte[]> toSend;
-	private ArrayList<byte[]> toReceive;
+	private byte[] toSend;
+	private byte[] toReceive;
 	private TCPSocket tcpSocket;
-	private boolean isServerSide;
-	private boolean reading;
-	private boolean writing;
-	private boolean connecting;
-	private boolean accepting;
+	public boolean isServerSide;
+	public boolean isReading;
+	public boolean isWriting;
+	public boolean isAccepting;
 	
 	public TCPSocketChannel(boolean isServerSide) throws IOException
 	{
 		selector = Selector.open();
-		toSend = new ArrayList<byte[]>();
-		toReceive = new ArrayList<byte[]>();
 		this.isServerSide = isServerSide;
+	}
+	
+	public TCPSocketChannel(SocketChannel socket) throws IOException
+	{
+		selector = Selector.open();
+		socketChannel = socket;
+		isServerSide = false;
+	}
+	
+	public void bind(int port) throws IOException {
+		bind(new InetSocketAddress(port));
 	}
 	
 	public void bind(SocketAddress remote) throws IOException
@@ -42,7 +51,7 @@ public class TCPSocketChannel
 			serverChannel.configureBlocking(false);
 			serverChannel.socket().bind(remote);
 			serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-			accepting = true;
+			isAccepting = true;
 		}
 	}
 	
@@ -82,15 +91,13 @@ public class TCPSocketChannel
 			}
 			else if (key.isReadable())
 			{
-				toReceive.add(read(key));
-				reading = false;
+				toReceive = (read(key));
+				isReading = false;
 			}
 			else if (key.isWritable())
 			{
-				for (byte[] data : toSend)
-					write(key, data);
-				toSend.clear();
-				writing = false;
+				write(key, toSend);
+				isWriting = false;
 			}
 			keyIterator.remove();
 		}
@@ -103,10 +110,17 @@ public class TCPSocketChannel
 		client.register(selector, SelectionKey.OP_READ);
 	}
 	
+	public SocketChannel accept() throws IOException
+	{
+		SocketChannel client = serverChannel.accept();
+		client.configureBlocking(false);
+		client.register(selector, SelectionKey.OP_READ);
+		return client;
+	}
+	
 	private void handshake(SelectionKey key)
 	{
 		ServerSocketChannel server = (ServerSocketChannel) key.channel();
-		
 	}
 	
 	private byte[] read(SelectionKey key) throws IOException
@@ -145,8 +159,8 @@ public class TCPSocketChannel
 	
 	public void sendData(byte[] data) throws ClosedChannelException
 	{
-		toSend.add(data);
-		writing = true;
+		toSend = data;
+		isWriting = true;
 		if (isServerSide)
 		{
 			serverChannel.register(selector, SelectionKey.OP_WRITE);
@@ -157,14 +171,10 @@ public class TCPSocketChannel
 		}
 	}
 	
-	public void receiveData(byte[] destination) throws ClosedChannelException
+	public void receiveData() throws ClosedChannelException
 	{
-		reading = true;
-		if (isServerSide)
-		{
-			// serverChannel.register(selector, SelectionKey.OP_READ);
-		}
-		else
+		isReading = true;
+		if (!isServerSide)
 		{
 			socketChannel.register(selector, SelectionKey.OP_READ);
 		}
@@ -199,6 +209,20 @@ public class TCPSocketChannel
 	{
 		if (serverChannel.isOpen()) serverChannel.close();
 		if (socketChannel.isOpen()) socketChannel.close();
+	}
+	
+	public byte[] getReceived()
+	{
+		return toReceive;
+	}
+	
+	public boolean isConnected() {
+		if (!isServerSide)
+		{
+			return socketChannel.isConnected();
+		} else {
+			return serverChannel.isRegistered();
+		}
 	}
 	
 }

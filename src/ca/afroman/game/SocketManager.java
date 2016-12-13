@@ -1,12 +1,13 @@
 package ca.afroman.game;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.network.TCPSocket;
+import ca.afroman.network.TCPSocketChannel;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
@@ -70,8 +71,8 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	private List<ConnectedPlayer> playerList;
 	private IPConnection serverConnection;
 	
-	private ServerSocket welcomeSocket = null;
-	private DatagramSocket socket = null;
+	private TCPSocketChannel welcomeSocket = null;
+	private DatagramChannel socket = null;
 	private PacketReceiver rSocket = null;
 	private PacketSender sSocket = null;
 	
@@ -128,9 +129,9 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			{
 				try
 				{
-					Socket clientTCP = welcomeSocket().accept();
-					TCPSocket tcp = new TCPSocket(clientTCP);
-					newConnection.getConnection().setTCPSocket(tcp);
+					SocketChannel clientTCP = welcomeSocket().accept();
+					TCPSocketChannel tcp = new TCPSocketChannel(clientTCP);
+					newConnection.getConnection().setTCPSocketChannel(tcp);
 					
 					synchronized (tcpSockets)
 					{
@@ -224,9 +225,9 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			try
 			{
-				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
-				TCPSocket sock = new TCPSocket(clientSocket);
-				getServerConnection().setTCPSocket(sock);
+				SocketChannel clientSocket = SocketChannel.open(new InetSocketAddress(getServerConnection().getIPAddress(), getServerConnection().getPort()));
+				TCPSocketChannel sock = new TCPSocketChannel(clientSocket);
+				getServerConnection().setTCPSocketChannel(sock);
 				
 				TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
 				synchronized (tcpSockets)
@@ -269,7 +270,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				for (int i = 0; i < tcpSockets.size(); i++)
 				{
 					TCPReceiver rec = tcpSockets.get(i);
-					if (rec.getTCPSocket() == connection.getConnection().getTCPSocket())
+					if (rec.getTCPSocketChannel() == connection.getConnection().getTCPSocketChannel())
 					{
 						index = i;
 						break;
@@ -283,11 +284,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				}
 			}
 			
-			if (connection.getConnection().getTCPSocket() != null)
+			if (connection.getConnection().getTCPSocketChannel() != null)
 			{
 				try
 				{
-					connection.getConnection().getTCPSocket().getSocket().close();
+					connection.getConnection().getTCPSocketChannel().getSocket().close();
 				}
 				catch (IOException e)
 				{
@@ -362,8 +363,9 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				welcomeSocket = new ServerSocket(serverConnection.getPort());
-				welcomeSocket.setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				welcomeSocket = new TCPSocketChannel(isServerSide());
+				welcomeSocket.bind(serverConnection.getPort());
+				((ServerSocketChannel) welcomeSocket.getSocket()).socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 			}
 			catch (IOException e)
 			{
@@ -372,11 +374,18 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				socket = new DatagramSocket(serverConnection.getPort());
+				socket = DatagramChannel.open();
+				socket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
 			}
 			catch (SocketException e)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", e);
+				game.logger().log(ALogType.CRITICAL, "Failed to create server " + socket.getClass().getSimpleName(), e);
+				
+				return false;
+			}
+			catch (IOException e)
+			{
+				game.logger().log(ALogType.CRITICAL, "I/O Exception while creating " + socket.getClass().getSimpleName(), e);
 				
 				return false;
 			}
@@ -387,13 +396,19 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				socket = new DatagramSocket();
-				socket.connect(serverConnection.getIPAddress(), serverConnection.getPort());
+				socket = DatagramChannel.open();
+				socket.configureBlocking(false);
+				socket.connect(new InetSocketAddress(serverConnection.getIPAddress(), serverConnection.getPort()));
 			}
 			catch (SocketException e)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", e);
+				game.logger().log(ALogType.CRITICAL, "Failed to create client " + socket.getClass().getSimpleName(), e);
+				
 				return false;
+			}
+			catch (IOException e)
+			{
+				game.logger().log(ALogType.CRITICAL, "I/O Exception while creating " + socket.getClass().getSimpleName(), e);
 			}
 		}
 		
@@ -406,7 +421,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		return true;
 	}
 	
-	public DatagramSocket socket()
+	public DatagramChannel socket()
 	{
 		return socket;
 	}
@@ -439,7 +454,14 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			tcpSockets.clear();
 		}
 		
-		socket.close();
+		try
+		{
+			socket.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 		playerList.clear();
 		rSocket.stopThis();
 		sSocket.stopThis();
@@ -488,7 +510,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		}
 	}
 	
-	public ServerSocket welcomeSocket()
+	public TCPSocketChannel welcomeSocket()
 	{
 		return welcomeSocket;
 	}

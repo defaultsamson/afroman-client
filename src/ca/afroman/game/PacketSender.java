@@ -3,6 +3,7 @@ package ca.afroman.game;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
@@ -39,7 +40,7 @@ public class PacketSender extends DynamicTickThread
 			
 			try
 			{
-				manager.socket().send(packet);
+				manager.socket().socket().send(packet);
 			}
 			catch (IOException e)
 			{
@@ -68,9 +69,17 @@ public class PacketSender extends DynamicTickThread
 		{
 			for (IPConnection con : packet.getConnections())
 			{
-				if (con != null && con.getTCPSocket() != null)
+				if (con != null && con.getTCPSocketChannel() != null)
 				{
-					con.getTCPSocket().sendData(packet.getData());
+					try
+					{
+						con.getTCPSocketChannel().sendData(packet.getData());
+					}
+					catch (ClosedChannelException e)
+					{
+						logger().log(ALogType.WARNING, "Channel closed before data could be sent", e);
+						e.printStackTrace();
+					}
 				}
 			}
 		}

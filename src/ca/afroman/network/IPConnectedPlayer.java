@@ -16,9 +16,9 @@ public class IPConnectedPlayer extends ConnectedPlayer
 	 * @param role the role of the player
 	 * @param username the username of the player
 	 */
-	public IPConnectedPlayer(InetAddress address, int port, TCPSocket tcpSocket, short id, Role role, String username)
+	public IPConnectedPlayer(InetAddress address, int port, TCPSocketChannel tcpSocketChannel, short id, Role role, String username)
 	{
-		this(new IPConnection(address, port, tcpSocket), id, role, username);
+		this(new IPConnection(address, port, tcpSocketChannel), id, role, username);
 	}
 	
 	/**

@@ -38,10 +38,11 @@ public class PacketReceiver extends DynamicThread
 		
 		// Loads up the buffer with incoming data
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+
 		
 		try
 		{
-			manager.socket().receive(packet);
+			manager.socket().socket().receive(packet);
 			
 			BytePacket pack = new BytePacket(packet.getData());
 			InetAddress address = packet.getAddress();
@@ -52,7 +53,7 @@ public class PacketReceiver extends DynamicThread
 		}
 		catch (PortUnreachableException e)
 		{
-			logger().log(ALogType.CRITICAL, "Port is unreachable: " + manager.socket().getPort(), e);
+			logger().log(ALogType.CRITICAL, "Port is unreachable: " + manager.socket().socket().getPort(), e);
 			if (!isServerSide())
 			{
 				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));

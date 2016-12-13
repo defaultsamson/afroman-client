@@ -1,6 +1,7 @@
 package ca.afroman.util;
 
 import java.net.InetAddress;
+import java.nio.channels.SocketChannel;
 
 import ca.afroman.network.IPConnection;
 
@@ -32,9 +33,9 @@ public class IPUtil
 			if (port == connection.getPort()) return true;
 			
 			// If not, then check TCP socket
-			if (connection.getTCPSocket() != null && connection.getTCPSocket().getSocket() != null)
+			if (connection.getTCPSocketChannel() != null && connection.getTCPSocketChannel().getSocket() != null)
 			{
-				if (port == connection.getTCPSocket().getSocket().getPort()) return true;
+				if (port == ((SocketChannel) connection.getTCPSocketChannel().getSocket()).socket().getPort()) return true;
 			}
 		}
 		return false;
