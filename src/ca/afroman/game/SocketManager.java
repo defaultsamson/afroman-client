@@ -1,11 +1,13 @@
 package ca.afroman.game;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
@@ -71,12 +74,13 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	private List<ConnectedPlayer> playerList;
 	private IPConnection serverConnection;
 	
-	private TCPSocketChannel welcomeSocket = null;
-	private DatagramChannel socket = null;
+	private ServerSocketChannel welcomeSocket = null;
+	private DatagramSocket socket = null;
 	private PacketReceiver rSocket = null;
 	private PacketSender sSocket = null;
 	
 	private List<TCPReceiver> tcpSockets = null;
+	private Selector selector;
 	
 	public SocketManager(Game game)
 	{
@@ -89,6 +93,15 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		serverConnection = new IPConnection(null, -1, null);
 		
 		tcpSockets = new ArrayList<TCPReceiver>();
+		
+		try
+		{
+			selector = Selector.open();
+		}
+		catch (IOException e)
+		{
+			ALogger.logA(ALogType.CRITICAL, "I/O Exception while opening selector for ServerSocketChannel", e);
+		}
 		// try
 		// {
 		// socket = new DatagramSocket();
@@ -363,9 +376,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				welcomeSocket = new TCPSocketChannel(isServerSide());
-				welcomeSocket.bind(serverConnection.getPort());
-				((ServerSocketChannel) welcomeSocket.getSocket()).socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				welcomeSocket = ServerSocketChannel.open();
+				welcomeSocket.configureBlocking(true);
+				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
+				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 			}
 			catch (IOException e)
 			{
@@ -374,18 +388,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				socket = DatagramChannel.open();
-				socket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
+				socket = new DatagramSocket(serverConnection.getPort());
 			}
 			catch (SocketException e)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create server " + socket.getClass().getSimpleName(), e);
-				
-				return false;
-			}
-			catch (IOException e)
-			{
-				game.logger().log(ALogType.CRITICAL, "I/O Exception while creating " + socket.getClass().getSimpleName(), e);
+				game.logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", e);
 				
 				return false;
 			}
@@ -396,19 +403,14 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				socket = DatagramChannel.open();
-				socket.configureBlocking(false);
+				socket = new DatagramSocket();
 				socket.connect(new InetSocketAddress(serverConnection.getIPAddress(), serverConnection.getPort()));
 			}
 			catch (SocketException e)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create client " + socket.getClass().getSimpleName(), e);
+				game.logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", e);
 				
 				return false;
-			}
-			catch (IOException e)
-			{
-				game.logger().log(ALogType.CRITICAL, "I/O Exception while creating " + socket.getClass().getSimpleName(), e);
 			}
 		}
 		
@@ -421,7 +423,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		return true;
 	}
 	
-	public DatagramChannel socket()
+	public DatagramSocket socket()
 	{
 		return socket;
 	}
@@ -454,14 +456,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			tcpSockets.clear();
 		}
 		
-		try
-		{
-			socket.close();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		socket.close();
 		playerList.clear();
 		rSocket.stopThis();
 		sSocket.stopThis();
@@ -510,7 +505,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		}
 	}
 	
-	public TCPSocketChannel welcomeSocket()
+	public ServerSocketChannel welcomeSocket()
 	{
 		return welcomeSocket;
 	}

@@ -40,7 +40,7 @@ public class PacketSender extends DynamicTickThread
 			
 			try
 			{
-				manager.socket().socket().send(packet);
+				manager.socket().send(packet);
 			}
 			catch (IOException e)
 			{

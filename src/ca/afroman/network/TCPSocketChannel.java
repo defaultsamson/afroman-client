@@ -2,12 +2,10 @@ package ca.afroman.network;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.channels.spi.AbstractSelectableChannel;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -48,9 +46,11 @@ public class TCPSocketChannel
 		if (isServerSide)
 		{
 			serverChannel = ServerSocketChannel.open();
-			serverChannel.configureBlocking(false);
 			serverChannel.socket().bind(remote);
-			serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+			serverChannel.configureBlocking(false);
+			
+			int ops = serverChannel.validOps();
+			SelectionKey selectKey = serverChannel.register(selector, ops, null);
 			isAccepting = true;
 		}
 	}
@@ -72,7 +72,9 @@ public class TCPSocketChannel
 	
 	public void keyCheck() throws IOException
 	{
-		selector.selectNow();
+		int readyChannels = selector.selectNow();
+		
+		if (readyChannels == 0) return;
 		
 		Set<SelectionKey> selectedKeys = selector.selectedKeys();
 		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
@@ -105,16 +107,26 @@ public class TCPSocketChannel
 	
 	private void accept(SelectionKey key) throws IOException
 	{
-		SocketChannel client = serverChannel.accept();
+		ServerSocketChannel server = (ServerSocketChannel) key.channel();
+		SocketChannel client = server.accept();
 		client.configureBlocking(false);
-		client.register(selector, SelectionKey.OP_READ);
+		
+		int ops = client.validOps();
+		client.register(selector, ops);
 	}
 	
+	/**
+	 * Blocking version of accepting a client connection, required to obtain the client socket
+	 * @return the client socket
+	 * @throws IOException
+	 */
 	public SocketChannel accept() throws IOException
 	{
 		SocketChannel client = serverChannel.accept();
 		client.configureBlocking(false);
-		client.register(selector, SelectionKey.OP_READ);
+		
+		int ops = client.validOps();
+		client.register(selector, ops);
 		return client;
 	}
 	
@@ -147,14 +159,21 @@ public class TCPSocketChannel
 		{
 			data[i] = buffer.get(i);
 		}
+		String out = new String(data).trim();
+		System.out.println(out);
 		return data;
 	}
 	
-	private void write(SelectionKey key, byte[] data) throws IOException
+	private byte[] write(SelectionKey key, byte[] data) throws IOException
 	{
-		SocketChannel socket = (SocketChannel) key.channel();
-		ByteBuffer buffer = ByteBuffer.wrap(data);
-		socket.write(buffer);
+		SocketChannel client = (SocketChannel) key.channel();
+		ByteBuffer output = (ByteBuffer) key.attachment();
+		if (!output.hasRemaining()) {
+			output.rewind();
+		}
+		client.write(output);
+		data = null;
+		return output.array();
 	}
 	
 	public void sendData(byte[] data) throws ClosedChannelException
@@ -171,13 +190,9 @@ public class TCPSocketChannel
 		}
 	}
 	
-	public void receiveData() throws ClosedChannelException
+	public byte[] receiveData() throws ClosedChannelException
 	{
-		isReading = true;
-		if (!isServerSide)
-		{
-			socketChannel.register(selector, SelectionKey.OP_READ);
-		}
+		return toReceive;
 	}
 	
 	public AbstractSelectableChannel getSocket()
@@ -209,11 +224,6 @@ public class TCPSocketChannel
 	{
 		if (serverChannel.isOpen()) serverChannel.close();
 		if (socketChannel.isOpen()) socketChannel.close();
-	}
-	
-	public byte[] getReceived()
-	{
-		return toReceive;
 	}
 	
 	public boolean isConnected() {
