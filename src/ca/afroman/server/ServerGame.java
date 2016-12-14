@@ -443,11 +443,26 @@ public class ServerGame extends Game
 		{
 			// sockets().sender().sendPacketToAllClients(new PacketPing());
 			
+			int p1Ping = PacketPingServerClient.NONE;
+			int p2Ping = PacketPingServerClient.NONE;
+			
+			for (ConnectedPlayer p : sockets().getConnectedPlayers())
+			{
+				if (p.getRole() == Role.PLAYER1)
+				{
+					p1Ping = p.getPing();
+				}
+				else if (p.getRole() == Role.PLAYER2)
+				{
+					p2Ping = p.getPing();
+				}
+			}
+			
 			for (ConnectedPlayer p : sockets().getConnectedPlayers())
 			{
 				p.setPingTestTime(System.currentTimeMillis());
 				
-				PacketPingServerClient pingPacket = new PacketPingServerClient(p.getPing(), ((IPConnectedPlayer) p).getConnection());
+				PacketPingServerClient pingPacket = new PacketPingServerClient(p.getPing(), p1Ping, p2Ping, ((IPConnectedPlayer) p).getConnection());
 				sockets().sender().sendPacket(pingPacket);
 			}
 		}

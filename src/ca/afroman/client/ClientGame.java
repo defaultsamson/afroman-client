@@ -57,6 +57,7 @@ import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketLogin;
 import ca.afroman.packet.PacketPingClientServer;
+import ca.afroman.packet.PacketPingServerClient;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
@@ -138,6 +139,8 @@ public class ClientGame extends Game
 	private Role spectatingRole = Role.PLAYER1;
 	private short id = -1;
 	private short ping = 0;
+	private short ping1 = 0;
+	private short ping2 = 0;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
 	private ModulusCounter updateMem;
@@ -297,7 +300,9 @@ public class ClientGame extends Game
 							logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
 							break;
 						case TEST_PING:
-							ping = ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] });
+							ping = (short) (packet.getContent()[0] + Byte.MAX_VALUE);
+							ping1 = (short) (packet.getContent()[1] + Byte.MAX_VALUE);
+							ping2 = (short) (packet.getContent()[2] + Byte.MAX_VALUE);
 							
 							sockets().sender().sendPacket(new PacketPingClientServer());
 							break;
@@ -621,8 +626,55 @@ public class ClientGame extends Game
 				
 				if (sockets() != null)
 				{
-					debugFontBlack.render(screen, new Vector2DInt(2, 31), "Png: " + ping);
-					debugFontWhite.render(screen, new Vector2DInt(1, 30), "Png: " + ping);
+					Vector2DInt text = new Vector2DInt(WIDTH - 50, 0);// new Vector2DInt(1, 30);
+					Vector2DInt shadow = text.clone().add(1, 1);
+					
+					String you = getPingDisplay("You", ping);
+					String p1p = getPingDisplay("P1", ping1);
+					String p2p = getPingDisplay("P2", ping2);
+					
+					if (you != null || p1p != null || p2p != null)
+					{
+						int halfWidth = Font.CHAR_WIDTH * 2;
+						
+						debugFontBlack.render(screen, shadow.add(halfWidth, 0), "PING");
+						debugFontWhite.render(screen, text.add(halfWidth, 0), "PING");
+						
+						shadow.add(-halfWidth, 10);
+						text.add(-halfWidth, 10);
+					}
+					
+					if (you != null)
+					{
+						debugFontBlack.render(screen, shadow.add(-Font.CHAR_WIDTH, 0), you);
+						debugFontWhite.render(screen, text.add(-Font.CHAR_WIDTH, 0), you);
+						
+						// Moves text down to next line
+						// in the 2 lines above, CHAR_WIDTH moves the the left slightly so that the colons line up
+						// So this moves it back right
+						shadow.add(Font.CHAR_WIDTH, 10);
+						text.add(Font.CHAR_WIDTH, 10);
+					}
+					
+					if (p1p != null && role != Role.PLAYER1)
+					{
+						debugFontBlack.render(screen, shadow, p1p);
+						debugFontWhite.render(screen, text, p1p);
+						
+						// Moves text down to next line
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
+					
+					if (p2p != null && role != Role.PLAYER2)
+					{
+						debugFontBlack.render(screen, shadow, p2p);
+						debugFontWhite.render(screen, text, p2p);
+						
+						// Moves text down to next line
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
 				}
 				
 				PlayerEntity player = getThisPlayer();
@@ -630,11 +682,11 @@ public class ClientGame extends Game
 				if (player != null && player.getLevel() != null)
 				{
 					String x = "x: " + player.getPosition().getX();
-					debugFontBlack.render(screen, new Vector2DInt(2, 41), x);
-					debugFontWhite.render(screen, new Vector2DInt(1, 40), x);
+					debugFontBlack.render(screen, new Vector2DInt(2, 51), x);
+					debugFontWhite.render(screen, new Vector2DInt(1, 50), x);
 					String y = "y: " + player.getPosition().getY();
-					debugFontBlack.render(screen, new Vector2DInt(2, 51), y);
-					debugFontWhite.render(screen, new Vector2DInt(1, 50), y);
+					debugFontBlack.render(screen, new Vector2DInt(2, 61), y);
+					debugFontWhite.render(screen, new Vector2DInt(1, 60), y);
 				}
 			}
 			
@@ -693,6 +745,29 @@ public class ClientGame extends Game
 			
 			frame.setLocationRelativeTo(null);
 		}
+	}
+	
+	private String getPingDisplay(String tag, int ping)
+	{
+		if (ping != PacketPingServerClient.NONE)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(tag);
+			sb.append(": ");
+			
+			if (ping1 == PacketPingServerClient.OVER_MAX)
+			{
+				sb.append('>');
+				sb.append(PacketPingServerClient.MAX_SENDABLE);
+			}
+			else
+			{
+				sb.append(ping);
+			}
+			
+			return sb.toString();
+		}
+		return null;
 	}
 	
 	public void setCurrentLevel(Level newLevel)
