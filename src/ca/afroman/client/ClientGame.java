@@ -56,7 +56,7 @@ import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketLogin;
-import ca.afroman.packet.PacketPing;
+import ca.afroman.packet.PacketPingClientServer;
 import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
@@ -137,13 +137,15 @@ public class ClientGame extends Game
 	private Role role;
 	private Role spectatingRole = Role.PLAYER1;
 	private short id = -1;
+	private short ping = 0;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
 	private ModulusCounter updateMem;
 	private long totalMemory = 0;
 	private long usedMemory = 0;
 	
-	private Font debugFont;
+	private Font debugFontWhite;
+	private Font debugFontBlack;
 	private Cursor blankCursor;
 	private byte hideCursor = 0;
 	
@@ -295,7 +297,9 @@ public class ClientGame extends Game
 							logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
 							break;
 						case TEST_PING:
-							sockets().sender().sendPacket(new PacketPing());
+							ping = ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] });
+							
+							sockets().sender().sendPacket(new PacketPingClientServer());
 							break;
 						case DENY_JOIN:
 						{
@@ -600,18 +604,37 @@ public class ClientGame extends Game
 			
 			if (hudDebug)
 			{
-				debugFont.render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
-				debugFont.render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
-				debugFont.render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
-				debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-				debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VersionUtil.VERSION_STRING);
+				String mem = "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)";
+				debugFontBlack.render(screen, new Vector2DInt(2, 1), mem);
+				debugFontWhite.render(screen, new Vector2DInt(1, 0), mem);
+				String t = "TPS: " + tps;
+				debugFontBlack.render(screen, new Vector2DInt(2, 11), t);
+				debugFontWhite.render(screen, new Vector2DInt(1, 10), t);
+				String f = "FPS: " + fps;
+				debugFontBlack.render(screen, new Vector2DInt(2, 21), f);
+				debugFontWhite.render(screen, new Vector2DInt(1, 20), f);
+				debugFontBlack.render(screen, new Vector2DInt(2, HEIGHT - 8), "V");
+				debugFontWhite.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
+				String ver = new StringBuilder().append(VersionUtil.VERSION_STRING).toString();
+				debugFontBlack.render(screen, new Vector2DInt(10, HEIGHT - 8), ver);
+				debugFontWhite.render(screen, new Vector2DInt(9, HEIGHT - 9), ver);
+				
+				if (sockets() != null)
+				{
+					debugFontBlack.render(screen, new Vector2DInt(2, 31), "Png: " + ping);
+					debugFontWhite.render(screen, new Vector2DInt(1, 30), "Png: " + ping);
+				}
 				
 				PlayerEntity player = getThisPlayer();
 				
 				if (player != null && player.getLevel() != null)
 				{
-					debugFont.render(screen, new Vector2DInt(1, 30), "x: " + player.getPosition().getX());
-					debugFont.render(screen, new Vector2DInt(1, 40), "y: " + player.getPosition().getY());
+					String x = "x: " + player.getPosition().getX();
+					debugFontBlack.render(screen, new Vector2DInt(2, 41), x);
+					debugFontWhite.render(screen, new Vector2DInt(1, 40), x);
+					String y = "y: " + player.getPosition().getY();
+					debugFontBlack.render(screen, new Vector2DInt(2, 51), y);
+					debugFontWhite.render(screen, new Vector2DInt(1, 50), y);
 				}
 			}
 			
@@ -995,7 +1018,8 @@ public class ClientGame extends Game
 		updateMem = new ModulusCounter((int) ticksPerSecond);
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-		debugFont = Assets.getFont(AssetType.FONT_BLACK);
+		debugFontWhite = Assets.getFont(AssetType.FONT_WHITE);
+		debugFontBlack = Assets.getFont(AssetType.FONT_BLACK);
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB), 0);
 		input = new InputHandler(this);
 		

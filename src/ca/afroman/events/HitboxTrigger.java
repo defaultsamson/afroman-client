@@ -3,7 +3,6 @@ package ca.afroman.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;

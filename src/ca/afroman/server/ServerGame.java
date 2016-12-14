@@ -17,7 +17,7 @@ import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
-import ca.afroman.packet.PacketPing;
+import ca.afroman.packet.PacketPingServerClient;
 import ca.afroman.packet.PacketPlayerMove;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.ModulusCounter;
@@ -441,11 +441,14 @@ public class ServerGame extends Game
 		
 		if (updatePing.isAtInterval())
 		{
-			sockets().sender().sendPacketToAllClients(new PacketPing());
+			// sockets().sender().sendPacketToAllClients(new PacketPing());
 			
 			for (ConnectedPlayer p : sockets().getConnectedPlayers())
 			{
 				p.setPingTestTime(System.currentTimeMillis());
+				
+				PacketPingServerClient pingPacket = new PacketPingServerClient(p.getPing(), ((IPConnectedPlayer) p).getConnection());
+				sockets().sender().sendPacket(pingPacket);
 			}
 		}
 		

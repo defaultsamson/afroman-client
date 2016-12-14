@@ -28,7 +28,7 @@ public class DoorEvent extends HitboxToggle
 			case RIGHT:
 				return new Hitbox(isServerSide, true, 2, 12, 12, 22);
 		}
-
+		
 	}
 	
 	Tile open;
