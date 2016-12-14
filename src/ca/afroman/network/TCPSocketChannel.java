@@ -36,9 +36,12 @@ public class TCPSocketChannel
 		socketChannel = socket;
 		socketChannel.configureBlocking(false);
 		isServerSide = false;
+		int ops = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
+		socketChannel.register(selector, ops, null);
 	}
 	
-	public void bind(int port) throws IOException {
+	public void bind(int port) throws IOException
+	{
 		bind(new InetSocketAddress(port));
 	}
 	
@@ -67,7 +70,8 @@ public class TCPSocketChannel
 			{
 				
 			}
-			socketChannel.register(selector, SelectionKey.OP_CONNECT);
+			int ops = socketChannel.validOps();
+			socketChannel.register(selector, ops, null);
 		}
 	}
 	
@@ -86,11 +90,11 @@ public class TCPSocketChannel
 			
 			if (key.isAcceptable())
 			{
-				//accept(key);
+				// accept(key);
 			}
 			else if (key.isConnectable())
 			{
-				//handshake(key);
+				// handshake(key);
 			}
 			else if (key.isReadable())
 			{
@@ -118,6 +122,7 @@ public class TCPSocketChannel
 	
 	/**
 	 * Blocking version of accepting a client connection, required to obtain the client socket
+	 * 
 	 * @return the client socket
 	 * @throws IOException
 	 */
@@ -142,10 +147,12 @@ public class TCPSocketChannel
 		ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 		int bytesRead;
 		
-		if ((bytesRead = socket.read(buffer)) > 0) {
+		if ((bytesRead = socket.read(buffer)) > 0)
+		{
 			buffer.flip();
 		}
-		if (bytesRead < 0) {
+		if (bytesRead < 0)
+		{
 			socket.close();
 			return new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
 		}
@@ -182,17 +189,9 @@ public class TCPSocketChannel
 		return toReceive;
 	}
 	
-	public AbstractSelectableChannel getSocket()
+	public SocketChannel getSocket()
 	{
-		if (isServerSide)
-		{
-			return serverChannel;
-		}
-		else
-		{
-			return socketChannel;
-		}
-		
+		return socketChannel;
 	}
 	
 	public boolean isBlocking()
@@ -213,11 +212,14 @@ public class TCPSocketChannel
 		if (socketChannel.isOpen()) socketChannel.close();
 	}
 	
-	public boolean isConnected() {
+	public boolean isConnected()
+	{
 		if (!isServerSide)
 		{
 			return socketChannel.isConnected();
-		} else {
+		}
+		else
+		{
 			return serverChannel.isRegistered();
 		}
 	}

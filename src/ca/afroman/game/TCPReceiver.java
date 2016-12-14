@@ -27,8 +27,8 @@ public class TCPReceiver extends DynamicThread
 	 */
 	public TCPReceiver(boolean isServerSide, SocketManager manager, TCPSocketChannel socket)
 	{
-		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive(" + IPUtil.asReadable(((SocketChannel) socket.getSocket()).socket().getInetAddress(), ((SocketChannel) socket.getSocket()).socket().getPort()) + ")");
-		
+		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive(" + IPUtil.asReadable(socket.getSocket().socket().getInetAddress(), socket.getSocket().socket().getPort()) + ")");
+		if (isServerSide) System.out.println("test");
 		this.manager = manager;
 		this.socket = socket;
 	}
@@ -46,10 +46,7 @@ public class TCPReceiver extends DynamicThread
 			socket.keyCheck();
 			
 			byte[] buffer = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
-			
-			if (!socket.isReading) {
-				buffer = socket.receiveData();
-			}
+			buffer = socket.receiveData();
 			
 			if (buffer != null)
 			{
