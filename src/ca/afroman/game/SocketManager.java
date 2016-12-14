@@ -148,7 +148,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			{
 				try
 				{
-					welcomeSocket.register(selector, TCPSocketChannel.serverOps, newConnection);
+					welcomeSocket.register(selector, TCPSocketChannel.serverOp, newConnection);
 				}
 				catch (IOException e)
 				{
@@ -378,7 +378,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				welcomeSocket.configureBlocking(false);
 				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 				
-				serverKey = welcomeSocket.register(selector, TCPSocketChannel.serverOps);
+				serverKey = welcomeSocket.register(selector, TCPSocketChannel.serverOp);
 			}
 			catch (IOException e)
 			{
@@ -540,6 +540,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 						tcpSockets.add(rec);
 						rec.startThis();
 					}
+				}
+				else if (key.isConnectable())
+				{
+					
 				}
 				else if (key.isReadable())
 				{

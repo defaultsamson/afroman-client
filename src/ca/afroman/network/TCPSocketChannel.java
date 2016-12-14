@@ -11,12 +11,13 @@ import ca.afroman.client.ClientGame;
 public class TCPSocketChannel
 {
 	public static int defaultOps = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
-	public static int serverOps = SelectionKey.OP_ACCEPT;
+	public static int serverOp = SelectionKey.OP_ACCEPT;
 	public static int writeOp = SelectionKey.OP_WRITE;
 	public static int readOp = SelectionKey.OP_READ;
 	
 	private SocketChannel socket;
 	private Selector selector;
+	private TCPSocket tcp;
 	
 	public boolean isWriting;
 	
@@ -29,6 +30,7 @@ public class TCPSocketChannel
 		this.selector = selector;
 		socket.configureBlocking(blocking);
 		socket.register(selector, defaultOps);
+		tcp = new TCPSocket(socket.socket());
 	}
 	
 	public SelectionKey register(Selector selector, int operations) throws ClosedChannelException
