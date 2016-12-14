@@ -34,6 +34,7 @@ public class TCPSocketChannel
 	{
 		selector = Selector.open();
 		socketChannel = socket;
+		socketChannel.configureBlocking(false);
 		isServerSide = false;
 	}
 	
@@ -85,11 +86,11 @@ public class TCPSocketChannel
 			
 			if (key.isAcceptable())
 			{
-				accept(key);
+				//accept(key);
 			}
 			else if (key.isConnectable())
 			{
-				handshake(key);
+				//handshake(key);
 			}
 			else if (key.isReadable())
 			{
@@ -139,38 +140,24 @@ public class TCPSocketChannel
 	{
 		SocketChannel socket = (SocketChannel) key.channel();
 		ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-		int bytesRead = socket.read(buffer);
-		int totalBytesRead = bytesRead;
+		int bytesRead;
 		
-		while (bytesRead > 0)
-		{
-			bytesRead = socket.read(buffer);
-			totalBytesRead += bytesRead;
+		if ((bytesRead = socket.read(buffer)) > 0) {
+			buffer.flip();
 		}
-		
-		if (bytesRead == -1)
-		{ // TODO: indicate disconnect
+		if (bytesRead < 0) {
 			socket.close();
-			return null;
+			return new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
 		}
 		
-		byte[] data = new byte[totalBytesRead];
-		for (int i = 0; i < totalBytesRead; i++)
-		{
-			data[i] = buffer.get(i);
-		}
-		String out = new String(data).trim();
-		System.out.println(out);
+		byte[] data = buffer.array();
 		return data;
 	}
 	
 	private byte[] write(SelectionKey key, byte[] data) throws IOException
 	{
 		SocketChannel client = (SocketChannel) key.channel();
-		ByteBuffer output = (ByteBuffer) key.attachment();
-		if (!output.hasRemaining()) {
-			output.rewind();
-		}
+		ByteBuffer output = ByteBuffer.wrap(data);
 		client.write(output);
 		data = null;
 		return output.array();

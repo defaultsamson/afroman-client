@@ -7,11 +7,14 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiClickNotification;
@@ -143,14 +146,16 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				try
 				{
 					SocketChannel clientTCP = welcomeSocket().accept();
-					TCPSocketChannel tcp = new TCPSocketChannel(clientTCP);
-					newConnection.getConnection().setTCPSocketChannel(tcp);
-					
-					synchronized (tcpSockets)
-					{
-						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
-						tcpSockets.add(rec);
-						rec.startThis();
+					if (clientTCP != null) {
+						TCPSocketChannel tcp = new TCPSocketChannel(clientTCP);
+						newConnection.getConnection().setTCPSocketChannel(tcp);
+						
+						synchronized (tcpSockets)
+						{
+							TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
+							tcpSockets.add(rec);
+							rec.startThis();
+						}
 					}
 				}
 				catch (IOException e)
@@ -377,9 +382,12 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			try
 			{
 				welcomeSocket = ServerSocketChannel.open();
-				welcomeSocket.configureBlocking(true);
 				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
+				welcomeSocket.configureBlocking(false);
 				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				
+				int ops = welcomeSocket.validOps();
+				welcomeSocket.register(selector, ops, null);
 			}
 			catch (IOException e)
 			{
@@ -508,5 +516,25 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	public ServerSocketChannel welcomeSocket()
 	{
 		return welcomeSocket;
+	}
+	
+	private void keyCheck() throws IOException {
+		int readyChannels = selector.selectNow();
+		
+		if (readyChannels == 0) return;
+		
+		Set<SelectionKey> selectedKeys = selector.selectedKeys();
+		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+		
+		while (keyIterator.hasNext())
+		{
+			SelectionKey key = keyIterator.next();
+			
+			if (key.isAcceptable())
+			{
+				
+			}
+			keyIterator.remove();
+		}
 	}
 }
