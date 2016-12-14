@@ -24,9 +24,9 @@ public class DoorEvent extends HitboxToggle
 			case DOWN:
 				return new Hitbox(isServerSide, true, 16, 2, 16, 12);
 			case LEFT:
-				return new Hitbox(isServerSide, true, 12, 22, 2, 5);
+				return new Hitbox(isServerSide, true, 2, 12, 12, 22);
 			case RIGHT:
-				return new Hitbox(isServerSide, true, 12, 22, 2, 5);
+				return new Hitbox(isServerSide, true, 2, 12, 12, 22);
 		}
 
 	}

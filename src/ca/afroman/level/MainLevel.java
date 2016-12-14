@@ -209,6 +209,8 @@ public class MainLevel extends Level
 			new Tile(1, false, new Vector2DDouble(224, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_RIGHT).clone()).addToLevel(this);
 			new Tile(1, false, new Vector2DDouble(173, 91), Assets.getDrawableAsset(AssetType.TILE_GRASS_WIDE_LEFT).clone()).addToLevel(this);
 			new Tile(1, false, new Vector2DDouble(171, 61), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_RIGHT).clone()).addToLevel(this);
+			new Tile(1, false, new Vector2DDouble(144, -16), Assets.getDrawableAsset(AssetType.TILE_DIRT).clone()).addToLevel(this);
+			new Tile(1, false, new Vector2DDouble(256, 48), Assets.getDrawableAsset(AssetType.TILE_WALL_INCORNER_TOP_R).clone()).addToLevel(this);
 			
 			new Tile(2, false, new Vector2DDouble(144, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_INCORNER_BOTTOM_R).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(224, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_INCORNER_BOTTOM_L).clone()).addToLevel(this);
@@ -220,7 +222,6 @@ public class MainLevel extends Level
 			new Tile(2, false, new Vector2DDouble(176, 16), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 32), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(160, -16), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
-			new Tile(2, false, new Vector2DDouble(144, -16), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(144, -16), Assets.getDrawableAsset(AssetType.TILE_GRASS_INNER_TOPRIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(160, -16), Assets.getDrawableAsset(AssetType.TILE_GRASS_INNER_TOPLEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 32), Assets.getDrawableAsset(AssetType.TILE_GRASS_INNER_BOTTOMRIGHT).clone()).addToLevel(this);
@@ -246,15 +247,15 @@ public class MainLevel extends Level
 			new Tile(2, false, new Vector2DDouble(208, 64), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(167, 66), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(179, 82), Assets.getDrawableAsset(AssetType.TILE_GRASS_WIDE_RIGHT).clone()).addToLevel(this);
-			
 			new Tile(2, false, new Vector2DDouble(176, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(224, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(208, 96), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(208, 64), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_LEFT).clone()).addToLevel(this);
-			new Tile(3, false, new Vector2DDouble(208, 80), Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(174, 93), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(169, 61), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
+			
+			new Tile(3, false, new Vector2DDouble(208, 80), Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone()).addToLevel(this);
 			
 			new Tile(4, false, new Vector2DDouble(212, 78), Assets.getDrawableAsset(AssetType.TILE_LAMP).clone()).addToLevel(this);
 			
