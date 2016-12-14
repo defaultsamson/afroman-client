@@ -68,6 +68,7 @@ import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.IPUtil;
+import ca.afroman.util.StringUtil;
 import ca.afroman.util.UpdateUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
@@ -554,7 +555,7 @@ public class ClientGame extends Game
 				}
 				catch (Exception e)
 				{
-					// Unable to print who was sending this packet
+					// TODO Unable to print who was sending this packet
 				}
 			}
 		}
@@ -609,71 +610,81 @@ public class ClientGame extends Game
 			
 			if (hudDebug)
 			{
-				String mem = "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)";
-				debugFontBlack.render(screen, new Vector2DInt(2, 1), mem);
-				debugFontWhite.render(screen, new Vector2DInt(1, 0), mem);
-				String t = "TPS: " + tps;
-				debugFontBlack.render(screen, new Vector2DInt(2, 11), t);
-				debugFontWhite.render(screen, new Vector2DInt(1, 10), t);
-				String f = "FPS: " + fps;
-				debugFontBlack.render(screen, new Vector2DInt(2, 21), f);
-				debugFontWhite.render(screen, new Vector2DInt(1, 20), f);
-				debugFontBlack.render(screen, new Vector2DInt(2, HEIGHT - 8), "V");
-				debugFontWhite.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-				String ver = new StringBuilder().append(VersionUtil.VERSION_STRING).toString();
-				debugFontBlack.render(screen, new Vector2DInt(10, HEIGHT - 8), ver);
-				debugFontWhite.render(screen, new Vector2DInt(9, HEIGHT - 9), ver);
+				// Displays hud info
+				{
+					Vector2DInt hud = new Vector2DInt(1, 0);
+					Vector2DInt shadow = hud.clone().add(1, 1);
+					
+					String mem = "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)";
+					debugFontBlack.render(screen, shadow, mem);
+					debugFontWhite.render(screen, hud, mem);
+					String t = "TPS: " + tps;
+					debugFontBlack.render(screen, shadow.add(0, 10), t);
+					debugFontWhite.render(screen, hud.add(0, 10), t);
+					String f = "FPS: " + fps;
+					debugFontBlack.render(screen, shadow.add(0, 10), f);
+					debugFontWhite.render(screen, hud.add(0, 10), f);
+					
+					Vector2DInt version = new Vector2DInt(2, HEIGHT - 8);
+					Vector2DInt versionShadow = new Vector2DInt(1, HEIGHT - 9);
+					debugFontBlack.render(screen, version, "V");
+					debugFontWhite.render(screen, versionShadow, "V");
+					
+					String ver = new StringBuilder().append(VersionUtil.VERSION_STRING).toString();
+					debugFontBlack.render(screen, version.add(8, 0), ver);
+					debugFontWhite.render(screen, versionShadow.add(8, 0), ver);
+				}
 				
+				// Displays pings
 				if (sockets() != null)
 				{
-					Vector2DInt text = new Vector2DInt(WIDTH - 50, 0);// new Vector2DInt(1, 30);
-					Vector2DInt shadow = text.clone().add(1, 1);
-					
 					String you = getPingDisplay("You", ping);
 					String p1p = getPingDisplay("P1", ping1);
 					String p2p = getPingDisplay("P2", ping2);
 					
 					if (you != null || p1p != null || p2p != null)
 					{
-						int halfWidth = Font.CHAR_WIDTH * 2;
+						// Distance from the right to draw
+						Vector2DInt text = new Vector2DInt(WIDTH - 2, 0);
+						Vector2DInt shadow = text.clone().add(1, 1);
 						
-						debugFontBlack.render(screen, shadow.add(halfWidth, 0), "PING");
-						debugFontWhite.render(screen, text.add(halfWidth, 0), "PING");
+						debugFontBlack.renderRight(screen, shadow, "PING");
+						debugFontWhite.renderRight(screen, text, "PING");
 						
-						shadow.add(-halfWidth, 10);
-						text.add(-halfWidth, 10);
-					}
-					
-					if (you != null)
-					{
-						debugFontBlack.render(screen, shadow.add(-Font.CHAR_WIDTH, 0), you);
-						debugFontWhite.render(screen, text.add(-Font.CHAR_WIDTH, 0), you);
-						
-						// Moves text down to next line
-						// in the 2 lines above, CHAR_WIDTH moves the the left slightly so that the colons line up
-						// So this moves it back right
-						shadow.add(Font.CHAR_WIDTH, 10);
-						text.add(Font.CHAR_WIDTH, 10);
-					}
-					
-					if (p1p != null && role != Role.PLAYER1)
-					{
-						debugFontBlack.render(screen, shadow, p1p);
-						debugFontWhite.render(screen, text, p1p);
-						
-						// Moves text down to next line
 						shadow.add(0, 10);
 						text.add(0, 10);
-					}
-					
-					if (p2p != null && role != Role.PLAYER2)
-					{
-						debugFontBlack.render(screen, shadow, p2p);
-						debugFontWhite.render(screen, text, p2p);
 						
-						// Moves text down to next line
-						shadow.add(0, 10);
-						text.add(0, 10);
+						if (you != null)
+						{
+							debugFontBlack.renderRight(screen, shadow, you);
+							debugFontWhite.renderRight(screen, text, you);
+							
+							// Moves text down to next line
+							// in the 2 lines above, CHAR_WIDTH moves the the left slightly so that the colons line up
+							// So this moves it back right
+							shadow.add(0, 10);
+							text.add(0, 10);
+						}
+						
+						if (p1p != null && role != Role.PLAYER1)
+						{
+							debugFontBlack.renderRight(screen, shadow, p1p);
+							debugFontWhite.renderRight(screen, text, p1p);
+							
+							// Moves text down to next line
+							shadow.add(0, 10);
+							text.add(0, 10);
+						}
+						
+						if (p2p != null && role != Role.PLAYER2)
+						{
+							debugFontBlack.renderRight(screen, shadow, p2p);
+							debugFontWhite.renderRight(screen, text, p2p);
+							
+							// Moves text down to next line
+							shadow.add(0, 10);
+							text.add(0, 10);
+						}
 					}
 				}
 				
