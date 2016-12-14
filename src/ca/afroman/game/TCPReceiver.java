@@ -3,7 +3,6 @@ package ca.afroman.game;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
-import java.nio.channels.SocketChannel;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiClickNotification;
@@ -28,7 +27,7 @@ public class TCPReceiver extends DynamicThread
 	public TCPReceiver(boolean isServerSide, SocketManager manager, TCPSocketChannel socket)
 	{
 		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive(" + IPUtil.asReadable(socket.getSocket().socket().getInetAddress(), socket.getSocket().socket().getPort()) + ")");
-		if (isServerSide) System.out.println("test");
+		
 		this.manager = manager;
 		this.socket = socket;
 	}
@@ -43,16 +42,14 @@ public class TCPReceiver extends DynamicThread
 	{
 		try
 		{
-			socket.keyCheck();
-			
 			byte[] buffer = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
 			buffer = socket.receiveData();
 			
 			if (buffer != null)
 			{
 				BytePacket pack = new BytePacket(buffer);
-				InetAddress address = ((SocketChannel) socket.getSocket()).socket().getInetAddress();
-				int port = ((SocketChannel) socket.getSocket()).socket().getPort();
+				InetAddress address = socket.getSocket().socket().getInetAddress();
+				int port = socket.getSocket().socket().getPort();
 				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType());
 				
 				manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
@@ -67,6 +64,7 @@ public class TCPReceiver extends DynamicThread
 				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), -1, "PORT", "UNREACHABLE");
 			}
 		}
+		
 		catch (IOException e)
 		{
 			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while receiving", e);

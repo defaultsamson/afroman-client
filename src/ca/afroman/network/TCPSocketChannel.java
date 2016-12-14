@@ -1,147 +1,56 @@
 package ca.afroman.network;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.PortUnreachableException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.util.Iterator;
-import java.util.Set;
 
 import ca.afroman.client.ClientGame;
 
 public class TCPSocketChannel
 {
+	public static int defaultOps = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
+	public static int serverOps = SelectionKey.OP_ACCEPT;
+	public static int writeOp = SelectionKey.OP_WRITE;
+	public static int readOp = SelectionKey.OP_READ;
+	
+	private SocketChannel socket;
 	private Selector selector;
-	private ServerSocketChannel serverChannel;
-	private SocketChannel socketChannel;
-	private byte[] toSend;
-	private byte[] toReceive;
-	private TCPSocket tcpSocket;
-	public boolean isServerSide;
-	public boolean isReading;
+	
 	public boolean isWriting;
-	public boolean isAccepting;
 	
-	public TCPSocketChannel(boolean isServerSide) throws IOException
+	public byte[] read;
+	public byte[] write;
+	
+	public TCPSocketChannel(Selector selector, SocketChannel socket, boolean blocking) throws IOException
 	{
-		selector = Selector.open();
-		this.isServerSide = isServerSide;
+		this.socket = socket;
+		this.selector = selector;
+		socket.configureBlocking(blocking);
+		socket.register(selector, defaultOps);
 	}
 	
-	public TCPSocketChannel(SocketChannel socket) throws IOException
+	public SelectionKey register(Selector selector, int operations) throws ClosedChannelException
 	{
-		selector = Selector.open();
-		socketChannel = socket;
-		socketChannel.configureBlocking(false);
-		isServerSide = false;
-		int ops = SelectionKey.OP_CONNECT | SelectionKey.OP_READ;
-		socketChannel.register(selector, ops, null);
+		this.selector = selector;
+		return socket.register(selector, operations);
 	}
 	
-	public void bind(int port) throws IOException
+	public boolean connect(SocketAddress remote, boolean blocking) throws IOException
 	{
-		bind(new InetSocketAddress(port));
-	}
-	
-	public void bind(SocketAddress remote) throws IOException
-	{
-		if (isServerSide)
+		socket = SocketChannel.open();
+		socket.configureBlocking(blocking);
+		boolean success = socket.connect(remote);
+		while (!socket.finishConnect())
 		{
-			serverChannel = ServerSocketChannel.open();
-			serverChannel.socket().bind(remote);
-			serverChannel.configureBlocking(false);
 			
-			int ops = serverChannel.validOps();
-			SelectionKey selectKey = serverChannel.register(selector, ops, null);
-			isAccepting = true;
 		}
+		socket.register(selector, defaultOps);
+		return success;
 	}
 	
-	public void connect(SocketAddress remote) throws IOException
-	{
-		if (!isServerSide)
-		{
-			socketChannel = SocketChannel.open();
-			socketChannel.configureBlocking(false);
-			socketChannel.connect(remote);
-			while (!socketChannel.finishConnect())
-			{
-				
-			}
-			int ops = socketChannel.validOps();
-			socketChannel.register(selector, ops, null);
-		}
-	}
-	
-	public void keyCheck() throws IOException
-	{
-		int readyChannels = selector.selectNow();
-		
-		if (readyChannels == 0) return;
-		
-		Set<SelectionKey> selectedKeys = selector.selectedKeys();
-		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-		
-		while (keyIterator.hasNext())
-		{
-			SelectionKey key = keyIterator.next();
-			
-			if (key.isAcceptable())
-			{
-				// accept(key);
-			}
-			else if (key.isConnectable())
-			{
-				// handshake(key);
-			}
-			else if (key.isReadable())
-			{
-				toReceive = (read(key));
-				isReading = false;
-			}
-			else if (key.isWritable())
-			{
-				write(key, toSend);
-				isWriting = false;
-			}
-			keyIterator.remove();
-		}
-	}
-	
-	private void accept(SelectionKey key) throws IOException
-	{
-		ServerSocketChannel server = (ServerSocketChannel) key.channel();
-		SocketChannel client = server.accept();
-		client.configureBlocking(false);
-		
-		int ops = client.validOps();
-		client.register(selector, ops);
-	}
-	
-	/**
-	 * Blocking version of accepting a client connection, required to obtain the client socket
-	 * 
-	 * @return the client socket
-	 * @throws IOException
-	 */
-	public SocketChannel accept() throws IOException
-	{
-		SocketChannel client = serverChannel.accept();
-		client.configureBlocking(false);
-		
-		int ops = client.validOps();
-		client.register(selector, ops);
-		return client;
-	}
-	
-	private void handshake(SelectionKey key)
-	{
-		ServerSocketChannel server = (ServerSocketChannel) key.channel();
-	}
-	
-	private byte[] read(SelectionKey key) throws IOException
+	public byte[] read(SelectionKey key) throws IOException
 	{
 		SocketChannel socket = (SocketChannel) key.channel();
 		ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
@@ -157,71 +66,32 @@ public class TCPSocketChannel
 			return new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
 		}
 		
-		byte[] data = buffer.array();
-		return data;
+		((TCPSocketChannel) key.attachment()).read = buffer.array();
+		return buffer.array();
 	}
 	
-	private byte[] write(SelectionKey key, byte[] data) throws IOException
+	public void write(SelectionKey key) throws IOException
 	{
-		SocketChannel client = (SocketChannel) key.channel();
-		ByteBuffer output = ByteBuffer.wrap(data);
-		client.write(output);
-		data = null;
-		return output.array();
+		SocketChannel socket = (SocketChannel) key.channel();
+		ByteBuffer output = ByteBuffer.wrap(((TCPSocketChannel) key.attachment()).write);
+		socket.write(output);
+		((TCPSocketChannel) key.attachment()).isWriting = false;
 	}
 	
-	public void sendData(byte[] data) throws ClosedChannelException
+	public SelectionKey sendData(byte[] data) throws ClosedChannelException
 	{
-		toSend = data;
 		isWriting = true;
-		if (isServerSide)
-		{
-			serverChannel.register(selector, SelectionKey.OP_WRITE);
-		}
-		else
-		{
-			socketChannel.register(selector, SelectionKey.OP_WRITE);
-		}
+		write = data;
+		return socket.register(selector, writeOp, this);
 	}
 	
-	public byte[] receiveData() throws ClosedChannelException
+	public byte[] receiveData() throws ClosedChannelException, PortUnreachableException
 	{
-		return toReceive;
+		return read;
 	}
 	
 	public SocketChannel getSocket()
 	{
-		return socketChannel;
+		return socket;
 	}
-	
-	public boolean isBlocking()
-	{
-		if (isServerSide)
-		{
-			return serverChannel.isBlocking();
-		}
-		else
-		{
-			return socketChannel.isBlocking();
-		}
-	}
-	
-	public void close() throws IOException
-	{
-		if (serverChannel.isOpen()) serverChannel.close();
-		if (socketChannel.isOpen()) socketChannel.close();
-	}
-	
-	public boolean isConnected()
-	{
-		if (!isServerSide)
-		{
-			return socketChannel.isConnected();
-		}
-		else
-		{
-			return serverChannel.isRegistered();
-		}
-	}
-	
 }

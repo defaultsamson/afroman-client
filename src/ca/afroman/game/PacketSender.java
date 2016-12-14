@@ -73,17 +73,11 @@ public class PacketSender extends DynamicTickThread
 				{
 					try
 					{
-						con.getTCPSocketChannel().sendData(packet.getData());
-						
-						con.getTCPSocketChannel().keyCheck();
+						con.getTCPSocketChannel().sendData(packet.getData());						
 					}
 					catch (ClosedChannelException e)
 					{
 						logger().log(ALogType.WARNING, "Channel closed before data could be sent", e);
-					}
-					catch (IOException e)
-					{
-						logger().log(ALogType.WARNING, "I/O exception while sending data", e);
 					}
 				}
 			}
