@@ -68,7 +68,6 @@ import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.IPUtil;
-import ca.afroman.util.StringUtil;
 import ca.afroman.util.UpdateUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
@@ -635,59 +634,6 @@ public class ClientGame extends Game
 					debugFontWhite.render(screen, versionShadow.add(8, 0), ver);
 				}
 				
-				// Displays pings
-				if (sockets() != null)
-				{
-					String you = getPingDisplay("You", ping);
-					String p1p = getPingDisplay("P1", ping1);
-					String p2p = getPingDisplay("P2", ping2);
-					
-					if (you != null || p1p != null || p2p != null)
-					{
-						// Distance from the right to draw
-						Vector2DInt text = new Vector2DInt(WIDTH - 2, 0);
-						Vector2DInt shadow = text.clone().add(1, 1);
-						
-						debugFontBlack.renderRight(screen, shadow, "PING");
-						debugFontWhite.renderRight(screen, text, "PING");
-						
-						shadow.add(0, 10);
-						text.add(0, 10);
-						
-						if (you != null)
-						{
-							debugFontBlack.renderRight(screen, shadow, you);
-							debugFontWhite.renderRight(screen, text, you);
-							
-							// Moves text down to next line
-							// in the 2 lines above, CHAR_WIDTH moves the the left slightly so that the colons line up
-							// So this moves it back right
-							shadow.add(0, 10);
-							text.add(0, 10);
-						}
-						
-						if (p1p != null && role != Role.PLAYER1)
-						{
-							debugFontBlack.renderRight(screen, shadow, p1p);
-							debugFontWhite.renderRight(screen, text, p1p);
-							
-							// Moves text down to next line
-							shadow.add(0, 10);
-							text.add(0, 10);
-						}
-						
-						if (p2p != null && role != Role.PLAYER2)
-						{
-							debugFontBlack.renderRight(screen, shadow, p2p);
-							debugFontWhite.renderRight(screen, text, p2p);
-							
-							// Moves text down to next line
-							shadow.add(0, 10);
-							text.add(0, 10);
-						}
-					}
-				}
-				
 				PlayerEntity player = getThisPlayer();
 				
 				if (player != null && player.getLevel() != null)
@@ -698,6 +644,59 @@ public class ClientGame extends Game
 					String y = "y: " + player.getPosition().getY();
 					debugFontBlack.render(screen, new Vector2DInt(2, 61), y);
 					debugFontWhite.render(screen, new Vector2DInt(1, 60), y);
+				}
+			}
+			
+			// Displays pings
+			if ((hudDebug || input.tab.isPressed()) && sockets() != null)
+			{
+				String you = getPingDisplay("You", ping);
+				String p1p = getPingDisplay("P1", ping1);
+				String p2p = getPingDisplay("P2", ping2);
+				
+				if (you != null || p1p != null || p2p != null)
+				{
+					// Distance from the right to draw
+					Vector2DInt text = new Vector2DInt(WIDTH - 2, 0);
+					Vector2DInt shadow = text.clone().add(1, 1);
+					
+					debugFontBlack.renderRight(screen, shadow, "PING");
+					debugFontWhite.renderRight(screen, text, "PING");
+					
+					shadow.add(0, 10);
+					text.add(0, 10);
+					
+					if (you != null)
+					{
+						debugFontBlack.renderRight(screen, shadow, you);
+						debugFontWhite.renderRight(screen, text, you);
+						
+						// Moves text down to next line
+						// in the 2 lines above, CHAR_WIDTH moves the the left slightly so that the colons line up
+						// So this moves it back right
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
+					
+					if (p1p != null && role != Role.PLAYER1)
+					{
+						debugFontBlack.renderRight(screen, shadow, p1p);
+						debugFontWhite.renderRight(screen, text, p1p);
+						
+						// Moves text down to next line
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
+					
+					if (p2p != null && role != Role.PLAYER2)
+					{
+						debugFontBlack.renderRight(screen, shadow, p2p);
+						debugFontWhite.renderRight(screen, text, p2p);
+						
+						// Moves text down to next line
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
 				}
 			}
 			
