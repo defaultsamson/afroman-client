@@ -541,10 +541,6 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 						rec.startThis();
 					}
 				}
-				else if (key.isConnectable())
-				{
-					
-				}
 				else if (key.isReadable())
 				{
 					((TCPSocketChannel) key.attachment()).read(key);
