@@ -6,16 +6,17 @@ import java.util.List;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.ListUtil;
 
 public class PacketUpdatePlayerList extends BytePacket
 {
-	private byte[] toSend;
-	
 	public PacketUpdatePlayerList(List<ConnectedPlayer> connections, IPConnection... connection)
 	{
 		super(PacketType.UPDATE_PLAYERLIST, false, connection);
 		
 		List<Byte> send = new ArrayList<Byte>();
+		
+		send.add(typeOrd());
 		
 		for (ConnectedPlayer con : connections)
 		{
@@ -41,19 +42,6 @@ public class PacketUpdatePlayerList extends BytePacket
 		send.add(Byte.MAX_VALUE);
 		send.add(Byte.MIN_VALUE);
 		
-		toSend = new byte[send.size()];
-		
-		int i = 0;
-		for (byte e : send)
-		{
-			toSend[i] = e;
-			i++;
-		}
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		content = ListUtil.toByteArray(send);
 	}
 }

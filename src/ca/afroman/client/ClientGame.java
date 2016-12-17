@@ -16,7 +16,6 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -323,9 +322,9 @@ public class ClientGame extends Game
 							logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
 							break;
 						case TEST_PING:
-							ping = (short) (packet.getContent()[0] + Byte.MAX_VALUE);
-							ping1 = (short) (packet.getContent()[1] + Byte.MAX_VALUE);
-							ping2 = (short) (packet.getContent()[2] + Byte.MAX_VALUE);
+							ping = (short) (packet.getContent().get() + Byte.MAX_VALUE);
+							ping1 = (short) (packet.getContent().get() + Byte.MAX_VALUE);
+							ping2 = (short) (packet.getContent().get() + Byte.MAX_VALUE);
 							
 							sockets().sender().sendPacket(new PacketPingClientServer());
 							break;
@@ -333,7 +332,7 @@ public class ClientGame extends Game
 						{
 							setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 							
-							DenyJoinReason reason = DenyJoinReason.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
+							DenyJoinReason reason = DenyJoinReason.fromOrdinal(packet.getContent().get());
 							
 							switch (reason)
 							{
@@ -359,20 +358,20 @@ public class ClientGame extends Game
 						}
 							break;
 						case ASSIGN_CLIENTID:
-							id = ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] });
+							id = packet.getContent().getShort();
 							
 							sockets().initServerTCPConnection();
 							break;
 						case PLAYER_MOVE:
 						{
-							Role role = Role.fromOrdinal(packet.getContent()[0]);
+							Role role = Role.fromOrdinal(packet.getContent().get());
 							if (role != Role.SPECTATOR && role != getRole())
 							{
 								PlayerEntity player = getPlayer(role);
 								if (player != null)
 								{
-									byte x = packet.getContent()[1];
-									byte y = packet.getContent()[2];
+									byte x = packet.getContent().get();
+									byte y = packet.getContent().get();
 									
 									player.autoMove(x, y);
 								}
@@ -383,7 +382,7 @@ public class ClientGame extends Game
 						{
 							updatePlayerList();
 							List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+							ByteBuffer buf = packet.getContent();
 							
 							// If there's still remaining bytes and they aren't the signal
 							while (buf.hasRemaining() && !ByteUtil.isSignal(buf.array(), buf.position(), Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE))
@@ -406,10 +405,10 @@ public class ClientGame extends Game
 							break;
 						case START_SERVER:
 						{
-							byte x = packet.getContent()[0];
+							boolean serverStarted = packet.getContent().get() == 1;
 							
 							// Server was started
-							if (x == 1)
+							if (serverStarted)
 							{
 								
 							}
@@ -422,7 +421,7 @@ public class ClientGame extends Game
 							break;
 						case LOAD_LEVELS:
 						{
-							boolean sendingLevels = (packet.getContent()[0] == 1);
+							boolean sendingLevels = packet.getContent().get() == 1;
 							
 							if (sendingLevels)
 							{
@@ -461,13 +460,13 @@ public class ClientGame extends Game
 							break;
 						case SET_PLAYER_LEVEL:
 						{
-							Role role = Role.fromOrdinal(packet.getContent()[0]);
+							Role role = Role.fromOrdinal(packet.getContent().get());
 							
 							PlayerEntity player = getPlayer(role);
 							
 							if (player != null)
 							{
-								LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
+								LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
 								Level level = getLevel(levelType);
 								
 								player.addToLevel(level);
@@ -483,10 +482,8 @@ public class ClientGame extends Game
 							break;
 						case SET_PLAYER_POSITION:
 						{
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-							
 							boolean forcePos = false;
-							byte roleOrd = buf.get();
+							byte roleOrd = packet.getContent().get();
 							
 							if (roleOrd >= Role.values().length)
 							{
@@ -500,7 +497,7 @@ public class ClientGame extends Game
 							
 							if (player != null)
 							{
-								Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
+								Vector2DDouble pos = new Vector2DDouble(packet.getContent().getInt(), packet.getContent().getInt());
 								
 								// If force the position, then force it.
 								// Else, if the player is outside a given range of the server position force it into positionThe ho
@@ -517,20 +514,18 @@ public class ClientGame extends Game
 							break;
 						case ACTIVATE_TRIGGER:
 						{
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-							
-							LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+							LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
 							Level level = getLevel(levelType);
 							
 							if (level != null)
 							{
-								int id = buf.getInt();
+								int id = packet.getContent().getInt();
 								
 								Event event = level.getEvent(id);
 								
 								if (event != null)
 								{
-									byte ord = buf.get();
+									byte ord = packet.getContent().get();
 									Role role = Role.fromOrdinal(ord);
 									
 									if (role != null)
@@ -1170,7 +1165,7 @@ public class ClientGame extends Game
 		if (updateMem.isAtInterval())
 		{
 			Runtime rt = Runtime.getRuntime();
-			totalMemory = rt.freeMemory();
+			totalMemory = rt.totalMemory();
 			usedMemory = rt.totalMemory() - rt.freeMemory();
 		}
 		

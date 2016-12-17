@@ -6,16 +6,17 @@ import java.util.List;
 import ca.afroman.network.IPConnection;
 import ca.afroman.server.ConsoleCommand;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.ListUtil;
 
 public class PacketCommand extends BytePacket
 {
-	private byte[] toSend;
-	
 	public PacketCommand(ConsoleCommand command, String[] parameters, IPConnection... connection)
 	{
 		super(PacketType.COMMAND, true, connection);
 		
 		List<Byte> send = new ArrayList<Byte>();
+		
+		send.add(typeOrd());
 		
 		for (byte e : ByteUtil.intAsBytes(command.ordinal()))
 		{
@@ -38,19 +39,6 @@ public class PacketCommand extends BytePacket
 			send.add(Byte.MIN_VALUE);
 		}
 		
-		toSend = new byte[send.size()];
-		
-		int i = 0;
-		for (byte e : send)
-		{
-			toSend[i] = e;
-			i++;
-		}
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		content = ListUtil.toByteArray(send);
 	}
 }

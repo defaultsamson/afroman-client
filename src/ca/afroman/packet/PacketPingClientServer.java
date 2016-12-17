@@ -7,5 +7,7 @@ public class PacketPingClientServer extends BytePacket
 	public PacketPingClientServer(IPConnection... connection)
 	{
 		super(PacketType.TEST_PING, false, connection);
+		
+		content = new byte[] { typeOrd() };
 	}
 }

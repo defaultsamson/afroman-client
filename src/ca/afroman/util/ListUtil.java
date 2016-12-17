@@ -39,4 +39,18 @@ public class ListUtil
 			}
 		}
 	}
+	
+	public static byte[] toByteArray(List<Byte> in)
+	{
+		byte[] toRet = new byte[in.size()];
+		
+		int i = 0;
+		for (byte e : in)
+		{
+			toRet[i] = e;
+			i++;
+		}
+		
+		return toRet;
+	}
 }

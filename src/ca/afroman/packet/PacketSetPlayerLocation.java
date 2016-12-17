@@ -9,7 +9,7 @@ import ca.afroman.util.ByteUtil;
 
 public class PacketSetPlayerLocation extends BytePacket
 {
-	private byte[] toSend;
+	private static final int ALLOCATE_SIZE = 2 + (2 * ByteUtil.INT_BYTE_COUNT);
 	
 	/**
 	 * Designed to be only sent from the server to client
@@ -22,7 +22,7 @@ public class PacketSetPlayerLocation extends BytePacket
 	{
 		super(PacketType.SET_PLAYER_POSITION, forcePos, connection);
 		
-		ByteBuffer buf = ByteBuffer.allocate(1 + (2 * ByteUtil.INT_BYTE_COUNT));
+		ByteBuffer buf = ByteBuffer.allocate(ALLOCATE_SIZE).put(typeOrd());
 		
 		buf.put((byte) (player.ordinal() + (forcePos ? Role.values().length : 0)));
 		
@@ -31,12 +31,6 @@ public class PacketSetPlayerLocation extends BytePacket
 		
 		// buf.put(forcePos ? (byte) 1 : 0);
 		
-		toSend = buf.array();
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		content = buf.array();
 	}
 }

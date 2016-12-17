@@ -2,22 +2,13 @@ package ca.afroman.packet;
 
 import ca.afroman.network.IPConnection;
 import ca.afroman.server.DenyJoinReason;
-import ca.afroman.util.ByteUtil;
 
 public class PacketDenyJoin extends BytePacket
 {
-	private byte[] toSend;
-	
 	public PacketDenyJoin(DenyJoinReason reason, IPConnection... connection)
 	{
 		super(PacketType.DENY_JOIN, false, connection);
 		
-		toSend = ByteUtil.shortAsBytes((short) reason.ordinal());
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		content = new byte[] { typeOrd(), (byte) reason.ordinal() };
 	}
 }

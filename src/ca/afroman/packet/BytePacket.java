@@ -1,17 +1,18 @@
 package ca.afroman.packet;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import ca.afroman.network.IPConnection;
 
 public class BytePacket
 {
 	private PacketType type;
-	private byte[] content;
+	protected byte[] content;
 	
 	private IPConnection[] connections;
 	private boolean mustSend;
+	
+	private ByteBuffer buf = null;
 	
 	/**
 	 * Parses a BytePacket from raw byte data.
@@ -23,16 +24,14 @@ public class BytePacket
 	{
 		try
 		{
-			ByteBuffer buf = ByteBuffer.wrap(rawData);
-			
-			type = PacketType.fromOrdinal(buf.get(0));
-			content = Arrays.copyOfRange(rawData, 1, rawData.length);
+			type = PacketType.fromOrdinal(rawData[0]);
+			content = rawData;// Arrays.copyOfRange(rawData, 1, rawData.length);
 			connections = null; // new IPConnection[0];
 		}
 		catch (Exception e)
 		{
 			type = PacketType.INVALID;
-			content = new byte[0];
+			content = null;
 			connections = null;
 			// System.err.println("Well shit, this packet is fucked");
 			// e.printStackTrace();
@@ -72,47 +71,51 @@ public class BytePacket
 		return connections;
 	}
 	
-	public byte[] getContent()
+	public ByteBuffer getContent()
 	{
-		return content;
+		if (buf == null)
+		{
+			buf = ByteBuffer.wrap(content, 1, content.length - 1);
+		}
+		
+		return buf;
 	}
 	
 	/**
 	 * Gets the data from this Packet in a sendable form.
-	 * <p>
-	 * <b>WARNING:</b> Only intended for reading, DO NOT OVERRIDE.
-	 * <p>
-	 * Override <code>getUniqueData()</code> instead
 	 *
 	 * @return the data
 	 */
-	public final byte[] getData()
+	public byte[] getData()
 	{
-		byte[] content = getUniqueData();
-		byte[] toRet = new byte[content.length + 1];
-		
-		toRet[0] = (byte) getType().ordinal();
-		
-		for (int i = 1; i < toRet.length; i++)
-			toRet[i] = content[i - 1];
-		
-		return toRet;
+		return content;
 	}
+	// {
+	// byte[] content = getUniqueData();
+	// byte[] toRet = new byte[content.length + 1];
+	//
+	// toRet[0] = (byte) getType().ordinal();
+	//
+	// for (int i = 1; i < toRet.length; i++)
+	// toRet[i] = content[i - 1];
+	//
+	// return toRet;
+	// }
 	
 	public PacketType getType()
 	{
 		return type;
 	}
 	
-	/**
-	 * Gets the data from this Packet in a sendable form.
-	 * 
-	 * @return the data
-	 */
-	public byte[] getUniqueData()
-	{
-		return new byte[] {};
-	}
+	// /**
+	// * Gets the data from this Packet in a sendable form.
+	// *
+	// * @return the data
+	// */
+	// public byte[] getUniqueData()
+	// {
+	// return new byte[] {};
+	// }
 	
 	public boolean mustSend()
 	{
@@ -122,5 +125,13 @@ public class BytePacket
 	public void setConnections(IPConnection... con)
 	{
 		this.connections = con;
+	}
+	
+	/**
+	 * @return the ordinal of the PacketType of this as a byte;
+	 */
+	protected byte typeOrd()
+	{
+		return (byte) type.ordinal();
 	}
 }

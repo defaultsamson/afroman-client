@@ -9,25 +9,20 @@ import ca.afroman.util.ByteUtil;
 
 public class PacketActivateTrigger extends BytePacket
 {
-	private byte[] toSend;
+	private static final int ALLOCATE_SIZE = ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT + 2;
 	
 	public PacketActivateTrigger(int id, LevelType level, Role player, IPConnection... connection)
 	{
 		super(PacketType.ACTIVATE_TRIGGER, true, connection);
 		
-		ByteBuffer buf = ByteBuffer.allocate(ByteUtil.SHORT_BYTE_COUNT + ByteUtil.INT_BYTE_COUNT + 1);
+		ByteBuffer buf = ByteBuffer.allocate(ALLOCATE_SIZE).put(typeOrd());
 		
 		buf.putShort((short) level.ordinal());
 		buf.putInt(id);
 		buf.put((byte) player.ordinal());
-		// buf.put((byte) triggerType.ordinal());
 		
-		toSend = buf.array();
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		content = buf.array();
+		
+		// buf.put((byte) triggerType.ordinal());
 	}
 }

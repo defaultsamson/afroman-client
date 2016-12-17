@@ -4,7 +4,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
-import ca.afroman.packet.PacketPlayerMove;
+import ca.afroman.packet.PacketPlayerMoveClientServer;
 import ca.afroman.packet.PacketSetPlayerLocation;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
@@ -542,7 +542,7 @@ public class Entity extends PositionLevelObject implements ITickable
 				if (deltaMoveCounter.isAtInterval())
 				{
 					// TODO Entity delta movement
-					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMove(((PlayerEntity) this).getRole(), deltaXa, deltaYa));
+					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
 					
 					deltaXa = 0;
 					deltaYa = 0;
