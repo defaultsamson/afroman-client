@@ -45,6 +45,7 @@ public class SwitchTrigger extends HitboxTrigger
 				right.removeFromLevel();
 			}
 			
+			box.removeFromLevel();
 			level.getEvents().remove(this);
 		}
 		
@@ -57,29 +58,27 @@ public class SwitchTrigger extends HitboxTrigger
 			{
 				left.setLayer(level.getDynamicLayer());
 				right.setLayer(level.getDynamicLayer());
-				left.addToLevel(level);
-				box.addToLevel(getLevel());
 				
 				updateTile();
 			}
 			
+			box.addToLevel(level);
 			level.getEvents().add(this);
 		}
 	}
 	
 	@Override
-	public void onTrigger(Entity triggerer)
+	public void trigger(Entity e)
 	{
-		super.onTrigger(triggerer);
 		updateTile();
+		
+		super.trigger(e);
 	}
 	
 	private void updateTile()
 	{
 		if (!isServerSide())
 		{
-			updateInput();
-			
 			if (flop)
 			{
 				left.addToLevel(level);
@@ -93,11 +92,5 @@ public class SwitchTrigger extends HitboxTrigger
 				flop = true;
 			}
 		}
-	}
-	
-	@Override
-	public void trigger(Entity e)
-	{
-		super.trigger(e);
 	}
 }

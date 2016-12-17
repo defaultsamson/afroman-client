@@ -217,6 +217,29 @@ public class ClientGame extends Game
 		return id;
 	}
 	
+	private String getPingDisplay(String tag, int ping)
+	{
+		if (ping != PacketPingServerClient.NONE)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(tag);
+			sb.append(": ");
+			
+			if (ping1 == PacketPingServerClient.OVER_MAX)
+			{
+				sb.append('>');
+				sb.append(PacketPingServerClient.MAX_SENDABLE);
+			}
+			else
+			{
+				sb.append(ping);
+			}
+			
+			return sb.toString();
+		}
+		return null;
+	}
+	
 	public Role getRole()
 	{
 		return role;
@@ -755,29 +778,6 @@ public class ClientGame extends Game
 			
 			frame.setLocationRelativeTo(null);
 		}
-	}
-	
-	private String getPingDisplay(String tag, int ping)
-	{
-		if (ping != PacketPingServerClient.NONE)
-		{
-			StringBuilder sb = new StringBuilder();
-			sb.append(tag);
-			sb.append(": ");
-			
-			if (ping1 == PacketPingServerClient.OVER_MAX)
-			{
-				sb.append('>');
-				sb.append(PacketPingServerClient.MAX_SENDABLE);
-			}
-			else
-			{
-				sb.append(ping);
-			}
-			
-			return sb.toString();
-		}
-		return null;
 	}
 	
 	public void setCurrentLevel(Level newLevel)

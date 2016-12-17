@@ -48,12 +48,6 @@ public class HitboxToggle extends Event
 		return enabled;
 	}
 	
-	@Override
-	public void onTrigger(Entity triggerer)
-	{
-		setEnabled(!enabled);
-	}
-	
 	public void setEnabled(boolean isActive)
 	{
 		// If it's already in the desired state
@@ -92,5 +86,13 @@ public class HitboxToggle extends Event
 		}
 		
 		enabled = isActive;
+	}
+	
+	@Override
+	public void trigger(Entity triggerer)
+	{
+		setEnabled(!enabled);
+		
+		super.trigger(triggerer);
 	}
 }

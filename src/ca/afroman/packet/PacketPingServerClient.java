@@ -21,14 +21,14 @@ public class PacketPingServerClient extends BytePacket
 		toSend[2] = normalizePing(p2Ping);
 	}
 	
-	private byte normalizePing(int ping)
-	{
-		return (byte) ((ping < 0 ? NONE : ping > MAX_SENDABLE ? OVER_MAX : ping) - Byte.MAX_VALUE);
-	}
-	
 	@Override
 	public byte[] getUniqueData()
 	{
 		return toSend;
+	}
+	
+	private byte normalizePing(int ping)
+	{
+		return (byte) ((ping < 0 ? NONE : ping > MAX_SENDABLE ? OVER_MAX : ping) - Byte.MAX_VALUE);
 	}
 }
