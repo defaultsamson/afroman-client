@@ -142,6 +142,7 @@ public class ClientGame extends Game
 	private short ping2 = 0;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
+	private String memDisplay = "";
 	private ModulusCounter updateMem;
 	private long totalMemory = 0;
 	private long usedMemory = 0;
@@ -578,7 +579,7 @@ public class ClientGame extends Game
 		}
 		catch (Exception e)
 		{
-			// logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
+			// TODO logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
 	}
 	
@@ -632,9 +633,8 @@ public class ClientGame extends Game
 					Vector2DInt hud = new Vector2DInt(1, 0);
 					Vector2DInt shadow = hud.clone().add(1, 1);
 					
-					String mem = "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)";
-					debugFontBlack.render(screen, shadow, mem);
-					debugFontWhite.render(screen, hud, mem);
+					debugFontBlack.render(screen, shadow, memDisplay);
+					debugFontWhite.render(screen, hud, memDisplay);
 					String t = "TPS: " + tps;
 					debugFontBlack.render(screen, shadow.add(0, 10), t);
 					debugFontWhite.render(screen, hud.add(0, 10), t);
@@ -1167,6 +1167,8 @@ public class ClientGame extends Game
 			Runtime rt = Runtime.getRuntime();
 			totalMemory = rt.totalMemory();
 			usedMemory = rt.totalMemory() - rt.freeMemory();
+			
+			memDisplay = "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)";
 		}
 		
 		if (hideCursor > 0)

@@ -25,7 +25,6 @@ import ca.afroman.util.ColourUtil;
 
 public class MainLevel extends Level
 {
-	
 	public MainLevel(boolean isServerSide)
 	{
 		super(isServerSide, LevelType.MAIN);
@@ -44,11 +43,11 @@ public class MainLevel extends Level
 		int doorColour = ColourUtil.TILE_REPLACE_COLOUR_RED;
 		int offColour = ColourUtil.TILE_REPLACE_COLOUR_DARKGREY;
 		
-		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP, doorColour);
+		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(88.0, 48.0), inTrig, null, Direction.UP, doorColour);
 		dora.addToLevel(this);
 		dora.setEnabled(false);
 		
-		DoorEvent dory = new DoorEvent(isServerSide, false, new Vector2DDouble(160, -32), inTrig, null, Direction.RIGHT, doorColour);
+		DoorEvent dory = new DoorEvent(isServerSide, false, new Vector2DDouble(160, -24), inTrig, null, Direction.RIGHT, doorColour);
 		dory.addToLevel(this);
 		dory.setEnabled(true);
 		
