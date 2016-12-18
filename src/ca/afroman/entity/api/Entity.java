@@ -11,7 +11,7 @@ import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class Entity extends PositionLevelObject implements ITickable
+public abstract class Entity extends PositionLevelObject implements ITickable
 {
 	private static final boolean PLAYER_COLLISION = false;
 	private static final boolean HITBOX_COLLISION = true;
@@ -425,15 +425,6 @@ public class Entity extends PositionLevelObject implements ITickable
 	}
 	
 	/**
-	 * Method runs when this has been interacted with.
-	 */
-	@Override
-	public void onInteract()
-	{
-		// TODO actually trigger this? or should this be trashed?
-	}
-	
-	/**
 	 * Removes this from its current level.
 	 */
 	@Override
@@ -596,13 +587,25 @@ public class Entity extends PositionLevelObject implements ITickable
 	/**
 	 * Updates this's in-level hitboxes so that they match the current position of this.
 	 */
-	private void updateHitboxInLevel()
+	protected void updateHitboxInLevel()
 	{
-		if (hasHitbox)
+		updateHitboxInLevel(hitbox);
+	}
+	
+	/**
+	 * Updates this's in-level hitboxes so that they match the current position of this.
+	 */
+	protected void updateHitboxInLevel(Hitbox... hitbox)
+	{
+		if (hitbox != null && hitbox.length > 0)
 		{
 			for (int i = 0; i < hitbox.length; i++)
 			{
-				hitbox[i].updateRelativeHitboxToPosition(position);
+				Hitbox box = hitbox[i];
+				if (box != null)
+				{
+					hitbox[i].updateRelativeHitboxToPosition(position);
+				}
 			}
 		}
 	}

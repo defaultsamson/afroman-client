@@ -503,7 +503,7 @@ public class ClientGame extends Game
 								{
 									Vector2DDouble pos = new Vector2DDouble(packet.getContent().getInt(), packet.getContent().getInt());
 									
-									// Tried to make it more leniant so that the client has more control over it's own position
+									// Tried to make it more lenient so that the client has more control over it's own position
 									
 									// if (forcePos && !player.getPosition().isDistanceGreaterThan(pos, 10D))
 									// {

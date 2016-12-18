@@ -44,7 +44,7 @@ public class GuiMenuOutline extends GuiScreen
 		
 		if (hasCharacters && hasLightmap)
 		{
-			light = new FlickeringLight(true, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 65, 6);
+			light = new FlickeringLight(true, new Vector2DDouble(ClientGame.WIDTH / 2, 38), 60, 65, 5);
 		}
 	}
 	

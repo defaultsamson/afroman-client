@@ -20,13 +20,6 @@ public class HitboxTrigger extends Event
 	/** The Entity that was last touching this. Used for TriggerType.PLAYER_UNTOUCH */
 	private Entity lastHit = null;
 	
-	public HitboxTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes)
-	{
-		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers);
-		
-		initTriggerTypes(triggerTypes);
-	}
-	
 	public HitboxTrigger(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, List<Integer> inTriggers, List<Integer> outTriggers, List<TriggerType> triggerTypes, Hitbox... hitboxes)
 	{
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, hitboxes);
@@ -83,6 +76,22 @@ public class HitboxTrigger extends Event
 				}
 				
 				lastHit = player;
+			}
+		}
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
+	{
+		if (isServerSide())
+		{
+			if (triggerTypes.contains(TriggerType.PLAYER_INTERACT))
+			{
+				if (triggerer.isColliding(getHitbox()))
+				{
+					trigger(triggerer);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), triggerer.getRole()));
+				}
 			}
 		}
 	}

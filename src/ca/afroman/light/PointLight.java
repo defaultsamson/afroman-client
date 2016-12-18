@@ -2,6 +2,7 @@ package ca.afroman.light;
 
 import java.awt.Color;
 
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
@@ -75,6 +76,12 @@ public class PointLight extends Entity
 	
 	@Override
 	public void tick()
+	{
+		
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
 	{
 		
 	}

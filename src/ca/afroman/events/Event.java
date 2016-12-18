@@ -8,7 +8,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 
-public class Event extends Entity
+public abstract class Event extends Entity
 {
 	protected List<Integer> inTriggers;
 	protected List<Integer> outTriggers;
@@ -98,7 +98,7 @@ public class Event extends Entity
 	{
 		for (int out : getOutTriggers())
 		{
-			// TODO chain for all levels
+			// TODO chain for all levels?
 			level.chainEvents(triggerer, out);
 		}
 	}

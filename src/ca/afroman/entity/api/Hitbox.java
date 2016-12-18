@@ -2,6 +2,7 @@ package ca.afroman.entity.api;
 
 import java.awt.geom.Rectangle2D;
 
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 
@@ -122,6 +123,12 @@ public class Hitbox extends PositionLevelObject implements Cloneable
 	public boolean isColliding(Hitbox other)
 	{
 		return box.intersects(other.box);
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
+	{
+		
 	}
 	
 	/**

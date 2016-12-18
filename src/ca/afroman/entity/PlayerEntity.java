@@ -160,7 +160,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 					
 					if (ClientGame.instance().input().interact.isPressedFiltered())
 					{
-						ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract());
+						ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract(getPosition()));
 					}
 					if (ClientGame.instance().input().up.isPressed())
 					{
@@ -183,5 +183,11 @@ public class PlayerEntity extends DrawableEntityDirectional
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
+	{
+		
 	}
 }

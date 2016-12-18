@@ -5,7 +5,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.Vector2DDouble;
 
-public class DrawableEntity extends Entity
+public abstract class DrawableEntity extends Entity
 {
 	protected DrawableAsset asset;
 	

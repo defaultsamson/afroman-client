@@ -62,7 +62,7 @@ public class FlickeringLight extends PointLight
 			{
 				// Creates the radius for the frame based on a cosine function
 				// Uses the first PI/2 of the function to map out all the values, then dsimply ping-pongs back and forth
-				radi[i] = (int) (smaller + (radiusDifference * ((Math.cos((i * Math.PI) / radi.length) / 2D) + (1D / 2D))));
+				radi[i] = (int) (smaller + (radiusDifference * ((Math.cos((i * Math.PI) / radi.length) / 2D) + 0.5)));
 				// System.out.println("Radi[" + i + "] = " + smaller + " + " + radiusDifference + " * (Math.cos((" + i + " * PI)/" + radi.length + ")/ 2 + 0.5)");
 				// System.out.println("Radi[" + i + "] = " + radi[i]);
 				

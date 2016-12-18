@@ -275,7 +275,23 @@ public class ServerGame extends Game
 							{
 								Level level = pe.getLevel();
 								
-								level.tryInteract(pe);
+								Vector2DDouble newPos = new Vector2DDouble(packet.getContent().getDouble(), packet.getContent().getDouble());
+								
+								// If the distance between the server's position for the player and the position that the client
+								// is telling the server is greater than 10, ignore the client because they're being dinguses
+								if (pe.getPosition().isDistanceGreaterThan(newPos, 10D))
+								{
+									level.tryInteract(pe);
+								}
+								else
+								{
+									// Else, move the player to where they were when they interacted by the client's point of view,
+									// then test for interaction, then move back
+									Vector2DDouble oldPos = pe.getPosition().clone();
+									pe.setPosition(newPos, false);
+									level.tryInteract(pe);
+									pe.setPosition(oldPos, false);
+								}
 							}
 							else
 							{
