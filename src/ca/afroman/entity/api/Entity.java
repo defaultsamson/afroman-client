@@ -5,7 +5,7 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
 import ca.afroman.packet.PacketPlayerMoveClientServer;
-import ca.afroman.packet.PacketSetPlayerLocation;
+import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -514,7 +514,7 @@ public class Entity extends PositionLevelObject implements ITickable
 					// TODO implement a smooth movement change so it isn't as choppy
 					if (this instanceof PlayerEntity)
 					{
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(((PlayerEntity) this).getRole(), position, !hasDeltaMovement()));
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(((PlayerEntity) this).getRole(), position, !hasDeltaMovement()));
 					}
 					else
 					{
@@ -541,7 +541,7 @@ public class Entity extends PositionLevelObject implements ITickable
 			{
 				if (deltaMoveCounter.isAtInterval())
 				{
-					// TODO Entity delta movement
+					// TODO Add Entity delta movement in addition to this player code
 					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
 					
 					deltaXa = 0;
@@ -553,32 +553,43 @@ public class Entity extends PositionLevelObject implements ITickable
 		// If it's not a player that is controlled by the ClientGame instance (the keyboard input)
 		// Then automatically move it using its deltaX and deltaY
 		{
-			byte xa = 0;
-			byte ya = 0;
-			
-			if (deltaXa > 0)
+			if (isServerSide())
 			{
-				xa = 1;
-				deltaXa -= 1;
+				move(deltaXa, deltaYa, true);
+				
+				deltaXa = 0;
+				deltaYa = 0;
 			}
-			else if (deltaXa < 0)
+			else
 			{
-				xa = -1;
-				deltaXa += 1;
+				// Old system
+				byte xa = 0;
+				byte ya = 0;
+				
+				if (deltaXa > 0)
+				{
+					xa = 1;
+					deltaXa -= 1;
+				}
+				else if (deltaXa < 0)
+				{
+					xa = -1;
+					deltaXa += 1;
+				}
+				
+				if (deltaYa > 0)
+				{
+					ya = 1;
+					deltaYa -= 1;
+				}
+				else if (deltaYa < 0)
+				{
+					ya = -1;
+					deltaYa += 1;
+				}
+				
+				move(xa, ya, true);
 			}
-			
-			if (deltaYa > 0)
-			{
-				ya = 1;
-				deltaYa -= 1;
-			}
-			else if (deltaYa < 0)
-			{
-				ya = -1;
-				deltaYa += 1;
-			}
-			
-			move(xa, ya, true);
 		}
 	}
 	

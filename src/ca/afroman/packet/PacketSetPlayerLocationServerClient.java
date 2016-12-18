@@ -7,7 +7,7 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
 
-public class PacketSetPlayerLocation extends BytePacket
+public class PacketSetPlayerLocationServerClient extends BytePacket
 {
 	private static final int ALLOCATE_SIZE = 2 + (2 * ByteUtil.INT_BYTE_COUNT);
 	
@@ -18,7 +18,7 @@ public class PacketSetPlayerLocation extends BytePacket
 	 * @param pos
 	 * @param connection
 	 */
-	public PacketSetPlayerLocation(Role player, Vector2DDouble pos, boolean forcePos, IPConnection... connection)
+	public PacketSetPlayerLocationServerClient(Role player, Vector2DDouble pos, boolean forcePos, IPConnection... connection)
 	{
 		super(PacketType.SET_PLAYER_POSITION, forcePos, connection);
 		

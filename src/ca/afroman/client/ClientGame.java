@@ -58,6 +58,7 @@ import ca.afroman.packet.PacketLogin;
 import ca.afroman.packet.PacketPingClientServer;
 import ca.afroman.packet.PacketPingServerClient;
 import ca.afroman.packet.PacketPlayerDisconnect;
+import ca.afroman.packet.PacketSetPlayerLocationClientServer;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -494,22 +495,45 @@ public class ClientGame extends Game
 							
 							Role role = Role.fromOrdinal(roleOrd);
 							
-							PlayerEntity player = getPlayer(role);
-							
-							if (player != null)
+							if (role != null)
 							{
-								Vector2DDouble pos = new Vector2DDouble(packet.getContent().getInt(), packet.getContent().getInt());
+								PlayerEntity player = getPlayer(role);
 								
-								// If force the position, then force it.
-								// Else, if the player is outside a given range of the server position force it into positionThe ho
-								if (forcePos || player.getPosition().isDistanceGreaterThan(pos, 10D))
+								if (player != null)
 								{
-									player.setPosition(pos);
+									Vector2DDouble pos = new Vector2DDouble(packet.getContent().getInt(), packet.getContent().getInt());
+									
+									// Tried to make it more leniant so that the client has more control over it's own position
+									
+									// if (forcePos && !player.getPosition().isDistanceGreaterThan(pos, 10D))
+									// {
+									// byte deltaXa = (byte) (player.getPosition().getX() - pos.getX());
+									// byte deltaYa = (byte) (player.getPosition().getY() - pos.getY());
+									// ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
+									// }
+									// else
+									
+									// If the server's trying to force the client to move, but it's within a
+									// given movement range, then tell the server to use that
+									if (role == getRole() && forcePos && !player.getPosition().isDistanceGreaterThan(pos, 10D))
+									{
+										ClientGame.instance().sockets().sender().sendPacket(new PacketSetPlayerLocationClientServer(player.getPosition()));
+									}
+									// Else, if the player is outside a given range of the server
+									// position force it into position to fix it
+									else if (forcePos || player.getPosition().isDistanceGreaterThan(pos, 10D))
+									{
+										player.setPosition(pos);
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No player with role " + role);
 								}
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No player with role " + role);
+								logger().log(ALogType.WARNING, "No role with ordinal " + roleOrd);
 							}
 						}
 							break;

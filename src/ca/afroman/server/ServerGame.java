@@ -18,6 +18,7 @@ import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketPingServerClient;
 import ca.afroman.packet.PacketPlayerMoveServerClient;
+import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -238,6 +239,29 @@ public class ServerGame extends Game
 								player.autoMove(x, y);
 								
 								sockets().sender().sendPacketToAllClients(new PacketPlayerMoveServerClient(role, x, y), sender.getConnection());
+							}
+						}
+					}
+						break;
+					case SET_PLAYER_POSITION:
+					{
+						Role role = sender.getRole();
+						if (role != Role.SPECTATOR)
+						{
+							PlayerEntity player = getPlayer(role);
+							if (player != null)
+							{
+								double x = packet.getContent().getDouble();
+								double y = packet.getContent().getDouble();
+								
+								Vector2DDouble pos = new Vector2DDouble(x, y);
+								
+								if (!player.getPosition().isDistanceGreaterThan(pos, 10D))
+								{
+									player.setPosition(pos, false);
+									
+									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, pos, true), sender.getConnection());
+								}
 							}
 						}
 					}

@@ -11,7 +11,7 @@ import ca.afroman.level.api.Level;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketPlayerInteract;
 import ca.afroman.packet.PacketSetPlayerLevel;
-import ca.afroman.packet.PacketSetPlayerLocation;
+import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
@@ -126,11 +126,16 @@ public class PlayerEntity extends DrawableEntityDirectional
 	@Override
 	public void setPosition(Vector2DDouble position)
 	{
+		setPosition(position, true);
+	}
+	
+	public void setPosition(Vector2DDouble position, boolean sendPositionpackets)
+	{
 		super.setPosition(position);
 		
-		if (isServerSide())
+		if (isServerSide() && sendPositionpackets)
 		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocation(getRole(), position, true));
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(getRole(), position, true));
 		}
 	}
 	
