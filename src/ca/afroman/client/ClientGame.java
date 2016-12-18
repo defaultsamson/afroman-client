@@ -1043,11 +1043,15 @@ public class ClientGame extends Game
 		frame.getContentPane().setBackground(Color.black);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.pack();
-		frame.setResizable(false);
 		
 		frame.setVisible(true);
-		frame.setResizable(true);
 		frame.setLocationRelativeTo(null);
+		
+		// LOAD SOME SHITE
+		logger().log(ALogType.DEBUG, "Loading game...");
+		logger().log(ALogType.DEBUG, "Loading options...");
+		Options.instance(); // Loads options
+		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true); // Sets the window size that of which was found from the options
 		
 		// Loading screen
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
@@ -1080,13 +1084,7 @@ public class ClientGame extends Game
 		// Allows key listens for TAB and such
 		canvas.setFocusTraversalKeysEnabled(false);
 		
-		// DO THE LOADING
-		
-		logger().log(ALogType.DEBUG, "Loading game...");
-		
-		logger().log(ALogType.DEBUG, "Loading options...");
-		
-		Options.instance();
+		// DO MORE LOADING
 		
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
@@ -1111,8 +1109,6 @@ public class ClientGame extends Game
 		lights.put(Role.PLAYER2, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
 		
 		// WHEN FINISHED LOADING
-		
-		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true);
 		
 		if (Options.instance().fullscreen)
 		{
@@ -1245,27 +1241,7 @@ public class ClientGame extends Game
 			{
 				if (isInGame())
 				{
-					// Go back to level selection
-					if (isBuildMode())
-					{
-						if (getCurrentLevel() != null)
-						{
-							getCurrentLevel().cleanupBuildMode(getCurrentLevel().getBuildMode());
-						}
-						setIsBuildMode(false);
-						
-						setCurrentScreen(new GuiLevelSelect(null, getCurrentLevel() != null)); // getCurrentLevel() != null
-					}
-					// Go out to
-					else if (getCurrentScreen() instanceof GuiLevelSelect)
-					{
-						if (getCurrentLevel() != null)
-						{
-							setCurrentScreen(null);
-							setIsBuildMode(true);
-							getCurrentLevel().loadBuildMode(getCurrentLevel().getBuildMode());
-						}
-					}
+					toggleLevelSelect();
 				}
 				else
 				{
@@ -1284,7 +1260,14 @@ public class ClientGame extends Game
 		
 		if (isInGame() && !(getCurrentScreen() instanceof GuiInGameMenu) && !(getCurrentScreen() instanceof GuiOptionsMenu) && input.escape.isReleasedFiltered())
 		{
-			setCurrentScreen(new GuiInGameMenu(getCurrentScreen()));
+			if (isBuildMode() || getCurrentScreen() instanceof GuiLevelSelect)
+			{
+				toggleLevelSelect();
+			}
+			else
+			{
+				setCurrentScreen(new GuiInGameMenu(getCurrentScreen()));
+			}
 		}
 		
 		if (getCurrentScreen() != null)
@@ -1305,6 +1288,31 @@ public class ClientGame extends Game
 		{
 			hasStartedUpdateList = false;
 			updatePlayerList = false;
+		}
+	}
+	
+	private void toggleLevelSelect()
+	{
+		// Go back to level selection
+		if (isBuildMode())
+		{
+			if (getCurrentLevel() != null)
+			{
+				getCurrentLevel().cleanupBuildMode(getCurrentLevel().getBuildMode());
+			}
+			setIsBuildMode(false);
+			
+			setCurrentScreen(new GuiLevelSelect(null, getCurrentLevel() != null)); // getCurrentLevel() != null
+		}
+		// Go out to
+		else if (getCurrentScreen() instanceof GuiLevelSelect)
+		{
+			if (getCurrentLevel() != null)
+			{
+				setCurrentScreen(null);
+				setIsBuildMode(true);
+				getCurrentLevel().loadBuildMode(getCurrentLevel().getBuildMode());
+			}
 		}
 	}
 	
