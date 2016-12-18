@@ -1107,8 +1107,8 @@ public class ClientGame extends Game
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
 		
 		lights = new HashMap<Role, FlickeringLight>(2);
-		lights.put(Role.PLAYER1, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
+		lights.put(Role.PLAYER2, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
 		
 		// WHEN FINISHED LOADING
 		
