@@ -4,9 +4,8 @@ import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
-import ca.afroman.entity.Tile;
-import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.Tile;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ColourUtil;
@@ -62,17 +61,6 @@ public class PlateTrigger extends HitboxTrigger
 			
 			level.getEvents().add(this);
 		}
-	}
-	
-	@Override
-	public void onTrigger(Entity triggerer)
-	{
-		super.onTrigger(triggerer);
-		
-		// if (!isServerSide())
-		// {
-		// System.out.println("Succ: " + ((PlayerEntity) triggerer).getRole());
-		// }
 	}
 	
 	@Override

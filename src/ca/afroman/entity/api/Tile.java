@@ -1,10 +1,9 @@
-package ca.afroman.entity;
+package ca.afroman.entity.api;
 
 import java.util.ArrayList;
 
 import ca.afroman.assets.DrawableAsset;
-import ca.afroman.entity.api.DrawableEntity;
-import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 
@@ -87,5 +86,11 @@ public class Tile extends DrawableEntity
 	public void setLayer(int layer)
 	{
 		this.layer = layer;
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
+	{
+		
 	}
 }

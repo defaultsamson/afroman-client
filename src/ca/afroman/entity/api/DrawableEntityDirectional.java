@@ -3,7 +3,7 @@ package ca.afroman.entity.api;
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.resource.Vector2DDouble;
 
-public class DrawableEntityDirectional extends DrawableEntity
+public abstract class DrawableEntityDirectional extends DrawableEntity
 {
 	private DrawableAsset up;
 	private DrawableAsset down;

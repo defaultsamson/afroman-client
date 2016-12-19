@@ -2,6 +2,7 @@ package ca.afroman.events;
 
 import java.util.List;
 
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.game.Game;
@@ -48,12 +49,6 @@ public class HitboxToggle extends Event
 		return enabled;
 	}
 	
-	@Override
-	public void onTrigger(Entity triggerer)
-	{
-		setEnabled(!enabled);
-	}
-	
 	public void setEnabled(boolean isActive)
 	{
 		// If it's already in the desired state
@@ -92,5 +87,19 @@ public class HitboxToggle extends Event
 		}
 		
 		enabled = isActive;
+	}
+	
+	@Override
+	public void trigger(Entity triggerer)
+	{
+		setEnabled(!enabled);
+		
+		super.trigger(triggerer);
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
+	{
+		
 	}
 }

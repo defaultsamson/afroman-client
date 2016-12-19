@@ -9,10 +9,11 @@ import java.util.List;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
-import ca.afroman.entity.Tile;
+import ca.afroman.entity.HairPin;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.Tile;
 import ca.afroman.events.DoorEvent;
 import ca.afroman.events.PlateTrigger;
 import ca.afroman.events.SwitchTrigger;
@@ -25,7 +26,6 @@ import ca.afroman.util.ColourUtil;
 
 public class MainLevel extends Level
 {
-	
 	public MainLevel(boolean isServerSide)
 	{
 		super(isServerSide, LevelType.MAIN);
@@ -44,11 +44,11 @@ public class MainLevel extends Level
 		int doorColour = ColourUtil.TILE_REPLACE_COLOUR_RED;
 		int offColour = ColourUtil.TILE_REPLACE_COLOUR_DARKGREY;
 		
-		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(80.0, 48.0), inTrig, null, Direction.UP, doorColour);
+		DoorEvent dora = new DoorEvent(isServerSide, false, new Vector2DDouble(88.0, 48.0), inTrig, null, Direction.UP, doorColour);
 		dora.addToLevel(this);
 		dora.setEnabled(false);
 		
-		DoorEvent dory = new DoorEvent(isServerSide, false, new Vector2DDouble(160, -32), inTrig, null, Direction.RIGHT, doorColour);
+		DoorEvent dory = new DoorEvent(isServerSide, false, new Vector2DDouble(160, -24), inTrig, null, Direction.RIGHT, doorColour);
 		dory.addToLevel(this);
 		dory.setEnabled(true);
 		
@@ -58,35 +58,30 @@ public class MainLevel extends Level
 		SwitchTrigger switchToggle = new SwitchTrigger(isServerSide, false, new Vector2DDouble(240, 64), null, inTrig, switchTrig, doorColour, offColour);
 		switchToggle.addToLevel(this);
 		
+		new HairPin(isServerSide, false, new Vector2DDouble(102, 10)).addToLevel(this);
+		
 		//////////// HIGHLIGHT ME ////////////
 		
 		// Hitboxes
 		new Hitbox(isServerSide, false, 48, -48, 16, 80).addToLevel(this);
-		new Hitbox(isServerSide, false, 122, -4, 8, 6).addToLevel(this);
 		new Hitbox(isServerSide, false, 112, -48, 16, 28).addToLevel(this);
 		new Hitbox(isServerSide, false, 65, -48, 79, 13).addToLevel(this);
-		new Hitbox(isServerSide, false, 48, 32, 16, 16).addToLevel(this);
-		new Hitbox(isServerSide, false, 65, 33, 31, 15).addToLevel(this);
-		new Hitbox(isServerSide, false, 65, 48, 15, 64).addToLevel(this);
 		new Hitbox(isServerSide, false, 80, 97, 63, 14).addToLevel(this);
-		new Hitbox(isServerSide, false, 128, 55, 14, 45).addToLevel(this);
-		new Hitbox(isServerSide, false, 80, 52, 16, 8).addToLevel(this);
-		new Hitbox(isServerSide, false, 112, 52, 16, 8).addToLevel(this);
-		new Hitbox(isServerSide, false, 112, 33, 39, 15).addToLevel(this);
-		new Hitbox(isServerSide, false, 146, 46, 13, 93).addToLevel(this);
 		new Hitbox(isServerSide, false, 145, 130, 90, 17).addToLevel(this);
 		new Hitbox(isServerSide, false, 227, 114, 30, 21).addToLevel(this);
 		new Hitbox(isServerSide, false, 243, 100, 32, 22).addToLevel(this);
 		new Hitbox(isServerSide, false, 259, 49, 16, 49).addToLevel(this);
-		new Hitbox(isServerSide, false, 198, 42, 64, 17).addToLevel(this);
-		new Hitbox(isServerSide, false, 155, 36, 16, 24).addToLevel(this);
-		new Hitbox(isServerSide, false, 148, 3, 25, 32).addToLevel(this);
 		new Hitbox(isServerSide, false, 147, -54, 64, 31).addToLevel(this);
-		new Hitbox(isServerSide, false, 196, -41, 34, 95).addToLevel(this);
-		new Hitbox(isServerSide, false, 196, 44, 12, 15).addToLevel(this);
-		new Hitbox(isServerSide, false, 212, 88, 9, 6).addToLevel(this);
 		new Hitbox(isServerSide, false, 164, -29, 8, 12).addToLevel(this);
 		new Hitbox(isServerSide, false, 164, -1, 8, 11).addToLevel(this);
+		new Hitbox(isServerSide, false, 122, -4, 8, 3).addToLevel(this);
+		new Hitbox(isServerSide, false, 212, 90, 8, 3).addToLevel(this);
+		new Hitbox(isServerSide, false, 112, 33, 38, 27).addToLevel(this);
+		new Hitbox(isServerSide, false, 148, 3, 25, 57).addToLevel(this);
+		new Hitbox(isServerSide, false, 132, 60, 25, 70).addToLevel(this);
+		new Hitbox(isServerSide, false, 63, 49, 14, 61).addToLevel(this);
+		new Hitbox(isServerSide, false, 196, -24, 79, 83).addToLevel(this);
+		new Hitbox(isServerSide, false, 60, 33, 36, 27).addToLevel(this);
 		
 		if (!isServerSide)
 		{
@@ -209,6 +204,8 @@ public class MainLevel extends Level
 			new Tile(1, false, new Vector2DDouble(224, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_RIGHT).clone()).addToLevel(this);
 			new Tile(1, false, new Vector2DDouble(173, 91), Assets.getDrawableAsset(AssetType.TILE_GRASS_WIDE_LEFT).clone()).addToLevel(this);
 			new Tile(1, false, new Vector2DDouble(171, 61), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_RIGHT).clone()).addToLevel(this);
+			new Tile(1, false, new Vector2DDouble(144, -16), Assets.getDrawableAsset(AssetType.TILE_DIRT).clone()).addToLevel(this);
+			new Tile(1, false, new Vector2DDouble(256, 48), Assets.getDrawableAsset(AssetType.TILE_WALL_INCORNER_TOP_R).clone()).addToLevel(this);
 			
 			new Tile(2, false, new Vector2DDouble(144, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_INCORNER_BOTTOM_R).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(224, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_INCORNER_BOTTOM_L).clone()).addToLevel(this);
@@ -220,7 +217,6 @@ public class MainLevel extends Level
 			new Tile(2, false, new Vector2DDouble(176, 16), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 32), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(160, -16), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
-			new Tile(2, false, new Vector2DDouble(144, -16), Assets.getDrawableAsset(AssetType.TILE_ROCK).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(144, -16), Assets.getDrawableAsset(AssetType.TILE_GRASS_INNER_TOPRIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(160, -16), Assets.getDrawableAsset(AssetType.TILE_GRASS_INNER_TOPLEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 32), Assets.getDrawableAsset(AssetType.TILE_GRASS_INNER_BOTTOMRIGHT).clone()).addToLevel(this);
@@ -238,7 +234,6 @@ public class MainLevel extends Level
 			new Tile(2, false, new Vector2DDouble(192, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_GRASS_FLIP).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_GRASS_FLIP).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(160, 128), Assets.getDrawableAsset(AssetType.TILE_WALL_GRASS_FLIP).clone()).addToLevel(this);
-			new Tile(2, false, new Vector2DDouble(118, -14), Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(192, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_WIDE_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(192, 96), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_LEFT).clone()).addToLevel(this);
@@ -246,15 +241,16 @@ public class MainLevel extends Level
 			new Tile(2, false, new Vector2DDouble(208, 64), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(167, 66), Assets.getDrawableAsset(AssetType.TILE_GRASS_TALL_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(179, 82), Assets.getDrawableAsset(AssetType.TILE_GRASS_WIDE_RIGHT).clone()).addToLevel(this);
-			
 			new Tile(2, false, new Vector2DDouble(176, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(224, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(208, 96), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(208, 64), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_LEFT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(176, 80), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_LEFT).clone()).addToLevel(this);
-			new Tile(3, false, new Vector2DDouble(208, 80), Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(174, 93), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
 			new Tile(2, false, new Vector2DDouble(169, 61), Assets.getDrawableAsset(AssetType.TILE_GRASS_FLOWER_RIGHT).clone()).addToLevel(this);
+			
+			new Tile(3, false, new Vector2DDouble(208, 80), Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone()).addToLevel(this);
+			new Tile(3, false, new Vector2DDouble(118, -14), Assets.getDrawableAsset(AssetType.TILE_OBJECT_POST).clone()).addToLevel(this);
 			
 			new Tile(4, false, new Vector2DDouble(212, 78), Assets.getDrawableAsset(AssetType.TILE_LAMP).clone()).addToLevel(this);
 			

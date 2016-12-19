@@ -1,7 +1,6 @@
 package ca.afroman.server;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.game.Game;
@@ -17,8 +16,9 @@ import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
-import ca.afroman.packet.PacketPing;
-import ca.afroman.packet.PacketPlayerMove;
+import ca.afroman.packet.PacketPingServerClient;
+import ca.afroman.packet.PacketPlayerMoveServerClient;
+import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -130,7 +130,7 @@ public class ServerGame extends Game
 						break;
 					case LOAD_LEVELS:
 					{
-						boolean sendingLevels = (packet.getContent()[0] == 1);
+						boolean sendingLevels = packet.getContent().get() == 1;
 						
 						if (sendingLevels)
 						{
@@ -161,7 +161,7 @@ public class ServerGame extends Game
 					{
 						if (sentByHost)
 						{
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+							ByteBuffer buf = packet.getContent();
 							
 							ConnectedPlayer player = sockets().getPlayerConnection(buf.getShort());
 							
@@ -215,7 +215,7 @@ public class ServerGame extends Game
 					case START_SERVER:
 						if (sentByHost)
 						{
-							byte x = packet.getContent()[0];
+							byte x = packet.getContent().get();
 							
 							// 1 if true, 0 if false
 							setIsInGame(x == 1);
@@ -233,12 +233,35 @@ public class ServerGame extends Game
 							PlayerEntity player = getPlayer(role);
 							if (player != null)
 							{
-								byte x = packet.getContent()[1];
-								byte y = packet.getContent()[2];
+								byte x = packet.getContent().get();
+								byte y = packet.getContent().get();
 								
 								player.autoMove(x, y);
 								
-								sockets().sender().sendPacketToAllClients(new PacketPlayerMove(role, x, y), sender.getConnection());
+								sockets().sender().sendPacketToAllClients(new PacketPlayerMoveServerClient(role, x, y), sender.getConnection());
+							}
+						}
+					}
+						break;
+					case SET_PLAYER_POSITION:
+					{
+						Role role = sender.getRole();
+						if (role != Role.SPECTATOR)
+						{
+							PlayerEntity player = getPlayer(role);
+							if (player != null)
+							{
+								double x = packet.getContent().getDouble();
+								double y = packet.getContent().getDouble();
+								
+								Vector2DDouble pos = new Vector2DDouble(x, y);
+								
+								if (!player.getPosition().isDistanceGreaterThan(pos, 10D))
+								{
+									player.setPosition(pos, false);
+									
+									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, pos, true), sender.getConnection());
+								}
 							}
 						}
 					}
@@ -252,7 +275,23 @@ public class ServerGame extends Game
 							{
 								Level level = pe.getLevel();
 								
-								level.tryInteract(pe);
+								Vector2DDouble newPos = new Vector2DDouble(packet.getContent().getDouble(), packet.getContent().getDouble());
+								
+								// If the distance between the server's position for the player and the position that the client
+								// is telling the server is greater than 10, ignore the client because they're being dinguses
+								if (pe.getPosition().isDistanceGreaterThan(newPos, 10D))
+								{
+									level.tryInteract(pe);
+								}
+								else
+								{
+									// Else, move the player to where they were when they interacted by the client's point of view,
+									// then test for interaction, then move back
+									Vector2DDouble oldPos = pe.getPosition().clone();
+									pe.setPosition(newPos, false);
+									level.tryInteract(pe);
+									pe.setPosition(oldPos, false);
+								}
 							}
 							else
 							{
@@ -266,7 +305,7 @@ public class ServerGame extends Game
 						break;
 					case COMMAND:
 					{
-						ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+						ByteBuffer buf = packet.getContent();
 						
 						ConsoleCommand command = ConsoleCommand.fromOrdinal(buf.getInt());
 						String[] params = new String[buf.get()];
@@ -285,45 +324,7 @@ public class ServerGame extends Game
 			{
 				IPConnection connection = new IPConnection(inPack.getIPAddress(), inPack.getPort(), null);
 				
-				int version = ByteUtil.intFromBytes(Arrays.copyOfRange(packet.getContent(), 0, ByteUtil.INT_BYTE_COUNT));
-				
-				String name = "";
-				int passIndex = 0;
-				
-				for (int i = ByteUtil.INT_BYTE_COUNT; i < packet.getContent().length - 1; i++)
-				{
-					// The signal. @see PacketLogin
-					if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-					{
-						name = new String(Arrays.copyOfRange(packet.getContent(), 2, i)).trim();
-						passIndex = i + 2;
-						break;
-					}
-				}
-				
-				int width = 0;
-				
-				for (int i = passIndex; i < packet.getContent().length - 1; i++)
-				{
-					// The signal. @see PacketLogin
-					if (packet.getContent()[i] == Byte.MIN_VALUE && packet.getContent()[i + 1] == Byte.MAX_VALUE)
-					{
-						break;
-					}
-					width += 1;
-				}
-				
-				byte[] passa = Arrays.copyOfRange(packet.getContent(), passIndex, passIndex + width);
-				
-				String pass = new String(passa).trim();
-				
-				// Checks if there's space for the user on the server
-				if (sockets().getConnectedPlayers().size() >= Game.MAX_PLAYERS)
-				{
-					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER, connection);
-					sockets().sender().sendPacket(passPacket);
-					return;
-				}
+				int version = packet.getContent().getInt();
 				
 				// Checks that the client's game version is not above or below this version
 				if (version > VersionUtil.SERVER_TEST_VERSION)
@@ -340,6 +341,18 @@ public class ServerGame extends Game
 					return;
 				}
 				
+				// Checks if there's space for the user on the server
+				if (sockets().getConnectedPlayers().size() >= Game.MAX_PLAYERS)
+				{
+					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER, connection);
+					sockets().sender().sendPacket(passPacket);
+					return;
+				}
+				
+				// Extrapolates the provided username
+				byte[] nameBytes = ByteUtil.extractBytes(packet.getContent(), Byte.MIN_VALUE, Byte.MAX_VALUE);
+				String name = new String(nameBytes).trim();
+				
 				// Checks that there's no duplicated usernames
 				if (sockets().getPlayerConnection(name) != null)
 				{
@@ -351,6 +364,10 @@ public class ServerGame extends Game
 				// If there's a password
 				if (!password.equals(""))
 				{
+					// Extrapolates the provided password
+					byte[] passBytes = ByteUtil.extractBytes(packet.getContent(), Byte.MIN_VALUE, Byte.MAX_VALUE);
+					String pass = new String(passBytes).trim();
+					
 					// If got the correct password, allow the player to join
 					if (pass.equals(password))
 					{
@@ -441,11 +458,29 @@ public class ServerGame extends Game
 		
 		if (updatePing.isAtInterval())
 		{
-			sockets().sender().sendPacketToAllClients(new PacketPing());
+			// sockets().sender().sendPacketToAllClients(new PacketPing());
+			
+			int p1Ping = PacketPingServerClient.NONE;
+			int p2Ping = PacketPingServerClient.NONE;
+			
+			for (ConnectedPlayer p : sockets().getConnectedPlayers())
+			{
+				if (p.getRole() == Role.PLAYER1)
+				{
+					p1Ping = p.getPing();
+				}
+				else if (p.getRole() == Role.PLAYER2)
+				{
+					p2Ping = p.getPing();
+				}
+			}
 			
 			for (ConnectedPlayer p : sockets().getConnectedPlayers())
 			{
 				p.setPingTestTime(System.currentTimeMillis());
+				
+				PacketPingServerClient pingPacket = new PacketPingServerClient(p.getPing(), p1Ping, p2Ping, ((IPConnectedPlayer) p).getConnection());
+				sockets().sender().sendPacket(pingPacket);
 			}
 		}
 		

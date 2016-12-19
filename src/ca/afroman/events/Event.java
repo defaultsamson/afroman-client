@@ -8,7 +8,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
 
-public class Event extends Entity
+public abstract class Event extends Entity
 {
 	protected List<Integer> inTriggers;
 	protected List<Integer> outTriggers;
@@ -67,16 +67,6 @@ public class Event extends Entity
 		this.outTriggers = (outTriggers != null ? outTriggers : new ArrayList<Integer>());
 	}
 	
-	/**
-	 * Runs when this is triggered.
-	 * <img src="https://i.imgur.com/dNVvntX.gif" alt="hHHHHHHH" height="120" width="120">
-	 * <a href="https://i.imgur.com/dNVvntX.gif">ono</a>
-	 */
-	public void onTrigger(Entity triggerer)
-	{
-		
-	}
-	
 	@Override
 	public void removeFromLevel()
 	{
@@ -100,15 +90,15 @@ public class Event extends Entity
 	}
 	
 	/**
-	 * Triggers this.
+	 * Triggers this (Runs when triggered).
+	 * <p>
+	 * Invoke <code>super.trigger(triggerer)<code> <i>after</i> the subclass code when overriding this method.
 	 */
 	public void trigger(Entity triggerer)
 	{
-		onTrigger(triggerer);
-		
 		for (int out : getOutTriggers())
 		{
-			// TODO chain for all levels
+			// TODO chain for all levels?
 			level.chainEvents(triggerer, out);
 		}
 	}

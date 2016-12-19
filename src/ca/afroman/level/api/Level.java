@@ -13,15 +13,15 @@ import ca.afroman.assets.ITextureDrawable;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
-import ca.afroman.entity.Tile;
 import ca.afroman.entity.api.DrawableEntity;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.GroundItem;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.Tile;
 import ca.afroman.entity.api.YComparator;
 import ca.afroman.events.Event;
 import ca.afroman.events.HitboxToggle;
 import ca.afroman.events.HitboxTrigger;
-import ca.afroman.events.TriggerType;
 import ca.afroman.game.Role;
 import ca.afroman.gui.build.GuiFlickeringLightEditor;
 import ca.afroman.gui.build.GuiGrid;
@@ -32,11 +32,9 @@ import ca.afroman.light.LightMap;
 import ca.afroman.light.PointLight;
 import ca.afroman.log.ALogType;
 import ca.afroman.option.Options;
-import ca.afroman.packet.PacketActivateTrigger;
 import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
-import ca.afroman.server.ServerGame;
 import ca.afroman.util.CastUtil;
 import ca.afroman.util.ColourUtil;
 import ca.afroman.util.ListUtil;
@@ -782,6 +780,14 @@ public class Level extends ServerClientObject implements ITickable
 						renderTo.drawFillRect(new Color(1F, 1F, 1F, 1F), new Color(1F, 1F, 1F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
 					}
 				}
+				
+				if (entity instanceof GroundItem)
+				{
+					Hitbox box = ((GroundItem) entity).getMathHitbox();
+					
+					Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
+					renderTo.drawFillRect(new Color(0.2F, 1F, 0.2F, 1F), new Color(0.2F, 1F, 0.2F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());
+				}
 			}
 			
 			for (Entity entity : this.getPlayers())
@@ -1278,19 +1284,12 @@ public class Level extends ServerClientObject implements ITickable
 	{
 		for (Event e : getEvents())
 		{
-			if (e instanceof HitboxTrigger)
-			{
-				HitboxTrigger t = (HitboxTrigger) e;
-				
-				if (((HitboxTrigger) e).getTriggerTypes().contains(TriggerType.PLAYER_INTERACT))
-				{
-					if (entity.isColliding(t.getHitbox()))
-					{
-						t.trigger(entity);
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(t.getID(), getLevelType(), entity.getRole()));
-					}
-				}
-			}
+			e.tryInteract(entity);
+		}
+		
+		for (Entity e : getEntities())
+		{
+			e.tryInteract(entity);
 		}
 	}
 	

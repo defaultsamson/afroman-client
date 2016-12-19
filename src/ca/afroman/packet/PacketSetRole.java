@@ -1,24 +1,24 @@
 package ca.afroman.packet;
 
+import java.nio.ByteBuffer;
+
 import ca.afroman.game.Role;
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
 
 public class PacketSetRole extends BytePacket
 {
-	private byte[] toSend;
+	private static final int ALLOCATE_SIZE = 2 + (2 * ByteUtil.INT_BYTE_COUNT);
 	
 	public PacketSetRole(short playerID, Role newRole, IPConnection... connection)
 	{
 		super(PacketType.SETROLE, true, connection);
 		
-		byte[] id = ByteUtil.shortAsBytes(playerID);
-		toSend = new byte[] { id[0], id[1], (byte) newRole.ordinal() };
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		ByteBuffer buf = ByteBuffer.allocate(ALLOCATE_SIZE).put(typeOrd());
+		
+		buf.putShort(playerID);
+		buf.put((byte) newRole.ordinal());
+		
+		content = buf.array();
 	}
 }

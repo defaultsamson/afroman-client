@@ -1,5 +1,6 @@
 package ca.afroman.entity.api;
 
+import ca.afroman.entity.PlayerEntity;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.ServerClientObject;
 import ca.afroman.resource.Vector2DDouble;
@@ -58,14 +59,6 @@ public abstract class PositionLevelObject extends ServerClientObject
 	}
 	
 	/**
-	 * Method runs when this has been interacted with.
-	 */
-	public void onInteract()
-	{
-		// TODO actually trigger this? or should this be trashed?
-	}
-	
-	/**
 	 * Removes this from its current level.
 	 */
 	public void removeFromLevel()
@@ -84,4 +77,9 @@ public abstract class PositionLevelObject extends ServerClientObject
 	{
 		this.position.setVector(position);
 	}
+	
+	/**
+	 * Method runs when this has been interacted with.
+	 */
+	public abstract void tryInteract(PlayerEntity triggerer);
 }

@@ -32,7 +32,6 @@ public class GuiGrid extends GuiScreen
 			switch (buttonID)
 			{
 				case 500:
-					System.out.println("Caut");
 					grid.setGridSize(grid.getGridSize().getNext());
 					break;
 			}

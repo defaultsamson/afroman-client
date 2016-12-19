@@ -300,27 +300,34 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BRIDGE_WOOD_SIDE, 16 * 7, 16 * 7, 24, 24));
 		
-		Texture openDoor = sheet.getSubTexture(AssetType.TILE_DOOR_UP_OPEN, 16 * 7, 16 * 1, 48, 16);
-		Texture closedDoor = sheet.getSubTexture(AssetType.TILE_DOOR_UP_CLOSED, 16 * 7, 16 * 0, 48, 16);
+		Texture openDoor = sheet.getSubTexture(AssetType.TILE_DOOR_UP_OPEN, 16 * 7 + 8, 16 * 1, 32, 16);
+		Texture closedDoor = sheet.getSubTexture(AssetType.TILE_DOOR_UP_CLOSED, 16 * 7 + 8, 16 * 0, 32, 16);
 		assets.add(openDoor);
 		assets.add(closedDoor);
-		assets.add(openDoor.clone(AssetType.TILE_DOOR_RIGHT_OPEN).rotate(90));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_RIGHT_CLOSED).rotate(90));
 		assets.add(openDoor.clone(AssetType.TILE_DOOR_DOWN_OPEN).flipY());
 		assets.add(closedDoor.clone(AssetType.TILE_DOOR_DOWN_CLOSED).flipY());
-		assets.add(openDoor.clone(AssetType.TILE_DOOR_LEFT_OPEN).rotate(-90));
-		assets.add(closedDoor.clone(AssetType.TILE_DOOR_LEFT_CLOSED).rotate(-90));
+		
+		// The height of each half of the door when it's placed along the vertical axis
+		int doorHeight = openDoor.getWidth() / 2;
+		
+		assets.add(openDoor.getSubTexture(AssetType.TILE_DOOR_LEFT_TOP_OPEN, 0, 0, doorHeight, 16, -16).rotate(-90));
+		assets.add(openDoor.getSubTexture(AssetType.TILE_DOOR_LEFT_BOTTOM_OPEN, doorHeight, 0, doorHeight, 16, 0).rotate(-90));
+		assets.add(closedDoor.getSubTexture(AssetType.TILE_DOOR_LEFT_TOP_CLOSED, 0, 0, doorHeight, 16, -16).rotate(-90));
+		assets.add(closedDoor.getSubTexture(AssetType.TILE_DOOR_LEFT_BOTTOM_CLOSED, doorHeight, 0, doorHeight, 16, 0).rotate(-90));
+		
+		assets.add(openDoor.getSubTexture(AssetType.TILE_DOOR_RIGHT_TOP_OPEN, 0, 0, doorHeight, 16, -16).rotate(90));
+		assets.add(openDoor.getSubTexture(AssetType.TILE_DOOR_RIGHT_BOTTOM_OPEN, doorHeight, 0, doorHeight, 16, 0).rotate(90));
+		assets.add(closedDoor.getSubTexture(AssetType.TILE_DOOR_RIGHT_TOP_CLOSED, 0, 0, doorHeight, 16, -16).rotate(90));
+		assets.add(closedDoor.getSubTexture(AssetType.TILE_DOOR_RIGHT_BOTTOM_CLOSED, doorHeight, 0, doorHeight, 16, 0).rotate(90));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_PLATE_UP, 16 * 10, 16 * 3, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_PLATE_DOWN, 16 * 10, 16 * 4, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.TILE_SWITCH_LEFT, 16 * 11, 16 * 3, 16, 16));
-		assets.add(sheet.getSubTexture(AssetType.TILE_SWITCH_RIGHT, 16 * 11, 16 * 4, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.TILE_SWITCH_LEFT, 16 * 11, 16 * 3, 16, 16, -2));
+		assets.add(sheet.getSubTexture(AssetType.TILE_SWITCH_RIGHT, 16 * 11, 16 * 4, 16, 16, -2));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_BLOCK, 16 * 13, 16 * 2, 16, 16));
 		assets.add(new SpriteAnimation(AssetType.TILE_BlOCK_ANIMATED, false, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 12, 16 * 2, 16 * 4, 16).toTextureArray(4, 1)));
-		
-		// assets.add(new StepSpriteAnimation(new int[] { 0, 1 }, AssetType.TILE_PLATE_TEST, false, 30, sheet.getSubTexture(AssetType.TILE_PLATE_TEST, 16 * 10, 16 * 3, 16, 32).toTextureArray(1, 2)));
 		
 		assets.add(new SpriteAnimation(AssetType.TILE_AURA, false, 12, sheet.getSubTexture(AssetType.TILE_AURA, 16 * 4, 16 * 2, 16 * 6, 16).toTextureArray(6, 1)));
 		

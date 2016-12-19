@@ -16,7 +16,6 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -56,8 +55,10 @@ import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketLogin;
-import ca.afroman.packet.PacketPing;
+import ca.afroman.packet.PacketPingClientServer;
+import ca.afroman.packet.PacketPingServerClient;
 import ca.afroman.packet.PacketPlayerDisconnect;
+import ca.afroman.packet.PacketSetPlayerLocationClientServer;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -137,13 +138,18 @@ public class ClientGame extends Game
 	private Role role;
 	private Role spectatingRole = Role.PLAYER1;
 	private short id = -1;
+	private short ping = 0;
+	private short ping1 = 0;
+	private short ping2 = 0;
 	
 	/** Keeps track of the amount of ticks passed to time memory usage updates. */
+	private String memDisplay = "";
 	private ModulusCounter updateMem;
 	private long totalMemory = 0;
 	private long usedMemory = 0;
 	
-	private Font debugFont;
+	private Font debugFontWhite;
+	private Font debugFontBlack;
 	private Cursor blankCursor;
 	private byte hideCursor = 0;
 	
@@ -210,6 +216,29 @@ public class ClientGame extends Game
 	public short getID()
 	{
 		return id;
+	}
+	
+	private String getPingDisplay(String tag, int ping)
+	{
+		if (ping != PacketPingServerClient.NONE)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(tag);
+			sb.append(": ");
+			
+			if (ping1 == PacketPingServerClient.OVER_MAX)
+			{
+				sb.append('>');
+				sb.append(PacketPingServerClient.MAX_SENDABLE);
+			}
+			else
+			{
+				sb.append(ping);
+			}
+			
+			return sb.toString();
+		}
+		return null;
 	}
 	
 	public Role getRole()
@@ -295,13 +324,17 @@ public class ClientGame extends Game
 							logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
 							break;
 						case TEST_PING:
-							sockets().sender().sendPacket(new PacketPing());
+							ping = (short) (packet.getContent().get() + Byte.MAX_VALUE);
+							ping1 = (short) (packet.getContent().get() + Byte.MAX_VALUE);
+							ping2 = (short) (packet.getContent().get() + Byte.MAX_VALUE);
+							
+							sockets().sender().sendPacket(new PacketPingClientServer());
 							break;
 						case DENY_JOIN:
 						{
 							setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
 							
-							DenyJoinReason reason = DenyJoinReason.fromOrdinal(ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] }));
+							DenyJoinReason reason = DenyJoinReason.fromOrdinal(packet.getContent().get());
 							
 							switch (reason)
 							{
@@ -327,20 +360,20 @@ public class ClientGame extends Game
 						}
 							break;
 						case ASSIGN_CLIENTID:
-							id = ByteUtil.shortFromBytes(new byte[] { packet.getContent()[0], packet.getContent()[1] });
+							id = packet.getContent().getShort();
 							
 							sockets().initServerTCPConnection();
 							break;
 						case PLAYER_MOVE:
 						{
-							Role role = Role.fromOrdinal(packet.getContent()[0]);
+							Role role = Role.fromOrdinal(packet.getContent().get());
 							if (role != Role.SPECTATOR && role != getRole())
 							{
 								PlayerEntity player = getPlayer(role);
 								if (player != null)
 								{
-									byte x = packet.getContent()[1];
-									byte y = packet.getContent()[2];
+									byte x = packet.getContent().get();
+									byte y = packet.getContent().get();
 									
 									player.autoMove(x, y);
 								}
@@ -351,7 +384,7 @@ public class ClientGame extends Game
 						{
 							updatePlayerList();
 							List<ConnectedPlayer> players = new ArrayList<ConnectedPlayer>();
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
+							ByteBuffer buf = packet.getContent();
 							
 							// If there's still remaining bytes and they aren't the signal
 							while (buf.hasRemaining() && !ByteUtil.isSignal(buf.array(), buf.position(), Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE))
@@ -374,10 +407,10 @@ public class ClientGame extends Game
 							break;
 						case START_SERVER:
 						{
-							byte x = packet.getContent()[0];
+							boolean serverStarted = packet.getContent().get() == 1;
 							
 							// Server was started
-							if (x == 1)
+							if (serverStarted)
 							{
 								
 							}
@@ -390,7 +423,7 @@ public class ClientGame extends Game
 							break;
 						case LOAD_LEVELS:
 						{
-							boolean sendingLevels = (packet.getContent()[0] == 1);
+							boolean sendingLevels = packet.getContent().get() == 1;
 							
 							if (sendingLevels)
 							{
@@ -429,13 +462,13 @@ public class ClientGame extends Game
 							break;
 						case SET_PLAYER_LEVEL:
 						{
-							Role role = Role.fromOrdinal(packet.getContent()[0]);
+							Role role = Role.fromOrdinal(packet.getContent().get());
 							
 							PlayerEntity player = getPlayer(role);
 							
 							if (player != null)
 							{
-								LevelType levelType = LevelType.fromOrdinal(ByteUtil.shortFromBytes(Arrays.copyOfRange(packet.getContent(), 1, 3)));
+								LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
 								Level level = getLevel(levelType);
 								
 								player.addToLevel(level);
@@ -451,10 +484,8 @@ public class ClientGame extends Game
 							break;
 						case SET_PLAYER_POSITION:
 						{
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-							
 							boolean forcePos = false;
-							byte roleOrd = buf.get();
+							byte roleOrd = packet.getContent().get();
 							
 							if (roleOrd >= Role.values().length)
 							{
@@ -464,41 +495,62 @@ public class ClientGame extends Game
 							
 							Role role = Role.fromOrdinal(roleOrd);
 							
-							PlayerEntity player = getPlayer(role);
-							
-							if (player != null)
+							if (role != null)
 							{
-								Vector2DDouble pos = new Vector2DDouble(buf.getInt(), buf.getInt());
+								PlayerEntity player = getPlayer(role);
 								
-								// If force the position, then force it.
-								// Else, if the player is outside a given range of the server position force it into positionThe ho
-								if (forcePos || player.getPosition().isDistanceGreaterThan(pos, 10D))
+								if (player != null)
 								{
-									player.setPosition(pos);
+									Vector2DDouble pos = new Vector2DDouble(packet.getContent().getInt(), packet.getContent().getInt());
+									
+									// Tried to make it more lenient so that the client has more control over it's own position
+									
+									// if (forcePos && !player.getPosition().isDistanceGreaterThan(pos, 10D))
+									// {
+									// byte deltaXa = (byte) (player.getPosition().getX() - pos.getX());
+									// byte deltaYa = (byte) (player.getPosition().getY() - pos.getY());
+									// ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
+									// }
+									// else
+									
+									// If the server's trying to force the client to move, but it's within a
+									// given movement range, then tell the server to use that
+									if (role == getRole() && forcePos && !player.getPosition().isDistanceGreaterThan(pos, 10D))
+									{
+										ClientGame.instance().sockets().sender().sendPacket(new PacketSetPlayerLocationClientServer(player.getPosition()));
+									}
+									// Else, if the player is outside a given range of the server
+									// position force it into position to fix it
+									else if (forcePos || player.getPosition().isDistanceGreaterThan(pos, 10D))
+									{
+										player.setPosition(pos);
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No player with role " + role);
 								}
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No player with role " + role);
+								logger().log(ALogType.WARNING, "No role with ordinal " + roleOrd);
 							}
 						}
 							break;
 						case ACTIVATE_TRIGGER:
 						{
-							ByteBuffer buf = ByteBuffer.wrap(packet.getContent());
-							
-							LevelType levelType = LevelType.fromOrdinal(buf.getShort());
+							LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
 							Level level = getLevel(levelType);
 							
 							if (level != null)
 							{
-								int id = buf.getInt();
+								int id = packet.getContent().getInt();
 								
 								Event event = level.getEvent(id);
 								
 								if (event != null)
 								{
-									byte ord = buf.get();
+									byte ord = packet.getContent().get();
 									Role role = Role.fromOrdinal(ord);
 									
 									if (role != null)
@@ -545,13 +597,13 @@ public class ClientGame extends Game
 				}
 				catch (Exception e)
 				{
-					// Unable to print who was sending this packet
+					// TODO Unable to print who was sending this packet
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			// logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
+			// TODO logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
 	}
 	
@@ -600,18 +652,93 @@ public class ClientGame extends Game
 			
 			if (hudDebug)
 			{
-				debugFont.render(screen, new Vector2DInt(1, 0), "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)");
-				debugFont.render(screen, new Vector2DInt(1, 10), "TPS: " + tps);
-				debugFont.render(screen, new Vector2DInt(1, 20), "FPS: " + fps);
-				debugFont.render(screen, new Vector2DInt(1, HEIGHT - 9), "V");
-				debugFont.render(screen, new Vector2DInt(9, HEIGHT - 9), "" + VersionUtil.VERSION_STRING);
+				// Displays hud info
+				{
+					Vector2DInt hud = new Vector2DInt(1, 0);
+					Vector2DInt shadow = hud.clone().add(1, 1);
+					
+					debugFontBlack.render(screen, shadow, memDisplay);
+					debugFontWhite.render(screen, hud, memDisplay);
+					String t = "TPS: " + tps;
+					debugFontBlack.render(screen, shadow.add(0, 10), t);
+					debugFontWhite.render(screen, hud.add(0, 10), t);
+					String f = "FPS: " + fps;
+					debugFontBlack.render(screen, shadow.add(0, 10), f);
+					debugFontWhite.render(screen, hud.add(0, 10), f);
+					
+					Vector2DInt version = new Vector2DInt(2, HEIGHT - 8);
+					Vector2DInt versionShadow = new Vector2DInt(1, HEIGHT - 9);
+					debugFontBlack.render(screen, version, "V");
+					debugFontWhite.render(screen, versionShadow, "V");
+					
+					String ver = new StringBuilder().append(VersionUtil.VERSION_STRING).toString();
+					debugFontBlack.render(screen, version.add(8, 0), ver);
+					debugFontWhite.render(screen, versionShadow.add(8, 0), ver);
+				}
 				
 				PlayerEntity player = getThisPlayer();
 				
 				if (player != null && player.getLevel() != null)
 				{
-					debugFont.render(screen, new Vector2DInt(1, 30), "x: " + player.getPosition().getX());
-					debugFont.render(screen, new Vector2DInt(1, 40), "y: " + player.getPosition().getY());
+					String x = "x: " + player.getPosition().getX();
+					debugFontBlack.render(screen, new Vector2DInt(2, 51), x);
+					debugFontWhite.render(screen, new Vector2DInt(1, 50), x);
+					String y = "y: " + player.getPosition().getY();
+					debugFontBlack.render(screen, new Vector2DInt(2, 61), y);
+					debugFontWhite.render(screen, new Vector2DInt(1, 60), y);
+				}
+			}
+			
+			// Displays pings
+			if ((hudDebug || input.tab.isPressed()) && sockets() != null)
+			{
+				String you = getPingDisplay("You", ping);
+				String p1p = getPingDisplay("P1", ping1);
+				String p2p = getPingDisplay("P2", ping2);
+				
+				if (you != null || p1p != null || p2p != null)
+				{
+					// Distance from the right to draw
+					Vector2DInt text = new Vector2DInt(WIDTH - 2, 0);
+					Vector2DInt shadow = text.clone().add(1, 1);
+					
+					debugFontBlack.renderRight(screen, shadow, "PING");
+					debugFontWhite.renderRight(screen, text, "PING");
+					
+					shadow.add(0, 10);
+					text.add(0, 10);
+					
+					if (you != null)
+					{
+						debugFontBlack.renderRight(screen, shadow, you);
+						debugFontWhite.renderRight(screen, text, you);
+						
+						// Moves text down to next line
+						// in the 2 lines above, CHAR_WIDTH moves the the left slightly so that the colons line up
+						// So this moves it back right
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
+					
+					if (p1p != null && role != Role.PLAYER1)
+					{
+						debugFontBlack.renderRight(screen, shadow, p1p);
+						debugFontWhite.renderRight(screen, text, p1p);
+						
+						// Moves text down to next line
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
+					
+					if (p2p != null && role != Role.PLAYER2)
+					{
+						debugFontBlack.renderRight(screen, shadow, p2p);
+						debugFontWhite.renderRight(screen, text, p2p);
+						
+						// Moves text down to next line
+						shadow.add(0, 10);
+						text.add(0, 10);
+					}
 				}
 			}
 			
@@ -940,11 +1067,15 @@ public class ClientGame extends Game
 		frame.getContentPane().setBackground(Color.black);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.pack();
-		frame.setResizable(false);
 		
 		frame.setVisible(true);
-		frame.setResizable(true);
 		frame.setLocationRelativeTo(null);
+		
+		// LOAD SOME SHITE
+		logger().log(ALogType.DEBUG, "Loading game...");
+		logger().log(ALogType.DEBUG, "Loading options...");
+		Options.instance(); // Loads options
+		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true); // Sets the window size that of which was found from the options
 		
 		// Loading screen
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
@@ -977,13 +1108,7 @@ public class ClientGame extends Game
 		// Allows key listens for TAB and such
 		canvas.setFocusTraversalKeysEnabled(false);
 		
-		// DO THE LOADING
-		
-		logger().log(ALogType.DEBUG, "Loading game...");
-		
-		logger().log(ALogType.DEBUG, "Loading options...");
-		
-		Options.instance();
+		// DO MORE LOADING
 		
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
@@ -995,7 +1120,8 @@ public class ClientGame extends Game
 		updateMem = new ModulusCounter((int) ticksPerSecond);
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-		debugFont = Assets.getFont(AssetType.FONT_BLACK);
+		debugFontWhite = Assets.getFont(AssetType.FONT_WHITE);
+		debugFontBlack = Assets.getFont(AssetType.FONT_BLACK);
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB), 0);
 		input = new InputHandler(this);
 		
@@ -1003,12 +1129,10 @@ public class ClientGame extends Game
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
 		
 		lights = new HashMap<Role, FlickeringLight>(2);
-		lights.put(Role.PLAYER1, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 47, 4));
-		lights.put(Role.PLAYER2, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 47, 4));
+		lights.put(Role.PLAYER1, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
+		lights.put(Role.PLAYER2, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
 		
 		// WHEN FINISHED LOADING
-		
-		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true);
 		
 		if (Options.instance().fullscreen)
 		{
@@ -1061,8 +1185,10 @@ public class ClientGame extends Game
 		if (updateMem.isAtInterval())
 		{
 			Runtime rt = Runtime.getRuntime();
-			totalMemory = rt.freeMemory();
+			totalMemory = rt.totalMemory();
 			usedMemory = rt.totalMemory() - rt.freeMemory();
+			
+			memDisplay = "MEM: " + ((double) Math.round(((double) usedMemory / (double) totalMemory) * 10) / 10) + "% (" + (usedMemory / 1024 / 1024) + "MB)";
 		}
 		
 		if (hideCursor > 0)
@@ -1139,27 +1265,7 @@ public class ClientGame extends Game
 			{
 				if (isInGame())
 				{
-					// Go back to level selection
-					if (isBuildMode())
-					{
-						if (getCurrentLevel() != null)
-						{
-							getCurrentLevel().cleanupBuildMode(getCurrentLevel().getBuildMode());
-						}
-						setIsBuildMode(false);
-						
-						setCurrentScreen(new GuiLevelSelect(null, getCurrentLevel() != null)); // getCurrentLevel() != null
-					}
-					// Go out to
-					else if (getCurrentScreen() instanceof GuiLevelSelect)
-					{
-						if (getCurrentLevel() != null)
-						{
-							setCurrentScreen(null);
-							setIsBuildMode(true);
-							getCurrentLevel().loadBuildMode(getCurrentLevel().getBuildMode());
-						}
-					}
+					toggleLevelSelect();
 				}
 				else
 				{
@@ -1178,7 +1284,14 @@ public class ClientGame extends Game
 		
 		if (isInGame() && !(getCurrentScreen() instanceof GuiInGameMenu) && !(getCurrentScreen() instanceof GuiOptionsMenu) && input.escape.isReleasedFiltered())
 		{
-			setCurrentScreen(new GuiInGameMenu(getCurrentScreen()));
+			if (isBuildMode() || getCurrentScreen() instanceof GuiLevelSelect)
+			{
+				toggleLevelSelect();
+			}
+			else
+			{
+				setCurrentScreen(new GuiInGameMenu(getCurrentScreen()));
+			}
 		}
 		
 		if (getCurrentScreen() != null)
@@ -1199,6 +1312,31 @@ public class ClientGame extends Game
 		{
 			hasStartedUpdateList = false;
 			updatePlayerList = false;
+		}
+	}
+	
+	private void toggleLevelSelect()
+	{
+		// Go back to level selection
+		if (isBuildMode())
+		{
+			if (getCurrentLevel() != null)
+			{
+				getCurrentLevel().cleanupBuildMode(getCurrentLevel().getBuildMode());
+			}
+			setIsBuildMode(false);
+			
+			setCurrentScreen(new GuiLevelSelect(null, getCurrentLevel() != null)); // getCurrentLevel() != null
+		}
+		// Go out to
+		else if (getCurrentScreen() instanceof GuiLevelSelect)
+		{
+			if (getCurrentLevel() != null)
+			{
+				setCurrentScreen(null);
+				setIsBuildMode(true);
+				getCurrentLevel().loadBuildMode(getCurrentLevel().getBuildMode());
+			}
 		}
 	}
 	

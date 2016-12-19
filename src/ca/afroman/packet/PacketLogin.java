@@ -5,17 +5,18 @@ import java.util.List;
 
 import ca.afroman.network.IPConnection;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.ListUtil;
 import ca.afroman.util.VersionUtil;
 
 public class PacketLogin extends BytePacket
 {
-	private byte[] toSend;
-	
 	public PacketLogin(String username, String password, IPConnection... connection)
 	{
 		super(PacketType.REQUEST_CONNECTION, false, connection);
 		
 		List<Byte> send = new ArrayList<Byte>();
+		
+		send.add(typeOrd());
 		
 		for (byte e : ByteUtil.intAsBytes(VersionUtil.SERVER_TEST_VERSION))
 		{
@@ -39,19 +40,6 @@ public class PacketLogin extends BytePacket
 		send.add(Byte.MIN_VALUE);
 		send.add(Byte.MAX_VALUE);
 		
-		toSend = new byte[send.size()];
-		
-		int i = 0;
-		for (byte e : send)
-		{
-			toSend[i] = e;
-			i++;
-		}
-	}
-	
-	@Override
-	public byte[] getUniqueData()
-	{
-		return toSend;
+		content = ListUtil.toByteArray(send);
 	}
 }
