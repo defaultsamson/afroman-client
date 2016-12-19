@@ -116,6 +116,8 @@ public enum AssetType
 	TILE_LAMP_RIGHT(true),
 	TILE_LAMP(true),
 	
+	ITEM_HAIRPIN(true),
+	
 	BUTTON_PRESSED(false),
 	BUTTON_HOVER(false),
 	BUTTON_NORMAL(false),

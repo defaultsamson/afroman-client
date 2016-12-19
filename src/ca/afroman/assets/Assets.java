@@ -333,6 +333,8 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
 		
+		assets.add(sheet.getSubTexture(AssetType.ITEM_HAIRPIN, 16 * 7, 16 * 5, 8, 8));
+		
 		// Texture lamp = sheet.getSubTexture(AssetType.TILE_LAMP_LEFT, 16 * 8, 16 * 4, 16, 16);
 		// assets.add(lamp);
 		// assets.add(lamp.clone(AssetType.TILE_LAMP_RIGHT).flipX());
