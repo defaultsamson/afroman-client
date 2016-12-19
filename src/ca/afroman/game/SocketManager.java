@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -26,7 +25,6 @@ import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.network.TCPSocket;
 import ca.afroman.network.TCPSocketChannel;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
@@ -372,6 +370,8 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
+				System.out.println("Baked Fuck");
+				
 				welcomeSocket = ServerSocketChannel.open();
 				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
 				welcomeSocket.configureBlocking(false);
@@ -508,9 +508,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	
 	public void keyCheck()
 	{
+		synchronized (selector) {
 		try
 		{
-			int readyChannels = selector.selectNow();
+			int readyChannels = selector.select(10);
 			
 			if (readyChannels == 0) return;
 			
@@ -520,8 +521,6 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			while (keyIterator.hasNext())
 			{
 				SelectionKey key = keyIterator.next();
-				
-				if (!key.isValid()) return;
 				
 				if (key.isAcceptable())
 				{
@@ -540,6 +539,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				}
 				else if (key.isReadable())
 				{
+					// TODO use packetParsesr
 					((TCPSocketChannel) key.attachment()).read(key);
 				}
 				else if (key.isWritable())
@@ -552,6 +552,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		catch (IOException e)
 		{
 			game.logger().log(ALogType.WARNING, "I/O exception while selecting keys", e);
+		}
 		}
 	}
 }

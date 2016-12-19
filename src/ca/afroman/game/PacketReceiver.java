@@ -43,7 +43,6 @@ public class PacketReceiver extends DynamicThread
 		try
 		{
 			manager.socket().receive(packet);
-			System.out.println("watch this");
 			
 			BytePacket pack = new BytePacket(packet.getData());
 			InetAddress address = packet.getAddress();

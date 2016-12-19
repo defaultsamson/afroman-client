@@ -73,7 +73,7 @@ public class PacketSender extends DynamicTickThread
 				{
 					try
 					{
-						con.getTCPSocketChannel().sendData(packet.getData());						
+						con.getTCPSocketChannel().sendData(packet.getData());
 					}
 					catch (ClosedChannelException e)
 					{

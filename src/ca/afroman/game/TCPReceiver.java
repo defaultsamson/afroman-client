@@ -42,8 +42,7 @@ public class TCPReceiver extends DynamicThread
 	{
 		try
 		{
-			byte[] buffer = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
-			buffer = socket.receiveData();
+			byte[] buffer = socket.receiveData();
 			
 			if (buffer != null)
 			{
