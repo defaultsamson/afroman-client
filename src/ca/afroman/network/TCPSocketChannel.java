@@ -24,12 +24,19 @@ public class TCPSocketChannel
 	public byte[] read;
 	public byte[] write;
 	
+	/**
+	 * Create a TCPSocketChannel to handle the use of a single SocketChannel
+	 * @param selector the selector to register to
+	 * @param socket the socket to handle
+	 * @param blocking whether the socket will perform blocking operations or not
+	 * @throws IOException
+	 */
 	public TCPSocketChannel(Selector selector, SocketChannel socket, boolean blocking) throws IOException
 	{
 		this.socket = socket;
 		this.selector = selector;
 		socket.configureBlocking(blocking);
-		socket.register(selector, defaultOps);
+		socket.register(selector, defaultOps, this);
 		tcp = new TCPSocket(socket.socket());
 	}
 	
@@ -48,7 +55,7 @@ public class TCPSocketChannel
 		{
 			
 		}
-		socket.register(selector, defaultOps);
+		socket.register(selector, defaultOps, this);
 		return success;
 	}
 	
@@ -56,16 +63,15 @@ public class TCPSocketChannel
 	{
 		SocketChannel socket = (SocketChannel) key.channel();
 		ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-		int bytesRead;
+		int bytesRead = socket.read(buffer);
 		
-		if ((bytesRead = socket.read(buffer)) > 0)
-		{
-			buffer.flip();
-		}
-		if (bytesRead < 0)
+		if (bytesRead == -1)
 		{
 			socket.close();
-			return new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
+			((TCPSocketChannel) key.attachment()).read = null;
+			return null;
+		} else {
+			buffer.flip();
 		}
 		
 		((TCPSocketChannel) key.attachment()).read = buffer.array();
@@ -89,11 +95,17 @@ public class TCPSocketChannel
 	
 	public byte[] receiveData() throws ClosedChannelException, PortUnreachableException
 	{
+		socket.register(selector, readOp, this);
 		return read;
 	}
 	
 	public SocketChannel getSocket()
 	{
 		return socket;
+	}
+	
+	public TCPSocket getTCP()
+	{
+		return tcp;
 	}
 }

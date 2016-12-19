@@ -86,7 +86,6 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	
 	private List<TCPReceiver> tcpSockets = null;
 	private Selector selector;
-	private SelectionKey serverKey;
 	
 	public SocketManager(Game game)
 	{
@@ -377,8 +376,6 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
 				welcomeSocket.configureBlocking(false);
 				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
-				
-				serverKey = welcomeSocket.register(selector, TCPSocketChannel.serverOp);
 			}
 			catch (IOException e)
 			{
@@ -455,10 +452,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			tcpSockets.clear();
 		}
 		
-		socket.close();
 		playerList.clear();
 		rSocket.stopThis();
 		sSocket.stopThis();
+		socket.close();
 	}
 	
 	public ThreadGroup threadGroupInstance()

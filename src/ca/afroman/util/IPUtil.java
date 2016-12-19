@@ -35,7 +35,7 @@ public class IPUtil
 			// If not, then check TCP socket
 			if (connection.getTCPSocketChannel() != null && connection.getTCPSocketChannel().getSocket() != null)
 			{
-				if (port == ((SocketChannel) connection.getTCPSocketChannel().getSocket()).socket().getPort()) return true;
+				if (port == connection.getTCPSocketChannel().getSocket().socket().getPort()) return true;
 			}
 		}
 		return false;
