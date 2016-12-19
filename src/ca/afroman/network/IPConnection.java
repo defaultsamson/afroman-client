@@ -6,7 +6,7 @@ import ca.afroman.util.IPUtil;
 
 public class IPConnection
 {
-	private TCPSocket tcpSocket;
+	private TCPSocketChannel tcpSocketChannel;
 	private InetAddress address;
 	private int port;
 	
@@ -16,9 +16,9 @@ public class IPConnection
 	 * @param address the IP
 	 * @param port the port
 	 */
-	public IPConnection(InetAddress address, int port, TCPSocket tcpSocket)
+	public IPConnection(InetAddress address, int port, TCPSocketChannel tcpSocketChannel)
 	{
-		this.tcpSocket = tcpSocket;
+		this.tcpSocketChannel = tcpSocketChannel;
 		this.address = address;
 		this.port = port;
 	}
@@ -46,9 +46,9 @@ public class IPConnection
 		return port;
 	}
 	
-	public TCPSocket getTCPSocket()
+	public TCPSocketChannel getTCPSocketChannel()
 	{
-		return tcpSocket;
+		return tcpSocketChannel;
 	}
 	
 	public void setIPAddress(InetAddress address)
@@ -61,8 +61,8 @@ public class IPConnection
 		this.port = newPort;
 	}
 	
-	public void setTCPSocket(TCPSocket socket)
+	public void setTCPSocketChannel(TCPSocketChannel socket)
 	{
-		tcpSocket = socket;
+		tcpSocketChannel = socket;
 	}
 }

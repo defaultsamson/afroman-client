@@ -11,28 +11,28 @@ import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.network.TCPSocket;
+import ca.afroman.network.TCPSocketChannel;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
 public class TCPReceiver extends DynamicThread
 {
-	private TCPSocket socket;
+	private TCPSocketChannel socket;
 	private SocketManager manager;
 	
 	/**
 	 * A socket that receives BytePackets and parses them through the provided game.
 	 */
-	public TCPReceiver(boolean isServerSide, SocketManager manager, TCPSocket socket)
+	public TCPReceiver(boolean isServerSide, SocketManager manager, TCPSocketChannel socket)
 	{
-		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive(" + IPUtil.asReadable(socket.getSocket().getInetAddress(), socket.getSocket().getPort()) + ")");
+		super(isServerSide, manager.getGame().getThread().getThreadGroup(), "Receive(" + IPUtil.asReadable(socket.getSocket().socket().getInetAddress(), socket.getSocket().socket().getPort()) + ")");
 		
 		this.manager = manager;
 		this.socket = socket;
 	}
 	
-	public TCPSocket getTCPSocket()
+	public TCPSocketChannel getTCPSocketChannel()
 	{
 		return socket;
 	}
@@ -42,13 +42,14 @@ public class TCPReceiver extends DynamicThread
 	{
 		try
 		{
-			byte[] buffer = socket.receive();
+			byte[] buffer = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
+			buffer = socket.receiveData();
 			
 			if (buffer != null)
 			{
 				BytePacket pack = new BytePacket(buffer);
-				InetAddress address = socket.getSocket().getInetAddress();
-				int port = socket.getSocket().getPort();
+				InetAddress address = socket.getSocket().socket().getInetAddress();
+				int port = socket.getSocket().socket().getPort();
 				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType());
 				
 				manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
@@ -63,6 +64,7 @@ public class TCPReceiver extends DynamicThread
 				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), -1, "PORT", "UNREACHABLE");
 			}
 		}
+		
 		catch (IOException e)
 		{
 			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while receiving", e);

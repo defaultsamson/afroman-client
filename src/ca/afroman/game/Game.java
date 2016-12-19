@@ -197,5 +197,12 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 			
 			toProcess.clear();
 		}
+		if (socketManager != null && socketManager.welcomeSocket() != null)
+		{
+			synchronized (socketManager.welcomeSocket())
+			{
+				socketManager.keyCheck();
+			}
+		}
 	}
 }

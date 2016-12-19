@@ -3,12 +3,18 @@ package ca.afroman.game;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiClickNotification;
@@ -16,10 +22,12 @@ import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.TCPSocket;
+import ca.afroman.network.TCPSocketChannel;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketUpdatePlayerList;
@@ -70,12 +78,14 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	private List<ConnectedPlayer> playerList;
 	private IPConnection serverConnection;
 	
-	private ServerSocket welcomeSocket = null;
+	private ServerSocketChannel welcomeSocket = null;
 	private DatagramSocket socket = null;
 	private PacketReceiver rSocket = null;
+	
 	private PacketSender sSocket = null;
 	
 	private List<TCPReceiver> tcpSockets = null;
+	private Selector selector;
 	
 	public SocketManager(Game game)
 	{
@@ -88,6 +98,15 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		serverConnection = new IPConnection(null, -1, null);
 		
 		tcpSockets = new ArrayList<TCPReceiver>();
+		
+		try
+		{
+			selector = Selector.open();
+		}
+		catch (IOException e)
+		{
+			ALogger.logA(ALogType.CRITICAL, "I/O Exception while opening global selector", e);
+		}
 		// try
 		// {
 		// socket = new DatagramSocket();
@@ -128,20 +147,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			{
 				try
 				{
-					Socket clientTCP = welcomeSocket().accept();
-					TCPSocket tcp = new TCPSocket(clientTCP);
-					newConnection.getConnection().setTCPSocket(tcp);
-					
-					synchronized (tcpSockets)
-					{
-						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
-						tcpSockets.add(rec);
-						rec.startThis();
-					}
+					welcomeSocket.register(selector, TCPSocketChannel.serverOp, newConnection);
 				}
 				catch (IOException e)
 				{
-					ServerGame.instance().logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
+					ServerGame.instance().logger().log(ALogType.WARNING, "Failed to register connection for acceptance", e);
 				}
 			}
 		}
@@ -224,9 +234,9 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			try
 			{
-				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
-				TCPSocket sock = new TCPSocket(clientSocket);
-				getServerConnection().setTCPSocket(sock);
+				SocketChannel clientSocket = SocketChannel.open(new InetSocketAddress(getServerConnection().getIPAddress(), getServerConnection().getPort()));
+				TCPSocketChannel sock = new TCPSocketChannel(selector, clientSocket, false);
+				getServerConnection().setTCPSocketChannel(sock);
 				
 				TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
 				synchronized (tcpSockets)
@@ -269,7 +279,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				for (int i = 0; i < tcpSockets.size(); i++)
 				{
 					TCPReceiver rec = tcpSockets.get(i);
-					if (rec.getTCPSocket() == connection.getConnection().getTCPSocket())
+					if (rec.getTCPSocketChannel() == connection.getConnection().getTCPSocketChannel())
 					{
 						index = i;
 						break;
@@ -283,11 +293,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				}
 			}
 			
-			if (connection.getConnection().getTCPSocket() != null)
+			if (connection.getConnection().getTCPSocketChannel() != null)
 			{
 				try
 				{
-					connection.getConnection().getTCPSocket().getSocket().close();
+					connection.getConnection().getTCPSocketChannel().getSocket().close();
 				}
 				catch (IOException e)
 				{
@@ -362,8 +372,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				welcomeSocket = new ServerSocket(serverConnection.getPort());
-				welcomeSocket.setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				welcomeSocket = ServerSocketChannel.open();
+				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
+				welcomeSocket.configureBlocking(false);
+				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 			}
 			catch (IOException e)
 			{
@@ -388,11 +400,12 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			try
 			{
 				socket = new DatagramSocket();
-				socket.connect(serverConnection.getIPAddress(), serverConnection.getPort());
+				socket.connect(new InetSocketAddress(serverConnection.getIPAddress(), serverConnection.getPort()));
 			}
 			catch (SocketException e)
 			{
 				game.logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", e);
+				
 				return false;
 			}
 		}
@@ -439,10 +452,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			tcpSockets.clear();
 		}
 		
-		socket.close();
 		playerList.clear();
 		rSocket.stopThis();
 		sSocket.stopThis();
+		socket.close();
 	}
 	
 	public ThreadGroup threadGroupInstance()
@@ -488,8 +501,57 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		}
 	}
 	
-	public ServerSocket welcomeSocket()
+	public ServerSocketChannel welcomeSocket()
 	{
 		return welcomeSocket;
+	}
+	
+	public void keyCheck()
+	{
+		try
+		{
+			int readyChannels = selector.selectNow();
+			
+			if (readyChannels == 0) return;
+			
+			Set<SelectionKey> selectedKeys = selector.selectedKeys();
+			Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+			
+			while (keyIterator.hasNext())
+			{
+				SelectionKey key = keyIterator.next();
+				
+				if (!key.isValid()) return;
+				
+				if (key.isAcceptable())
+				{
+					ServerSocketChannel server = (ServerSocketChannel) key.channel();
+					SocketChannel client = server.accept();
+					TCPSocketChannel tcp = new TCPSocketChannel(selector, client, false);
+					IPConnectedPlayer newConnection = (IPConnectedPlayer) key.attachment();
+					newConnection.getConnection().setTCPSocketChannel(tcp);
+					
+					synchronized (tcpSockets)
+					{
+						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
+						tcpSockets.add(rec);
+						rec.startThis();
+					}
+				}
+				else if (key.isReadable())
+				{
+					((TCPSocketChannel) key.attachment()).read(key);
+				}
+				else if (key.isWritable())
+				{
+					((TCPSocketChannel) key.attachment()).write(key);
+				}
+				keyIterator.remove();
+			}
+		}
+		catch (IOException e)
+		{
+			game.logger().log(ALogType.WARNING, "I/O exception while selecting keys", e);
+		}
 	}
 }
