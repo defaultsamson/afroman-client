@@ -49,8 +49,8 @@ public class GuiLobby extends GuiScreen
 		
 		lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, LightMap.DEFAULT_AMBIENT);
 		
-		light1 = new FlickeringLight(true, new Vector2DDouble(0, 0), 45, 50, 6);
-		light2 = new FlickeringLight(true, new Vector2DDouble(0, 0), 45, 50, 6);
+		light1 = new FlickeringLight(true, new Vector2DDouble(0, 0), 45, 50, 5);
+		light2 = new FlickeringLight(true, new Vector2DDouble(0, 0), 45, 50, 5);
 		
 		startButton = new GuiTextButton(this, 2000, (ClientGame.WIDTH / 2) - 84 - 8, 116, 84, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());

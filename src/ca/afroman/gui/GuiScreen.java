@@ -9,7 +9,7 @@ import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 
-public class GuiScreen
+public abstract class GuiScreen
 {
 	protected static Font nobleFont = Assets.getFont(AssetType.FONT_NOBLE);
 	protected static Font whiteFont = Assets.getFont(AssetType.FONT_WHITE);

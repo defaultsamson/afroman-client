@@ -28,6 +28,8 @@ import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.GroundItem;
 import ca.afroman.events.Event;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -537,6 +539,58 @@ public class ClientGame extends Game
 							}
 						}
 							break;
+						case PLAYER_PICKUP_ITEM:
+						{
+							LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
+							Level level = getLevel(levelType);
+							
+							if (level != null)
+							{
+								int id = packet.getContent().getInt();
+								
+								Entity item = level.getEntity(id);
+								
+								if (item != null)
+								{
+									if (item instanceof GroundItem)
+									{
+										byte ord = packet.getContent().get();
+										Role role = Role.fromOrdinal(ord);
+										
+										if (role != null)
+										{
+											PlayerEntity player = getPlayer(role);
+											
+											if (player != null)
+											{
+												player.getInventory().addItem((GroundItem) item, true);
+											}
+											else
+											{
+												logger().log(ALogType.WARNING, "No player found with role " + role);
+											}
+										}
+										else
+										{
+											logger().log(ALogType.WARNING, "No role found with ordinal " + ord);
+										}
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "Entity with id " + id + " is not an instanceof GroundItem");
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No entity with ID " + id);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No level with type " + levelType);
+							}
+						}
+							break;
 						case ACTIVATE_TRIGGER:
 						{
 							LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
@@ -601,7 +655,9 @@ public class ClientGame extends Game
 				}
 			}
 		}
-		catch (Exception e)
+		catch (
+		
+		Exception e)
 		{
 			// TODO logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
@@ -681,11 +737,11 @@ public class ClientGame extends Game
 				if (player != null && player.getLevel() != null)
 				{
 					String x = "x: " + player.getPosition().getX();
-					debugFontBlack.render(screen, new Vector2DInt(2, 51), x);
-					debugFontWhite.render(screen, new Vector2DInt(1, 50), x);
+					debugFontBlack.render(screen, new Vector2DInt(2, 31), x);
+					debugFontWhite.render(screen, new Vector2DInt(1, 30), x);
 					String y = "y: " + player.getPosition().getY();
-					debugFontBlack.render(screen, new Vector2DInt(2, 61), y);
-					debugFontWhite.render(screen, new Vector2DInt(1, 60), y);
+					debugFontBlack.render(screen, new Vector2DInt(2, 41), y);
+					debugFontWhite.render(screen, new Vector2DInt(1, 40), y);
 				}
 			}
 			

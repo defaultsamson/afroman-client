@@ -7,6 +7,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.game.Role;
+import ca.afroman.inventory.Inventory;
 import ca.afroman.level.api.Level;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.PacketPlayerInteract;
@@ -58,6 +59,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 	}
 	
 	private Role role;
+	private Inventory inv;
 	
 	/**
 	 * An entity representing a human player.
@@ -71,6 +73,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 		super(isServerSide, true, position, getUp(isServerSide, role), getDown(isServerSide, role), getLeft(isServerSide, role), getRight(isServerSide, role), getIdleUp(isServerSide, role), getIdleDown(isServerSide, role), getIdleLeft(isServerSide, role), getIdleRight(isServerSide, role), new Hitbox(isServerSide, true, 3, 5, 10, 11));
 		
 		this.role = role;
+		inv = new Inventory(this);
 	}
 	
 	/**
@@ -104,6 +107,11 @@ public class PlayerEntity extends DrawableEntityDirectional
 		{
 			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server-side PlayerEntity cannot be added to a null level");
 		}
+	}
+	
+	public Inventory getInventory()
+	{
+		return inv;
 	}
 	
 	/**

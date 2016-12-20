@@ -4,6 +4,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.entity.api.GroundItem;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.inventory.ItemType;
 import ca.afroman.resource.Vector2DDouble;
 
 public class HairPin extends GroundItem
@@ -19,12 +20,19 @@ public class HairPin extends GroundItem
 	 */
 	public HairPin(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
 	{
-		super(isServerSide, isMicromanaged, position, Assets.getDrawableAsset(AssetType.ICON_UPDATE), new Hitbox(isServerSide, true, 2D, 2D, 5D, 5D)); // TODO hitbox
+		super(isServerSide, isMicromanaged, position, Assets.getDrawableAsset(AssetType.ICON_UPDATE), new Hitbox(isServerSide, true, 2D, 2D, 5D, 5D), ItemType.HAIR_PIN); // TODO hitbox
 	}
 	
 	@Override
-	public void onInteract()
+	public void onInteract(PlayerEntity triggerer)
 	{
-		System.out.println("Dong");
+		if (isServerSide())
+		{
+			triggerer.getInventory().addItem(this);
+		}
+		else // TODO maybe do client prediction for pickup ?
+		{
+			
+		}
 	}
 }

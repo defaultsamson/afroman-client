@@ -88,6 +88,8 @@ public class Level extends ServerClientObject implements ITickable
 	private LightMap lightmap;
 	private Vector2DDouble camOffset;
 	
+	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
+	
 	public Level(boolean isServerSide, LevelType type)
 	{
 		this(isServerSide, type, DEFAULT_TILE_LAYERS, DEFAULT_DYNAMIC_TILE_LAYER_INDEX);
@@ -347,6 +349,16 @@ public class Level extends ServerClientObject implements ITickable
 	public ArrayList<Entity> getEntities()
 	{
 		return entities;
+	}
+	
+	public Entity getEntity(int id)
+	{
+		for (Entity e : entities)
+		{
+			if (id == e.getID()) return e;
+		}
+		
+		return null;
 	}
 	
 	public Event getEvent(int id)
@@ -685,6 +697,16 @@ public class Level extends ServerClientObject implements ITickable
 				ClientGame.instance().setCurrentScreen(new GuiFlickeringLightEditor(grid, flickerCursor));
 				break;
 		}
+	}
+	
+	/**
+	 * Safely concurrently removes entities from this Level.
+	 * 
+	 * @param rem the Entity to remove.
+	 */
+	public void removeEntity(Entity rem)
+	{
+		toRemove.add(rem);
 	}
 	
 	public void render(Texture renderTo)
@@ -1291,6 +1313,12 @@ public class Level extends ServerClientObject implements ITickable
 		{
 			e.tryInteract(entity);
 		}
+		
+		for (Entity e : toRemove)
+		{
+			e.removeFromLevel();
+		}
+		toRemove.clear();
 	}
 	
 	/**

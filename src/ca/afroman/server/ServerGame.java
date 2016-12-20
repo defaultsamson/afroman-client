@@ -267,6 +267,7 @@ public class ServerGame extends Game
 					}
 						break;
 					case PLAYER_INTERACT:
+					{
 						PlayerEntity pe = getPlayer(sender.getRole());
 						
 						if (pe != null)
@@ -302,6 +303,7 @@ public class ServerGame extends Game
 						{
 							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
 						}
+					}
 						break;
 					case COMMAND:
 					{
