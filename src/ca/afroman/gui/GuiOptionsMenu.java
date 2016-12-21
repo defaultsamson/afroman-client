@@ -373,12 +373,12 @@ public class GuiOptionsMenu extends GuiMenuOutline
 					Options.instance().inputInteract = readKey;
 					break;
 				case 25: // Next item
-					ClientGame.instance().input().prevItem.setKeyEvents(readKey);
-					Options.instance().inputPrevItem = readKey;
-					break;
-				case 26: // Last item
 					ClientGame.instance().input().nextItem.setKeyEvents(readKey);
 					Options.instance().inputNextItem = readKey;
+					break;
+				case 26: // Last item
+					ClientGame.instance().input().prevItem.setKeyEvents(readKey);
+					Options.instance().inputPrevItem = readKey;
 					break;
 				case 27: // Drop item
 					ClientGame.instance().input().dropItem.setKeyEvents(readKey);
@@ -445,8 +445,8 @@ public class GuiOptionsMenu extends GuiMenuOutline
 				right.setText("Right: " + KeyEvent.getKeyText(ClientGame.instance().input().right.getKeyEvent()));
 				
 				interact.setText("Interact: " + KeyEvent.getKeyText(ClientGame.instance().input().interact.getKeyEvent()));
-				nextItem.setText("Next Item: " + KeyEvent.getKeyText(ClientGame.instance().input().prevItem.getKeyEvent()));
-				prevItem.setText("Prev Item: " + KeyEvent.getKeyText(ClientGame.instance().input().nextItem.getKeyEvent()));
+				nextItem.setText("Next Item: " + KeyEvent.getKeyText(ClientGame.instance().input().nextItem.getKeyEvent()));
+				prevItem.setText("Prev Item: " + KeyEvent.getKeyText(ClientGame.instance().input().prevItem.getKeyEvent()));
 				dropItem.setText("Drop Item: " + KeyEvent.getKeyText(ClientGame.instance().input().dropItem.getKeyEvent()));
 				
 				useItem.setText("Use Item: " + KeyEvent.getKeyText(ClientGame.instance().input().useItem.getKeyEvent()));

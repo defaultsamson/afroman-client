@@ -29,6 +29,7 @@ public class Options
 	public static final int DEFAULT_INPUT_PREV_ITEM = KeyEvent.VK_A;
 	public static final int DEFAULT_INPUT_DROP_ITEM = KeyEvent.VK_Q;
 	public static final int DEFAULT_INPUT_USE_ITEM = KeyEvent.VK_W;
+	
 	public static Options instance()
 	{
 		if (instance == null)
@@ -39,6 +40,7 @@ public class Options
 		}
 		return instance;
 	}
+	
 	// Client
 	public int musicVolume;
 	public int sfxVolume;
@@ -75,22 +77,27 @@ public class Options
 	public String serverPort;
 	public boolean hasShownOptionsTip;
 	public boolean hasShownControlsTip;
+	
 	private void append(List<String> list, OptionType type, boolean value)
 	{
 		list.add(type + SPLITTER + value);
 	}
+	
 	private void append(List<String> list, OptionType type, int value)
 	{
 		list.add(type + SPLITTER + value);
 	}
+	
 	private void append(List<String> list, OptionType type, String value)
 	{
 		list.add(type + SPLITTER + value);
 	}
+	
 	public boolean getTsync()
 	{
 		return tsync;
 	}
+	
 	public void initializeValues()
 	{
 		musicVolume = 100;
