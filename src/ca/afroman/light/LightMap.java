@@ -228,6 +228,25 @@ public class LightMap extends Texture
 			}
 		}
 		
+		// used for saving the filter
+		// if (!saved)
+		// {
+		// File outputFile = new File("garbag.png");
+		// try
+		// {
+		// outputFile.createNewFile();
+		// ImageIO.write(filter.getImage(), "png", outputFile);
+		// }
+		// catch (IOException e)
+		// {
+		// e.printStackTrace();
+		// }
+		//
+		// saved = true;
+		// }
+		
 		if (Options.instance().lighting == LightMapState.ON) this.draw(filter, PATCH_POSITION);
 	}
+	
+	// private boolean saved = false;
 }

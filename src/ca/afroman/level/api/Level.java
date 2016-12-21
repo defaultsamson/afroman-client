@@ -15,8 +15,8 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.DrawableEntity;
 import ca.afroman.entity.api.Entity;
-import ca.afroman.entity.api.GroundItem;
 import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.Item;
 import ca.afroman.entity.api.Tile;
 import ca.afroman.entity.api.YComparator;
 import ca.afroman.events.Event;
@@ -42,6 +42,12 @@ import ca.afroman.util.ShapeUtil;
 
 public class Level extends ServerClientObject implements ITickable
 {
+	private static final Texture ITEM_HOLDER = Assets.getTexture(AssetType.ITEM_HOLDER);
+	private static final Vector2DInt ITEM_HOLDER_POS = new Vector2DInt(ClientGame.WIDTH - ITEM_HOLDER.getWidth() - 2, ClientGame.HEIGHT - ITEM_HOLDER.getHeight() - 2);
+	private static final Vector2DInt ITEM_HOLDER_ITEM_POS = ITEM_HOLDER_POS.clone().add(1, 1);
+	// private static final double ITEM_HOLDER_LIGHT_RADIUS = 15;
+	// private static final PointLight ITEM_HOLDER_LIGHT = new PointLight(true, ITEM_HOLDER_POS.toVector2DDouble().add(ITEM_HOLDER.getWidth() / 2, ITEM_HOLDER.getHeight() / 2), ITEM_HOLDER_LIGHT_RADIUS);
+	
 	private static final int DEFAULT_TILE_LAYERS = 7;
 	public static final int DEFAULT_DYNAMIC_TILE_LAYER_INDEX = 3;
 	
@@ -770,6 +776,8 @@ public class Level extends ServerClientObject implements ITickable
 			}
 		}
 		
+		// boolean drawItemHolder = !ClientGame.instance().isBuildMode() && !ClientGame.instance().getThisPlayer().getInventory().isEmpty();
+		
 		// https://www.youtube.com/watch?v=6qIFmeRcY3c
 		if (Options.instance().isLightingOn())
 		{
@@ -779,8 +787,20 @@ public class Level extends ServerClientObject implements ITickable
 				light.renderCentered(lightmap);
 			}
 			
+			// if (drawItemHolder)
+			// {
+			// ITEM_HOLDER_LIGHT.renderCentered(lightmap);
+			// }
+			
 			lightmap.patch();
 			lightmap.render(renderTo, LightMap.PATCH_POSITION);
+		}
+		
+		// Draw the item holder
+		if (!ClientGame.instance().isBuildMode() && !ClientGame.instance().getThisPlayer().getInventory().isEmpty())
+		{
+			ITEM_HOLDER.render(renderTo, ITEM_HOLDER_POS);
+			ClientGame.instance().getThisPlayer().getInventory().getEquippedItem().getInventoryView().render(renderTo, ITEM_HOLDER_ITEM_POS);
 		}
 		
 		// Draws out the hitboxes
@@ -803,9 +823,9 @@ public class Level extends ServerClientObject implements ITickable
 					}
 				}
 				
-				if (entity instanceof GroundItem)
+				if (entity instanceof Item)
 				{
-					Hitbox box = ((GroundItem) entity).getMathHitbox();
+					Hitbox box = ((Item) entity).getMathHitbox();
 					
 					Vector2DInt pos = worldToScreen(new Vector2DDouble(box.getX(), box.getY()));
 					renderTo.drawFillRect(new Color(0.2F, 1F, 0.2F, 1F), new Color(0.2F, 1F, 0.2F, 0.3F), pos, (int) box.getWidth(), (int) box.getHeight());

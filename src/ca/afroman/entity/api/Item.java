@@ -5,8 +5,9 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.inventory.ItemType;
 import ca.afroman.resource.Vector2DDouble;
 
-public abstract class GroundItem extends DrawableEntity
+public abstract class Item extends DrawableEntity
 {
+	private DrawableAsset inventoryView;
 	private ItemType type;
 	private Hitbox box;
 	
@@ -19,7 +20,7 @@ public abstract class GroundItem extends DrawableEntity
 	 * @param asset the DrawableAsset to render this as
 	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
 	 */
-	public GroundItem(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, DrawableAsset asset, Hitbox detectionBox, ItemType type)
+	public Item(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position, DrawableAsset asset, Hitbox detectionBox, ItemType type, DrawableAsset inventoryView)
 	{
 		super(isServerSide, isMicromanaged, position, asset);
 		
@@ -27,6 +28,12 @@ public abstract class GroundItem extends DrawableEntity
 		
 		this.box = detectionBox;
 		updateHitboxInLevel(box);
+		this.inventoryView = inventoryView;
+	}
+	
+	public DrawableAsset getInventoryView()
+	{
+		return inventoryView;
 	}
 	
 	public ItemType getItemType()
@@ -39,7 +46,17 @@ public abstract class GroundItem extends DrawableEntity
 		return box;
 	}
 	
-	public abstract void onInteract(PlayerEntity triggerer);
+	public void onInteract(PlayerEntity triggerer)
+	{
+		if (isServerSide())
+		{
+			triggerer.getInventory().addItem(this);
+		}
+		else // TODO maybe do client prediction for pickup ?
+		{
+			
+		}
+	}
 	
 	@Override
 	public void removeFromLevel()

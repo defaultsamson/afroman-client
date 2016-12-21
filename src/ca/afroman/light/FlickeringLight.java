@@ -1,7 +1,6 @@
 package ca.afroman.light;
 
 import ca.afroman.resource.Vector2DDouble;
-import ca.afroman.resource.Vector2DInt;
 
 public class FlickeringLight extends PointLight
 {
@@ -23,7 +22,8 @@ public class FlickeringLight extends PointLight
 		initRadius(radius1, radius2);
 	}
 	
-	private int getDisplayRadius()
+	@Override
+	protected int getDisplayRadius()
 	{
 		return radi[frame];
 	}
@@ -78,27 +78,27 @@ public class FlickeringLight extends PointLight
 		
 		frame = 0;
 	}
-	
-	@SuppressWarnings("deprecation")
-	@Override
-	public void renderCentered(LightMap renderTo)
-	{
-		// TODO control this with positions entirely and don't get their primitive types
-		Vector2DInt offsetPos;
-		
-		if (level != null)
-		{
-			offsetPos = level.worldToScreen(position);
-		}
-		else
-		{
-			offsetPos = position.clone().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
-		}
-		
-		offsetPos.add(-getDisplayRadius(), -getDisplayRadius());
-		
-		renderTo.drawLight(offsetPos, getDisplayRadius(), colour);
-	}
+	//
+	// @SuppressWarnings("deprecation")
+	// @Override
+	// public void renderCentered(LightMap renderTo)
+	// {
+	// // TODO control this with positions entirely and don't get their primitive types
+	// Vector2DInt offsetPos;
+	//
+	// if (level != null)
+	// {
+	// offsetPos = level.worldToScreen(position);
+	// }
+	// else
+	// {
+	// offsetPos = position.clone().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
+	// }
+	//
+	// offsetPos.add(-getDisplayRadius(), -getDisplayRadius());
+	//
+	// renderTo.drawLight(offsetPos, getDisplayRadius(), colour);
+	// }
 	
 	@Override
 	public void setRadius(double radius)

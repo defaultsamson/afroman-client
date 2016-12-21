@@ -333,7 +333,13 @@ public class Assets
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
 		
-		assets.add(sheet.getSubTexture(AssetType.ITEM_HAIRPIN, 16 * 7, 16 * 5, 8, 8));
+		assets.add(Texture.fromResource(AssetType.ITEM_HOLDER, "item_holder.png"));
+		
+		assets.add(sheet.getSubTexture(AssetType.ITEM_HAIRPIN_LARGE, 16 * 6, 16 * 5, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.ITEM_HAIRPIN_SMALL, 16 * 7, 16 * 5, 8, 8));
+		
+		assets.add(sheet.getSubTexture(AssetType.ITEM_KNUCKLES_LARGE, 16 * 8, 16 * 5, 16, 16));
+		assets.add(sheet.getSubTexture(AssetType.ITEM_KNUCKLES_SMALL, 16 * 9, 16 * 5, 8, 8));
 		
 		// Texture lamp = sheet.getSubTexture(AssetType.TILE_LAMP_LEFT, 16 * 8, 16 * 4, 16, 16);
 		// assets.add(lamp);
@@ -341,6 +347,8 @@ public class Assets
 		assets.add(new SpriteAnimation(AssetType.TILE_LAMP, true, 16, sheet.getSubTexture(AssetType.TILE_LAMP, 16 * 8, 16 * 4, 24, 16).toTextureArray(3, 2)));
 		
 		assets.add(new SpriteAnimation(AssetType.SLIME, false, 12, sheet.getSubTexture(AssetType.SLIME, 16 * 0, (16 * 7), 16 * 2, 16).toTextureArray(2, 1)));
+		
+		Texture next = Texture.fromResource(AssetType.INVALID, "gui/icons.png");
 		
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_NORMAL, 0, 0, 3, 16));
 		assets.add(buttons.getSubTexture(AssetType.BUTTON_HOVER, 3, 0, 3, 16));
@@ -351,8 +359,6 @@ public class Assets
 		
 		Texture settings = Texture.fromResource(AssetType.INVALID, "gui/icon_settings.png");
 		assets.add(new StepSpriteAnimation(new int[] { 0 }, AssetType.ICON_SETTINGS, false, 1, settings.toTextureArray(24, 1)));
-		
-		Texture next = Texture.fromResource(AssetType.INVALID, "gui/icons.png");
 		
 		assets.add(next.getSubTexture(AssetType.ICON_NEXT, 0, 0, 16, 16));
 		

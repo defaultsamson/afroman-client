@@ -7,7 +7,7 @@ import ca.afroman.entity.api.Item;
 import ca.afroman.inventory.ItemType;
 import ca.afroman.resource.Vector2DDouble;
 
-public class HairPin extends Item
+public class BrassKnuckles extends Item
 {
 	/**
 	 * Creates a new Entity with a hitbox.
@@ -18,8 +18,8 @@ public class HairPin extends Item
 	 * @param asset the DrawableAsset to render this as
 	 * @param hitboxes the hitboxes, only relative to this, <i>not</i> the world
 	 */
-	public HairPin(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
+	public BrassKnuckles(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
 	{
-		super(isServerSide, isMicromanaged, position, Assets.getDrawableAsset(AssetType.ITEM_HAIRPIN_SMALL), new Hitbox(isServerSide, true, 2D, 2D, 4D, 4D), ItemType.HAIR_PIN, Assets.getDrawableAsset(AssetType.ITEM_HAIRPIN_LARGE));
+		super(isServerSide, isMicromanaged, position, Assets.getDrawableAsset(AssetType.ITEM_KNUCKLES_SMALL), new Hitbox(isServerSide, true, 2D, 2D, 4D, 4D), ItemType.BRASS_KNUCKLES, Assets.getDrawableAsset(AssetType.ITEM_KNUCKLES_LARGE));
 	}
 }

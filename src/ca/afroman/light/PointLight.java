@@ -6,6 +6,7 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.level.api.Level;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.ColourUtil;
 
 public class PointLight extends Entity
@@ -55,6 +56,11 @@ public class PointLight extends Entity
 		return colour;
 	}
 	
+	protected int getDisplayRadius()
+	{
+		return (int) radius;
+	}
+	
 	public double getRadius()
 	{
 		return radius;
@@ -63,10 +69,26 @@ public class PointLight extends Entity
 	@SuppressWarnings("deprecation")
 	public void renderCentered(LightMap renderTo)
 	{
+		Vector2DInt offsetPos;
+		
 		if (level != null)
 		{
-			renderTo.drawLight(level.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
+			offsetPos = level.worldToScreen(position);
 		}
+		else
+		{
+			offsetPos = position.clone().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
+		}
+		
+		offsetPos.add(-getDisplayRadius(), -getDisplayRadius());
+		
+		renderTo.drawLight(offsetPos, getDisplayRadius(), colour);
+		
+		// Old method
+		// if (level != null)
+		// {
+		// renderTo.drawLight(level.worldToScreen(position).add((int) -getRadius(), (int) -getRadius()), getRadius(), colour);
+		// }
 	}
 	
 	public void setRadius(double radius)

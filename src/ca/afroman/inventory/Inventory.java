@@ -1,11 +1,12 @@
 package ca.afroman.inventory;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
-import ca.afroman.entity.api.GroundItem;
+import ca.afroman.entity.api.Item;
 import ca.afroman.packet.PacketItemPickup;
 import ca.afroman.packet.PacketPlayerInteract;
 import ca.afroman.resource.ServerClientObject;
@@ -14,7 +15,8 @@ import ca.afroman.server.ServerGame;
 public class Inventory extends ServerClientObject
 {
 	private PlayerEntity owner;
-	private HashMap<ItemType, Stack<GroundItem>> items;
+	private HashMap<ItemType, Stack<Item>> items;
+	private Item equippedItem;
 	
 	public Inventory(PlayerEntity player)
 	{
@@ -22,10 +24,10 @@ public class Inventory extends ServerClientObject
 		
 		owner = player;
 		
-		items = new HashMap<ItemType, Stack<GroundItem>>();
+		items = new HashMap<ItemType, Stack<Item>>();
 		for (ItemType i : ItemType.values())
 		{
-			items.put(i, new Stack<GroundItem>());
+			items.put(i, new Stack<Item>());
 		}
 	}
 	
@@ -35,7 +37,7 @@ public class Inventory extends ServerClientObject
 	 * @param item the item to add
 	 * @return whether or not the ground item could be added or not.
 	 */
-	public boolean addItem(GroundItem item)
+	public boolean addItem(Item item)
 	{
 		return addItem(item, false);
 	}
@@ -47,9 +49,9 @@ public class Inventory extends ServerClientObject
 	 * @param serverForce if the server is forcing the client player to pick up the item
 	 * @return whether or not the ground item could be added or not.
 	 */
-	public boolean addItem(GroundItem item, boolean serverForce)
+	public boolean addItem(Item item, boolean serverForce)
 	{
-		Stack<GroundItem> list = items.get(item.getItemType());
+		Stack<Item> list = items.get(item.getItemType());
 		
 		if (list.size() < item.getItemType().getMaxStackSize())
 		{
@@ -78,20 +80,109 @@ public class Inventory extends ServerClientObject
 		return false;
 	}
 	
-	private void addItem(GroundItem item, Stack<GroundItem> list)
+	private void addItem(Item item, Stack<Item> list)
 	{
+		if (isEmpty())
+		{
+			setEquippedItem(item);
+		}
+		
 		item.removeFromLevel(!isServerSide());
 		list.push(item);
 	}
 	
-	public GroundItem getItem(ItemType type)
+	public Item getEquippedItem()
 	{
-		Stack<GroundItem> list = items.get(type);
+		return equippedItem;
+	}
+	
+	/**
+	 * Equips the next item in the inventory.
+	 */
+	public void gotoNextItem()
+	{
+		if (!isEmpty())
+		{
+			ItemType start = getEquippedItem().getItemType();
+			ItemType test = start;
+			
+			// While it's not looping
+			while ((test = test.getNext()) != start)
+			{
+				Stack<Item> stack = items.get(test);
+				if (!stack.isEmpty())
+				{
+					setEquippedItem(stack.get(0));
+					break;
+				}
+			}
+		}
+	}
+	
+	public void gotoPrevItem()
+	{
+		if (!isEmpty())
+		{
+			ItemType start = getEquippedItem().getItemType();
+			ItemType test = start;
+			
+			// While it's not looping
+			while ((test = test.getLast()) != start)
+			{
+				Stack<Item> stack = items.get(test);
+				if (!stack.isEmpty())
+				{
+					setEquippedItem(stack.get(0));
+					break;
+				}
+			}
+		}
+	}
+	
+	public boolean isEmpty()
+	{
+		// If any of the stacks in the inventory are occupied
+		for (Entry<ItemType, Stack<Item>> e : items.entrySet())
+		{
+			if (!e.getValue().isEmpty())
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Pops an item from the stack with the given ItemType.
+	 * 
+	 * @param type
+	 * @return the item, null if no item was found in that stack.
+	 */
+	public Item popItem(ItemType type)
+	{
+		Stack<Item> list = items.get(type);
 		
 		if (!list.isEmpty())
 		{
 			return list.pop();
 		}
 		return null;
+	}
+	
+	/**
+	 * Equips the next item in the inventory.
+	 */
+	private void removeItem(Item item, Stack<Item> list)
+	{
+		if (isEmpty())
+		{
+			setEquippedItem(null);
+		}
+	}
+	
+	public void setEquippedItem(Item item)
+	{
+		equippedItem = item;
 	}
 }

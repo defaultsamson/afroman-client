@@ -29,7 +29,7 @@ import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
-import ca.afroman.entity.api.GroundItem;
+import ca.afroman.entity.api.Item;
 import ca.afroman.events.Event;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -552,7 +552,7 @@ public class ClientGame extends Game
 								
 								if (item != null)
 								{
-									if (item instanceof GroundItem)
+									if (item instanceof Item)
 									{
 										byte ord = packet.getContent().get();
 										Role role = Role.fromOrdinal(ord);
@@ -563,7 +563,7 @@ public class ClientGame extends Game
 											
 											if (player != null)
 											{
-												player.getInventory().addItem((GroundItem) item, true);
+												player.getInventory().addItem((Item) item, true);
 											}
 											else
 											{
