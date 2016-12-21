@@ -41,9 +41,11 @@ public class GuiOptionsMenu extends GuiMenuOutline
 	private GuiTextButton down;
 	private GuiTextButton left;
 	private GuiTextButton right;
+	private GuiTextButton interact;
 	private GuiTextButton nextItem;
 	private GuiTextButton prevItem;
-	private GuiTextButton interact;
+	private GuiTextButton dropItem;
+	private GuiTextButton useItem;
 	
 	private int settingFor = -1;
 	
@@ -83,22 +85,30 @@ public class GuiOptionsMenu extends GuiMenuOutline
 		tsync.setCanRightClick(true);
 		
 		// Page 2
-		up = new GuiTextButton(this, 20, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 0), width, blackFont, "");
-		down = new GuiTextButton(this, 21, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 1), width, blackFont, "");
-		left = new GuiTextButton(this, 22, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 2), width, blackFont, "");
-		right = new GuiTextButton(this, 23, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 3), width, blackFont, "");
+		vSpacing = 18;
+		vStart = 18 + 2;
 		
-		interact = new GuiTextButton(this, 24, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 0), width, blackFont, "");
-		nextItem = new GuiTextButton(this, 25, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 1), width, blackFont, "");
-		prevItem = new GuiTextButton(this, 26, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 2), width, blackFont, "");
+		up = new GuiTextButton(this, 20, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 0), width, blackFont, "");
+		up.setCanRightClick(true);
+		down = new GuiTextButton(this, 21, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 1), width, blackFont, "");
+		down.setCanRightClick(true);
+		left = new GuiTextButton(this, 22, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 2), width, blackFont, "");
+		left.setCanRightClick(true);
+		right = new GuiTextButton(this, 23, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 3), width, blackFont, "");
+		right.setCanRightClick(true);
+		interact = new GuiTextButton(this, 24, (ClientGame.WIDTH / 2) - width - spacing, vStart + (vSpacing * 4), width, blackFont, "");
+		interact.setCanRightClick(true);
+		
+		nextItem = new GuiTextButton(this, 25, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 0), width, blackFont, "");
+		nextItem.setCanRightClick(true);
+		prevItem = new GuiTextButton(this, 26, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 1), width, blackFont, "");
+		prevItem.setCanRightClick(true);
+		dropItem = new GuiTextButton(this, 27, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 2), width, blackFont, "");
+		dropItem.setCanRightClick(true);
+		useItem = new GuiTextButton(this, 28, (ClientGame.WIDTH / 2) + spacing, vStart + (vSpacing * 3), width, blackFont, "");
+		useItem.setCanRightClick(true);
 		
 		addButtons(currentPage);
-		
-		if (!Options.instance().hasShownOptionsTip)
-		{
-			Options.instance().hasShownOptionsTip = true;
-			new GuiClickNotification(this, -1, "You can right click options", "for more info on what they do");
-		}
 	}
 	
 	private void addButtons(int page)
@@ -126,10 +136,12 @@ public class GuiOptionsMenu extends GuiMenuOutline
 				addButton(down);
 				addButton(left);
 				addButton(right);
-				
 				addButton(interact);
+				
 				addButton(nextItem);
 				addButton(prevItem);
+				addButton(dropItem);
+				addButton(useItem);
 				
 				break;
 		}
@@ -137,6 +149,24 @@ public class GuiOptionsMenu extends GuiMenuOutline
 		addButton(done);
 		addButton(prev);
 		addButton(next);
+		
+		switch (page)
+		{
+			case 0:
+				if (!Options.instance().hasShownOptionsTip)
+				{
+					Options.instance().hasShownOptionsTip = true;
+					new GuiClickNotification(this, -1, "You can right click options", "for more info on what they do");
+				}
+				break;
+			case 1:
+				if (!Options.instance().hasShownControlsTip)
+				{
+					Options.instance().hasShownControlsTip = true;
+					new GuiClickNotification(this, -1, "You can right click controls", "to reset them to their defaults");
+				}
+				break;
+		}
 		
 		updateControlButtons(true);
 		updateButtons();
@@ -178,29 +208,56 @@ public class GuiOptionsMenu extends GuiMenuOutline
 	@Override
 	public void pressAction(int buttonID, boolean isLeft)
 	{
-		switch (buttonID)
+		if (isLeft)
 		{
-			case 20: // Up
-				pendKeySet(buttonID);
-				break;
-			case 21: // Down
-				pendKeySet(buttonID);
-				break;
-			case 22: // Left
-				pendKeySet(buttonID);
-				break;
-			case 23: // Right
-				pendKeySet(buttonID);
-				break;
-			case 24: // Interact
-				pendKeySet(buttonID);
-				break;
-			case 25: // Next item
-				pendKeySet(buttonID);
-				break;
-			case 26: // Last item
-				pendKeySet(buttonID);
-				break;
+			switch (buttonID)
+			{
+				case 20: // Up
+				case 21: // Down
+				case 22: // Left
+				case 23: // Right
+				case 24: // Interact
+				case 25: // Next item
+				case 26: // Last item
+				case 27: // Drop item
+				case 28: // Use item
+					pendKeySet(buttonID);
+			}
+		}
+		else
+		{
+			settingFor = buttonID;
+			
+			switch (buttonID)
+			{
+				case 20: // Up
+					setReadKey(Options.DEFAULT_INPUT_UP);
+					break;
+				case 21: // Down
+					setReadKey(Options.DEFAULT_INPUT_DOWN);
+					break;
+				case 22: // Left
+					setReadKey(Options.DEFAULT_INPUT_LEFT);
+					break;
+				case 23: // Right
+					setReadKey(Options.DEFAULT_INPUT_RIGHT);
+					break;
+				case 24: // Interact
+					setReadKey(Options.DEFAULT_INPUT_INTERACT);
+					break;
+				case 25: // Next item
+					setReadKey(Options.DEFAULT_INPUT_NEXT_ITEM);
+					break;
+				case 26: // Previous item
+					setReadKey(Options.DEFAULT_INPUT_PREV_ITEM);
+					break;
+				case 27: // Drop item
+					setReadKey(Options.DEFAULT_INPUT_DROP_ITEM);
+					break;
+				case 28: // Use item
+					setReadKey(Options.DEFAULT_INPUT_USE_ITEM);
+					break;
+			}
 		}
 	}
 	
@@ -323,6 +380,14 @@ public class GuiOptionsMenu extends GuiMenuOutline
 					ClientGame.instance().input().nextItem.setKeyEvents(readKey);
 					Options.instance().inputNextItem = readKey;
 					break;
+				case 27: // Drop item
+					ClientGame.instance().input().dropItem.setKeyEvents(readKey);
+					Options.instance().inputDropItem = readKey;
+					break;
+				case 28: // Use item
+					ClientGame.instance().input().useItem.setKeyEvents(readKey);
+					Options.instance().inputUseItem = readKey;
+					break;
 			}
 			
 			settingFor = -1;
@@ -382,10 +447,12 @@ public class GuiOptionsMenu extends GuiMenuOutline
 				interact.setText("Interact: " + KeyEvent.getKeyText(ClientGame.instance().input().interact.getKeyEvent()));
 				nextItem.setText("Next Item: " + KeyEvent.getKeyText(ClientGame.instance().input().prevItem.getKeyEvent()));
 				prevItem.setText("Prev Item: " + KeyEvent.getKeyText(ClientGame.instance().input().nextItem.getKeyEvent()));
+				dropItem.setText("Drop Item: " + KeyEvent.getKeyText(ClientGame.instance().input().dropItem.getKeyEvent()));
+				
+				useItem.setText("Use Item: " + KeyEvent.getKeyText(ClientGame.instance().input().useItem.getKeyEvent()));
 				
 				break;
 		}
-		
 	}
 	
 	private void updateControlButtons(boolean enable)

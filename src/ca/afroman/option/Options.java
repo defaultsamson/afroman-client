@@ -19,6 +19,16 @@ public class Options
 	
 	private static Options instance = null;
 	
+	public static final int DEFAULT_INPUT_UP = KeyEvent.VK_UP;
+	
+	public static final int DEFAULT_INPUT_DOWN = KeyEvent.VK_DOWN;
+	public static final int DEFAULT_INPUT_LEFT = KeyEvent.VK_LEFT;
+	public static final int DEFAULT_INPUT_RIGHT = KeyEvent.VK_RIGHT;
+	public static final int DEFAULT_INPUT_INTERACT = KeyEvent.VK_SPACE;
+	public static final int DEFAULT_INPUT_NEXT_ITEM = KeyEvent.VK_D;
+	public static final int DEFAULT_INPUT_PREV_ITEM = KeyEvent.VK_A;
+	public static final int DEFAULT_INPUT_DROP_ITEM = KeyEvent.VK_Q;
+	public static final int DEFAULT_INPUT_USE_ITEM = KeyEvent.VK_W;
 	public static Options instance()
 	{
 		if (instance == null)
@@ -29,7 +39,6 @@ public class Options
 		}
 		return instance;
 	}
-	
 	// Client
 	public int musicVolume;
 	public int sfxVolume;
@@ -43,41 +52,45 @@ public class Options
 	public boolean fullscreen;
 	public LightMapState lighting;
 	public int scale;
+	
 	public int inputUp;
 	public int inputDown;
 	public int inputLeft;
+	
 	public int inputRight;
 	public int inputInteract;
+	
 	public int inputNextItem;
+	
 	public int inputPrevItem;
+	
+	public int inputDropItem;
+	
+	public int inputUseItem;
 	
 	// Server
 	public String serverPassword;
+	
 	public String serverIP;
 	public String serverPort;
-	
 	public boolean hasShownOptionsTip;
-	
+	public boolean hasShownControlsTip;
 	private void append(List<String> list, OptionType type, boolean value)
 	{
 		list.add(type + SPLITTER + value);
 	}
-	
 	private void append(List<String> list, OptionType type, int value)
 	{
 		list.add(type + SPLITTER + value);
 	}
-	
 	private void append(List<String> list, OptionType type, String value)
 	{
 		list.add(type + SPLITTER + value);
 	}
-	
 	public boolean getTsync()
 	{
 		return tsync;
 	}
-	
 	public void initializeValues()
 	{
 		musicVolume = 100;
@@ -92,19 +105,22 @@ public class Options
 		fullscreen = false;
 		lighting = LightMapState.ON;
 		scale = ClientGame.DEFAULT_SCALE;
-		inputUp = KeyEvent.VK_UP;
-		inputDown = KeyEvent.VK_DOWN;
-		inputLeft = KeyEvent.VK_LEFT;
-		inputRight = KeyEvent.VK_RIGHT;
-		inputInteract = KeyEvent.VK_SPACE;
-		inputNextItem = KeyEvent.VK_D;
-		inputPrevItem = KeyEvent.VK_A;
+		inputUp = DEFAULT_INPUT_UP;
+		inputDown = DEFAULT_INPUT_DOWN;
+		inputLeft = DEFAULT_INPUT_LEFT;
+		inputRight = DEFAULT_INPUT_RIGHT;
+		inputInteract = DEFAULT_INPUT_INTERACT;
+		inputNextItem = DEFAULT_INPUT_NEXT_ITEM;
+		inputPrevItem = DEFAULT_INPUT_PREV_ITEM;
+		inputDropItem = DEFAULT_INPUT_DROP_ITEM;
+		inputUseItem = DEFAULT_INPUT_USE_ITEM;
 		
 		serverPassword = "";
 		serverIP = "" + Game.IPv4_LOCALHOST;
 		serverPort = "" + Game.DEFAULT_PORT;
 		
 		hasShownOptionsTip = false;
+		hasShownControlsTip = false;
 	}
 	
 	public boolean isLightingOn()
@@ -188,6 +204,12 @@ public class Options
 						case INPUT_PREVITEM:
 							inputPrevItem = Integer.parseInt(option);
 							break;
+						case INPUT_DROPITEM:
+							inputDropItem = Integer.parseInt(option);
+							break;
+						case INPUT_USEITEM:
+							inputUseItem = Integer.parseInt(option);
+							break;
 						
 						case SERVER_PASSWORD:
 							serverPassword = option;
@@ -202,6 +224,10 @@ public class Options
 						case HAS_SHOWN_OPTIONS_TIP:
 							hasShownOptionsTip = Boolean.parseBoolean(option);
 							break;
+						case HAS_SHOWN_CONTROLS_TIP:
+							hasShownControlsTip = Boolean.parseBoolean(option);
+							break;
+						
 					}
 				}
 				catch (Exception e)
@@ -239,12 +265,15 @@ public class Options
 		append(op, OptionType.INPUT_INTERACT, inputInteract);
 		append(op, OptionType.INPUT_NEXTITEM, inputNextItem);
 		append(op, OptionType.INPUT_PREVITEM, inputPrevItem);
+		append(op, OptionType.INPUT_DROPITEM, inputDropItem);
+		append(op, OptionType.INPUT_USEITEM, inputUseItem);
 		
 		append(op, OptionType.SERVER_PASSWORD, serverPassword);
 		append(op, OptionType.SERVER_IP, serverIP);
 		append(op, OptionType.SERVER_PORT, serverPort);
 		
 		append(op, OptionType.HAS_SHOWN_OPTIONS_TIP, hasShownOptionsTip);
+		append(op, OptionType.HAS_SHOWN_CONTROLS_TIP, hasShownControlsTip);
 		
 		FileUtil.writeLines(op, new File(OPTIONS_FILE));
 	}

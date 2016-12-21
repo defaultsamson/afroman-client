@@ -21,6 +21,8 @@ public enum OptionType
 	INPUT_INTERACT,
 	INPUT_NEXTITEM,
 	INPUT_PREVITEM,
+	INPUT_DROPITEM,
+	INPUT_USEITEM,
 	
 	// Used proprietarily by server
 	SERVER_PASSWORD,
@@ -29,4 +31,5 @@ public enum OptionType
 	
 	// Used only temporarily to remember if the client has done something for the first time before
 	HAS_SHOWN_OPTIONS_TIP,
+	HAS_SHOWN_CONTROLS_TIP
 }

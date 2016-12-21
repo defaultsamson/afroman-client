@@ -68,6 +68,9 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public Key nextItem = new Key(keys, Options.instance().inputNextItem);
 	public Key prevItem = new Key(keys, Options.instance().inputPrevItem);
 	
+	public Key dropItem = new Key(keys, Options.instance().inputDropItem);
+	public Key useItem = new Key(keys, Options.instance().inputUseItem);
+	
 	public Key interact = new Key(keys, Options.instance().inputInteract);
 	
 	public Key up_arrow = new Key(keys, KeyEvent.VK_UP);

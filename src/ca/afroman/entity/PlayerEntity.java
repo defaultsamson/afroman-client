@@ -178,6 +178,14 @@ public class PlayerEntity extends DrawableEntityDirectional
 					{
 						getInventory().gotoPrevItem();
 					}
+					if (ClientGame.instance().input().dropItem.isPressedTyping())
+					{
+						
+					}
+					if (ClientGame.instance().input().useItem.isPressedTyping())
+					{
+						
+					}
 					if (ClientGame.instance().input().up.isPressed())
 					{
 						ya = -1;
