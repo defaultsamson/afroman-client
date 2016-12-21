@@ -1,5 +1,6 @@
 package ca.afroman.option;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class Options
 		return instance;
 	}
 	
+	// Client
 	public int musicVolume;
 	public int sfxVolume;
 	public String serverUsername;
@@ -41,7 +43,15 @@ public class Options
 	public boolean fullscreen;
 	public LightMapState lighting;
 	public int scale;
+	public int inputUp;
+	public int inputDown;
+	public int inputLeft;
+	public int inputRight;
+	public int inputInteract;
+	public int inputNextItem;
+	public int inputPrevItem;
 	
+	// Server
 	public String serverPassword;
 	public String serverIP;
 	public String serverPort;
@@ -82,6 +92,13 @@ public class Options
 		fullscreen = false;
 		lighting = LightMapState.ON;
 		scale = ClientGame.DEFAULT_SCALE;
+		inputUp = KeyEvent.VK_UP;
+		inputDown = KeyEvent.VK_DOWN;
+		inputLeft = KeyEvent.VK_LEFT;
+		inputRight = KeyEvent.VK_RIGHT;
+		inputInteract = KeyEvent.VK_SPACE;
+		inputNextItem = KeyEvent.VK_D;
+		inputPrevItem = KeyEvent.VK_A;
 		
 		serverPassword = "";
 		serverIP = "" + Game.IPv4_LOCALHOST;
@@ -150,6 +167,27 @@ public class Options
 						case SCALE:
 							scale = Integer.parseInt(option);
 							break;
+						case INPUT_UP:
+							inputUp = Integer.parseInt(option);
+							break;
+						case INPUT_DOWN:
+							inputDown = Integer.parseInt(option);
+							break;
+						case INPUT_LEFT:
+							inputLeft = Integer.parseInt(option);
+							break;
+						case INPUT_RIGHT:
+							inputRight = Integer.parseInt(option);
+							break;
+						case INPUT_INTERACT:
+							inputInteract = Integer.parseInt(option);
+							break;
+						case INPUT_NEXTITEM:
+							inputNextItem = Integer.parseInt(option);
+							break;
+						case INPUT_PREVITEM:
+							inputPrevItem = Integer.parseInt(option);
+							break;
 						
 						case SERVER_PASSWORD:
 							serverPassword = option;
@@ -194,6 +232,13 @@ public class Options
 		append(op, OptionType.FULLSCREEN, fullscreen);
 		append(op, OptionType.LIGHT_MODE, lighting.toString());
 		append(op, OptionType.SCALE, scale);
+		append(op, OptionType.INPUT_UP, inputUp);
+		append(op, OptionType.INPUT_DOWN, inputDown);
+		append(op, OptionType.INPUT_LEFT, inputLeft);
+		append(op, OptionType.INPUT_RIGHT, inputRight);
+		append(op, OptionType.INPUT_INTERACT, inputInteract);
+		append(op, OptionType.INPUT_NEXTITEM, inputNextItem);
+		append(op, OptionType.INPUT_PREVITEM, inputPrevItem);
 		
 		append(op, OptionType.SERVER_PASSWORD, serverPassword);
 		append(op, OptionType.SERVER_IP, serverIP);

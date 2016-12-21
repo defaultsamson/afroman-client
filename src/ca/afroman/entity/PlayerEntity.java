@@ -170,11 +170,11 @@ public class PlayerEntity extends DrawableEntityDirectional
 					{
 						ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract(getPosition()));
 					}
-					if (ClientGame.instance().input().itemNext.isPressedTyping())
+					if (ClientGame.instance().input().prevItem.isPressedTyping())
 					{
 						getInventory().gotoNextItem();
 					}
-					if (ClientGame.instance().input().itemPrev.isPressedTyping())
+					if (ClientGame.instance().input().nextItem.isPressedTyping())
 					{
 						getInventory().gotoPrevItem();
 					}

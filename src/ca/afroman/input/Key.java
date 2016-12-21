@@ -13,6 +13,16 @@ public class Key extends InputType
 		container.add(this);
 	}
 	
+	public int getKeyEvent()
+	{
+		return keyEvents[0];
+	}
+	
+	public void setKeyEvents(int key)
+	{
+		keyEvents[0] = key;
+	}
+	
 	public void update(int keyCode, boolean isPressed)
 	{
 		for (int key : keyEvents)

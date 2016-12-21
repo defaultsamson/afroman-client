@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.client.ClientGame;
+import ca.afroman.gui.GuiOptionsMenu;
+import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DInt;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, WindowListener, FocusListener
@@ -58,15 +60,16 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	private Vector2DInt mousePos = new Vector2DInt(0, 0);
 	
 	private List<Key> keys = new ArrayList<Key>();
-	public Key up = new Key(keys, KeyEvent.VK_UP, KeyEvent.VK_W);
-	public Key down = new Key(keys, KeyEvent.VK_DOWN, KeyEvent.VK_S);
-	public Key left = new Key(keys, KeyEvent.VK_LEFT, KeyEvent.VK_A);
-	public Key right = new Key(keys, KeyEvent.VK_RIGHT, KeyEvent.VK_D);
+	public Key up = new Key(keys, Options.instance().inputUp);
+	public Key down = new Key(keys, Options.instance().inputDown);
+	public Key left = new Key(keys, Options.instance().inputLeft);
+	public Key right = new Key(keys, Options.instance().inputRight);
 	
-	public Key itemPrev = new Key(keys, KeyEvent.VK_Q, KeyEvent.VK_Z);
-	public Key itemNext = new Key(keys, KeyEvent.VK_E, KeyEvent.VK_C);
+	public Key nextItem = new Key(keys, Options.instance().inputNextItem);
+	public Key prevItem = new Key(keys, Options.instance().inputPrevItem);
 	
-	public Key interact = new Key(keys, KeyEvent.VK_X, KeyEvent.VK_SPACE);
+	public Key interact = new Key(keys, Options.instance().inputInteract);
+	
 	public Key up_arrow = new Key(keys, KeyEvent.VK_UP);
 	public Key down_arrow = new Key(keys, KeyEvent.VK_DOWN);
 	public Key left_arrow = new Key(keys, KeyEvent.VK_LEFT);
@@ -142,6 +145,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	
 	private boolean isGameFocused = true;
 	
+	private GuiOptionsMenu pendingMenu = null;
+	
 	public InputHandler(ClientGame game)
 	{
 		game.getCanvas().addKeyListener(this);
@@ -170,6 +175,16 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		ClientGame.instance().updateCursorHiding(true);
 	}
 	
+	/**
+	 * Used for setting keybinds and such
+	 * 
+	 * @param guiOptionsMenu
+	 */
+	public void getKeyPress(GuiOptionsMenu guiOptionsMenu)
+	{
+		pendingMenu = guiOptionsMenu;
+	}
+	
 	public List<Key> getKeys()
 	{
 		return keys;
@@ -189,6 +204,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void keyPressed(KeyEvent e)
 	{
 		toggleKey(e.getKeyCode(), true);
+		
+		setKeyPress(e.getKeyCode());
 	}
 	
 	@Override
@@ -286,6 +303,20 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		StringSelection stringSelection = new StringSelection(sb.toString());
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
+	}
+	
+	/**
+	 * Used for setting keybinds and such
+	 * 
+	 * @param guiOptionsMenu
+	 */
+	public void setKeyPress(int readKey)
+	{
+		if (pendingMenu != null)
+		{
+			pendingMenu.setReadKey(readKey);
+			pendingMenu = null;
+		}
 	}
 	
 	public void toggleKey(int keyCode, boolean isPressed)

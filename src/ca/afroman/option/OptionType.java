@@ -14,6 +14,13 @@ public enum OptionType
 	FULLSCREEN,
 	LIGHT_MODE,
 	SCALE,
+	INPUT_UP,
+	INPUT_DOWN,
+	INPUT_LEFT,
+	INPUT_RIGHT,
+	INPUT_INTERACT,
+	INPUT_NEXTITEM,
+	INPUT_PREVITEM,
 	
 	// Used proprietarily by server
 	SERVER_PASSWORD,

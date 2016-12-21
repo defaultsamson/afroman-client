@@ -16,7 +16,7 @@ public abstract class GuiScreen
 	protected static Font blackFont = Assets.getFont(AssetType.FONT_BLACK);
 	
 	protected GuiScreen parentScreen;
-	private List<GuiButton> buttons;
+	protected List<GuiButton> buttons;
 	private List<GuiButton> buttonToRemove;
 	private List<GuiButton> buttonToAdd;
 	
@@ -37,7 +37,10 @@ public abstract class GuiScreen
 	
 	public void clearButtons()
 	{
-		buttons.clear();
+		for (GuiButton bu : buttons)
+		{
+			removeButton(bu);
+		}
 	}
 	
 	/**

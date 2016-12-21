@@ -44,6 +44,9 @@ public class GuiMainMenu extends GuiMenuOutline
 	@Override
 	public void releaseAction(int buttonID, boolean isLeft)
 	{
+		// Rids of any pending calls for isReleasedFilter on escape
+		ClientGame.instance().input().escape.isReleasedFiltered();
+		
 		switch (buttonID)
 		{
 			case 2: // Host Server
