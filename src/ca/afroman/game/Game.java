@@ -198,14 +198,9 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 			toProcess.clear();
 		}
 		
-		//System.out.println("Baked Fuck: " + socketManager.welcomeSocket());
-		
 		if (socketManager != null)
 		{
-			synchronized (socketManager)
-			{
-				socketManager.keyCheck();
-			}
+			socketManager.keyCheck();
 		}
 	}
 }

@@ -83,7 +83,9 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	private PacketSender sSocket = null;
 	
 	private List<TCPReceiver> tcpSockets = null;
-	private Selector selector;
+	private Selector selector = null;
+	
+	private SelectionKey serverKey = null;
 	
 	public SocketManager(Game game)
 	{
@@ -145,7 +147,17 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			{
 				try
 				{
-					welcomeSocket.register(selector, TCPSocketChannel.serverOp, newConnection);
+					SocketChannel client = welcomeSocket.accept();
+					TCPSocketChannel tcp = new TCPSocketChannel(selector, client, false);
+					newConnection.getConnection().setTCPSocketChannel(tcp);
+					
+					synchronized (tcpSockets)
+					{
+						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
+						tcpSockets.add(rec);
+						rec.startThis();
+					}
+					ServerGame.instance().logger().log(ALogType.DEBUG, "Accepted client in a blocking format");
 				}
 				catch (IOException e)
 				{
@@ -369,13 +381,12 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			Options.instance().serverPort = "" + port;
 			
 			try
-			{
-				System.out.println("Baked Fuck");
-				
+			{	
 				welcomeSocket = ServerSocketChannel.open();
 				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
-				welcomeSocket.configureBlocking(false);
+				welcomeSocket.configureBlocking(true);
 				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				//welcomeSocket.register(selector, TCPSocketChannel.serverOp, null);
 			}
 			catch (IOException e)
 			{
@@ -508,10 +519,9 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	
 	public void keyCheck()
 	{
-		synchronized (selector) {
 		try
-		{
-			int readyChannels = selector.select(10);
+		{	
+			int readyChannels = selector.selectNow();
 			
 			if (readyChannels == 0) return;
 			
@@ -524,7 +534,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				
 				if (key.isAcceptable())
 				{
-					ServerSocketChannel server = (ServerSocketChannel) key.channel();
+					/*ServerSocketChannel server = (ServerSocketChannel) key.channel();
 					SocketChannel client = server.accept();
 					TCPSocketChannel tcp = new TCPSocketChannel(selector, client, false);
 					IPConnectedPlayer newConnection = (IPConnectedPlayer) key.attachment();
@@ -535,24 +545,24 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
 						tcpSockets.add(rec);
 						rec.startThis();
-					}
+					}*/
+					ServerGame.instance().logger().log(ALogType.DEBUG, "Accepted client in a non-blocking format");
 				}
 				else if (key.isReadable())
 				{
-					// TODO use packetParsesr
-					((TCPSocketChannel) key.attachment()).read(key);
+					((TCPSocketChannel) key.attachment()).read =
+					TCPSocketChannel.read(key);
 				}
 				else if (key.isWritable())
 				{
-					((TCPSocketChannel) key.attachment()).write(key);
+					TCPSocketChannel.write(key);
 				}
 				keyIterator.remove();
 			}
 		}
 		catch (IOException e)
 		{
-			game.logger().log(ALogType.WARNING, "I/O exception while selecting keys", e);
-		}
+			game.logger().log(ALogType.WARNING, "I/O exception while completing keys", e);
 		}
 	}
 }

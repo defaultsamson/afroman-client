@@ -77,7 +77,7 @@ public class TCPReceiver extends DynamicThread
 		
 		try
 		{
-			socket.getSocket().close();
+			socket.close();
 		}
 		catch (IOException e)
 		{

@@ -74,6 +74,7 @@ public class PacketSender extends DynamicTickThread
 					try
 					{
 						con.getTCPSocketChannel().sendData(packet.getData());
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
 					}
 					catch (ClosedChannelException e)
 					{
