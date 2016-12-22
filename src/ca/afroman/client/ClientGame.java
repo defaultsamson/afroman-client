@@ -542,53 +542,49 @@ public class ClientGame extends Game
 							break;
 						case PLAYER_PICKUP_ITEM:
 						{
-							LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
-							Level level = getLevel(levelType);
+							byte ord = packet.getContent().get();
+							Role role = Role.fromOrdinal(ord);
 							
-							if (level != null)
+							if (role != null)
 							{
-								int id = packet.getContent().getInt();
-								
-								Entity item = level.getEntity(id);
-								
-								if (item != null)
+								PlayerEntity player = getPlayer(role);
+								if (player != null)
 								{
-									if (item instanceof Item)
+									if (player.getLevel() != null)
 									{
-										byte ord = packet.getContent().get();
-										Role role = Role.fromOrdinal(ord);
+										int id = packet.getContent().getInt();
 										
-										if (role != null)
+										Entity item = player.getLevel().getEntity(id);
+										
+										if (item != null)
 										{
-											PlayerEntity player = getPlayer(role);
-											
-											if (player != null)
+											if (item instanceof Item)
 											{
 												player.getInventory().addItem((Item) item, true);
 											}
 											else
 											{
-												logger().log(ALogType.WARNING, "No player found with role " + role);
+												logger().log(ALogType.WARNING, "Item with ID " + id + " is not an instanceof Item");
 											}
 										}
 										else
 										{
-											logger().log(ALogType.WARNING, "No role found with ordinal " + ord);
+											logger().log(ALogType.WARNING, "No item in level " + player.getLevel().getLevelType() + " with ID " + id);
 										}
 									}
 									else
 									{
-										logger().log(ALogType.WARNING, "Entity with id " + id + " is not an instanceof GroundItem");
+										logger().log(ALogType.WARNING, "Player is not in a level: " + role);
 									}
 								}
 								else
 								{
-									logger().log(ALogType.WARNING, "No entity with ID " + id);
+									logger().log(ALogType.WARNING, "No player found with role " + role);
 								}
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No level with type " + levelType);
+								logger().log(ALogType.WARNING, "No role found with ordinal " + ord);
 							}
 						}
 							break;

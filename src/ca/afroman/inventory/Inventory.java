@@ -61,7 +61,7 @@ public class Inventory extends ServerClientObject
 		{
 			if (isServerSide())
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketItemPickup(owner.getRole(), item.getLevel().getLevelType(), item.getID()));
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketItemPickup(owner.getRole(), item.getID()));
 				addItem(item, list);
 			}
 			else
@@ -186,6 +186,7 @@ public class Inventory extends ServerClientObject
 		
 		if (isServerSide())
 		{
+			// Sets the drop position to the player's feet
 			pos = owner.getPosition().clone().add(4, 9);
 			if (removeItem(list, pos))
 			{
