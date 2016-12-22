@@ -27,7 +27,8 @@ public enum PacketType
 	
 	PLAYER_MOVE,
 	PLAYER_INTERACT,
-	PLAYER_PICKUP_ITEM;
+	PLAYER_PICKUP_ITEM,
+	PLAYER_DROP_ITEM;
 	
 	public static PacketType fromOrdinal(int ordinal)
 	{

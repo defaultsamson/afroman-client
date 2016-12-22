@@ -46,6 +46,7 @@ import ca.afroman.gui.GuiScreen;
 import ca.afroman.gui.GuiSendingLevels;
 import ca.afroman.gui.build.GuiLevelSelect;
 import ca.afroman.input.InputHandler;
+import ca.afroman.inventory.ItemType;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.light.FlickeringLight;
@@ -588,6 +589,43 @@ public class ClientGame extends Game
 							else
 							{
 								logger().log(ALogType.WARNING, "No level with type " + levelType);
+							}
+						}
+							break;
+						case PLAYER_DROP_ITEM:
+						{
+							ByteBuffer buf = packet.getContent();
+							byte ord = buf.get();
+							Role role = Role.fromOrdinal(ord);
+							
+							if (role != null)
+							{
+								PlayerEntity player = getPlayer(role);
+								
+								if (player != null)
+								{
+									byte itemOrd = buf.get();
+									ItemType item = ItemType.fromOrdinal(itemOrd);
+									
+									if (item != null)
+									{
+										Vector2DDouble pos = new Vector2DDouble(buf.getDouble(), buf.getDouble());
+										
+										player.getInventory().removeItem(item, pos, true);
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "No ItemType with ordinal " + itemOrd);
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No player found with role " + role);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No role found with ordinal " + ord);
 							}
 						}
 							break;

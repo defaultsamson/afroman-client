@@ -6,6 +6,7 @@ import ca.afroman.entity.PlayerEntity;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
+import ca.afroman.inventory.ItemType;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.log.ALogType;
@@ -266,6 +267,41 @@ public class ServerGame extends Game
 						}
 					}
 						break;
+					case PLAYER_DROP_ITEM:
+					{
+						PlayerEntity pe = getPlayer(sender.getRole());
+						
+						if (pe != null)
+						{
+							ByteBuffer buf = packet.getContent();
+							
+							byte itemOrd = buf.get();
+							ItemType item = ItemType.fromOrdinal(itemOrd);
+							
+							if (item != null)
+							{
+								Vector2DDouble pos = new Vector2DDouble(buf.getDouble(), buf.getDouble());
+								
+								// If the distance between the server's position for the player and the position that the client
+								// is telling the server is greater than 10, ignore the client because they're being dinguses
+								if (pe.getPosition().isDistanceGreaterThan(pos, 10D))
+								{
+									pos = pe.getPosition();
+								}
+								
+								pe.getInventory().removeItem(item, pos, true);
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No ItemType with ordinal " + itemOrd);
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
+						}
+					}
+						break;
 					case PLAYER_INTERACT:
 					{
 						PlayerEntity pe = getPlayer(sender.getRole());
@@ -388,7 +424,9 @@ public class ServerGame extends Game
 				}
 			}
 		}
-		catch (Exception e)
+		catch (
+		
+		Exception e)
 		{
 			logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}

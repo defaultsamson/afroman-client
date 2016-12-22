@@ -31,6 +31,8 @@ public class SwitchTrigger extends HitboxTrigger
 		
 		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
 		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
+		
+		updateTile();
 	}
 	
 	@Override

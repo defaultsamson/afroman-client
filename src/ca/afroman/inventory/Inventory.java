@@ -7,9 +7,13 @@ import java.util.Stack;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Item;
+import ca.afroman.log.ALogType;
+import ca.afroman.packet.PacketItemDropClientServer;
+import ca.afroman.packet.PacketItemDropServerClient;
 import ca.afroman.packet.PacketItemPickup;
 import ca.afroman.packet.PacketPlayerInteract;
 import ca.afroman.resource.ServerClientObject;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
 public class Inventory extends ServerClientObject
@@ -91,6 +95,21 @@ public class Inventory extends ServerClientObject
 		list.push(item);
 	}
 	
+	public void dropItem()
+	{
+		if (!isServerSide())
+		{
+			if (getEquippedItem() != null)
+			{
+				removeItem(getEquippedItem().getItemType());
+			}
+		}
+		else
+		{
+			ServerGame.instance().logger().log(ALogType.WARNING, "Should not be invoking Inventory.dropItem() from the server");
+		}
+	}
+	
 	public Item getEquippedItem()
 	{
 		return equippedItem;
@@ -153,31 +172,70 @@ public class Inventory extends ServerClientObject
 		return true;
 	}
 	
-	/**
-	 * Pops an item from the stack with the given ItemType.
-	 * 
-	 * @param type
-	 * @return the item, null if no item was found in that stack.
-	 */
-	public Item popItem(ItemType type)
+	private void removeItem(ItemType type)
 	{
-		Stack<Item> list = items.get(type);
-		
-		if (!list.isEmpty())
-		{
-			return list.pop();
-		}
-		return null;
+		removeItem(type, null, false);
 	}
 	
 	/**
 	 * Equips the next item in the inventory.
 	 */
-	private void removeItem(Item item, Stack<Item> list)
+	public void removeItem(ItemType type, Vector2DDouble pos, boolean serverForce)
 	{
-		if (isEmpty())
+		Stack<Item> list = items.get(type);
+		
+		if (isServerSide())
 		{
-			setEquippedItem(null);
+			pos = owner.getPosition().clone().add(4, 9);
+			if (removeItem(list, pos))
+			{
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketItemDropServerClient(owner.getRole(), type, pos));
+			}
+		}
+		else
+		{
+			// If the server has told the player to pick it up
+			if (serverForce)
+			{
+				removeItem(list, pos);
+			}
+			// Request the server to pick up the item
+			else
+			{
+				ClientGame.instance().sockets().sender().sendPacket(new PacketItemDropClientServer(type, owner.getPosition()));
+			}
+		}
+		
+	}
+	
+	private boolean removeItem(Stack<Item> list, Vector2DDouble pos)
+	{
+		Item droppedItem = list.pop();
+		
+		if (droppedItem != null)
+		{
+			droppedItem.addToLevel(owner.getLevel());
+			droppedItem.setPosition(pos);
+			
+			if (!isServerSide())
+			{
+				// If All the things are empty, no equipped item
+				if (isEmpty())
+				{
+					setEquippedItem(null);
+				}
+				// Else if only the current item list is empty,
+				else if (list.isEmpty())
+				{
+					gotoNextItem();
+				}
+			}
+			
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 	

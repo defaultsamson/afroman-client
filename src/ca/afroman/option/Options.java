@@ -19,16 +19,15 @@ public class Options
 	
 	private static Options instance = null;
 	
-	public static final int DEFAULT_INPUT_UP = KeyEvent.VK_UP;
-	
-	public static final int DEFAULT_INPUT_DOWN = KeyEvent.VK_DOWN;
-	public static final int DEFAULT_INPUT_LEFT = KeyEvent.VK_LEFT;
-	public static final int DEFAULT_INPUT_RIGHT = KeyEvent.VK_RIGHT;
-	public static final int DEFAULT_INPUT_INTERACT = KeyEvent.VK_SPACE;
-	public static final int DEFAULT_INPUT_NEXT_ITEM = KeyEvent.VK_D;
-	public static final int DEFAULT_INPUT_PREV_ITEM = KeyEvent.VK_A;
-	public static final int DEFAULT_INPUT_DROP_ITEM = KeyEvent.VK_Q;
-	public static final int DEFAULT_INPUT_USE_ITEM = KeyEvent.VK_W;
+	public static final int DEFAULT_INPUT_UP = KeyEvent.VK_W;
+	public static final int DEFAULT_INPUT_DOWN = KeyEvent.VK_S;
+	public static final int DEFAULT_INPUT_LEFT = KeyEvent.VK_A;
+	public static final int DEFAULT_INPUT_RIGHT = KeyEvent.VK_D;
+	public static final int DEFAULT_INPUT_INTERACT = KeyEvent.VK_E;
+	public static final int DEFAULT_INPUT_NEXT_ITEM = KeyEvent.VK_R;
+	public static final int DEFAULT_INPUT_PREV_ITEM = KeyEvent.VK_Q;
+	public static final int DEFAULT_INPUT_DROP_ITEM = KeyEvent.VK_X;
+	public static final int DEFAULT_INPUT_USE_ITEM = KeyEvent.VK_SPACE;
 	
 	public static Options instance()
 	{
@@ -61,13 +60,9 @@ public class Options
 	
 	public int inputRight;
 	public int inputInteract;
-	
 	public int inputNextItem;
-	
 	public int inputPrevItem;
-	
 	public int inputDropItem;
-	
 	public int inputUseItem;
 	
 	// Server
