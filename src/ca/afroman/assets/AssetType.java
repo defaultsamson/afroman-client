@@ -32,6 +32,16 @@ public enum AssetType
 	PLAYER_TWO_IDLE_LEFT(false),
 	PLAYER_TWO_IDLE_RIGHT(false),
 	
+	CRAB_RAW(false),
+	CRAB_UP(false),
+	CRAB_DOWN(false),
+	CRAB_LEFT(false),
+	CRAB_RIGHT(false),
+	CRAB_IDLE_UP(false),
+	CRAB_IDLE_DOWN(false),
+	CRAB_IDLE_LEFT(false),
+	CRAB_IDLE_RIGHT(false),
+	
 	SLIME(false),
 	
 	TILE_GRASS(true),

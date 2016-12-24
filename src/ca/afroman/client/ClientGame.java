@@ -540,6 +540,84 @@ public class ClientGame extends Game
 							}
 						}
 							break;
+						case ENTITY_MOVE:
+						{
+							ByteBuffer buf = packet.getContent();
+							short levelOrd = buf.getShort();
+							LevelType levelType = LevelType.fromOrdinal(levelOrd);
+							
+							if (levelType != null)
+							{
+								Level level = getLevel(levelType);
+								if (level != null)
+								{
+									int id = buf.getInt();
+									Entity entity = level.getEntity(id);
+									if (entity != null)
+									{
+										byte x = packet.getContent().get();
+										byte y = packet.getContent().get();
+										
+										entity.autoMove(x, y);
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "No Entity in level " + levelType + " with id " + id);
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No Level with type " + levelType);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No LevelType with ordinal " + levelOrd);
+							}
+						}
+							break;
+						case SET_ENTITY_POSITION:
+						{
+							ByteBuffer buf = packet.getContent();
+							short levelOrd = buf.getShort();
+							LevelType levelType = LevelType.fromOrdinal(levelOrd);
+							
+							if (levelType != null)
+							{
+								Level level = getLevel(levelType);
+								if (level != null)
+								{
+									int id = buf.getInt();
+									Entity entity = level.getEntity(id);
+									if (entity != null)
+									{
+										boolean forcePos = buf.get() == 1;
+										
+										Vector2DDouble pos = new Vector2DDouble(packet.getContent().getInt(), packet.getContent().getInt());
+										
+										// If entity is outside a given range of the server
+										// position force it into position to fix it
+										if (forcePos || entity.getPosition().isDistanceGreaterThan(pos, 10D))
+										{
+											entity.setPosition(pos);
+										}
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "No Entity in level " + levelType + " with id " + id);
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No Level with type " + levelType);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No LevelType with ordinal " + levelOrd);
+							}
+						}
+							break;
 						case PLAYER_PICKUP_ITEM:
 						{
 							byte ord = packet.getContent().get();

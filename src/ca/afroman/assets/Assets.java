@@ -218,6 +218,7 @@ public class Assets
 		assetArrays.add(new DrawableAssetArray(AssetType.PLAYER_ONE_RAW, Texture.fromResource(AssetType.PLAYER_ONE_RAW, "player1.png").toTextureArray(3, 4)));
 		
 		DrawableAssetArray player = Assets.getAssetArray(AssetType.PLAYER_ONE_RAW);
+		
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_UP, true, 10, (Texture) player.getDrawableAsset(9), (Texture) player.getDrawableAsset(10), (Texture) player.getDrawableAsset(11)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_DOWN, true, 10, (Texture) player.getDrawableAsset(0), (Texture) player.getDrawableAsset(1), (Texture) player.getDrawableAsset(2)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_ONE_LEFT, true, 10, (Texture) player.getDrawableAsset(3), (Texture) player.getDrawableAsset(4), (Texture) player.getDrawableAsset(5)));
@@ -238,6 +239,19 @@ public class Assets
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN, true, 0, (Texture) player2.getDrawableAsset(1)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_LEFT, true, 0, (Texture) player2.getDrawableAsset(4)));
 		assets.add(new SpriteAnimation(AssetType.PLAYER_TWO_IDLE_RIGHT, true, 0, (Texture) player2.getDrawableAsset(7)));
+		
+		assetArrays.add(new DrawableAssetArray(AssetType.CRAB_RAW, Texture.fromResource(AssetType.CRAB_RAW, "crab.png").toTextureArray(2, 4)));
+		
+		DrawableAssetArray crab = Assets.getAssetArray(AssetType.CRAB_RAW);
+		
+		assets.add(new SpriteAnimation(AssetType.CRAB_UP, true, 10, (Texture) crab.getDrawableAsset(6), (Texture) crab.getDrawableAsset(7)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_DOWN, true, 10, (Texture) crab.getDrawableAsset(0), (Texture) crab.getDrawableAsset(1)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_LEFT, true, 10, (Texture) crab.getDrawableAsset(4), (Texture) crab.getDrawableAsset(5)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_RIGHT, true, 10, (Texture) crab.getDrawableAsset(2), (Texture) crab.getDrawableAsset(3)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_IDLE_UP, true, 0, (Texture) crab.getDrawableAsset(6)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_IDLE_DOWN, true, 0, (Texture) crab.getDrawableAsset(1)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_IDLE_LEFT, true, 0, (Texture) crab.getDrawableAsset(5)));
+		assets.add(new SpriteAnimation(AssetType.CRAB_IDLE_RIGHT, true, 0, (Texture) crab.getDrawableAsset(2)));
 		
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS, 16 * 0, 16 * 0, 16, 16));
 		assets.add(sheet.getSubTexture(AssetType.TILE_GRASS_INNER_TOPLEFT, 16 * 3, 16 * 3, 16, 16));

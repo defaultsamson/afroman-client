@@ -4,7 +4,9 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
+import ca.afroman.packet.PacketEntityMove;
 import ca.afroman.packet.PacketPlayerMoveClientServer;
+import ca.afroman.packet.PacketSetEntityLocation;
 import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
@@ -57,6 +59,10 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	
 	private byte deltaXa = 0;
 	private byte deltaYa = 0;
+	
+	// Used for Entity movement to tell how much of the deltaXa/Ya that it's progressed
+	private byte deltaXaMoved = 0;
+	private byte deltaYaMoved = 0;
 	
 	private boolean hasMovedSince = false;
 	private ModulusCounter setPosCounter = new ModulusCounter(60 * 2); // Every 2 seconds
@@ -419,6 +425,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				deltaXa += direction.getXAmplitude();
 				deltaYa += direction.getYAmplitude();
 			}
+			else
+			{
+				deltaXaMoved += direction.getXAmplitude();
+				deltaYaMoved += direction.getYAmplitude();
+			}
 			
 			hasMovedSince = true;
 		}
@@ -502,19 +513,63 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				if (hasMovedSince)
 				{
 					// Update the position
-					// TODO implement a smooth movement change so it isn't as choppy
 					if (this instanceof PlayerEntity)
 					{
 						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(((PlayerEntity) this).getRole(), position, !hasDeltaMovement()));
 					}
 					else
 					{
-						// TODO Entity set position
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetEntityLocation(level.getLevelType(), getID(), position, !hasDeltaMovement()));
 					}
 					
 					hasMovedSince = false;
 				}
 			}
+			
+			if (!(this instanceof PlayerEntity))
+			{
+				if (hasDeltaMovement() && deltaMoveCounter.isAtInterval())
+				{
+					// System.out.println("Moveing: " + deltaXa + ", " + deltaYa);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketEntityMove(level.getLevelType(), getID(), deltaXaMoved, deltaYaMoved));
+					
+					deltaXaMoved = 0;
+					deltaYaMoved = 0;
+				}
+			}
+			
+			// move(deltaXa, deltaYa, true);
+			//
+			// deltaXa = 0;
+			// deltaYa = 0;
+			
+			// Old system for moving client-side entities smoothly
+			byte xa = 0;
+			byte ya = 0;
+			
+			if (deltaXa > 0)
+			{
+				xa = 1;
+				deltaXa -= 1;
+			}
+			else if (deltaXa < 0)
+			{
+				xa = -1;
+				deltaXa += 1;
+			}
+			
+			if (deltaYa > 0)
+			{
+				ya = 1;
+				deltaYa -= 1;
+			}
+			else if (deltaYa < 0)
+			{
+				ya = -1;
+				deltaYa += 1;
+			}
+			
+			move(xa, ya, true);
 		}
 		else // Client side
 		{
@@ -522,38 +577,25 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			{
 				getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
 			}
-		}
-		
-		// If it's the client side player that is controlled by the keyboard input
-		// Then use the deltaX and deltaY to tell the server where it's moved
-		if (this instanceof PlayerEntity && !isServerSide() && ((PlayerEntity) this).getRole() == ClientGame.instance().getRole())
-		{
-			if (hasDeltaMovement())
+			
+			// If it's the client side player that is controlled by the keyboard input
+			// Then use the deltaX and deltaY to tell the server where it's moved
+			if (this instanceof PlayerEntity && ((PlayerEntity) this).getRole() == ClientGame.instance().getRole())
 			{
-				if (deltaMoveCounter.isAtInterval())
+				// If has moved, and it's been a given amount of ticks, tell the server the position of this
+				if (hasDeltaMovement() && deltaMoveCounter.isAtInterval())
 				{
-					// TODO Add Entity delta movement in addition to this player code
 					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
 					
 					deltaXa = 0;
 					deltaYa = 0;
 				}
 			}
-		}
-		else
-		// If it's not a player that is controlled by the ClientGame instance (the keyboard input)
-		// Then automatically move it using its deltaX and deltaY
-		{
-			if (isServerSide())
-			{
-				move(deltaXa, deltaYa, true);
-				
-				deltaXa = 0;
-				deltaYa = 0;
-			}
+			// If it's not a player that is controlled by the ClientGame instance (the keyboard input)
+			// Then automatically move it using its deltaX and deltaY
 			else
 			{
-				// Old system
+				// Old system for moving client-side entities smoothly
 				byte xa = 0;
 				byte ya = 0;
 				
@@ -582,6 +624,68 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				move(xa, ya, true);
 			}
 		}
+		
+		// // If it's the client side player that is controlled by the keyboard input
+		// // Then use the deltaX and deltaY to tell the server where it's moved
+		// if (this instanceof PlayerEntity && !isServerSide() && ((PlayerEntity) this).getRole() == ClientGame.instance().getRole())
+		// {
+		// if (hasDeltaMovement())
+		// {
+		// if (deltaMoveCounter.isAtInterval())
+		// {
+		// if (this instanceof PlayerEntity)
+		// {
+		// // TODO Add Entity delta movement in addition to this player code
+		// ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
+		//
+		// deltaXa = 0;
+		// deltaYa = 0;
+		// }
+		// }
+		// }
+		// }
+		// else
+		// // If it's not a player that is controlled by the ClientGame instance (the keyboard input)
+		// // Then automatically move it using its deltaX and deltaY
+		// {
+		// if (isServerSide())
+		// {
+		// move(deltaXa, deltaYa, true);
+		//
+		// deltaXa = 0;
+		// deltaYa = 0;
+		// }
+		// else
+		// {
+		// // Old system for moving client-side entities smoothly
+		// byte xa = 0;
+		// byte ya = 0;
+		//
+		// if (deltaXa > 0)
+		// {
+		// xa = 1;
+		// deltaXa -= 1;
+		// }
+		// else if (deltaXa < 0)
+		// {
+		// xa = -1;
+		// deltaXa += 1;
+		// }
+		//
+		// if (deltaYa > 0)
+		// {
+		// ya = 1;
+		// deltaYa -= 1;
+		// }
+		// else if (deltaYa < 0)
+		// {
+		// ya = -1;
+		// deltaYa += 1;
+		// }
+		//
+		// move(xa, ya, true);
+		// }
+		// }
 	}
 	
 	/**

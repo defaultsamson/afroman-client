@@ -13,7 +13,8 @@ public class PacketItemDropClientServer extends BytePacket
 	
 	public PacketItemDropClientServer(ItemType type, Vector2DDouble pos, IPConnection... connection)
 	{
-		super(PacketType.PLAYER_DROP_ITEM, false, connection);
+		// TODO make false?
+		super(PacketType.PLAYER_DROP_ITEM, true, connection);
 		
 		ByteBuffer buf = ByteBuffer.allocate(ALLOCATE_SIZE).put(typeOrd());
 		

@@ -10,6 +10,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.BrassKnuckles;
+import ca.afroman.entity.Crab;
 import ca.afroman.entity.HairPin;
 import ca.afroman.entity.api.Direction;
 import ca.afroman.entity.api.Entity;
@@ -62,6 +63,8 @@ public class MainLevel extends Level
 		new HairPin(isServerSide, false, new Vector2DDouble(102, 10)).addToLevel(this);
 		new BrassKnuckles(isServerSide, false, new Vector2DDouble(119, 12)).addToLevel(this);
 		new HairPin(isServerSide, false, new Vector2DDouble(86, -2)).addToLevel(this);
+		
+		new Crab(isServerSide, false, new Vector2DDouble(119, 12)).addToLevel(this);
 		
 		//////////// HIGHLIGHT ME ////////////
 		
