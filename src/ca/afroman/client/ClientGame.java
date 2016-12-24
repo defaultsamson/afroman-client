@@ -64,6 +64,7 @@ import ca.afroman.packet.PacketPlayerDisconnect;
 import ca.afroman.packet.PacketSetPlayerLocationClientServer;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
+import ca.afroman.resource.SetInteger;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.DenyJoinReason;
@@ -767,9 +768,7 @@ public class ClientGame extends Game
 				}
 			}
 		}
-		catch (
-		
-		Exception e)
+		catch (Exception e)
 		{
 			// TODO logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
@@ -1246,17 +1245,24 @@ public class ClientGame extends Game
 		resizeGame(WIDTH * Options.instance().scale, HEIGHT * Options.instance().scale, true); // Sets the window size that of which was found from the options
 		
 		// Loading screen
+		final SetInteger perc = new SetInteger(15);
 		final Texture loading = Texture.fromResource(AssetType.INVALID, "loading.png");
 		DynamicThread renderLoading = new DynamicThread(false, this.getThread().getThreadGroup(), "Loading-Display")
 		{
 			@Override
 			public void onRun()
 			{
+				int width = 100;
+				int height = 6;
+				loading.getGraphics().setPaint(new Color(0F, 0F, 0F, 1F));
+				loading.getGraphics().drawRect((WIDTH / 2) - (width / 2), HEIGHT - 28 - height, width, height);
+				loading.getGraphics().fillRect((WIDTH / 2) - (width / 2), HEIGHT - 28 - height, (int) (width * ((double) perc.getValue() / (double) 100)), height);
+				
 				canvas.getGraphics().drawImage(loading.getImage(), 0, 0, canvas.getWidth(), canvas.getHeight(), null);
 				
 				try
 				{
-					Thread.sleep(200);
+					Thread.sleep(50);
 				}
 				catch (InterruptedException e)
 				{
@@ -1276,22 +1282,28 @@ public class ClientGame extends Game
 		// Allows key listens for TAB and such
 		canvas.setFocusTraversalKeysEnabled(false);
 		
+		perc.setValue(16);
+		
 		// DO MORE LOADING
 		
 		logger().log(ALogType.DEBUG, "Loading assets...");
 		
-		Assets.load();
+		Assets.load(perc);
+		perc.setValue(86);
 		AudioClip.updateVolumesFromOptions();
+		perc.setValue(87);
 		
 		logger().log(ALogType.DEBUG, "Initializing game variables...");
 		
 		updateMem = new ModulusCounter((int) ticksPerSecond);
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
+		perc.setValue(96);
 		debugFontWhite = Assets.getFont(AssetType.FONT_WHITE);
 		debugFontBlack = Assets.getFont(AssetType.FONT_BLACK);
 		screen = new Texture(AssetType.INVALID, new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB), 0);
 		input = new InputHandler(this);
+		perc.setValue(97);
 		
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER1, new Vector2DDouble(0, 0)));
 		getPlayers().add(new PlayerEntity(false, Role.PLAYER2, new Vector2DDouble(0, 0)));
@@ -1299,6 +1311,8 @@ public class ClientGame extends Game
 		lights = new HashMap<Role, FlickeringLight>(2);
 		lights.put(Role.PLAYER1, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
 		lights.put(Role.PLAYER2, new FlickeringLight(true, new Vector2DDouble(0, 0), 50, 45, 6));
+		
+		perc.setValue(98);
 		
 		// WHEN FINISHED LOADING
 		
