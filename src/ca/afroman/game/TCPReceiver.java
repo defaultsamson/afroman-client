@@ -49,7 +49,7 @@ public class TCPReceiver extends DynamicThread
 				BytePacket pack = new BytePacket(buffer);
 				InetAddress address = socket.getSocket().socket().getInetAddress();
 				int port = socket.getSocket().socket().getPort();
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType());
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType() + ": TCP");
 				
 				manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
 			}

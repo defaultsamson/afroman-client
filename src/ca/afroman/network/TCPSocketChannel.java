@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
 import ca.afroman.client.ClientGame;
+import ca.afroman.util.ArrayUtil;
 
 public class TCPSocketChannel
 {
@@ -79,16 +80,9 @@ public class TCPSocketChannel
 		{
 			buffer.flip();
 		}
+		ArrayUtil.asString(buffer.array(), "1", "1", "1");
 		
-		byte[] receive = buffer.array();
-		
-		System.out.print("Read: [");
-		for (int i = 0; i < receive.length; i ++) {
-			System.out.print(receive[i] + " ");
-		}
-		System.out.println("]");
-		
-		((TCPSocketChannel) key.attachment()).read = receive;
+		((TCPSocketChannel) key.attachment()).read = buffer.array();
 		return buffer.array();
 	}
 	
@@ -98,13 +92,7 @@ public class TCPSocketChannel
 		ByteBuffer output = ByteBuffer.wrap(((TCPSocketChannel) key.attachment()).write);
 		socket.write(output);
 		((TCPSocketChannel) key.attachment()).isWriting = false;
-		
-		byte[] send = output.array();
-		System.out.print("Write: [");
-		for (int i = 0; i < send.length; i ++) {
-			System.out.print(send[i] + " ");
-		}
-		System.out.println("]");
+		((TCPSocketChannel) key.attachment()).write = null;
 	}
 	
 	public void sendData(byte[] data) throws ClosedChannelException
@@ -121,11 +109,6 @@ public class TCPSocketChannel
 		if (read != null && read[0] != 0)
 		{
 			out = read.clone();
-			System.out.print("Get: [");
-			for (int i = 0; i < out.length; i ++) {
-				System.out.print(out[i] + " ");
-			}
-			System.out.println("]");
 		}
 		else
 		{

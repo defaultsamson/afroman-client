@@ -1,5 +1,7 @@
 package ca.afroman.util;
 
+import java.util.Arrays;
+
 public class ArrayUtil
 {
 	public static byte[] concatByteArrays(byte[]... arrays)
@@ -26,5 +28,15 @@ public class ArrayUtil
 	public static boolean isEmpty(String[] arr)
 	{
 		return !(arr.length > 0 && (arr.length == 1 ? !arr[0].equals("") : true));
+	}
+	
+	public static String asString(Object[] array, String opener, String closer, String separator)
+	{
+		String out = opener;
+		for (int i = 0; i < array.length; i++)
+		{
+			out += (array[i] + (i == array.length - 1 ? closer : separator));
+		}
+		return out;
 	}
 }
