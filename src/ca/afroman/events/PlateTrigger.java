@@ -26,8 +26,8 @@ public class PlateTrigger extends HitboxTrigger
 	{
 		super(isServerSide, isMicromanaged, position, inTriggers, outTriggers, triggerTypes, new Hitbox(isServerSide, true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
 		
-		pressed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_PLATE_DOWN).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour));
-		released = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_PLATE_UP).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour));
+		pressed = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, isServerSide ? null : Assets.getDrawableAsset(AssetType.TILE_PLATE_DOWN).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour));
+		released = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, isServerSide ? null : Assets.getDrawableAsset(AssetType.TILE_PLATE_UP).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, doorColour));
 	}
 	
 	@Override

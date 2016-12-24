@@ -29,8 +29,8 @@ public class SwitchTrigger extends HitboxTrigger
 		box = new Hitbox(isServerSide, true, HITBOX_X_OFF + 3, HITBOX_Y_OFF + 3, HITBOX_WIDTH - 6, HITBOX_HEIGHT - 6);
 		updateHitboxInLevel(box);
 		
-		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
-		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
+		left = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, isServerSide ? null : Assets.getDrawableAsset(AssetType.TILE_SWITCH_LEFT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
+		right = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, isServerSide ? null : Assets.getDrawableAsset(AssetType.TILE_SWITCH_RIGHT).clone().replaceColour(ColourUtil.TILE_REPLACE_COLOUR, leftColour).replaceColour(ColourUtil.TILE_REPLACE_COLOUR_2, rightColour));
 	}
 	
 	@Override

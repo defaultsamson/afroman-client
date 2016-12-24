@@ -43,7 +43,7 @@ import ca.afroman.util.ShapeUtil;
 public class Level extends ServerClientObject implements ITickable
 {
 	private static final Texture ITEM_HOLDER = Assets.getTexture(AssetType.ITEM_HOLDER);
-	private static final Vector2DInt ITEM_HOLDER_POS = new Vector2DInt(ClientGame.WIDTH - ITEM_HOLDER.getWidth() - 2, ClientGame.HEIGHT - ITEM_HOLDER.getHeight() - 2);
+	private static final Vector2DInt ITEM_HOLDER_POS = new Vector2DInt(ClientGame.WIDTH - 18 - 2, ClientGame.HEIGHT - 18 - 2);
 	private static final Vector2DInt ITEM_HOLDER_ITEM_POS = ITEM_HOLDER_POS.clone().add(1, 1);
 	// private static final double ITEM_HOLDER_LIGHT_RADIUS = 15;
 	// private static final PointLight ITEM_HOLDER_LIGHT = new PointLight(true, ITEM_HOLDER_POS.toVector2DDouble().add(ITEM_HOLDER.getWidth() / 2, ITEM_HOLDER.getHeight() / 2), ITEM_HOLDER_LIGHT_RADIUS);
@@ -797,7 +797,7 @@ public class Level extends ServerClientObject implements ITickable
 		}
 		
 		// Draw the item holder
-		if (!ClientGame.instance().isBuildMode() && !ClientGame.instance().getThisPlayer().getInventory().isEmpty())
+		if (ClientGame.instance().getThisPlayer() != null && !ClientGame.instance().isBuildMode() && !ClientGame.instance().getThisPlayer().getInventory().isEmpty())
 		{
 			ITEM_HOLDER.render(renderTo, ITEM_HOLDER_POS);
 			ClientGame.instance().getThisPlayer().getInventory().getEquippedItem().getInventoryView().render(renderTo, ITEM_HOLDER_ITEM_POS);
