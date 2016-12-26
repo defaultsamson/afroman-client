@@ -88,8 +88,6 @@ public class SwitchTrigger extends HitboxTrigger
 	{
 		if (!isServerSide())
 		{
-			System.out.println("flop: " + flop);
-			
 			if (flop)
 			{
 				left.addToLevel(level);

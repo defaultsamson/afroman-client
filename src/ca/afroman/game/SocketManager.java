@@ -77,6 +77,8 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	
 	private List<TCPReceiver> tcpSockets = null;
 	
+	private boolean isStopping = false;
+	
 	public SocketManager(Game game)
 	{
 		super(game.isServerSide());
@@ -129,7 +131,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				try
 				{
 					Socket clientTCP = welcomeSocket().accept();
-					TCPSocket tcp = new TCPSocket(clientTCP);
+					TCPSocket tcp = new TCPSocket(clientTCP, this);
 					newConnection.getConnection().setTCPSocket(tcp);
 					
 					synchronized (tcpSockets)
@@ -225,7 +227,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			try
 			{
 				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
-				TCPSocket sock = new TCPSocket(clientSocket);
+				TCPSocket sock = new TCPSocket(clientSocket, this);
 				getServerConnection().setTCPSocket(sock);
 				
 				TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
@@ -244,6 +246,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				game.logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
 			}
 		}
+	}
+	
+	public boolean isStopping()
+	{
+		return isStopping;
 	}
 	
 	@Override
@@ -421,6 +428,8 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	@Override
 	public void stopThis()
 	{
+		isStopping = true;
+		
 		try
 		{
 			if (welcomeSocket != null) welcomeSocket.close();

@@ -131,6 +131,7 @@ public class Assets
 		
 		return null;
 	}
+	
 	/**
 	 * Gets a Font who's AssetType corresponds with the provided AssetType.
 	 * 
@@ -150,6 +151,7 @@ public class Assets
 		
 		return null;
 	}
+	
 	/**
 	 * Gets a SpriteAnimation who's AssetType corresponds with the provided AssetType.
 	 * 
@@ -169,6 +171,7 @@ public class Assets
 		
 		return null;
 	}
+	
 	/**
 	 * Gets a StepSpriteAnimation who's AssetType corresponds with the provided AssetType.
 	 * 

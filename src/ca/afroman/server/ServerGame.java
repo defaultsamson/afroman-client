@@ -117,6 +117,9 @@ public class ServerGame extends Game
 					default:
 					case INVALID:
 						logger().log(ALogType.CRITICAL, "INVALID PACKET");
+						
+						// TODO if it was a vital player then pause the game
+						sockets().removeConnection(sender);
 						break;
 					case TEST_PING:
 						if (sender.isPendingPingUpdate())

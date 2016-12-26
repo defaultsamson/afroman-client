@@ -24,9 +24,19 @@ public class IPUtil
 	{
 		if (address != null && connection != null && connection.getIPAddress() != null)
 		{
-			boolean ipMatch = address.getHostAddress().equals(connection.getIPAddress().getHostAddress());
+			byte[] add1 = address.getAddress();
+			byte[] add2 = connection.getIPAddress().getAddress();
 			
-			if (!ipMatch) return false;
+			if (add1.length != add2.length) return false;
+			
+			for (byte i = 0; i < add1.length; i++)
+			{
+				if (add1[i] != add2[i]) return false;
+			}
+			
+			// Old method
+			// boolean ipMatch = address.getHostAddress().equals(connection.getIPAddress().getHostAddress());
+			// if (!ipMatch) return false;
 			
 			// First check if the port matches with UDP socket
 			if (port == connection.getPort()) return true;

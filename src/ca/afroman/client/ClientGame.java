@@ -184,6 +184,8 @@ public class ClientGame extends Game
 		switch (reason)
 		{
 			default:
+			case CONNECTION_LOST:
+				new GuiClickNotification(getCurrentScreen(), -1, "Connection", "lost");
 				break;
 			case SERVER_CLOSED:
 				new GuiClickNotification(getCurrentScreen(), -1, "Server", "closed");
@@ -326,6 +328,7 @@ public class ClientGame extends Game
 						default:
 						case INVALID:
 							logger().log(ALogType.WARNING, "[CLIENT] INVALID PACKET");
+							exitFromGame(ExitGameReason.CONNECTION_LOST);
 							break;
 						case TEST_PING:
 							ping = (short) (packet.getContent().get() + Byte.MAX_VALUE);
@@ -794,7 +797,11 @@ public class ClientGame extends Game
 		{
 			UpdateUtil.applyUpdate();
 		}
-		System.exit(0);
+		else
+		{
+			logger().log(ALogType.DEBUG, "Exit Game Successfully");
+			System.exit(0);
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -993,7 +1000,7 @@ public class ClientGame extends Game
 			frame = new JFrame(NAME);
 			
 			frame.setIconImage(ICON);
-			// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			// frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 			frame.setLayout(new BorderLayout());
 			frame.setUndecorated(isFullScreen);
 			
@@ -1229,7 +1236,7 @@ public class ClientGame extends Game
 		canvas.setPreferredSize(new Dimension(WIDTH * DEFAULT_SCALE, HEIGHT * DEFAULT_SCALE));
 		
 		frame.setIconImage(ICON);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		frame.getContentPane().setBackground(Color.black);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);

@@ -62,13 +62,13 @@ public class PacketReceiver extends DynamicThread
 		catch (SocketException e)
 		{
 			// TODO this is invisible
-			e.printStackTrace();
+			if (!manager.isStopping()) e.printStackTrace();
 		}
 		catch (IOException e)
 		{
 			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while receiving", e);
 			
-			e.printStackTrace();
+			if (!manager.isStopping()) e.printStackTrace();
 		}
 	}
 }

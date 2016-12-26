@@ -43,12 +43,12 @@ public class PacketSender extends DynamicTickThread
 			}
 			catch (IOException e)
 			{
-				logger().log(ALogType.CRITICAL, "I/O error while sending packet", e);
+				if (!manager.isStopping()) logger().log(ALogType.CRITICAL, "I/O error while sending packet", e);
 			}
 		}
 		else
 		{
-			logger().log(ALogType.WARNING, "Server address is null");
+			if (!manager.isStopping()) logger().log(ALogType.WARNING, "Server address is null");
 		}
 	}
 	

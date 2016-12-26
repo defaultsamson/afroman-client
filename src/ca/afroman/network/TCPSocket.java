@@ -4,16 +4,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
-public class TCPSocket
+import ca.afroman.game.SocketManager;
+import ca.afroman.resource.ServerClientObject;
+
+public class TCPSocket extends ServerClientObject
 {
+	private SocketManager manager;
+	
 	private Socket socket;
 	private OutputStream output;
 	private InputStream input;
 	
-	public TCPSocket(Socket socket)
+	public TCPSocket(Socket socket, SocketManager manager)
 	{
+		super(manager.isServerSide());
 		this.socket = socket;
+		this.manager = manager;
 		
 		try
 		{
@@ -58,10 +66,24 @@ public class TCPSocket
 				return bytes;
 			}
 		}
+		catch (SocketException e)
+		{
+			// // The connection was lost
+			// if (isServerSide())
+			// {
+			// manager.removeConnection(manager.getPlayerConnection(socket.getInetAddress(), socket.getPort()));
+			//
+			// // TODO If it was a required player that left, pause/stop the game
+			// }
+			// else
+			// {
+			// ClientGame.instance().exitFromGame(ExitGameReason.CONNECTION_LOST);
+			// }
+			if (!manager.isStopping()) e.printStackTrace();
+		}
 		catch (Exception e)
 		{
-			// TODO this is hidden
-			e.printStackTrace();
+			if (!manager.isStopping()) e.printStackTrace();
 		}
 		
 		return null;
@@ -81,11 +103,11 @@ public class TCPSocket
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			if (!manager.isStopping()) e.printStackTrace();
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			if (!manager.isStopping()) e.printStackTrace();
 		}
 	}
 }
