@@ -181,22 +181,7 @@ public class ClientGame extends Game
 		
 		setIsInGame(false);
 		
-		switch (reason)
-		{
-			default:
-			case CONNECTION_LOST:
-				new GuiClickNotification(getCurrentScreen(), -1, "Connection", "lost");
-				break;
-			case SERVER_CLOSED:
-				new GuiClickNotification(getCurrentScreen(), -1, "Server", "closed");
-				break;
-			case KICKED:
-				new GuiClickNotification(getCurrentScreen(), -1, "Kicked", "from server");
-				break;
-			case BANNED:
-				new GuiClickNotification(getCurrentScreen(), -1, "Banned", "from server");
-				break;
-		}
+		new GuiClickNotification(getCurrentScreen(), -1, reason.getFirstString(), reason.getSecondString());
 	}
 	
 	public Canvas getCanvas()
@@ -369,7 +354,10 @@ public class ClientGame extends Game
 						case ASSIGN_CLIENTID:
 							id = packet.getContent().getShort();
 							
-							sockets().initServerTCPConnection();
+							if (sockets().getServerConnection().getTCPSocket() == null)
+							{
+								sockets().initServerTCPConnection();
+							}
 							break;
 						case PLAYER_MOVE:
 						{
@@ -408,7 +396,7 @@ public class ClientGame extends Game
 							
 							if (getCurrentScreen() instanceof GuiConnectToServer)
 							{
-								setCurrentScreen(new GuiLobby(null));
+								setCurrentScreen(new GuiLobby());
 							}
 						}
 							break;
@@ -465,6 +453,15 @@ public class ClientGame extends Game
 									}
 								}
 							}
+						}
+							break;
+						case RETURN_TO_LOBBY:
+						{
+							ExitGameReason reason = ExitGameReason.fromOrdinal(packet.getContent().get());
+							
+							setCurrentScreen(new GuiLobby());
+							
+							new GuiClickNotification(getCurrentScreen(), -1, reason.getFirstString(), reason.getSecondString());
 						}
 							break;
 						case SET_PLAYER_LEVEL:

@@ -40,9 +40,9 @@ public class GuiLobby extends GuiScreen
 	
 	private boolean firstTime;
 	
-	public GuiLobby(GuiScreen parentScreen)
+	public GuiLobby()
 	{
-		super(parentScreen);
+		super(null);
 		
 		player1 = Assets.getSpriteAnimation(AssetType.PLAYER_ONE_IDLE_DOWN);
 		player2 = Assets.getSpriteAnimation(AssetType.PLAYER_TWO_IDLE_DOWN);
@@ -145,7 +145,7 @@ public class GuiLobby extends GuiScreen
 		{
 			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
-		else
+		else if (buttonID >= 0)
 		{
 			ClientGame.instance().setCurrentScreen(new GuiChooseRole(this, (short) buttonID));
 		}

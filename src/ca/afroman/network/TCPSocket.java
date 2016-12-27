@@ -6,22 +6,21 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
-import ca.afroman.game.SocketManager;
+import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.resource.ServerClientObject;
 
-public class TCPSocket extends ServerClientObject
+public class TCPSocket extends ServerClientObject implements IDynamicRunning
 {
-	private SocketManager manager;
-	
 	private Socket socket;
 	private OutputStream output;
 	private InputStream input;
 	
-	public TCPSocket(Socket socket, SocketManager manager)
+	private boolean isStopped = false;
+	
+	public TCPSocket(Socket socket, boolean isServerSide)
 	{
-		super(manager.isServerSide());
+		super(isServerSide);
 		this.socket = socket;
-		this.manager = manager;
 		
 		try
 		{
@@ -47,45 +46,43 @@ public class TCPSocket extends ServerClientObject
 		return socket;
 	}
 	
+	@Override
+	@Deprecated
+	public void pauseThis()
+	{
+		
+	}
+	
 	public byte[] receive() throws IOException
 	{
-		try
+		if (!isStopped)
 		{
-			int count = input.read();
-			
-			if (count < 0)
+			try
 			{
-				return new byte[0];
+				int count = input.read();
+				
+				if (count < 0)
+				{
+					return new byte[0];
+				}
+				else
+				{
+					byte[] bytes = new byte[count];
+					
+					input.read(bytes);
+					
+					return bytes;
+				}
 			}
-			else
+			catch (SocketException e)
 			{
-				byte[] bytes = new byte[count];
-				
-				input.read(bytes);
-				
-				return bytes;
+				if (!isStopped) e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				if (!isStopped) e.printStackTrace();
 			}
 		}
-		catch (SocketException e)
-		{
-			// // The connection was lost
-			// if (isServerSide())
-			// {
-			// manager.removeConnection(manager.getPlayerConnection(socket.getInetAddress(), socket.getPort()));
-			//
-			// // TODO If it was a required player that left, pause/stop the game
-			// }
-			// else
-			// {
-			// ClientGame.instance().exitFromGame(ExitGameReason.CONNECTION_LOST);
-			// }
-			if (!manager.isStopping()) e.printStackTrace();
-		}
-		catch (Exception e)
-		{
-			if (!manager.isStopping()) e.printStackTrace();
-		}
-		
 		return null;
 	}
 	
@@ -96,18 +93,43 @@ public class TCPSocket extends ServerClientObject
 	 */
 	public void sendData(byte[] bytes)
 	{
+		if (!isStopped)
+		{
+			try
+			{
+				output.write(bytes.length);
+				output.write(bytes);
+			}
+			catch (IOException e)
+			{
+				if (!isStopped) e.printStackTrace();
+			}
+			catch (Exception e)
+			{
+				if (!isStopped) e.printStackTrace();
+			}
+		}
+	}
+	
+	@Override
+	@Deprecated
+	public void startThis()
+	{
+		
+	}
+	
+	@Override
+	public void stopThis()
+	{
+		isStopped = true;
+		
 		try
 		{
-			output.write(bytes.length);
-			output.write(bytes);
+			socket.close();
 		}
 		catch (IOException e)
 		{
-			if (!manager.isStopping()) e.printStackTrace();
-		}
-		catch (Exception e)
-		{
-			if (!manager.isStopping()) e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 }

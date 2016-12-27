@@ -68,19 +68,4 @@ public class TCPReceiver extends DynamicThread
 			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while receiving", e);
 		}
 	}
-	
-	@Override
-	public void stopThis()
-	{
-		super.stopThis();
-		
-		try
-		{
-			socket.getSocket().close();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
 }

@@ -103,6 +103,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	
 	public void loadLevels()
 	{
+		// TODO load level states
 		levels.clear();
 		levels.add(new MainLevel(isServerSide()));
 		levels.add(new Level(isServerSide(), LevelType.SECOND));

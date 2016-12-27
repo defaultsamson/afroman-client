@@ -2,6 +2,7 @@ package ca.afroman.server;
 
 import java.nio.ByteBuffer;
 
+import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -19,6 +20,7 @@ import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketPingServerClient;
 import ca.afroman.packet.PacketPlayerMoveServerClient;
+import ca.afroman.packet.PacketReturnToLobby;
 import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.packet.PacketType;
 import ca.afroman.resource.ModulusCounter;
@@ -48,6 +50,8 @@ public class ServerGame extends Game
 	private boolean waitingForPlayersToLoad = false;;
 	
 	private ModulusCounter updatePing;
+	
+	private boolean isReturnedToLobby = false;
 	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
@@ -110,16 +114,50 @@ public class ServerGame extends Game
 			boolean sentByConnected = sender != null;
 			boolean sentByHost = (sentByConnected ? (sender.getID() == 0) : false);
 			
+			// if (sender != null && sender.getConnection().getTCPSocket() != null)
+			// {
+			// System.out.println("------------");
+			//
+			// System.out.println("CON-UPD: " + sender.getConnection().getIPAddress().getHostAddress() + ":" + sender.getConnection().getPort());
+			// System.out.println("CON-TCP: " + sender.getConnection().getTCPSocket().getSocket().getInetAddress().getHostAddress() + ":" + sender.getConnection().getTCPSocket().getSocket().getPort());
+			//
+			// System.out.println("------------");
+			// for (ConnectedPlayer c : sockets().getConnectedPlayers())
+			// {
+			// Socket con = ((IPConnectedPlayer) c).getConnection().getTCPSocket().getSocket();
+			//
+			// System.out.println("UDP: " + ((IPConnectedPlayer) c).getConnection().getIPAddress().getHostAddress() + ":" + ((IPConnectedPlayer) c).getConnection().getPort());
+			// System.out.println("TCP: " + con.getInetAddress().getHostAddress() + ":" + con.getPort());
+			// }
+			// System.out.println("------------");
+			// }
+			
 			if (sentByConnected && type != null)
 			{
 				switch (type)
 				{
 					default:
 					case INVALID:
+					{
 						logger().log(ALogType.CRITICAL, "INVALID PACKET");
 						
-						// TODO if it was a vital player then pause the game
 						sockets().removeConnection(sender);
+						
+						if (sender.getRole() == Role.PLAYER1 || sender.getRole() == Role.PLAYER2)
+						{
+							setIsInGame(false, ExitGameReason.VITAL_PLAYER_CONNECTION_LOST);
+						}
+					}
+						break;
+					case PLAYER_DISCONNECT:
+					{
+						sockets().removeConnection(sender);
+						
+						if (sender.getRole() == Role.PLAYER1 || sender.getRole() == Role.PLAYER2)
+						{
+							setIsInGame(false, ExitGameReason.VITAL_PLAYER_DISCONNECT);
+						}
+					}
 						break;
 					case TEST_PING:
 						if (sender.isPendingPingUpdate())
@@ -208,15 +246,8 @@ public class ServerGame extends Game
 						}
 					}
 						break;
-					case PLAYER_DISCONNECT:
-					{
-						if (sender != null)
-						{
-							sockets().removeConnection(sender);
-						}
-					}
-						break;
 					case START_SERVER:
+						System.out.println("Dong");
 						if (sentByHost)
 						{
 							byte x = packet.getContent().get();
@@ -444,14 +475,30 @@ public class ServerGame extends Game
 	@Override
 	public void setIsInGame(boolean isInGame)
 	{
-		setIsInGame(isInGame, false);
+		setIsInGame(isInGame, null);
 	}
 	
-	private void setIsInGame(boolean isInGame, boolean isSafeStop)
+	private void setIsInGame(boolean isInGame, ExitGameReason reason)
 	{
 		super.setIsInGame(isInGame);
 		
-		if (isInGame)
+		if (reason != null && !isInGame) // Pause game
+		{
+			// TODO pause game
+			isReturnedToLobby = true;
+			
+			sockets().sender().sendPacketToAllClients(new PacketReturnToLobby(reason));
+		}
+		else if (!isInGame) // Stop game
+		{
+			stopThis();
+		}
+		else if (isReturnedToLobby) // Resume game
+		{
+			// TODO Resume game
+			isReturnedToLobby = false;
+		}
+		else if (isInGame) // Start Game
 		{
 			sockets().sender().sendPacketToAllClients(new PacketLoadLevels(true));
 			
@@ -468,21 +515,6 @@ public class ServerGame extends Game
 				player.setPosition(player.getPosition());
 			}
 		}
-		else
-		{
-			if (isSafeStop)
-			{
-				// TODO save levels
-				
-				game = null;
-				
-				super.stopThis();
-			}
-			else
-			{
-				stopThis();
-			}
-		}
 	}
 	
 	@Override
@@ -497,7 +529,12 @@ public class ServerGame extends Game
 		super.tick();
 		
 		// Does this so that when a packet is sent telling the server to stop, it will not cause a concurrentmodificationexception
-		if (stopServer) setIsInGame(false, true);
+		if (stopServer)
+		{
+			game = null;
+			
+			super.stopThis();
+		}
 		
 		if (updatePing.isAtInterval())
 		{

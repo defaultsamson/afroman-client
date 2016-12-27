@@ -64,7 +64,7 @@ public class PacketSender extends DynamicTickThread
 			packet.setConnections(ClientGame.instance().sockets().getServerConnection());
 		}
 		
-		if (packet.mustSend())
+		if (packet.mustSend()) // Use TCP
 		{
 			for (IPConnection con : packet.getConnections())
 			{

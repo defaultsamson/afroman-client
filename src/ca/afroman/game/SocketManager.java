@@ -131,7 +131,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				try
 				{
 					Socket clientTCP = welcomeSocket().accept();
-					TCPSocket tcp = new TCPSocket(clientTCP, this);
+					TCPSocket tcp = new TCPSocket(clientTCP, isServerSide());
 					newConnection.getConnection().setTCPSocket(tcp);
 					
 					synchronized (tcpSockets)
@@ -227,7 +227,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			try
 			{
 				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
-				TCPSocket sock = new TCPSocket(clientSocket, this);
+				TCPSocket sock = new TCPSocket(clientSocket, isServerSide());
 				getServerConnection().setTCPSocket(sock);
 				
 				TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
@@ -269,6 +269,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	{
 		if (isServerSide())
 		{
+			TCPSocket tcpSock = connection.getConnection().getTCPSocket();
 			synchronized (tcpSockets)
 			{
 				int index = -1;
@@ -276,7 +277,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				for (int i = 0; i < tcpSockets.size(); i++)
 				{
 					TCPReceiver rec = tcpSockets.get(i);
-					if (rec.getTCPSocket() == connection.getConnection().getTCPSocket())
+					if (rec.getTCPSocket() == tcpSock)
 					{
 						index = i;
 						break;
@@ -285,22 +286,12 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				
 				if (index != -1)
 				{
-					tcpSockets.get(index).stopThis();
-					tcpSockets.remove(index);
+					TCPReceiver t = tcpSockets.remove(index);
+					t.stopThis();
 				}
 			}
 			
-			if (connection.getConnection().getTCPSocket() != null)
-			{
-				try
-				{
-					connection.getConnection().getTCPSocket().getSocket().close();
-				}
-				catch (IOException e)
-				{
-					ServerGame.instance().logger().log(ALogType.WARNING, "Error while closing TCP socket", e);
-				}
-			}
+			tcpSock.stopThis();
 			
 			playerList.remove(connection);
 			
@@ -447,6 +438,8 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			}
 			tcpSockets.clear();
 		}
+		
+		if (serverConnection != null && serverConnection.getTCPSocket() != null) serverConnection.getTCPSocket().stopThis();
 		
 		socket.close();
 		playerList.clear();

@@ -5,8 +5,8 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
+import ca.afroman.packet.PacketStartServer;
 import ca.afroman.resource.Vector2DInt;
-import ca.afroman.server.ServerGame;
 
 public class GuiInGameMenu extends GuiScreen
 {
@@ -45,9 +45,9 @@ public class GuiInGameMenu extends GuiScreen
 				ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 				break;
 			case 1: // Stop Server
-				if (ServerGame.instance() != null)
+				if (ClientGame.instance().isHostingServer())
 				{
-					ServerGame.instance().stopThis();
+					ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(false));
 				}
 				break;
 			case 4:// Options menu
