@@ -1186,6 +1186,8 @@ public class ClientGame extends Game
 		logger().log(ALogType.DEBUG, "Initializing logging streams...");
 		ALogger.initStreams();
 		
+		System.getProperties().list(System.out);
+		
 		logger().log(ALogType.DEBUG, "Creating environment... (" + VersionUtil.VERSION_STRING + ")");
 		
 		canvas = new Canvas();

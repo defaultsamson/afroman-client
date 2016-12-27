@@ -63,6 +63,8 @@ public class ServerGame extends Game
 		
 		if (commandLine && ConsoleListener.instance() == null)
 		{
+			System.getProperties().list(System.out);
+			
 			// Starts the console listener
 			new ConsoleListener(isServerSide()).startThis();
 		}
@@ -81,7 +83,7 @@ public class ServerGame extends Game
 		}
 		else
 		{
-			logger().log(ALogType.DEBUG, "Failed to connected server on " + ip + ":" + valPort + ", aborting startup");
+			logger().log(ALogType.WARNING, "Failed to connected server on " + ip + ":" + valPort + ", aborting startup");
 		}
 	}
 	
@@ -139,23 +141,35 @@ public class ServerGame extends Game
 					default:
 					case INVALID:
 					{
-						logger().log(ALogType.CRITICAL, "INVALID PACKET");
+						logger().log(ALogType.CRITICAL, "INVALID PACKET: " + sender.getConnection().asReadable());
 						
 						sockets().removeConnection(sender);
 						
 						if (sender.getRole() == Role.PLAYER1 || sender.getRole() == Role.PLAYER2)
 						{
+							logger().log(ALogType.CRITICAL, "Player is vital role (" + sender.getRole() + "), pausing game");
 							setIsInGame(false, ExitGameReason.VITAL_PLAYER_CONNECTION_LOST);
+						}
+						else
+						{
+							logger().log(ALogType.DEBUG, "Player is not a vital role, continuing with gameplay");
 						}
 					}
 						break;
 					case PLAYER_DISCONNECT:
 					{
+						logger().log(ALogType.DEBUG, "Disconnecting: " + sender.getConnection().asReadable());
+						
 						sockets().removeConnection(sender);
 						
 						if (sender.getRole() == Role.PLAYER1 || sender.getRole() == Role.PLAYER2)
 						{
+							logger().log(ALogType.CRITICAL, "Player is vital role (" + sender.getRole() + "), pausing game");
 							setIsInGame(false, ExitGameReason.VITAL_PLAYER_DISCONNECT);
+						}
+						else
+						{
+							logger().log(ALogType.DEBUG, "Player is not a vital role, continuing with gameplay");
 						}
 					}
 						break;
@@ -167,20 +181,22 @@ public class ServerGame extends Game
 						}
 						else
 						{
-							
+							logger().log(ALogType.WARNING, "Received ping response from a client that isn't pending a ping update: " + sender.getConnection().asReadable());
 						}
 						break;
 					case LOAD_LEVELS:
 					{
 						boolean sendingLevels = packet.getContent().get() == 1;
 						
-						if (sendingLevels)
+						if (sendingLevels) // TODO Use as a request for level to be sent?
 						{
 							
 						}
 						else // Finished loading levels
 						{
 							sender.setIsLoadingLevels(false);
+							
+							logger().log(ALogType.DEBUG, "Finished loading levels: " + sender.getConnection().asReadable());
 							
 							waitingForPlayersToLoad = false;
 							for (ConnectedPlayer con : sockets().getConnectedPlayers())
@@ -194,6 +210,7 @@ public class ServerGame extends Game
 							
 							if (!waitingForPlayersToLoad)
 							{
+								logger().log(ALogType.DEBUG, "Finished loading levels for all players");
 								sockets().sender().sendPacketToAllClients(new PacketLoadLevels(false));
 							}
 						}
@@ -242,12 +259,11 @@ public class ServerGame extends Game
 						}
 						else
 						{
-							logger().log(ALogType.CRITICAL, "A non-host user was trying to change the roles: " + sender.getConnection().asReadable());
+							logger().log(ALogType.WARNING, "A non-host user was trying to change the roles: " + sender.getConnection().asReadable());
 						}
 					}
 						break;
 					case START_SERVER:
-						System.out.println("Dong");
 						if (sentByHost)
 						{
 							byte x = packet.getContent().get();
@@ -257,7 +273,7 @@ public class ServerGame extends Game
 						}
 						else
 						{
-							logger().log(ALogType.CRITICAL, "A non-host user was trying to start the server: " + sender.getConnection().asReadable());
+							logger().log(ALogType.WARNING, "A non-host user was trying to start the server: " + sender.getConnection().asReadable());
 						}
 						break;
 					case PLAYER_MOVE:
@@ -275,6 +291,14 @@ public class ServerGame extends Game
 								
 								sockets().sender().sendPacketToAllClients(new PacketPlayerMoveServerClient(role, x, y), sender.getConnection());
 							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No player with role " + role + " to move: " + sender.getConnection().asReadable());
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "A spectator is sending movement packets: " + sender.getConnection().asReadable());
 						}
 					}
 						break;
@@ -291,13 +315,26 @@ public class ServerGame extends Game
 								
 								Vector2DDouble pos = new Vector2DDouble(x, y);
 								
+								// If the player is within a range, allow the change, else set the player's position
 								if (!player.getPosition().isDistanceGreaterThan(pos, 10D))
 								{
 									player.setPosition(pos, false);
 									
 									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, pos, true), sender.getConnection());
 								}
+								else // Else force it back
+								{
+									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, player.getPosition(), true));
+								}
 							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No player with role " + role + " to set the position of: " + sender.getConnection().asReadable());
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "A spectator is sending set player position packets: " + sender.getConnection().asReadable());
 						}
 					}
 						break;
@@ -538,8 +575,6 @@ public class ServerGame extends Game
 		
 		if (updatePing.isAtInterval())
 		{
-			// sockets().sender().sendPacketToAllClients(new PacketPing());
-			
 			int p1Ping = PacketPingServerClient.NONE;
 			int p2Ping = PacketPingServerClient.NONE;
 			
