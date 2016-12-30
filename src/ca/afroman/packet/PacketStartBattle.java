@@ -17,8 +17,6 @@ public class PacketStartBattle extends BytePacket
 		
 		buf.put((byte) ((p1 ? 1 : 0) + (p2 ? 2 : 0)));
 		buf.putInt(entityFighting);
-		System.out.println("P(" + p1 + ", " + p2 + ")");
-		
 		
 		content = buf.array();
 	}
