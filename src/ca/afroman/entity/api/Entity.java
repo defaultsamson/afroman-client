@@ -56,6 +56,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	protected Direction direction;
 	protected Direction lastDirection;
 	private boolean cameraFollow;
+	private boolean isInBattle;
 	
 	private byte deltaXa = 0;
 	private byte deltaYa = 0;
@@ -85,6 +86,8 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		this.hasHitbox = hitboxes.length > 0;
 		hitbox = hasHitbox ? hitboxes : null;
 		updateHitboxInLevel();
+		
+		isInBattle = false;
 		
 		speed = 1.0;
 		originalSpeed = speed;
@@ -170,6 +173,16 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	public Level getLevel()
 	{
 		return level;
+	}
+	
+	public void setIsInBattle(boolean isInBattle)
+	{
+		this.isInBattle = isInBattle;
+	}
+	
+	public boolean isInBattle()
+	{
+		return isInBattle;
 	}
 	
 	/**

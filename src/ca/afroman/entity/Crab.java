@@ -8,6 +8,7 @@ import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.server.ServerGame;
 
 public class Crab extends DrawableEntityDirectional
 {
@@ -43,6 +44,20 @@ public class Crab extends DrawableEntityDirectional
 				else
 				{
 					autoMove((byte) 0, rand2.nextBoolean() ? (byte) 16 : -16);
+				}
+			}
+			
+			// If this isn't already fighting
+			if (!this.isInBattle())
+			{
+				for (PlayerEntity p : ServerGame.instance().getPlayers())
+				{
+					// If this is colliding with a player that isn't in battle already
+					if (!p.isInBattle() && p.isColliding(this))
+					{
+						level.startBattle(this, p);
+						break;
+					}
 				}
 			}
 		}

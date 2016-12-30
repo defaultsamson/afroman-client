@@ -147,6 +147,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				}
 			}
 		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use addConnection() method in SocketManager");
+		}
 	}
 	
 	public List<ConnectedPlayer> getConnectedPlayers()
@@ -177,6 +181,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				}
 			}
 		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use getPlayerConnection(InetAddress, int) method in SocketManager");
+		}
+		
 		return null;
 	}
 	
@@ -246,6 +255,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				game.logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
 			}
 		}
+		else
+		{
+			ServerGame.instance().logger().log(ALogType.WARNING, "Server is trying to use initServerTCPConnection() method in SocketManager");
+		}
 	}
 	
 	public boolean isStopping()
@@ -314,6 +327,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			}
 			
 			updateClientsPlayerList();
+		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use removeConnection() method in SocketManager");
 		}
 	}
 	
@@ -451,14 +468,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	{
 		if (threadGroup == null)
 		{
-			if (isServerSide())
-			{
-				threadGroup = new ThreadGroup(ServerGame.instance().getThread().getThreadGroup(), "Socket");
-			}
-			else
-			{
-				threadGroup = new ThreadGroup(ClientGame.instance().getThread().getThreadGroup(), "Socket");
-			}
+			threadGroup = new ThreadGroup(Game.instance(isServerSide()).getThread().getThreadGroup(), "Socket");
 		}
 		return threadGroup;
 	}
@@ -474,6 +484,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			sender().sendPacketToAllClients(new PacketUpdatePlayerList(playerList));
 		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use updateClientsPlayerList() method in SocketManager");
+		}
 	}
 	
 	/**
@@ -487,6 +501,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			playerList = players;
 			ClientGame.instance().setRole(getPlayerConnection(ClientGame.instance().getID()).getRole());
+		}
+		else
+		{
+			ServerGame.instance().logger().log(ALogType.WARNING, "Server is trying to use updateConnectedPlayers() method in SocketManager");
 		}
 	}
 	

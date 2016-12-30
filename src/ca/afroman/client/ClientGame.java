@@ -351,13 +351,58 @@ public class ClientGame extends Game
 							}
 						}
 							break;
+						case START_BATTLE:
+						{
+							boolean player1 = false;
+							boolean player2 = false;
+							
+							byte players = packet.getContent().get();
+							System.out.println("P:" + players);
+							
+							if (players >= 2)
+							{
+								players -= 2;
+								
+								player2 = true;
+							}
+							
+							if (players >= 1)
+							{
+								player1 = true;
+							}
+							
+							System.out.println("Shitey battle (" + player1 + ", " + player2 + ")");
+							
+							if (player1 && player2)
+							{
+								PlayerEntity p1 = getPlayer(Role.PLAYER1);
+								PlayerEntity p2 = getPlayer(Role.PLAYER2);
+								Level level = p1.getLevel();
+								level.startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
+							}
+							else if (player1)
+							{
+								PlayerEntity p1 = getPlayer(Role.PLAYER1);
+								Level level = p1.getLevel();
+								level.startBattle(level.getEntity(packet.getContent().getInt()), p1, null);
+							}
+							else if (player2)
+							{
+								PlayerEntity p2 = getPlayer(Role.PLAYER2);
+								Level level = p2.getLevel();
+								level.startBattle(level.getEntity(packet.getContent().getInt()), null, p2);
+							}
+						}
+							break;
 						case ASSIGN_CLIENTID:
+						{
 							id = packet.getContent().getShort();
 							
 							if (sockets().getServerConnection().getTCPSocket() == null)
 							{
 								sockets().initServerTCPConnection();
 							}
+						}
 							break;
 						case PLAYER_MOVE:
 						{
