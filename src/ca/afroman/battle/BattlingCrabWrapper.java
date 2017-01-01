@@ -18,7 +18,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	public BattlingCrabWrapper(Crab fighting)
 	{
 		super(fighting);
-		this.fightPos = new Vector2DInt(65, 40);
+		this.fightPos = new Vector2DInt(65, 68);
 		
 		asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
 		idleAsset.getTickCounter().setInterval(15);

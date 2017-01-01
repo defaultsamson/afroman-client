@@ -1198,6 +1198,8 @@ public class ClientGame extends Game
 			waitingForOthersToLoad = false;
 			id = -1;
 			
+			endBattle();
+			
 			thisPlayer = null;
 			
 			stopSocket();
