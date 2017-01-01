@@ -38,13 +38,13 @@ public class ModulusCounter
 		numCounter = 0;
 	}
 	
-	public void setInterval(int newInterval)
-	{
-		interval = newInterval;
-	}
-	
 	public void setAtInterval()
 	{
 		numCounter = interval;
+	}
+	
+	public void setInterval(int newInterval)
+	{
+		interval = newInterval;
 	}
 }

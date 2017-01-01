@@ -175,16 +175,6 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		return level;
 	}
 	
-	public void setIsInBattle(boolean isInBattle)
-	{
-		this.isInBattle = isInBattle;
-	}
-	
-	public boolean isInBattle()
-	{
-		return isInBattle;
-	}
-	
 	/**
 	 * @return the position of this.
 	 */
@@ -255,6 +245,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			}
 		}
 		return false;
+	}
+	
+	public boolean isInBattle()
+	{
+		return isInBattle;
 	}
 	
 	/**
@@ -473,6 +468,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	public void setCameraToFollow(boolean follow)
 	{
 		cameraFollow = follow;
+	}
+	
+	public void setIsInBattle(boolean isInBattle)
+	{
+		this.isInBattle = isInBattle;
 	}
 	
 	/**

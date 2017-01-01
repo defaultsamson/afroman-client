@@ -25,6 +25,12 @@ public class Crab extends DrawableEntityDirectional implements IBattleable
 	}
 	
 	@Override
+	public BattlingEntityWrapper getBattleWrapper()
+	{
+		return new BattlingCrabWrapper(this);
+	}
+	
+	@Override
 	public void tick()
 	{
 		super.tick();
@@ -74,11 +80,5 @@ public class Crab extends DrawableEntityDirectional implements IBattleable
 	public void tryInteract(PlayerEntity triggerer)
 	{
 		
-	}
-	
-	@Override
-	public BattlingEntityWrapper getBattleWrapper()
-	{
-		return new BattlingCrabWrapper(this);
 	}
 }

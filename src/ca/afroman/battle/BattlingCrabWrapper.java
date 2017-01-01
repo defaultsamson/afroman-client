@@ -24,6 +24,13 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 		idleAsset.getTickCounter().setInterval(15);
 	}
 	
+	@Override
+	public void render(Texture renderTo)
+	{
+		asset.render(renderTo, fightPos); // fightPos);
+	}
+	
+	@Override
 	public void tick()
 	{
 		if (asset instanceof ITickable)
@@ -31,10 +38,5 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 			// Ticks the IBattleables DrawableAsset
 			((ITickable) asset).tick();
 		}
-	}
-	
-	public void render(Texture renderTo)
-	{
-		asset.render(renderTo, fightPos); // fightPos);
 	}
 }

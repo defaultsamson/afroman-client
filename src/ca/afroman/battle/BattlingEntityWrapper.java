@@ -28,12 +28,13 @@ public abstract class BattlingEntityWrapper extends ServerClientObject implement
 		return isThisTurn;
 	}
 	
+	public abstract void render(Texture renderTo);
+	
 	public void setIsThisTurn(boolean isThisTurn)
 	{
 		this.isThisTurn = isThisTurn;
 	}
 	
+	@Override
 	public abstract void tick();
-	
-	public abstract void render(Texture renderTo);
 }

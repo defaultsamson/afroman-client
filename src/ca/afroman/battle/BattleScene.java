@@ -22,6 +22,15 @@ public class BattleScene implements ITickable
 		this.player2 = player2;
 	}
 	
+	public void render(Texture renderTo)
+	{
+		bg.render(renderTo, LightMap.PATCH_POSITION);
+		
+		entity.render(renderTo);
+		if (player1 != null) player1.render(renderTo);
+		if (player2 != null) player2.render(renderTo);
+	}
+	
 	@Override
 	public void tick()
 	{
@@ -40,14 +49,5 @@ public class BattleScene implements ITickable
 		entity.tick();
 		if (player1 != null) player1.tick();
 		if (player2 != null) player2.tick();
-	}
-	
-	public void render(Texture renderTo)
-	{
-		bg.render(renderTo, LightMap.PATCH_POSITION);
-		
-		entity.render(renderTo);
-		if (player1 != null) player1.render(renderTo);
-		if (player2 != null) player2.render(renderTo);
 	}
 }

@@ -32,6 +32,13 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		asset = idleAsset = role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_AFROMAN) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_LEFT);
 	}
 	
+	@Override
+	public void render(Texture renderTo)
+	{
+		asset.render(renderTo, fightPos);// fightPos);
+	}
+	
+	@Override
 	public void setIsThisTurn(boolean isThisTurn)
 	{
 		super.setIsThisTurn(isThisTurn);
@@ -43,6 +50,7 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		}
 	}
 	
+	@Override
 	public void tick()
 	{
 		if (asset instanceof ITickable)
@@ -50,10 +58,5 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 			// Ticks the IBattleables DrawableAsset
 			((ITickable) asset).tick();
 		}
-	}
-	
-	public void render(Texture renderTo)
-	{
-		asset.render(renderTo, fightPos);// fightPos);
 	}
 }

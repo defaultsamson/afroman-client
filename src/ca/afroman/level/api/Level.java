@@ -1032,6 +1032,52 @@ public class Level extends ServerClientObject implements ITickable
 		}
 	}
 	
+	public void startBattle(Entity e, PlayerEntity p)
+	{
+		if (isServerSide())
+		{
+			e.setIsInBattle(true);
+			p.setIsInBattle(true);
+			
+			// Checks to see if the other player is within the range of 30 pixels
+			for (PlayerEntity pl : ServerGame.instance().getPlayers())
+			{
+				if (p != pl && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 30D))
+				{
+					pl.setIsInBattle(true);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
+					return;
+				}
+			}
+			
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
+		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Client should be using startBattle(Entity, PlayerEntity, PlayerEntity) method in level");
+		}
+	}
+	
+	public void startBattle(Entity e, PlayerEntity p1, PlayerEntity p2)
+	{
+		if (!isServerSide())
+		{
+			e.setIsInBattle(true);
+			if (p1 != null) p1.setIsInBattle(true);
+			if (p2 != null) p2.setIsInBattle(true);
+			
+			// TODO client battle scene
+			ClientGame.instance().logger().log(ALogType.DEBUG, "Starting battle (" + e + ", " + p1 + ", " + p2 + ")");
+			
+			// Role role = ClientGame.instance().getThisPlayer().getRole();
+			ClientGame.instance().startBattle(new BattleScene(((IBattleable) e).getBattleWrapper(), p1 != null ? ((IBattleable) p1).getBattleWrapper() : null, p2 != null ? ((IBattleable) p2).getBattleWrapper() : null)); // (p1 != null && p1.getRole() == role) || (p2 != null && p2.getRole() == role)
+		}
+		else
+		{
+			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server should be using startBattle(Entity, PlayerEntity) method in level");
+		}
+	}
+	
 	@Override
 	public void tick()
 	{
@@ -1354,51 +1400,5 @@ public class Level extends ServerClientObject implements ITickable
 	public Vector2DInt worldToScreen(Vector2DDouble point)
 	{
 		return new Vector2DInt((int) point.getX() - (int) camOffset.getX(), (int) point.getY() - (int) camOffset.getY());
-	}
-	
-	public void startBattle(Entity e, PlayerEntity p)
-	{
-		if (isServerSide())
-		{
-			e.setIsInBattle(true);
-			p.setIsInBattle(true);
-			
-			// Checks to see if the other player is within the range of 30 pixels
-			for (PlayerEntity pl : ServerGame.instance().getPlayers())
-			{
-				if (p != pl && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 30D))
-				{
-					pl.setIsInBattle(true);
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
-					return;
-				}
-			}
-			
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
-		}
-		else
-		{
-			ClientGame.instance().logger().log(ALogType.CRITICAL, "Client should be using startBattle(Entity, PlayerEntity, PlayerEntity) method in level");
-		}
-	}
-	
-	public void startBattle(Entity e, PlayerEntity p1, PlayerEntity p2)
-	{
-		if (!isServerSide())
-		{
-			e.setIsInBattle(true);
-			if (p1 != null) p1.setIsInBattle(true);
-			if (p2 != null) p2.setIsInBattle(true);
-			
-			// TODO client battle scene
-			ClientGame.instance().logger().log(ALogType.DEBUG, "Starting battle (" + e + ", " + p1 + ", " + p2 + ")");
-			
-			// Role role = ClientGame.instance().getThisPlayer().getRole();
-			ClientGame.instance().startBattle(new BattleScene(((IBattleable) e).getBattleWrapper(), p1 != null ? ((IBattleable) p1).getBattleWrapper() : null, p2 != null ? ((IBattleable) p2).getBattleWrapper() : null)); // (p1 != null && p1.getRole() == role) || (p2 != null && p2.getRole() == role)
-		}
-		else
-		{
-			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server should be using startBattle(Entity, PlayerEntity) method in level");
-		}
 	}
 }

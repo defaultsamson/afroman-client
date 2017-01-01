@@ -167,9 +167,18 @@ public class ClientGame extends Game
 	
 	private boolean waitingForOthersToLoad = false;
 	
+	private PlayerEntity thisPlayer = null;
+	
+	private BattleScene battle;
+	
 	public ClientGame()
 	{
 		super(false, newDefaultThreadGroupInstance(), "Game", 60);
+	}
+	
+	public void endBattle()
+	{
+		battle = null;
 	}
 	
 	public void exitFromGame(ExitGameReason reason)
@@ -242,8 +251,6 @@ public class ClientGame extends Game
 	{
 		return spectatingRole;
 	}
-	
-	private PlayerEntity thisPlayer = null;
 	
 	public PlayerEntity getThisPlayer()
 	{
@@ -1234,6 +1241,11 @@ public class ClientGame extends Game
 		this.spectatingRole = role;
 	}
 	
+	public void startBattle(BattleScene battleScene)
+	{
+		battle = battleScene;
+	}
+	
 	@Override
 	public void startThis()
 	{
@@ -1476,7 +1488,7 @@ public class ClientGame extends Game
 			}
 			if ((!Console.instance().getJFrame().isVisible() && input.nine.isReleasedFiltered()) || (Console.instance().getJFrame().isVisible() && input.nine.isPressedFiltered()))
 			{
-				consoleDebug = !consoleDebug;
+				consoleDebug = !Console.instance().getJFrame().isVisible();
 				
 				// Prevents keys from getting stuck
 				input.control.setPressed(false);
@@ -1635,17 +1647,5 @@ public class ClientGame extends Game
 	public void updatePlayerList()
 	{
 		this.updatePlayerList = true;
-	}
-	
-	private BattleScene battle;
-	
-	public void endBattle()
-	{
-		battle = null;
-	}
-	
-	public void startBattle(BattleScene battleScene)
-	{
-		battle = battleScene;
 	}
 }

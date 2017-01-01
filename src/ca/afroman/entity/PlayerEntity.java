@@ -112,6 +112,12 @@ public class PlayerEntity extends DrawableEntityDirectional implements IBattleab
 		}
 	}
 	
+	@Override
+	public BattlingEntityWrapper getBattleWrapper()
+	{
+		return new BattlingPlayerWrapper(this);
+	}
+	
 	public Inventory getInventory()
 	{
 		return inv;
@@ -216,11 +222,5 @@ public class PlayerEntity extends DrawableEntityDirectional implements IBattleab
 	public void tryInteract(PlayerEntity triggerer)
 	{
 		
-	}
-
-	@Override
-	public BattlingEntityWrapper getBattleWrapper()
-	{
-		return new BattlingPlayerWrapper(this);
 	}
 }
