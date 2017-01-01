@@ -33,6 +33,11 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 		return new SpriteAnimation(getAssetType(), pingPong, tickCounter.getInterval(), (Texture[]) getDrawableAssets());
 	}
 	
+	public ModulusCounter getTickCounter()
+	{
+		return tickCounter;
+	}
+	
 	@Override
 	public SpriteAnimation cloneWithAllSubAssets()
 	{

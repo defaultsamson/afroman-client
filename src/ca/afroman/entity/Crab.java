@@ -4,13 +4,16 @@ import java.util.Random;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
+import ca.afroman.battle.BattlingCrabWrapper;
+import ca.afroman.battle.BattlingEntityWrapper;
+import ca.afroman.battle.IBattleable;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class Crab extends DrawableEntityDirectional
+public class Crab extends DrawableEntityDirectional implements IBattleable
 {
 	private ModulusCounter moveWaiter;
 	
@@ -28,27 +31,12 @@ public class Crab extends DrawableEntityDirectional
 		
 		if (isServerSide())
 		{
-			if (moveWaiter.isAtInterval())
+			// Fighting mechanics
+			if (this.isInBattle())
 			{
-				// do an AI idle move
 				
-				Random rand = new Random();
-				Random rand2 = new Random();
-				
-				boolean x = rand.nextBoolean();
-				
-				if (x)
-				{
-					autoMove(rand2.nextBoolean() ? (byte) 16 : -16, (byte) 0);
-				}
-				else
-				{
-					autoMove((byte) 0, rand2.nextBoolean() ? (byte) 16 : -16);
-				}
 			}
-			
-			// If this isn't already fighting
-			if (!this.isInBattle())
+			else // If this isn't already fighting
 			{
 				for (PlayerEntity p : ServerGame.instance().getPlayers())
 				{
@@ -59,6 +47,25 @@ public class Crab extends DrawableEntityDirectional
 						break;
 					}
 				}
+				
+				if (moveWaiter.isAtInterval())
+				{
+					// do an AI idle move
+					
+					Random rand = new Random();
+					Random rand2 = new Random();
+					
+					boolean x = rand.nextBoolean();
+					
+					if (x)
+					{
+						autoMove(rand2.nextBoolean() ? (byte) 16 : -16, (byte) 0);
+					}
+					else
+					{
+						autoMove((byte) 0, rand2.nextBoolean() ? (byte) 16 : -16);
+					}
+				}
 			}
 		}
 	}
@@ -67,5 +74,11 @@ public class Crab extends DrawableEntityDirectional
 	public void tryInteract(PlayerEntity triggerer)
 	{
 		
+	}
+	
+	@Override
+	public BattlingEntityWrapper getBattleWrapper()
+	{
+		return new BattlingCrabWrapper(this);
 	}
 }

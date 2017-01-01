@@ -27,6 +27,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.BattleScene;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Item;
@@ -134,6 +135,7 @@ public class ClientGame extends Game
 	private boolean buildMode = false;
 	private boolean consoleDebug = false; // Shows a console window
 	public boolean updatePlayerList = false; // Tells if the player list has been updated within the last tick
+	private boolean hasStartedUpdateList = false;
 	
 	private InputHandler input;
 	private Level currentLevel = null;
@@ -159,7 +161,6 @@ public class ClientGame extends Game
 	
 	/** Whether or not to exit from the game and go to the main menu. */
 	private boolean exitGame = false;
-	private boolean hasStartedUpdateList = false;
 	
 	private GuiScreen currentScreen = null;
 	private AudioClip music;
@@ -242,11 +243,15 @@ public class ClientGame extends Game
 		return spectatingRole;
 	}
 	
+	private PlayerEntity thisPlayer = null;
+	
 	public PlayerEntity getThisPlayer()
 	{
-		if (role != Role.SPECTATOR) return getPlayer(role);
-		else
-			return null;
+		if (thisPlayer == null && role != Role.SPECTATOR)
+		{
+			thisPlayer = getPlayer(role);
+		}
+		return thisPlayer;
 	}
 	
 	public boolean hasServerListBeenUpdated()
@@ -384,7 +389,14 @@ public class ClientGame extends Game
 								level = p2.getLevel();
 							}
 							
-							level.startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
+							if (level != null)
+							{
+								level.startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
+							}
+							else
+							{
+								logger().log(ALogType.CRITICAL, "Level is null while trying to start a battle");
+							}
 						}
 							break;
 						case ASSIGN_CLIENTID:
@@ -487,7 +499,7 @@ public class ClientGame extends Game
 									}
 									else
 									{
-										logger().log(ALogType.WARNING, "[CLIENT] Player with type " + spectatingRole + " is null");
+										logger().log(ALogType.WARNING, "Player with type " + spectatingRole + " is null");
 									}
 								}
 							}
@@ -849,7 +861,11 @@ public class ClientGame extends Game
 			screen.getGraphics().setColor(Color.WHITE);
 			screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
 			
-			if (getCurrentLevel() != null)
+			if (battle != null && getThisPlayer() != null && getThisPlayer().isInBattle())
+			{
+				battle.render(screen);
+			}
+			else if (getCurrentLevel() != null)
 			{
 				getCurrentLevel().render(screen);
 			}
@@ -1181,6 +1197,8 @@ public class ClientGame extends Game
 			buildMode = false;
 			waitingForOthersToLoad = false;
 			id = -1;
+			
+			thisPlayer = null;
 			
 			stopSocket();
 			
@@ -1525,6 +1543,11 @@ public class ClientGame extends Game
 			getCurrentScreen().tick();
 		}
 		
+		if (battle != null)
+		{
+			battle.tick();
+		}
+		
 		if (!waitingForOthersToLoad) // && getCurrentLevel() != null
 		{
 			for (Level l : getLevels())
@@ -1610,5 +1633,17 @@ public class ClientGame extends Game
 	public void updatePlayerList()
 	{
 		this.updatePlayerList = true;
+	}
+	
+	private BattleScene battle;
+	
+	public void endBattle()
+	{
+		battle = null;
+	}
+	
+	public void startBattle(BattleScene battleScene)
+	{
+		battle = battleScene;
 	}
 }

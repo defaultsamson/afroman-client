@@ -141,6 +141,9 @@ public enum AssetType
 	ICON_REFRESH(false),
 	ICON_NEXT(false),
 	
+	BATTLE_RUINS_BG(false),
+	BATTLE_AFROMAN(false),
+	
 	TEXT_FIELD(false),
 	TEXT_FIELD_CLEAR(false),
 	

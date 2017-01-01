@@ -3,6 +3,9 @@ package ca.afroman.entity;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
+import ca.afroman.battle.BattlingEntityWrapper;
+import ca.afroman.battle.BattlingPlayerWrapper;
+import ca.afroman.battle.IBattleable;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
@@ -16,7 +19,7 @@ import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class PlayerEntity extends DrawableEntityDirectional
+public class PlayerEntity extends DrawableEntityDirectional implements IBattleable
 {
 	private static SpriteAnimation getDown(boolean isServerSide, Role role)
 	{
@@ -161,7 +164,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 			// If it's not in build mode and the role of this is the role of the client, let them move
 			if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().getRole())
 			{
-				if (ClientGame.instance().getCurrentScreen() == null)
+				if (ClientGame.instance().getCurrentScreen() == null && !ClientGame.instance().getThisPlayer().isInBattle())
 				{
 					byte xa = 0;
 					byte ya = 0;
@@ -184,7 +187,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 					}
 					if (ClientGame.instance().input().useItem.isPressedTyping())
 					{
-						
+						// TODO use item
 					}
 					if (ClientGame.instance().input().up.isPressed())
 					{
@@ -213,5 +216,11 @@ public class PlayerEntity extends DrawableEntityDirectional
 	public void tryInteract(PlayerEntity triggerer)
 	{
 		
+	}
+
+	@Override
+	public BattlingEntityWrapper getBattleWrapper()
+	{
+		return new BattlingPlayerWrapper(this);
 	}
 }

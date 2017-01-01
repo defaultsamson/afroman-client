@@ -11,6 +11,8 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.ITextureDrawable;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.BattleScene;
+import ca.afroman.battle.IBattleable;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.DrawableEntity;
@@ -1389,7 +1391,10 @@ public class Level extends ServerClientObject implements ITickable
 			if (p2 != null) p2.setIsInBattle(true);
 			
 			// TODO client battle scene
-			System.out.println("Battling!");
+			ClientGame.instance().logger().log(ALogType.DEBUG, "Starting battle (" + e + ", " + p1 + ", " + p2 + ")");
+			
+			// Role role = ClientGame.instance().getThisPlayer().getRole();
+			ClientGame.instance().startBattle(new BattleScene(((IBattleable) e).getBattleWrapper(), p1 != null ? ((IBattleable) p1).getBattleWrapper() : null, p2 != null ? ((IBattleable) p2).getBattleWrapper() : null)); // (p1 != null && p1.getRole() == role) || (p2 != null && p2.getRole() == role)
 		}
 		else
 		{

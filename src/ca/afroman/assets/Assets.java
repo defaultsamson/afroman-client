@@ -400,6 +400,12 @@ public class Assets
 		addAsset(perc, buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		addAsset(perc, buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 		
+		addAsset(perc, Texture.fromResource(AssetType.BATTLE_RUINS_BG, "battle/ruins.png"));
+		
+		Texture afroBattle = Texture.fromResource(AssetType.INVALID, "battle/afroman.png");
+		Texture[] afroBattle2 = afroBattle.toTextureArray(5, 1);
+		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_AFROMAN, false, 6, afroBattle2[0], afroBattle2[0], afroBattle2[1], afroBattle2[2], afroBattle2[3], afroBattle2[4], afroBattle2[4], afroBattle2[3], afroBattle2[2], afroBattle2[1]));
+		
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu", AudioType.MUSIC));
