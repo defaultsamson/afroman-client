@@ -58,7 +58,7 @@ public class Hitbox extends PositionLevelObject implements Cloneable
 	@Override
 	public Hitbox clone()
 	{
-		Hitbox box = new Hitbox(isServerSide(), isMicroManaged(), position.getX(), position.getY(), getWidth(), getHeight());
+		Hitbox box = new Hitbox(isServerSide(), isMicroManaged(), getPosition().getX(), getPosition().getY(), getWidth(), getHeight());
 		box.addToLevel(level);
 		return box;
 	}
@@ -153,7 +153,7 @@ public class Hitbox extends PositionLevelObject implements Cloneable
 	 */
 	public void updateRelativeHitboxToPosition(Vector2DDouble pos)
 	{
-		box.x = position.getX() + pos.getX();
-		box.y = position.getY() + pos.getY();
+		box.x = getPosition().getX() + pos.getX();
+		box.y = getPosition().getY() + pos.getY();
 	}
 }

@@ -104,6 +104,16 @@ public class DrawableAssetArray extends DrawableAsset
 	 */
 	@Override
 	@Deprecated
+	public void render(Texture renderTo, int x, int y)
+	{
+		
+	}
+	
+	/**
+	 * @deprecated Cannot draw a DrawableAssetArray.
+	 */
+	@Override
+	@Deprecated
 	public void render(Texture renderTo, Vector2DInt pos)
 	{
 		

@@ -404,7 +404,11 @@ public class Assets
 		
 		Texture afroBattle = Texture.fromResource(AssetType.INVALID, "battle/afroman.png");
 		Texture[] afroBattle2 = afroBattle.toTextureArray(5, 1);
-		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_AFROMAN, false, 6, afroBattle2[0], afroBattle2[0], afroBattle2[1], afroBattle2[2], afroBattle2[3], afroBattle2[4], afroBattle2[4], afroBattle2[3], afroBattle2[2], afroBattle2[1]));
+		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_PLAYER_ONE, false, 6, afroBattle2[0], afroBattle2[0], afroBattle2[1], afroBattle2[2], afroBattle2[3], afroBattle2[4], afroBattle2[4], afroBattle2[3], afroBattle2[2], afroBattle2[1]));
+		
+		Texture afro2Battle = Texture.fromResource(AssetType.INVALID, "battle/afroman2.png");
+		Texture[] afro2Battle2 = afro2Battle.toTextureArray(5, 1);
+		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_PLAYER_TWO, false, 7, afro2Battle2[0], afro2Battle2[0], afro2Battle2[1], afro2Battle2[2], afro2Battle2[3], afro2Battle2[4], afro2Battle2[4], afro2Battle2[3], afro2Battle2[2], afro2Battle2[1]));
 		
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up", AudioType.SFX));

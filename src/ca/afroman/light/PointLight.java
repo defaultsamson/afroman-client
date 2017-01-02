@@ -73,11 +73,11 @@ public class PointLight extends Entity
 		
 		if (level != null)
 		{
-			offsetPos = level.worldToScreen(position);
+			offsetPos = level.worldToScreen(getPosition());
 		}
 		else
 		{
-			offsetPos = position.clone().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
+			offsetPos = getPosition().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
 		}
 		
 		offsetPos.add(-getDisplayRadius(), -getDisplayRadius());

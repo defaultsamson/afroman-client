@@ -22,7 +22,5 @@ public class PacketActivateTrigger extends BytePacket
 		buf.put((byte) player.ordinal());
 		
 		content = buf.array();
-		
-		// buf.put((byte) triggerType.ordinal());
 	}
 }

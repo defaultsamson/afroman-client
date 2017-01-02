@@ -141,18 +141,18 @@ public class PlayerEntity extends DrawableEntityDirectional implements IBattleab
 	}
 	
 	@Override
-	public void setPosition(Vector2DDouble position)
+	public void setPosition(double x, double y)
 	{
-		setPosition(position, true);
+		setPosition(x, y, true);
 	}
 	
-	public void setPosition(Vector2DDouble position, boolean sendPositionpackets)
+	public void setPosition(double x, double y, boolean sendPositionpackets)
 	{
-		super.setPosition(position);
+		super.setPosition(x, y);
 		
 		if (isServerSide() && sendPositionpackets)
 		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(getRole(), position, true));
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(getRole(), getPosition(), true));
 		}
 	}
 	

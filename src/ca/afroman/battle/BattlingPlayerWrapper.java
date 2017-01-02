@@ -23,13 +23,12 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 	public BattlingPlayerWrapper(PlayerEntity fighting)
 	{
 		super(fighting);
-		this.fightPos = new Vector2DInt(180, 60);
-		
 		inv = fighting.getInventory();
-		
 		role = fighting.getRole();
 		
-		asset = idleAsset = role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_AFROMAN) : Assets.getSpriteAnimation(AssetType.PLAYER_TWO_LEFT);
+		this.fightPos = role == Role.PLAYER1 ? new Vector2DInt(197, 51) : new Vector2DInt(162, 71);
+		
+		asset = idleAsset = role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_ONE) : Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_TWO);
 	}
 	
 	@Override

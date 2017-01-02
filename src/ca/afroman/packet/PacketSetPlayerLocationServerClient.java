@@ -18,7 +18,7 @@ public class PacketSetPlayerLocationServerClient extends BytePacket
 	 * @param pos
 	 * @param connection
 	 */
-	public PacketSetPlayerLocationServerClient(Role player, Vector2DDouble pos, boolean forcePos, IPConnection... connection)
+	public PacketSetPlayerLocationServerClient(Role player, double x, double y, boolean forcePos, IPConnection... connection)
 	{
 		super(PacketType.SET_PLAYER_POSITION, forcePos, connection);
 		
@@ -26,11 +26,23 @@ public class PacketSetPlayerLocationServerClient extends BytePacket
 		
 		buf.put((byte) (player.ordinal() + (forcePos ? Role.values().length : 0)));
 		
-		buf.putInt((int) pos.getX());
-		buf.putInt((int) pos.getY());
+		buf.putInt((int) x);
+		buf.putInt((int) y);
 		
 		// buf.put(forcePos ? (byte) 1 : 0);
 		
 		content = buf.array();
+	}
+	
+	/**
+	 * Designed to be only sent from the server to client
+	 * 
+	 * @param player
+	 * @param pos
+	 * @param connection
+	 */
+	public PacketSetPlayerLocationServerClient(Role player, Vector2DDouble pos, boolean forcePos, IPConnection... connection)
+	{
+		this(player, pos.getX(), pos.getY(), forcePos, connection);
 	}
 }

@@ -22,8 +22,6 @@ public class LightMap extends Texture
 	private static final Color CHEAP_AMBIENT = new Color(0F, 0F, 0F, 0.5F); // Must be this for the bit shift to work in the multiply
 	private static Texture filter = Assets.getTexture(AssetType.FILTER);
 	
-	public static final Vector2DInt PATCH_POSITION = new Vector2DInt(0, 0);
-	
 	private static int multiplyPixels(int x, int y, Color ambientColour)
 	{
 		// TODO add back RGB for coloured lights?
@@ -39,17 +37,10 @@ public class LightMap extends Texture
 		// int yr = (y >> 16) & 0xFF;
 		// int r = (xr * yr) / 255;
 		
-		int xa = (x >> 24) & 0xFF;
-		int ya = (y >> 24) & 0xFF;
-		int a;
-		if (Options.instance().lighting == LightMapState.CHEAP)
-		{
-			a = (xa * ya) >> 7; // Math.min(255, xa + ya)
-		}
-		else
-		{
-			a = (xa * ya) / ambientColour.getAlpha(); // Math.min(255, xa + ya)
-		}
+		int mult = (x >> 24 & 0xFF) * (y >> 24 & 0xFF);
+		
+		// Cheap assumes that the colour has 50% alpha
+		int a = Options.instance().lighting == LightMapState.CHEAP ? mult >> 7 : mult / ambientColour.getAlpha();
 		
 		return (x & 0x00FFFFFF) | (a << 24); // (b) | (g << 8) | (r << 16) | (a << 24)
 	}
@@ -245,7 +236,7 @@ public class LightMap extends Texture
 		// saved = true;
 		// }
 		
-		if (Options.instance().lighting == LightMapState.ON) this.draw(filter, PATCH_POSITION);
+		if (Options.instance().lighting == LightMapState.ON) this.draw(filter, 0, 0);
 	}
 	
 	// private boolean saved = false;

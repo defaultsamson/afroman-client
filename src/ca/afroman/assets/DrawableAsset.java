@@ -43,13 +43,18 @@ public abstract class DrawableAsset extends Asset
 		return width;
 	}
 	
+	public abstract void render(Texture renderTo, int x, int y);
+	
 	/**
 	 * Renders this to a given Texture object at a provided position.
 	 * 
 	 * @param renderTo the object to draw this to
 	 * @param pos the position to draw this at
 	 */
-	public abstract void render(Texture renderTo, Vector2DInt pos);
+	public void render(Texture renderTo, Vector2DInt pos)
+	{
+		render(renderTo, pos.getX(), pos.getY());
+	}
 	
 	/**
 	 * Replaces all of a given colour in this to a provided destination colour.

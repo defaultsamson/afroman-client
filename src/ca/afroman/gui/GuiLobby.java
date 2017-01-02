@@ -91,20 +91,20 @@ public class GuiLobby extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		renderTo.draw(player1.getDisplayedTexture(), new Vector2DInt(player1X, player1Y));
-		renderTo.draw(player2.getDisplayedTexture(), new Vector2DInt(player2X, player2Y));
+		renderTo.draw(player1.getDisplayedTexture(), player1X, player1Y);
+		renderTo.draw(player2.getDisplayedTexture(), player2X, player2Y);
 		
 		if (Options.instance().isLightingOn())
 		{
-			light1.setPosition(new Vector2DDouble(player1X + 8, player1Y + 8));
-			light2.setPosition(new Vector2DDouble(player2X + 8, player2Y + 8));
+			light1.setPosition(player1X + 8, player1Y + 8);
+			light2.setPosition(player2X + 8, player2Y + 8);
 			
 			lightmap.clear();
 			light1.renderCentered(lightmap);
 			light2.renderCentered(lightmap);
 			lightmap.patch();
 			
-			renderTo.draw(lightmap, LightMap.PATCH_POSITION);
+			renderTo.draw(lightmap, 0, 0);
 		}
 		
 		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + Game.MAX_PLAYERS);

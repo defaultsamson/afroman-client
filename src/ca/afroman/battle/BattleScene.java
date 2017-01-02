@@ -5,7 +5,6 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.interfaces.ITickable;
-import ca.afroman.light.LightMap;
 
 public class BattleScene implements ITickable
 {
@@ -24,7 +23,7 @@ public class BattleScene implements ITickable
 	
 	public void render(Texture renderTo)
 	{
-		bg.render(renderTo, LightMap.PATCH_POSITION);
+		bg.render(renderTo, 0, 0);
 		
 		entity.render(renderTo);
 		if (player1 != null) player1.render(renderTo);

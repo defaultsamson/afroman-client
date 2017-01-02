@@ -57,6 +57,7 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketClientServerRequestID;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketLogin;
 import ca.afroman.packet.PacketPingClientServer;
@@ -409,12 +410,16 @@ public class ClientGame extends Game
 						case ASSIGN_CLIENTID:
 						{
 							id = packet.getContent().getShort();
-							
+							System.out.println("Received ID: " + id);
+						}
+							break;
+						case START_TCP:
 							if (sockets().getServerConnection().getTCPSocket() == null)
 							{
 								sockets().initServerTCPConnection();
+								
+								sockets().sender().sendPacket(new PacketClientServerRequestID());
 							}
-						}
 							break;
 						case PLAYER_MOVE:
 						{
@@ -584,7 +589,7 @@ public class ClientGame extends Game
 									// position force it into position to fix it
 									else if (forcePos || player.getPosition().isDistanceGreaterThan(pos, 10D))
 									{
-										player.setPosition(pos);
+										player.setPosition(pos.getX(), pos.getY());
 									}
 								}
 								else
@@ -657,7 +662,7 @@ public class ClientGame extends Game
 										// position force it into position to fix it
 										if (forcePos || entity.getPosition().isDistanceGreaterThan(pos, 10D))
 										{
-											entity.setPosition(pos);
+											entity.setPosition(pos.getX(), pos.getY());
 										}
 									}
 									else
@@ -1471,7 +1476,7 @@ public class ClientGame extends Game
 			PlayerEntity player = getPlayer(light.getKey());
 			
 			light.getValue().addToLevel(player.getLevel());
-			light.getValue().setPosition(new Vector2DDouble(player.getPosition().getX() + (16 / 2), player.getPosition().getY() + (16 / 2)));
+			light.getValue().setPosition(player.getPosition().getX() + 8, player.getPosition().getY() + 8);
 		}
 		
 		if (input.f11.isPressedFiltered())

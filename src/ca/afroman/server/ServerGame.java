@@ -16,6 +16,7 @@ import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketAssignClientID;
 import ca.afroman.packet.PacketDenyJoin;
 import ca.afroman.packet.PacketLoadLevels;
 import ca.afroman.packet.PacketPingServerClient;
@@ -279,10 +280,10 @@ public class ServerGame extends Game
 					case PLAYER_MOVE:
 					{
 						Role role = sender.getRole();
-						if (role != Role.SPECTATOR)
+						PlayerEntity player = getPlayer(role);
+						if (player != null)
 						{
-							PlayerEntity player = getPlayer(role);
-							if (player != null)
+							if (!player.isInBattle())
 							{
 								byte x = packet.getContent().get();
 								byte y = packet.getContent().get();
@@ -293,22 +294,31 @@ public class ServerGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No player with role " + role + " to move: " + sender.getConnection().asReadable());
+								logger().log(ALogType.WARNING, "Player with role " + role + " can't move because they're in battle mode: " + sender.getConnection().asReadable());
 							}
 						}
 						else
 						{
-							logger().log(ALogType.WARNING, "A spectator is sending movement packets: " + sender.getConnection().asReadable());
+							logger().log(ALogType.WARNING, "No player with role " + role + " to move: " + sender.getConnection().asReadable());
 						}
+					}
+						break;
+					case START_TCP:
+					{
+						// Tells the connection their ID
+						sockets().sender().sendPacket(new PacketAssignClientID(sender.getID(), sender.getConnection()));
+						
+						// Updates the player list for everyone
+						sockets().updateClientsPlayerList();
 					}
 						break;
 					case SET_PLAYER_POSITION:
 					{
 						Role role = sender.getRole();
-						if (role != Role.SPECTATOR)
+						PlayerEntity player = getPlayer(role);
+						if (player != null)
 						{
-							PlayerEntity player = getPlayer(role);
-							if (player != null)
+							if (!player.isInBattle())
 							{
 								double x = packet.getContent().getDouble();
 								double y = packet.getContent().getDouble();
@@ -318,7 +328,7 @@ public class ServerGame extends Game
 								// If the player is within a range, allow the change, else set the player's position
 								if (!player.getPosition().isDistanceGreaterThan(pos, 10D))
 								{
-									player.setPosition(pos, false);
+									player.setPosition(pos.getX(), pos.getY(), false);
 									
 									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, pos, true), sender.getConnection());
 								}
@@ -329,47 +339,55 @@ public class ServerGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No player with role " + role + " to set the position of: " + sender.getConnection().asReadable());
+								logger().log(ALogType.WARNING, "Player with role " + role + " can't be sent into position because they're in battle mode: " + sender.getConnection().asReadable());
 							}
 						}
 						else
 						{
-							logger().log(ALogType.WARNING, "A spectator is sending set player position packets: " + sender.getConnection().asReadable());
+							logger().log(ALogType.WARNING, "No player with role " + role + " to set the position of: " + sender.getConnection().asReadable());
 						}
 					}
 						break;
 					case PLAYER_DROP_ITEM:
 					{
-						PlayerEntity pe = getPlayer(sender.getRole());
+						Role role = sender.getRole();
+						PlayerEntity pe = getPlayer(role);
 						
 						if (pe != null)
 						{
-							ByteBuffer buf = packet.getContent();
-							
-							byte itemOrd = buf.get();
-							ItemType item = ItemType.fromOrdinal(itemOrd);
-							
-							if (item != null)
+							if (!pe.isInBattle())
 							{
-								Vector2DDouble pos = new Vector2DDouble(buf.getDouble(), buf.getDouble());
+								ByteBuffer buf = packet.getContent();
 								
-								// If the distance between the server's position for the player and the position that the client
-								// is telling the server is greater than 10, ignore the client because they're being dinguses
-								if (pe.getPosition().isDistanceGreaterThan(pos, 10D))
+								byte itemOrd = buf.get();
+								ItemType item = ItemType.fromOrdinal(itemOrd);
+								
+								if (item != null)
 								{
-									pos = pe.getPosition();
+									Vector2DDouble pos = new Vector2DDouble(buf.getDouble(), buf.getDouble());
+									
+									// If the distance between the server's position for the player and the position that the client
+									// is telling the server is greater than 10, ignore the client because they're being dinguses
+									if (pe.getPosition().isDistanceGreaterThan(pos, 10D))
+									{
+										pos = pe.getPosition();
+									}
+									
+									pe.getInventory().removeItem(item, pos, true);
 								}
-								
-								pe.getInventory().removeItem(item, pos, true);
+								else
+								{
+									logger().log(ALogType.WARNING, "No ItemType with ordinal " + itemOrd);
+								}
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No ItemType with ordinal " + itemOrd);
+								logger().log(ALogType.WARNING, "Player with role " + role + " can't move because they're in battle mode: " + sender.getConnection().asReadable());
 							}
 						}
 						else
 						{
-							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
+							logger().log(ALogType.WARNING, "No PlayerEntity with role " + role + ": " + sender.getConnection().asReadable());
 						}
 					}
 						break;
@@ -396,9 +414,9 @@ public class ServerGame extends Game
 									// Else, move the player to where they were when they interacted by the client's point of view,
 									// then test for interaction, then move back
 									Vector2DDouble oldPos = pe.getPosition().clone();
-									pe.setPosition(newPos, false);
+									pe.setPosition(newPos.getX(), newPos.getY(), false);
 									level.tryInteract(pe);
-									pe.setPosition(oldPos, false);
+									pe.setPosition(oldPos.getX(), oldPos.getY(), false);
 								}
 							}
 							else
@@ -485,8 +503,7 @@ public class ServerGame extends Game
 					// If got the wrong password, let the client know
 					else
 					{
-						PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD, connection);
-						sockets().sender().sendPacket(passPacket);
+						sockets().sender().sendPacket(new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD, connection));
 					}
 				}
 				else // Allow the player to join
@@ -548,8 +565,8 @@ public class ServerGame extends Game
 			for (int i = 0; i < players.size(); i++)
 			{
 				PlayerEntity player = players.get(i);
-				player.addToLevel(getLevel(LevelType.MAIN));// TODO make the save files specify this
-				player.setPosition(player.getPosition());
+				player.addToLevel(getLevel(LevelType.MAIN)); // TODO make the save files specify this
+				player.setPosition(player.getPosition().getX(), player.getPosition().getY());
 			}
 		}
 	}

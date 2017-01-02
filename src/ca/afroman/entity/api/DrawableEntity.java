@@ -42,7 +42,7 @@ public abstract class DrawableEntity extends Entity
 	{
 		if (asset != null && getLevel() != null)
 		{
-			asset.render(renderTo, getLevel().worldToScreen(position));
+			asset.render(renderTo, getLevel().worldToScreen(getPosition()));
 		}
 	}
 	

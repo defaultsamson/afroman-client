@@ -157,16 +157,16 @@ public class GuiButton
 	public void render(Texture drawTo)
 	{
 		// Draws the left pixels
-		drawTo.draw(getTexture()[0], new Vector2DInt(hitbox.x, hitbox.y));
+		drawTo.draw(getTexture()[0], hitbox.x, hitbox.y);
 		
 		// Draws the center pixels
 		for (int i = 1; i < hitbox.getWidth() - 1; i++)
 		{
-			drawTo.draw(getTexture()[1], new Vector2DInt(hitbox.x + i, hitbox.y));
+			drawTo.draw(getTexture()[1], hitbox.x + i, hitbox.y);
 		}
 		
 		// Draws the right pixels
-		drawTo.draw(getTexture()[2], new Vector2DInt(hitbox.x + hitbox.width - 1, hitbox.y));
+		drawTo.draw(getTexture()[2], hitbox.x + hitbox.width - 1, hitbox.y);
 	}
 	
 	public void setCanHold(boolean canHold)

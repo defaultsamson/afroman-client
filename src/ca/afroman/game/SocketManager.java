@@ -22,6 +22,7 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.network.TCPSocket;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketAssignClientID;
+import ca.afroman.packet.PacketServerClientStartTCP;
 import ca.afroman.packet.PacketUpdatePlayerList;
 import ca.afroman.resource.ServerClientObject;
 import ca.afroman.server.ServerGame;
@@ -121,30 +122,23 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, id, role, username);
 			playerList.add(newConnection);
 			
-			// Tells the newly added connection their ID
-			sender().sendPacket(new PacketAssignClientID(newConnection.getID(), newConnection.getConnection()));
-			
-			updateClientsPlayerList();
-			
-			if (isServerSide())
+			try
 			{
-				try
+				sender().sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
+				Socket clientTCP = welcomeSocket().accept();
+				TCPSocket tcp = new TCPSocket(clientTCP, isServerSide());
+				newConnection.getConnection().setTCPSocket(tcp);
+				
+				synchronized (tcpSockets)
 				{
-					Socket clientTCP = welcomeSocket().accept();
-					TCPSocket tcp = new TCPSocket(clientTCP, isServerSide());
-					newConnection.getConnection().setTCPSocket(tcp);
-					
-					synchronized (tcpSockets)
-					{
-						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
-						tcpSockets.add(rec);
-						rec.startThis();
-					}
+					TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
+					tcpSockets.add(rec);
+					rec.startThis();
 				}
-				catch (IOException e)
-				{
-					ServerGame.instance().logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
-				}
+			}
+			catch (IOException e)
+			{
+				ServerGame.instance().logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
 			}
 		}
 		else

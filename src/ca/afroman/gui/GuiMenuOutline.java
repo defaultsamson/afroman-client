@@ -72,7 +72,7 @@ public class GuiMenuOutline extends GuiScreen
 				
 				lightmap.patch();
 				
-				renderTo.draw(lightmap, LightMap.PATCH_POSITION);
+				renderTo.draw(lightmap, 0, 0);
 			}
 		}
 	}

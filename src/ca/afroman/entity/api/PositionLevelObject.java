@@ -9,7 +9,7 @@ public abstract class PositionLevelObject extends ServerClientObject
 {
 	private boolean isMicromanaged;
 	protected Level level;
-	protected Vector2DDouble position;
+	private Vector2DDouble position;
 	
 	/**
 	 * Creates a new object with a level and position.
@@ -73,9 +73,9 @@ public abstract class PositionLevelObject extends ServerClientObject
 	 * 
 	 * @param position the new position
 	 */
-	public void setPosition(Vector2DDouble position)
+	public void setPosition(double x, double y)
 	{
-		this.position.setVector(position);
+		this.position.setVector(x, y);
 	}
 	
 	/**

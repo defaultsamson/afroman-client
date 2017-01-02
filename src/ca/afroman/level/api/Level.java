@@ -640,7 +640,7 @@ public class Level extends ServerClientObject implements ITickable
 					FlickeringLight light = new FlickeringLight(false, flickerCursor.getPosition().clone(), flickerCursor.getRadius(), flickerCursor.getRadius2(), flickerCursor.getTicksPerFrame());
 					light.addToLevel(this);
 					
-					flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
+					flickerCursor.setPosition(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2);
 					flickerCursor.removeFromLevel();
 				}
 				else
@@ -797,7 +797,7 @@ public class Level extends ServerClientObject implements ITickable
 			// }
 			
 			lightmap.patch();
-			lightmap.render(renderTo, LightMap.PATCH_POSITION);
+			lightmap.render(renderTo, 0, 0);
 		}
 		
 		// Draw the item holder
@@ -1204,13 +1204,15 @@ public class Level extends ServerClientObject implements ITickable
 						if (cursorAsset instanceof ITickable) ((ITickable) cursorAsset).tick();
 						break;
 					case LIGHT:
+					{
 						if (ClientGame.instance().input().mouseLeft.isPressedFiltered())
 						{
 							PointLight light = new PointLight(false, lightCursor.getPosition().clone(), lightCursor.getRadius());
 							light.addToLevel(this);
 						}
 						
-						lightCursor.setPosition(screenToWorld(ClientGame.instance().input().getMousePos()).alignToGridCenter(grid.getGridSize()));
+						Vector2DDouble pos = screenToWorld(ClientGame.instance().input().getMousePos()).alignToGridCenter(grid.getGridSize());
+						lightCursor.setPosition(pos.getX(), pos.getY());
 						
 						if (ClientGame.instance().input().mouseRight.isPressedFiltered())
 						{
@@ -1234,11 +1236,14 @@ public class Level extends ServerClientObject implements ITickable
 						}
 						
 						lightCursor.setRadius(currentPointLightRadius);
+					}
 						break;
 					case FLICKERING_LIGHT:
+					{
 						if (hitboxClickCount == 1)
 						{
-							flickerCursor.setPosition(hitbox1.alignToGridCenter(grid.getGridSize()));
+							Vector2DDouble pos = hitbox1.alignToGridCenter(grid.getGridSize());
+							flickerCursor.setPosition(pos.getX(), pos.getY());
 							boolean flickerLightChange = false;
 							
 							hitbox2.alignToGridCenter(grid.getGridSize());
@@ -1276,6 +1281,7 @@ public class Level extends ServerClientObject implements ITickable
 								flickerCursor.setRadius2(Math.max(currentFlickerLightRadius - currentFlickerLightFlicker, 1));
 							}
 						}
+					}
 					case HITBOX:
 						// case TRIGGER:
 						// case HITBOX_TOGGLE:
@@ -1309,7 +1315,7 @@ public class Level extends ServerClientObject implements ITickable
 									
 									if (buildMode == BuildMode.FLICKERING_LIGHT)
 									{
-										flickerCursor.setPosition(new Vector2DDouble(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2));
+										flickerCursor.setPosition(Double.MAX_VALUE / 2, Double.MAX_VALUE / 2);
 										flickerCursor.removeFromLevel();
 									}
 								}

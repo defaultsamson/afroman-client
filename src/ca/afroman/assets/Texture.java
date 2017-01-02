@@ -130,16 +130,24 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	 * @param toDraw the image to draw
 	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
 	 */
-	public void draw(Texture toDraw, Vector2DInt pos)
+	public void draw(Texture toDraw, int x, int y)
 	{
-		int x = pos.getX();
-		int y = pos.getY();
-		
 		// Only draw if what's trying to be drawn is within the bounds of this
 		if (ShapeUtil.areColliding(x, y, toDraw.getWidth(), toDraw.getHeight(), 0, 0, getWidth(), getHeight())) // (x < this.getWidth() && y < this.getHeight() && x + toDraw.getWidth() > 0 && y + toDraw.getHeight() > 0)
 		{
 			graphics.drawImage(toDraw.image, x, y, null);
 		}
+	}
+	
+	/**
+	 * Superimposes a Texture over this one.
+	 * 
+	 * @param toDraw the image to draw
+	 * @param pos the position to draw <b>toDraw</b> on <b>this</b>
+	 */
+	public void draw(Texture toDraw, Vector2DInt pos)
+	{
+		draw(toDraw, pos.getX(), pos.getY());
 	}
 	
 	/**
@@ -288,9 +296,9 @@ public class Texture extends DrawableAsset implements ITextureDrawable
 	}
 	
 	@Override
-	public void render(Texture renderTo, Vector2DInt pos)
+	public void render(Texture renderTo, int x, int y)
 	{
-		renderTo.draw(this, pos);
+		renderTo.draw(this, x, y);
 	}
 	
 	@Override

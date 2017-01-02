@@ -216,7 +216,7 @@ public class Inventory extends ServerClientObject
 		if (droppedItem != null)
 		{
 			droppedItem.addToLevel(owner.getLevel());
-			droppedItem.setPosition(pos);
+			droppedItem.setPosition(pos.getX(), pos.getY());
 			
 			if (!isServerSide())
 			{

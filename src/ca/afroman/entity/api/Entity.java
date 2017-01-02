@@ -176,12 +176,12 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	}
 	
 	/**
-	 * @return the position of this.
+	 * @return if this has a change in xa or ya to
+	 *         relay, or that has been relayed across the network.
 	 */
-	@Override
-	public Vector2DDouble getPosition()
+	private boolean hasDeltaDeltaMovement()
 	{
-		return position;
+		return deltaXaMoved != 0 || deltaYaMoved != 0;
 	}
 	
 	/**
@@ -293,7 +293,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		// Tests if it can move in the x
 		if (xa != 0)
 		{
-			position.add(deltaX, 0);
+			getPosition().add(deltaX, 0);
 			
 			updateHitboxInLevel();
 			
@@ -343,7 +343,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			// If it is now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
 			{
-				position.add(-deltaX, 0);
+				getPosition().add(-deltaX, 0);
 				deltaX = 0;
 			}
 		}
@@ -351,7 +351,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		// Tests if it can move in the y
 		if (ya != 0)
 		{
-			position.add(0, deltaY);
+			getPosition().add(0, deltaY);
 			
 			updateHitboxInLevel();
 			
@@ -401,7 +401,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			// If it is now intersecting another hitbox, move it back in the x direction
 			if (!canMove)
 			{
-				position.add(0, -deltaY);
+				getPosition().add(0, -deltaY);
 				deltaY = 0;
 			}
 		}
@@ -491,14 +491,21 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	/**
 	 * <i>Designed for use from the server only.</i>
 	 * <p>
-	 * Sets the position of this to the provided position.
+	 * Sets the position of this to the provided getPosition().
 	 * 
 	 * @param position the new position
 	 */
+	// @Override
+	// public void setPosition(Vector2DDouble position)
+	// {
+	// super.setPosition(position);
+	// updateHitboxInLevel();
+	// }
+	
 	@Override
-	public void setPosition(Vector2DDouble position)
+	public void setPosition(double x, double y)
 	{
-		this.position.setVector(position);
+		super.setPosition(x, y);
 		updateHitboxInLevel();
 	}
 	
@@ -528,11 +535,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 					// Update the position
 					if (this instanceof PlayerEntity)
 					{
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(((PlayerEntity) this).getRole(), position, !hasDeltaMovement()));
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(((PlayerEntity) this).getRole(), getPosition(), !hasDeltaMovement()));
 					}
 					else
 					{
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetEntityLocation(level.getLevelType(), getID(), position, !hasDeltaMovement()));
+						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetEntityLocation(level.getLevelType(), getID(), getPosition(), !hasDeltaMovement()));
 					}
 					
 					hasMovedSince = false;
@@ -541,7 +548,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			
 			if (!(this instanceof PlayerEntity))
 			{
-				if (hasDeltaMovement() && deltaMoveCounter.isAtInterval())
+				if (hasDeltaDeltaMovement() && deltaMoveCounter.isAtInterval())
 				{
 					// System.out.println("Moveing: " + deltaXa + ", " + deltaYa);
 					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketEntityMove(level.getLevelType(), getID(), deltaXaMoved, deltaYaMoved));
@@ -588,7 +595,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		{
 			if (cameraFollow)
 			{
-				getLevel().setCameraCenterInWorld(new Vector2DDouble(position.getX() + (16 / 2), position.getY() + (16 / 2)));
+				getLevel().setCameraCenterInWorld(new Vector2DDouble(getPosition().getX() + (16 / 2), getPosition().getY() + (16 / 2)));
 			}
 			
 			// If it's the client side player that is controlled by the keyboard input
@@ -721,7 +728,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				Hitbox box = hitbox[i];
 				if (box != null)
 				{
-					hitbox[i].updateRelativeHitboxToPosition(position);
+					hitbox[i].updateRelativeHitboxToPosition(getPosition());
 				}
 			}
 		}

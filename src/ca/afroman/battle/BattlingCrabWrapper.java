@@ -27,7 +27,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	@Override
 	public void render(Texture renderTo)
 	{
-		asset.render(renderTo, fightPos); // fightPos);
+		asset.render(renderTo, new Vector2DInt(52, 77)); // fightPos);
 	}
 	
 	@Override
