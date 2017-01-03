@@ -144,7 +144,7 @@ public class Font extends DrawableAssetArray
 	 */
 	public void renderRight(Texture renderTo, int x, int y, String message)
 	{
-		render(renderTo, x - (getWidth(message)), y, message);
+		render(renderTo, x - getWidth(message), y, message);
 	}
 	
 	/**
@@ -156,6 +156,6 @@ public class Font extends DrawableAssetArray
 	 */
 	public void renderRight(Texture renderTo, Vector2DInt pos, String message)
 	{
-		render(renderTo, pos.getX(), pos.getY(), message);
+		renderRight(renderTo, pos.getX(), pos.getY(), message);
 	}
 }
