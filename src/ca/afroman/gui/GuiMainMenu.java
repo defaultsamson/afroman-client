@@ -4,7 +4,6 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.resource.Vector2DInt;
 import ca.afroman.util.UpdateUtil;
 import ca.afroman.util.VersionUtil;
 
@@ -38,7 +37,7 @@ public class GuiMainMenu extends GuiMenuOutline
 	{
 		super.drawScreen(renderTo);
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "The Adventures of Afro Man");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "The Adventures of Afro Man");
 	}
 	
 	@Override

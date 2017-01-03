@@ -6,7 +6,6 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.packet.PacketStartServer;
-import ca.afroman.resource.Vector2DInt;
 
 public class GuiInGameMenu extends GuiScreen
 {
@@ -30,7 +29,7 @@ public class GuiInGameMenu extends GuiScreen
 	@Override
 	public void drawScreen(Texture renderTo)
 	{
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Game Not Paused!");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Game Not Paused!");
 	}
 	
 	@Override

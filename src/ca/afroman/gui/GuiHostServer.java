@@ -6,7 +6,6 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.input.TypingMode;
 import ca.afroman.option.Options;
-import ca.afroman.resource.Vector2DInt;
 import ca.afroman.server.ServerGame;
 
 public class GuiHostServer extends GuiMenuOutline
@@ -69,11 +68,11 @@ public class GuiHostServer extends GuiMenuOutline
 	{
 		super.drawScreen(renderTo);
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Host A Server");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Host A Server");
 		
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 62 - 10), "Username");
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 78, 90 - 10), "Pass");
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 19, 90 - 10), "Port");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 62 - 10, "Username");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 78, 90 - 10, "Pass");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 19, 90 - 10, "Port");
 	}
 	
 	@Override

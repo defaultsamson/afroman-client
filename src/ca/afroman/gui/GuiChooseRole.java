@@ -76,7 +76,7 @@ public class GuiChooseRole extends GuiScreen
 			renderTo.draw(lightmap, 0, 0);
 		}
 		
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "Choose a new role for " + player.getUsername());
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Choose a new role for " + player.getUsername());
 	}
 	
 	@Override

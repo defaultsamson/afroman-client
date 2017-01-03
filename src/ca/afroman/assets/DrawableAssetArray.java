@@ -7,7 +7,7 @@ import ca.afroman.resource.Vector2DInt;
 public class DrawableAssetArray extends DrawableAsset
 {
 	/** Holds the assets. */
-	private DrawableAsset[] assets;
+	protected DrawableAsset[] assets;
 	
 	/**
 	 * A wrapper for an array of DrawableAssets.

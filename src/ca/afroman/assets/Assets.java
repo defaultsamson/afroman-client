@@ -233,9 +233,9 @@ public class Assets
 		
 		addAsset(perc, Texture.fromResource(AssetType.CAT, "cat.png"));
 		
-		assetArrays.add(new Font(AssetType.FONT_BLACK, font.getSubTexture(AssetType.FONT_BLACK, 0, 8 * 0, 256, 32)));
-		assetArrays.add(new Font(AssetType.FONT_WHITE, font.getSubTexture(AssetType.FONT_WHITE, 0, 8 * 12, 256, 32)));
-		assetArrays.add(new Font(AssetType.FONT_NOBLE, font.getSubTexture(AssetType.FONT_NOBLE, 0, 8 * 4, 256, 32)));
+		assetArrays.add(new Font(AssetType.FONT_BLACK, font.getSubTexture(AssetType.FONT_BLACK, 0, 8 * 0, 256, 32), Font.DEFAULT_WIDTHS));
+		assetArrays.add(new Font(AssetType.FONT_WHITE, font.getSubTexture(AssetType.FONT_WHITE, 0, 8 * 12, 256, 32), Font.DEFAULT_WIDTHS));
+		// assetArrays.add(new Font(AssetType.FONT_NOBLE, font.getSubTexture(AssetType.FONT_NOBLE, 0, 8 * 4, 256, 32), Font.NOBLE_WIDTHS));
 		
 		assetArrays.add(new DrawableAssetArray(AssetType.PLAYER_ONE_RAW, Texture.fromResource(AssetType.PLAYER_ONE_RAW, "player1.png").toTextureArray(3, 4)));
 		
@@ -366,7 +366,7 @@ public class Assets
 		
 		addAsset(perc, sheet.getSubTexture(AssetType.TILE_ROCK, 16 * 2, 16 * 1, 16, 16));
 		
-		addAsset(perc, Texture.fromResource(AssetType.ITEM_HOLDER, "item_holder.png"));
+		addAsset(perc, Texture.fromResource(AssetType.ITEM_HOLDER, "gui/item_holder.png"));
 		
 		addAsset(perc, sheet.getSubTexture(AssetType.ITEM_HAIRPIN_LARGE, 16 * 6, 16 * 5, 16, 16));
 		addAsset(perc, sheet.getSubTexture(AssetType.ITEM_HAIRPIN_SMALL, 16 * 7, 16 * 5, 8, 8));

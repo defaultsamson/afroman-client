@@ -11,7 +11,7 @@ import ca.afroman.client.ClientGame;
 
 public abstract class GuiScreen
 {
-	protected static Font nobleFont = Assets.getFont(AssetType.FONT_NOBLE);
+	protected static Font nobleFont = Assets.getFont(AssetType.FONT_BLACK);
 	protected static Font whiteFont = Assets.getFont(AssetType.FONT_WHITE);
 	protected static Font blackFont = Assets.getFont(AssetType.FONT_BLACK);
 	

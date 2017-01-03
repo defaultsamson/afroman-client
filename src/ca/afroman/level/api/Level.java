@@ -987,10 +987,10 @@ public class Level extends ServerClientObject implements ITickable
 						break;
 				}
 				
-				if (lines == 4) Assets.getFont(AssetType.FONT_NOBLE).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46), text1);
-				if (lines >= 3) Assets.getFont(lines == 3 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36), text2);
-				if (lines >= 2) Assets.getFont(lines == 2 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26), text3);
-				if (lines >= 1) Assets.getFont(lines == 1 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16), text4);
+				if (lines == 4) Assets.getFont(AssetType.FONT_NOBLE).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46, text1);
+				if (lines >= 3) Assets.getFont(lines == 3 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36, text2);
+				if (lines >= 2) Assets.getFont(lines == 2 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26, text3);
+				if (lines >= 1) Assets.getFont(lines == 1 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16, text4);
 			}
 		}
 		

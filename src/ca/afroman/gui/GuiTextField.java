@@ -12,21 +12,24 @@ import ca.afroman.resource.Vector2DInt;
 
 public class GuiTextField extends GuiButton
 {
+	private static final int WIDTH_PADDING = 4;
 	private static final int BLINK_SPEED = 20;
+	private static final int SCORE_WIDTH = 6;
 	private Font font;
 	private int maxLength = 18;
 	private StringBuilder text = new StringBuilder();
+	
 	private boolean isFocussed = false;
-	
 	private int textOffset = 0;
-	private int cursorPosition = 0;
 	
+	private int cursorPosition = 0;
 	Vector2DInt textDrawPos;
+	
 	Vector2DInt cursorDrawPos;
 	
 	private TypingMode mode = TypingMode.FULL;
-	
 	private boolean drawBlinker = false;
+	
 	private int blinkCounter = 0;
 	
 	public GuiTextField(GuiScreen screen, int x, int y, int width)
@@ -45,6 +48,35 @@ public class GuiTextField extends GuiButton
 		cursorDrawPos = new Vector2DInt(hitbox.x + 2, hitbox.y + 4);
 	}
 	
+	public int currentlyRenderable()
+	{
+		return currentlyRenderableWithinWidth((int) hitbox.getWidth() - WIDTH_PADDING);
+	}
+	
+	public int currentlyRenderableWithinWidth(int width)
+	{
+		// double modded = (hitbox.getWidth() - 4) % CURSOR_WIDTH;
+		// return (int) (hitbox.getWidth() - modded) / CURSOR_WIDTH;
+		
+		String fullMess = text.toString();
+		
+		int i = 0;
+		String mes;
+		do
+		{
+			i++;
+			if (textOffset + i > fullMess.length())
+			{
+				break;
+			}
+			mes = fullMess.substring(textOffset, textOffset + i);
+		}
+		while (font.getWidth(mes) < width);
+		i--;
+		
+		return i;
+	}
+	
 	public int getCursorPosition()
 	{
 		return cursorPosition;
@@ -52,7 +84,8 @@ public class GuiTextField extends GuiButton
 	
 	public String getDisplayText()
 	{
-		return new String(text.toString()).substring(textOffset, (text.length() - textOffset) <= maxRenderable() ? text.length() : textOffset + maxRenderable());
+		int currentlyRenderable = currentlyRenderable();
+		return text.toString().substring(textOffset, (text.length() - textOffset) <= currentlyRenderable ? text.length() : textOffset + currentlyRenderable);
 	}
 	
 	public String getText()
@@ -60,9 +93,19 @@ public class GuiTextField extends GuiButton
 		return text.toString();
 	}
 	
-	private int isCursorOutsideBox(int xOrdinate)
+	public boolean isAtMaxCapacity()
 	{
-		if (xOrdinate + Font.CHAR_WIDTH + 2 > hitbox.getX() + hitbox.getWidth())
+		return cursorPosition >= maxLength;
+	}
+	
+	public boolean isFocussed()
+	{
+		return isFocussed;
+	}
+	
+	private int isScoreOutsideBox(int xOrdinate)
+	{
+		if (!isAtMaxCapacity() && xOrdinate + SCORE_WIDTH + 2 > hitbox.getX() + hitbox.getWidth())
 		{
 			return 1;
 		}
@@ -76,44 +119,17 @@ public class GuiTextField extends GuiButton
 		}
 	}
 	
-	public boolean isFocussed()
-	{
-		return isFocussed;
-	}
-	
-	public int maxRenderable()
-	{
-		double modded = (hitbox.getWidth() - 4) % Font.CHAR_WIDTH;
-		return (int) (hitbox.getWidth() - modded) / Font.CHAR_WIDTH;
-	}
-	
 	@Override
 	protected void onPress(boolean isLeft)
 	{
 		this.setFocussed();
 		
+		// Rids of any press
 		ClientGame.instance().input().mouseLeft.isPressedFiltered();
 		
 		int x = ClientGame.instance().input().getMousePos().getX();
-		for (int i = 0; i < maxRenderable(); i++)
-		{
-			if (x > (i * Font.CHAR_WIDTH) + textDrawPos.getX() && x <= ((i + 1) * Font.CHAR_WIDTH) + textDrawPos.getX())
-			{
-				// Finds what the offset should be
-				if (textOffset + i <= text.length())
-				{
-					setCursorPosition(textOffset + i);
-				}
-				else
-				{
-					// If it can't be found, then that's probably because it's to the right of all the letter.
-					// set the position to the end
-					setCursorPosition(text.length());
-				}
-				pauseBlinker();
-				return;
-			}
-		}
+		
+		setCursorPosition(textOffset + currentlyRenderableWithinWidth(x - (int) hitbox.getX() - 2));
 	}
 	
 	@Override
@@ -134,9 +150,9 @@ public class GuiTextField extends GuiButton
 		super.render(drawTo);
 		
 		// Draw blinker
-		if (drawBlinker && text.length() < maxLength)
+		if (drawBlinker && !isAtMaxCapacity())
 		{
-			font.render(drawTo, cursorDrawPos.clone(), "_");
+			font.render(drawTo, cursorDrawPos, "_");
 		}
 		
 		font.render(drawTo, textDrawPos, getDisplayText());
@@ -218,15 +234,7 @@ public class GuiTextField extends GuiButton
 			InputHandler input = ClientGame.instance().input();
 			boolean isShifting = input.shift.isPressed() || input.capsLock.isToggled();
 			
-			if (input.backspace.isPressed())
-			{
-				pauseBlinker();
-			}
-			if (input.left.isPressed())
-			{
-				pauseBlinker();
-			}
-			if (input.right.isPressed())
+			if (input.backspace.isPressed() || input.left_arrow.isPressed() || input.right_arrow.isPressed())
 			{
 				pauseBlinker();
 			}
@@ -305,9 +313,19 @@ public class GuiTextField extends GuiButton
 	
 	private Vector2DInt updateCursorDrawPos()
 	{
-		cursorDrawPos = textDrawPos.clone().add((cursorPosition - textOffset) * Font.CHAR_WIDTH, 1);
+		// Sets score so that it will always show at least one character to the left
+		if (cursorPosition <= textOffset)
+		{
+			textOffset--;
+		}
 		
-		switch (isCursorOutsideBox(cursorDrawPos.getX()))
+		// Makes sure that it's never a negative text offset
+		if (textOffset < 0) textOffset = 0;
+		
+		// (cursorPosition - textOffset) * SCORE_WIDTH
+		cursorDrawPos = textDrawPos.clone().add(font.getWidth(text.toString().substring(textOffset, cursorPosition)), 1);
+		
+		switch (isScoreOutsideBox(cursorDrawPos.getX()))
 		{
 			default:
 				return cursorDrawPos;

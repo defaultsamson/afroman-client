@@ -18,7 +18,6 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.option.Options;
 import ca.afroman.packet.PacketStartServer;
 import ca.afroman.resource.Vector2DDouble;
-import ca.afroman.resource.Vector2DInt;
 
 public class GuiLobby extends GuiScreen
 {
@@ -107,14 +106,14 @@ public class GuiLobby extends GuiScreen
 			renderTo.draw(lightmap, 0, 0);
 		}
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 6), "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + Game.MAX_PLAYERS);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 6, "Connected Players: " + ClientGame.instance().sockets().getConnectedPlayers().size() + "/" + Game.MAX_PLAYERS);
 		if (ClientGame.instance().isHostingServer())
 		{
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "LAN: " + lanIP + ":" + port);
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "LAN: " + lanIP + ":" + port);
 		}
 		else
 		{
-			blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 20), "(Waiting for host to start server)");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "(Waiting for host to start server)");
 		}
 	}
 	

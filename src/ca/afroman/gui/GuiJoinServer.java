@@ -6,7 +6,6 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.input.TypingMode;
 import ca.afroman.option.Options;
-import ca.afroman.resource.Vector2DInt;
 
 public class GuiJoinServer extends GuiMenuOutline
 {
@@ -58,11 +57,11 @@ public class GuiJoinServer extends GuiMenuOutline
 	{
 		super.drawScreen(renderTo);
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15), "Join a Server");
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15, "Join a Server");
 		
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 50 - 4), "Username");
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 80 - 6), "Password");
-		blackFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2 - 57, 110 - 8), "Server IP");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 50 - 4, "Username");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 80 - 6, "Password");
+		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 - 57, 110 - 8, "Server IP");
 	}
 	
 	@Override

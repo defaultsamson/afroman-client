@@ -9,7 +9,6 @@ import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.light.LightMapState;
 import ca.afroman.option.Options;
-import ca.afroman.resource.Vector2DInt;
 
 public class GuiOptionsMenu extends GuiMenuOutline
 {
@@ -188,7 +187,7 @@ public class GuiOptionsMenu extends GuiMenuOutline
 				break;
 		}
 		
-		nobleFont.renderCentered(renderTo, new Vector2DInt(ClientGame.WIDTH / 2, 15 - 6), title);
+		nobleFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 15 - 6, title);
 	}
 	
 	private void pendKeySet(int buttonID)

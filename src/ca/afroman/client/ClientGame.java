@@ -73,7 +73,9 @@ import ca.afroman.server.DenyJoinReason;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.ByteUtil;
+import ca.afroman.util.EnumOS;
 import ca.afroman.util.IPUtil;
+import ca.afroman.util.OsUtil;
 import ca.afroman.util.UpdateUtil;
 import ca.afroman.util.VersionUtil;
 import samson.stream.Console;
@@ -1056,10 +1058,12 @@ public class ClientGame extends Game
 		{
 			Options.instance().fullscreen = isFullScreen;
 			
+			System.out.println("Hiding current frame");
 			frame.setVisible(false);
 			// frame.getContentPane().remove(canvas);
 			JFrame old = frame;
 			
+			System.out.println("Creating new frame");
 			frame = new JFrame(NAME);
 			
 			frame.setIconImage(ICON);
@@ -1481,7 +1485,15 @@ public class ClientGame extends Game
 		
 		if (input.f11.isPressedFiltered())
 		{
-			setFullScreen(!Options.instance().fullscreen);
+			if (OsUtil.getOSType() == EnumOS.WINDOWS)
+			{
+				// TODO fix fullscreen on windows
+				logger().log(ALogType.WARNING, "Full screen mode doesn't work at the moment on " + EnumOS.WINDOWS);
+			}
+			else
+			{
+				setFullScreen(!Options.instance().fullscreen);
+			}
 		}
 		
 		// Debug keys
