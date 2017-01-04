@@ -9,9 +9,11 @@ import java.util.ArrayList;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
+import ca.afroman.assets.Font;
 import ca.afroman.assets.ITextureDrawable;
 import ca.afroman.assets.Texture;
 import ca.afroman.battle.BattleScene;
+import ca.afroman.battle.BattlingPlayerWrapper;
 import ca.afroman.battle.IBattleable;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
@@ -987,10 +989,11 @@ public class Level extends ServerClientObject implements ITickable
 						break;
 				}
 				
-				if (lines == 4) Assets.getFont(AssetType.FONT_NOBLE).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46, text1);
-				if (lines >= 3) Assets.getFont(lines == 3 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36, text2);
-				if (lines >= 2) Assets.getFont(lines == 2 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26, text3);
-				if (lines >= 1) Assets.getFont(lines == 1 ? AssetType.FONT_NOBLE : AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16, text4);
+				Font font = Assets.getFont(AssetType.FONT_BLACK);
+				if (lines == 4) font.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 46, text1);
+				if (lines >= 3) font.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 36, text2);
+				if (lines >= 2) font.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 26, text3);
+				if (lines >= 1) font.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT - 16, text4);
 			}
 		}
 		
@@ -1066,11 +1069,9 @@ public class Level extends ServerClientObject implements ITickable
 			if (p1 != null) p1.setIsInBattle(true);
 			if (p2 != null) p2.setIsInBattle(true);
 			
-			// TODO client battle scene
 			ClientGame.instance().logger().log(ALogType.DEBUG, "Starting battle (" + e + ", " + p1 + ", " + p2 + ")");
 			
-			// Role role = ClientGame.instance().getThisPlayer().getRole();
-			ClientGame.instance().startBattle(new BattleScene(((IBattleable) e).getBattleWrapper(), p1 != null ? ((IBattleable) p1).getBattleWrapper() : null, p2 != null ? ((IBattleable) p2).getBattleWrapper() : null)); // (p1 != null && p1.getRole() == role) || (p2 != null && p2.getRole() == role)
+			ClientGame.instance().startBattle(new BattleScene(((IBattleable) e).getBattleWrapper(), p1 != null ? (BattlingPlayerWrapper) ((IBattleable) p1).getBattleWrapper() : null, p2 != null ? (BattlingPlayerWrapper) ((IBattleable) p2).getBattleWrapper() : null)); // (p1 != null && p1.getRole() == role) || (p2 != null && p2.getRole() == role)
 		}
 		else
 		{

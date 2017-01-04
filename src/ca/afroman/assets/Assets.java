@@ -410,6 +410,8 @@ public class Assets
 		Texture[] afro2Battle2 = afro2Battle.toTextureArray(5, 1);
 		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_PLAYER_TWO, false, 7, afro2Battle2[0], afro2Battle2[0], afro2Battle2[1], afro2Battle2[2], afro2Battle2[3], afro2Battle2[4], afro2Battle2[4], afro2Battle2[3], afro2Battle2[2], afro2Battle2[1]));
 		
+		addAsset(perc, Texture.fromResource(AssetType.BATTLE_SHADOW, "battle/shadow.png"));
+		
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu", AudioType.MUSIC));

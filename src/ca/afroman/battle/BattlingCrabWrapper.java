@@ -7,10 +7,13 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.Crab;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.light.FlickeringLight;
+import ca.afroman.light.LightMap;
 import ca.afroman.resource.Vector2DInt;
 
 public class BattlingCrabWrapper extends BattlingEntityWrapper
 {
+	private FlickeringLight light;
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
 	private Vector2DInt fightPos;
@@ -18,16 +21,19 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	public BattlingCrabWrapper(Crab fighting)
 	{
 		super(fighting);
-		this.fightPos = new Vector2DInt(65, 68);
+		this.fightPos = new Vector2DInt(52, 77);
 		
 		asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
 		idleAsset.getTickCounter().setInterval(15);
+		light = new FlickeringLight(true, fightPos.toVector2DDouble(), 55, 45, 4);
 	}
 	
 	@Override
-	public void render(Texture renderTo)
+	public void render(Texture renderTo, LightMap map)
 	{
 		asset.render(renderTo, new Vector2DInt(52, 77)); // fightPos);
+		light.renderCentered(map);
+		light.renderCentered(map);
 	}
 	
 	@Override
@@ -38,5 +44,8 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 			// Ticks the IBattleables DrawableAsset
 			((ITickable) asset).tick();
 		}
+		
+		light.setPosition(fightPos.getX() + 8, fightPos.getY());
+		light.tick();
 	}
 }

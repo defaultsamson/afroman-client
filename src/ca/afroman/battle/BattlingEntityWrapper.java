@@ -3,6 +3,7 @@ package ca.afroman.battle;
 import ca.afroman.assets.Texture;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.light.LightMap;
 import ca.afroman.resource.ServerClientObject;
 
 public abstract class BattlingEntityWrapper extends ServerClientObject implements ITickable
@@ -28,7 +29,7 @@ public abstract class BattlingEntityWrapper extends ServerClientObject implement
 		return isThisTurn;
 	}
 	
-	public abstract void render(Texture renderTo);
+	public abstract void render(Texture renderTo, LightMap lightmap);
 	
 	public void setIsThisTurn(boolean isThisTurn)
 	{
