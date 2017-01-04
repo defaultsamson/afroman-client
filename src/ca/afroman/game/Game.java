@@ -12,7 +12,6 @@ import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.technical.PacketStartServer;
-import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicTickRenderThread;
 
@@ -55,18 +54,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		synchronized (toProcess)
 		{
 			toProcess.add(pack);
-		}
-	}
-	
-	protected void flushResources()
-	{
-		getLevels().clear();
-		getBattles().clear();
-		getPlayers().clear();
-		IDCounter.resetAll();
-		synchronized (toProcess)
-		{
-			toProcess.clear();
 		}
 	}
 	
@@ -203,6 +190,13 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		
 		stopSocket();
 		
+		getLevels().clear();
+		getBattles().clear();
+		getPlayers().clear();
+		synchronized (toProcess)
+		{
+			toProcess.clear();
+		}
 	}
 	
 	@Override

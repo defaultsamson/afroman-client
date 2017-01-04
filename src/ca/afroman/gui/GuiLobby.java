@@ -36,6 +36,7 @@ public class GuiLobby extends GuiScreen
 	
 	private GuiTextButton startButton;
 	private GuiTextButton stopButton;
+	private GuiIconButton optionsButton;
 	
 	private boolean firstTime;
 	
@@ -54,7 +55,9 @@ public class GuiLobby extends GuiScreen
 		startButton = new GuiTextButton(this, 2000, (ClientGame.WIDTH / 2) - 84 - 8, 116, 84, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());
 		addButton(startButton);
-		addButton(new GuiIconButton(this, 2005, 6, ClientGame.HEIGHT - 19, 16, Assets.getStepSpriteAnimation(AssetType.ICON_SETTINGS).clone()));
+		
+		optionsButton = new GuiIconButton(this, 2005, 6, ClientGame.HEIGHT - 19, 16, Assets.getStepSpriteAnimation(AssetType.ICON_SETTINGS));
+		addButton(optionsButton);
 		
 		lanIP = "Unknown";
 		
@@ -173,6 +176,7 @@ public class GuiLobby extends GuiScreen
 			clearButtons();
 			addButton(startButton);
 			addButton(stopButton);
+			addButton(optionsButton);
 			
 			player1X = -300;
 			player1Y = -300;

@@ -66,6 +66,7 @@ import ca.afroman.packet.technical.PacketLogin;
 import ca.afroman.packet.technical.PacketPingClientServer;
 import ca.afroman.packet.technical.PacketPingServerClient;
 import ca.afroman.packet.technical.PacketPlayerDisconnect;
+import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.SetInteger;
 import ca.afroman.resource.Vector2DDouble;
@@ -1284,8 +1285,9 @@ public class ClientGame extends Game
 			
 			stopSocket();
 			
-			flushResources();
-			
+			getLevels().clear();
+			getBattles().clear();
+			IDCounter.resetAll();
 			setCurrentLevel(null);
 			
 			// resets the player entities
@@ -1570,7 +1572,7 @@ public class ClientGame extends Game
 			}
 			if ((!Console.instance().getJFrame().isVisible() && input.nine.isReleasedFiltered()) || (Console.instance().getJFrame().isVisible() && input.nine.isPressedFiltered()))
 			{
-				consoleDebug = !Console.instance().getJFrame().isVisible();
+				consoleDebug = !Console.isVisible();
 				
 				// Prevents keys from getting stuck
 				input.control.setPressed(false);
