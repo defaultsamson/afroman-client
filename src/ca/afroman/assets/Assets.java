@@ -413,5 +413,6 @@ public class Assets
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_RELEASE, "but_up", AudioType.SFX));
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_MENU_MUSIC, "music/menu", AudioType.MUSIC));
+		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BATTLE_MUSIC, "music/battle", AudioType.MUSIC));
 	}
 }

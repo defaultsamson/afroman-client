@@ -150,7 +150,8 @@ public enum AssetType
 	
 	AUDIO_BUTTON_PUSH(false),
 	AUDIO_BUTTON_RELEASE(false),
-	AUDIO_MENU_MUSIC(false);
+	AUDIO_MENU_MUSIC(false),
+	AUDIO_BATTLE_MUSIC(false);
 	
 	/**
 	 * Gets the AssetType value with the corresponding ordinal value.

@@ -166,7 +166,7 @@ public class ClientGame extends Game
 	private boolean exitGame = false;
 	
 	private GuiScreen currentScreen = null;
-	private AudioClip music;
+	private AudioClip music = null;
 	
 	private boolean waitingForOthersToLoad = false;
 	
@@ -838,6 +838,51 @@ public class ClientGame extends Game
 		}
 	}
 	
+	public void playMusic(final AudioClip audio, final boolean loop)
+	{
+		playMusic(audio, loop, false, false);
+	}
+	
+	// TODO fix fading' 'n shite
+	private void playMusic(final AudioClip audio, final boolean loop, final boolean fadeOut, final boolean fadeIn)
+	{
+		// Stop the existing music
+		if (music != null)
+		{
+			if (fadeOut)
+			{
+				music.fadeOut();
+			}
+			else
+			{
+				music.stop();
+			}
+		}
+		
+		music = audio;
+		
+		if (music != null)
+		{
+			if (loop)
+			{
+				if (!music.isRunning())
+				{
+					music.startLoop();
+				}
+			}
+			else
+			{
+				if (music.isRunning())
+				{
+					music.stop();
+				}
+				music.start();
+			}
+			
+			if (fadeIn) music.fadeIn();
+		}
+	}
+	
 	/**
 	 * Quits the game.
 	 */
@@ -1233,10 +1278,7 @@ public class ClientGame extends Game
 			
 			setCurrentScreen(new GuiMainMenu());
 			
-			if (!music.isRunning())
-			{
-				music.startLoop();
-			}
+			playMusic(Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC), true);
 		}
 	}
 	
@@ -1416,8 +1458,6 @@ public class ClientGame extends Game
 		double loadTime = (System.currentTimeMillis() - startLoadTime) / 1000.0D;
 		
 		logger().log(ALogType.DEBUG, "Game loaded. Took " + loadTime + " seconds");
-		
-		music = Assets.getAudioClip(AssetType.AUDIO_MENU_MUSIC);
 		
 		updateCursorHiding();
 		

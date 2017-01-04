@@ -5,8 +5,9 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.interfaces.ITickable;
+import ca.afroman.resource.ServerClientObject;
 
-public class BattleScene implements ITickable
+public class BattleScene extends ServerClientObject implements ITickable
 {
 	private static final Texture bg = Assets.getTexture(AssetType.BATTLE_RUINS_BG);
 	
@@ -16,9 +17,16 @@ public class BattleScene implements ITickable
 	
 	public BattleScene(BattlingEntityWrapper entity, BattlingEntityWrapper player1, BattlingEntityWrapper player2)
 	{
+		super(entity.getFightingEnemy().isServerSide());
+		
 		this.entity = entity;
 		this.player1 = player1;
 		this.player2 = player2;
+		
+		if (!isServerSide())
+		{
+			ClientGame.instance().playMusic(Assets.getAudioClip(AssetType.AUDIO_BATTLE_MUSIC), true);
+		}
 	}
 	
 	public void render(Texture renderTo)

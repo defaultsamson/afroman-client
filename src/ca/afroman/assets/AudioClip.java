@@ -197,6 +197,8 @@ public class AudioClip extends Asset
 	private AudioType type;
 	private Clip clip;
 	
+	private int pausedPosition = 0;
+	
 	/**
 	 * An Asset that can playback audio.
 	 * 
@@ -235,6 +237,279 @@ public class AudioClip extends Asset
 	}
 	
 	/**
+	 * Fades in the audio over a period of time.
+	 */
+	public void fadeIn()
+	{
+		if (clip != null)
+		{
+			Control con = clip.getControl(Type.MASTER_GAIN);
+			if (con instanceof FloatControl)
+			{
+				final FloatControl gain = (FloatControl) con;
+				final float initGain = percentageAsDB(0);
+				final float targetGain = gain.getValue();
+				final float changePerStep = 1F;
+				
+				gain.setValue(initGain);
+				
+				new Thread()
+				{
+					@Override
+					public void run()
+					{
+						if (targetGain > initGain)
+						{
+							while (gain.getValue() > targetGain)
+							{
+								try
+								{
+									Thread.sleep(100);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() - changePerStep);
+							}
+						}
+						else if (targetGain < initGain)
+						{
+							while (gain.getValue() < targetGain)
+							{
+								try
+								{
+									Thread.sleep(100);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() + changePerStep);
+							}
+						}
+						
+						gain.setValue(targetGain);
+					}
+				}.start();
+			}
+		}
+	}
+	
+	// /**
+	// * Sets the volume of this immediately.
+	// *
+	// * @param percentage the new volume of this as a percentage in decimal form (0.0 - 1.0)
+	// */
+	// public void setVolume(double percentage)
+	// {
+	// setVolume(percentage, 0L);
+	// }
+	
+	// /**
+	// * Sets the volume of this over a period of time.
+	// *
+	// * @param percentage the new volume of this as a percentage in decimal form (0.0 - 1.0)
+	// * @param duration the time in milliseconds that the operation should take
+	// */
+	// public void setVolume(double percentage, long duration)
+	// {
+	// if (percentage < 0.0)
+	// {
+	// percentage = 0.0;
+	// }
+	// else if (percentage > 1.0)
+	// {
+	// percentage = 1.0;
+	// }
+	//
+	// setVolume(percentageAsDB(percentage), duration);
+	// }
+	
+	/**
+	 * Fades in the audio over a period of time.
+	 */
+	public void fadeOut()
+	{
+		if (clip != null)
+		{
+			Control con = clip.getControl(Type.MASTER_GAIN);
+			if (con instanceof FloatControl)
+			{
+				final FloatControl gain = (FloatControl) con;
+				final float initGain = gain.getValue();
+				final float targetGain = percentageAsDB(0);
+				final float changePerStep = 1F;
+				
+				new Thread()
+				{
+					@Override
+					public void run()
+					{
+						if (targetGain > initGain)
+						{
+							while (gain.getValue() > targetGain)
+							{
+								try
+								{
+									Thread.sleep(100);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() - changePerStep);
+							}
+						}
+						else if (targetGain < initGain)
+						{
+							while (gain.getValue() < targetGain)
+							{
+								try
+								{
+									Thread.sleep(100);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() + changePerStep);
+							}
+						}
+						
+						clip.stop();
+						gain.setValue(initGain);
+					}
+				}.start();
+			}
+		}
+	}
+	
+	/**
+	 * Fades out the audio over a period of time.
+	 * 
+	 * @param duration the time in milliseconds that the operation should take
+	 */
+	public void fadeToVolume(final double percentage)
+	{
+		if (clip != null)
+		{
+			Control con = clip.getControl(Type.MASTER_GAIN);
+			if (con instanceof FloatControl)
+			{
+				final FloatControl gain = (FloatControl) con;
+				final float initGain = gain.getValue();
+				final float targetGain = percentageAsDB(percentage);
+				final float changePerStep = 1F;
+				
+				new Thread()
+				{
+					@Override
+					public void run()
+					{
+						if (targetGain > initGain)
+						{
+							while (gain.getValue() > targetGain)
+							{
+								try
+								{
+									Thread.sleep(100);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() - changePerStep);
+							}
+						}
+						else if (targetGain < initGain)
+						{
+							while (gain.getValue() < targetGain)
+							{
+								try
+								{
+									Thread.sleep(100);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+								
+								gain.setValue(gain.getValue() + changePerStep);
+							}
+						}
+						
+						gain.setValue(targetGain);
+					}
+				}.start();
+			}
+		}
+	}
+	
+	// /**
+	// * Sets the volume of this over a period of time.
+	// *
+	// * @param dB the new volume of this in decibels
+	// * @param duration the time in milliseconds that the operation should take
+	// */
+	// public void setVolume(final float dB, final long duration)
+	// {
+	// if (clip != null)
+	// {
+	// Control con = clip.getControl(Type.MASTER_GAIN);
+	// if (con instanceof FloatControl)
+	// {
+	// final FloatControl gain = (FloatControl) con;
+	//
+	// if (duration > 0)
+	// {
+	// // How long one step in volume change takes in ms
+	// final int period = 50;
+	//
+	// new Thread()
+	// {
+	// @Override
+	// public void run()
+	// {
+	// // The linear change in dB overall
+	// float netChange = dB - gain.getValue();
+	// int needed = (int) Math.floor((double) duration / (double) period);
+	// // The linear change in dB per step
+	// float changePerStep = netChange / needed;
+	// int counted = 0;
+	// while (counted < needed)
+	// {
+	// try
+	// {
+	// Thread.sleep(period);
+	// }
+	// catch (InterruptedException e)
+	// {
+	// e.printStackTrace();
+	// }
+	//
+	// gain.setValue(gain.getValue() + changePerStep);
+	// counted++;
+	// }
+	//
+	// gain.setValue(dB);
+	// }
+	// }.start();
+	// }
+	// else
+	// {
+	// gain.setValue(dB);
+	// }
+	// }
+	// }
+	// }
+	
+	/**
 	 * @return the AudioType of this
 	 */
 	public AudioType getAudioType()
@@ -254,54 +529,35 @@ public class AudioClip extends Asset
 		return clip.isActive();
 	}
 	
+	public void pause()
+	{
+		if (clip == null) return;
+		
+		pausedPosition = clip.getFramePosition();
+		clip.stop();
+	}
+	
+	public float percentageAsDB(double percentage)
+	{
+		// return (float) percentage * 100;
+		// return (float) Math.max(0, (Math.log(percentage) / 20.0));
+		return (float) (Math.log(percentage) / Math.log(10.0) * 20.0);
+	}
+	
+	public void resume()
+	{
+		if (clip == null) return;
+		
+		clip.setFramePosition(pausedPosition);
+		clip.start();
+	}
+	
 	/**
 	 * Sets the volume of this immediately.
 	 * 
-	 * @param percentage the new volume of this as a percentage in decimal form (0.0 - 1.0)
+	 * @param dB the new volume of this in decibels
 	 */
 	public void setVolume(double percentage)
-	{
-		setVolume(percentage, 0L);
-	}
-	
-	/**
-	 * Sets the volume of this over a period of time.
-	 * 
-	 * @param percentage the new volume of this as a percentage in decimal form (0.0 - 1.0)
-	 * @param duration the time in milliseconds that the operation should take
-	 */
-	public void setVolume(double percentage, long duration)
-	{
-		if (percentage < 0.0)
-		{
-			percentage = 0.0;
-		}
-		else if (percentage > 1.0)
-		{
-			percentage = 1.0;
-		}
-		
-		float dB = (float) (Math.log(percentage) / Math.log(10.0) * 20.0);
-		setVolume(dB, duration);
-	}
-	
-	/**
-	 * Sets the volume of this immediately.
-	 * 
-	 * @param dB the new volume of this in decibels
-	 */
-	public void setVolume(float dB)
-	{
-		setVolume(dB, 0L);
-	}
-	
-	/**
-	 * Sets the volume of this over a period of time.
-	 * 
-	 * @param dB the new volume of this in decibels
-	 * @param duration the time in milliseconds that the operation should take
-	 */
-	public void setVolume(final float dB, final long duration)
 	{
 		if (clip != null)
 		{
@@ -310,45 +566,7 @@ public class AudioClip extends Asset
 			{
 				final FloatControl gain = (FloatControl) con;
 				
-				if (duration > 0)
-				{
-					// How long one step in volume change takes in ms
-					final int period = 50;
-					
-					new Thread()
-					{
-						@Override
-						public void run()
-						{
-							// The linear change in dB overall
-							float netChange = dB - gain.getValue();
-							int needed = (int) Math.floor((double) duration / (double) period);
-							// The linear change in dB per step
-							float changePerStep = netChange / needed;
-							int counted = 0;
-							while (counted < needed)
-							{
-								try
-								{
-									Thread.sleep(period);
-								}
-								catch (InterruptedException e)
-								{
-									e.printStackTrace();
-								}
-								
-								gain.setValue(gain.getValue() + changePerStep);
-								counted++;
-							}
-							
-							gain.setValue(dB);
-						}
-					}.start();
-				}
-				else
-				{
-					gain.setValue(dB);
-				}
+				gain.setValue(percentageAsDB(percentage));
 			}
 		}
 	}
