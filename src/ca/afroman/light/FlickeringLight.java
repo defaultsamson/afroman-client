@@ -63,42 +63,11 @@ public class FlickeringLight extends PointLight
 				// Creates the radius for the frame based on a cosine function
 				// Uses the first PI/2 of the function to map out all the values, then dsimply ping-pongs back and forth
 				radi[i] = (int) (smaller + (radiusDifference * ((Math.cos((i * Math.PI) / radi.length) / 2D) + 0.5)));
-				// System.out.println("Radi[" + i + "] = " + smaller + " + " + radiusDifference + " * (Math.cos((" + i + " * PI)/" + radi.length + ")/ 2 + 0.5)");
-				// System.out.println("Radi[" + i + "] = " + radi[i]);
-				
-				// Old test versions
-				// radi[i] = (int) Math.round(smaller + ((double) radiusDifference * Math.cos((((double) i * Math.PI) / (double) radi.length) / 2D) + (1D / 2D)));
-				// System.out.println("Radi[" + i + "] = " + smaller + " + " + radiusDifference + " * Math.cos((" + i + " * PI)/" + radi.length + ") / 2");
-				// radi[i] = (int) Math.round(smaller + (Math.sin(((double) i) * ((2D * Math.PI) / (4 * radi.length))) * radiusDifference));
-				// radi[i] = (int) Math.round(smaller + (Math.sin(i * ((2 * Math.PI) / radi.length)) * radiusDifference));
-				// System.out.println("Radi[" + i + "] " + "round(" + smaller + " + sin(2pi/" + (4 * radi.length) + " * " + i + ") * " + radiusDifference + ")");
-				// System.out.println("Radi[" + i + "] = " + radi[i]);
 			}
 		}
 		
 		frame = 0;
 	}
-	//
-	// @SuppressWarnings("deprecation")
-	// @Override
-	// public void renderCentered(LightMap renderTo)
-	// {
-	// // TODO control this with positions entirely and don't get their primitive types
-	// Vector2DInt offsetPos;
-	//
-	// if (level != null)
-	// {
-	// offsetPos = level.worldToScreen(position);
-	// }
-	// else
-	// {
-	// offsetPos = position.clone().toVector2DInt(); // new Vector2DInt((int) position.getX(), (int) position.getY());
-	// }
-	//
-	// offsetPos.add(-getDisplayRadius(), -getDisplayRadius());
-	//
-	// renderTo.drawLight(offsetPos, getDisplayRadius(), colour);
-	// }
 	
 	@Override
 	public void setRadius(double radius)

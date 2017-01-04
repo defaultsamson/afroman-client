@@ -1,8 +1,10 @@
-package ca.afroman.packet;
+package ca.afroman.packet.technical;
 
 import java.nio.ByteBuffer;
 
 import ca.afroman.network.IPConnection;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
 
 public class PacketAssignClientID extends BytePacket
 {

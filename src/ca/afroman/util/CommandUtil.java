@@ -5,7 +5,7 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.option.Options;
-import ca.afroman.packet.PacketCommand;
+import ca.afroman.packet.technical.PacketCommand;
 import ca.afroman.server.ConsoleCommand;
 import ca.afroman.server.ConsoleListener;
 import ca.afroman.server.ServerGame;

@@ -3,6 +3,7 @@ package ca.afroman.battle;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
+import ca.afroman.assets.Font;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
@@ -12,16 +13,21 @@ import ca.afroman.interfaces.ITickable;
 import ca.afroman.inventory.Inventory;
 import ca.afroman.light.FlickeringLight;
 import ca.afroman.light.LightMap;
+import ca.afroman.packet.battle.PacketUpdateSelectedBattleOptionClientServer;
 import ca.afroman.resource.Vector2DInt;
 
 public class BattlingPlayerWrapper extends BattlingEntityWrapper
 {
+	private Font blackFont;
+	private Font whiteFont;
+	
 	private FlickeringLight light;
 	private Texture shadow;
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
 	
 	private Vector2DInt fightPos;
+	private BattleOption option;
 	
 	private Inventory inv;
 	private Role role;
@@ -29,14 +35,29 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 	public BattlingPlayerWrapper(PlayerEntity fighting)
 	{
 		super(fighting);
+		
 		inv = fighting.getInventory();
 		role = fighting.getRole();
 		
-		this.fightPos = role == Role.PLAYER1 ? new Vector2DInt(183, 54) : new Vector2DInt(194, 79);
+		fightPos = role == Role.PLAYER1 ? new Vector2DInt(183, 54) : new Vector2DInt(194, 79);
 		
-		asset = idleAsset = role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_ONE) : Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_TWO);
-		shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
-		light = new FlickeringLight(true, fightPos.toVector2DDouble(), 60, 70, 3);
+		option = BattleOption.ATTACK;
+		
+		if (!isServerSide())
+		{
+			blackFont = Assets.getFont(AssetType.FONT_BLACK);
+			whiteFont = Assets.getFont(AssetType.FONT_WHITE);
+			
+			asset = idleAsset = role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_ONE) : Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_TWO);
+			shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
+			light = new FlickeringLight(true, fightPos.toVector2DDouble(), 60, 70, 3);
+		}
+	}
+	
+	@Override
+	public PlayerEntity getFightingEnemy()
+	{
+		return (PlayerEntity) super.getFightingEnemy();
 	}
 	
 	@Override
@@ -46,18 +67,17 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		asset.render(renderTo, fightPos);// fightPos);
 		light.renderCentered(lightmap);
 		light.renderCentered(lightmap);
+		
+		if (isThisTurn())
+		{
+			blackFont.renderRight(renderTo, fightPos.getX() - 4, fightPos.getY() + 16, "< " + option + " >");
+			whiteFont.renderRight(renderTo, fightPos.getX() - 5, fightPos.getY() + 15, "< " + option + " >");
+		}
 	}
 	
-	@Override
-	public void setIsThisTurn(boolean isThisTurn)
+	public void setBattleOption(BattleOption option)
 	{
-		super.setIsThisTurn(isThisTurn);
-		
-		if (isServerSide())
-		{
-			// TODO
-			// ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetBattleTurn(Role?));
-		}
+		this.option = option;
 	}
 	
 	@Override
@@ -67,28 +87,49 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		{
 			// TODO controls and shite
 		}
-		else if (role == ClientGame.instance().getRole())
+		else
 		{
-			// TODO controls and shite
-			// Jump
-			if (ClientGame.instance().input().up.isPressed())
+			if (role == ClientGame.instance().getRole())
 			{
+				if (isThisTurn())
+				{
+					if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered())
+					{
+						option = option.getNext();
+						ClientGame.instance().sockets().sender().sendPacket(new PacketUpdateSelectedBattleOptionClientServer(option));
+					}
+					else if (ClientGame.instance().input().prevItem.isPressedFiltered() || ClientGame.instance().input().left.isPressedFiltered())
+					{
+						option = option.getLast();
+						ClientGame.instance().sockets().sender().sendPacket(new PacketUpdateSelectedBattleOptionClientServer(option));
+					}
+					else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
+					{
+						System.out.println("Doing option: " + option);
+					}
+				}
 				
+				// TODO controls and shite
+				// Jump
+				if (ClientGame.instance().input().up.isPressed())
+				{
+					
+				}
+				// Duck
+				if (ClientGame.instance().input().down.isPressed())
+				{
+					
+				}
 			}
-			// Duck
-			if (ClientGame.instance().input().down.isPressed())
+			
+			if (asset instanceof ITickable)
 			{
-				
+				// Ticks the IBattleables DrawableAsset
+				((ITickable) asset).tick();
 			}
+			
+			light.setPosition(fightPos.getX() + 5, fightPos.getY() + 3);
+			light.tick();
 		}
-		
-		if (asset instanceof ITickable)
-		{
-			// Ticks the IBattleables DrawableAsset
-			((ITickable) asset).tick();
-		}
-		
-		light.setPosition(fightPos.getX() + 5, fightPos.getY() + 3);
-		light.tick();
 	}
 }

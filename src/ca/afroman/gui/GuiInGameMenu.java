@@ -5,7 +5,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
-import ca.afroman.packet.PacketStartServer;
+import ca.afroman.packet.technical.PacketStartServer;
 
 public class GuiInGameMenu extends GuiScreen
 {

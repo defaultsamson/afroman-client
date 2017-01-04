@@ -1,7 +1,9 @@
-package ca.afroman.packet;
+package ca.afroman.packet.technical;
 
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.network.IPConnection;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
 
 public class PacketReturnToLobby extends BytePacket
 {

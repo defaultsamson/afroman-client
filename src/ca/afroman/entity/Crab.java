@@ -6,14 +6,13 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.battle.BattlingCrabWrapper;
 import ca.afroman.battle.BattlingEntityWrapper;
-import ca.afroman.battle.IBattleable;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class Crab extends DrawableEntityDirectional implements IBattleable
+public class Crab extends DrawableEntityDirectional
 {
 	private ModulusCounter moveWaiter;
 	
@@ -49,7 +48,7 @@ public class Crab extends DrawableEntityDirectional implements IBattleable
 					// If this is colliding with a player that isn't in battle already
 					if (!p.isInBattle() && p.isColliding(this))
 					{
-						level.startBattle(this, p);
+						ServerGame.instance().startBattle(this, p);
 						break;
 					}
 				}

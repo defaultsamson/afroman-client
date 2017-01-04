@@ -8,7 +8,7 @@ import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.input.InputType;
 import ca.afroman.log.ALogType;
-import ca.afroman.packet.PacketActivateTrigger;
+import ca.afroman.packet.level.PacketActivateTrigger;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 

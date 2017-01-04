@@ -1,8 +1,8 @@
 package ca.afroman.game;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import ca.afroman.battle.BattleScene;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
@@ -11,7 +11,7 @@ import ca.afroman.level.MainLevel;
 import ca.afroman.level.api.Level;
 import ca.afroman.level.api.LevelType;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.packet.PacketStartServer;
+import ca.afroman.packet.technical.PacketStartServer;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicTickRenderThread;
@@ -29,12 +29,12 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 	
 	private boolean isPaused;
 	private boolean isInGame;
-	protected List<Level> levels;
+	private ArrayList<Level> levels;
+	private ArrayList<BattleScene> battles;
+	private ArrayList<PlayerEntity> players;
 	
-	protected List<PlayerEntity> players;
 	private SocketManager socketManager;
-	
-	private List<IncomingPacketWrapper> toProcess;
+	private ArrayList<IncomingPacketWrapper> toProcess;
 	
 	public Game(boolean isServerSide, ThreadGroup threadGroup, String name, int ticks)
 	{
@@ -43,6 +43,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		isInGame = false;
 		
 		levels = new ArrayList<Level>();
+		battles = new ArrayList<BattleScene>();
 		players = new ArrayList<PlayerEntity>(2);
 		
 		toProcess = new ArrayList<IncomingPacketWrapper>();
@@ -57,6 +58,31 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		}
 	}
 	
+	protected void flushResources()
+	{
+		getLevels().clear();
+		getBattles().clear();
+		getPlayers().clear();
+		IDCounter.resetAll();
+		synchronized (toProcess)
+		{
+			toProcess.clear();
+		}
+	}
+	
+	public BattleScene getBattle(int id)
+	{
+		for (BattleScene b : battles)
+			if (b.getID() == id) return b;
+		
+		return null;
+	}
+	
+	public ArrayList<BattleScene> getBattles()
+	{
+		return battles;
+	}
+	
 	public Level getLevel(LevelType type)
 	{
 		for (Level level : getLevels())
@@ -66,7 +92,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return null;
 	}
 	
-	public List<Level> getLevels()
+	public ArrayList<Level> getLevels()
 	{
 		return levels;
 	}
@@ -86,7 +112,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		return null;
 	}
 	
-	public List<PlayerEntity> getPlayers()
+	public ArrayList<PlayerEntity> getPlayers()
 	{
 		return players;
 	}
@@ -177,13 +203,6 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		
 		stopSocket();
 		
-		synchronized (toProcess)
-		{
-			toProcess.clear();
-		}
-		
-		if (getLevels() != null) getLevels().clear();
-		IDCounter.resetAll();
 	}
 	
 	@Override

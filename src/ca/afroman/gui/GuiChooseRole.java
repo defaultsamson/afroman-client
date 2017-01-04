@@ -10,7 +10,7 @@ import ca.afroman.light.FlickeringLight;
 import ca.afroman.light.LightMap;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.option.Options;
-import ca.afroman.packet.PacketSetRole;
+import ca.afroman.packet.technical.PacketSetRole;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
 

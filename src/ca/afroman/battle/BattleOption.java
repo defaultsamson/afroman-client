@@ -1,48 +1,29 @@
-package ca.afroman.packet;
+package ca.afroman.battle;
 
-import ca.afroman.level.api.BuildMode;
-
-public enum PacketType
+public enum BattleOption
 {
-	INVALID,
+	ATTACK("Attack"),
+	TEAM_ATTACK("Team Attack"),
+	USE_ITEM("Use Item"),
+	FLEE("Flee");
 	
-	REQUEST_CONNECTION,
-	TEST_PING,
-	COMMAND,
-	DENY_JOIN,
-	START_TCP,
-	ASSIGN_CLIENTID,
-	UPDATE_PLAYERLIST,
-	SETROLE,
-	PLAYER_DISCONNECT,
-	START_SERVER,
-	RETURN_TO_LOBBY,
-	
-	LOAD_LEVELS,
-	
-	ACTIVATE_TRIGGER,
-	
-	START_BATTLE,
-	BATTLE_UPDATE_SELECTED_OPTION,
-	BATTLE_UPDATE_TURN,
-	
-	SET_ENTITY_POSITION,
-	SET_ENTITY_LEVEL,
-	SET_PLAYER_POSITION,
-	SET_PLAYER_LEVEL,
-	
-	ENTITY_MOVE,
-	
-	PLAYER_MOVE,
-	PLAYER_INTERACT,
-	PLAYER_PICKUP_ITEM,
-	PLAYER_DROP_ITEM;
-	
-	public static PacketType fromOrdinal(int ordinal)
+	public static BattleOption fromOrdinal(int ordinal)
 	{
 		if (ordinal < 0 || ordinal > values().length - 1) return null;
 		
 		return values()[ordinal];
+	}
+	
+	private String display;
+	
+	BattleOption(String display)
+	{
+		this.display = display;
+	}
+	
+	public String getDisplayName()
+	{
+		return display;
 	}
 	
 	/**
@@ -54,13 +35,13 @@ public enum PacketType
 	 * 
 	 * @return the next item on the list of this enumerator.
 	 */
-	public PacketType getLast()
+	public BattleOption getLast()
 	{
 		int newOrdinal = ordinal() - 1;
 		
 		if (newOrdinal < 0)
 		{
-			return fromOrdinal(BuildMode.values().length - 1);
+			return fromOrdinal(values().length - 1);
 		}
 		else
 		{
@@ -76,7 +57,7 @@ public enum PacketType
 	 * 
 	 * @return the next item on the list of this enumerator.
 	 */
-	public PacketType getNext()
+	public BattleOption getNext()
 	{
 		int newOrdinal = ordinal() + 1;
 		

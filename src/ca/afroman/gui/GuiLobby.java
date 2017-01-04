@@ -16,7 +16,7 @@ import ca.afroman.light.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.option.Options;
-import ca.afroman.packet.PacketStartServer;
+import ca.afroman.packet.technical.PacketStartServer;
 import ca.afroman.resource.Vector2DDouble;
 
 public class GuiLobby extends GuiScreen
@@ -54,6 +54,7 @@ public class GuiLobby extends GuiScreen
 		startButton = new GuiTextButton(this, 2000, (ClientGame.WIDTH / 2) - 84 - 8, 116, 84, blackFont, "Start Game");
 		startButton.setEnabled(ClientGame.instance().isHostingServer());
 		addButton(startButton);
+		addButton(new GuiIconButton(this, 2005, 6, ClientGame.HEIGHT - 19, 16, Assets.getStepSpriteAnimation(AssetType.ICON_SETTINGS).clone()));
 		
 		lanIP = "Unknown";
 		
@@ -143,6 +144,10 @@ public class GuiLobby extends GuiScreen
 		else if (buttonID == 2002) // Leave server
 		{
 			ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
+		}
+		else if (buttonID == 2005) // Options menu
+		{
+			ClientGame.instance().setCurrentScreen(new GuiOptionsMenu(this, false));
 		}
 		else if (buttonID >= 0)
 		{

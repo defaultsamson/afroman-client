@@ -27,7 +27,9 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.BattleOption;
 import ca.afroman.battle.BattleScene;
+import ca.afroman.battle.BattlingPlayerWrapper;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Item;
@@ -57,14 +59,13 @@ import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
-import ca.afroman.packet.PacketClientServerRequestID;
-import ca.afroman.packet.PacketLoadLevels;
-import ca.afroman.packet.PacketLogin;
-import ca.afroman.packet.PacketPingClientServer;
-import ca.afroman.packet.PacketPingServerClient;
-import ca.afroman.packet.PacketPlayerDisconnect;
-import ca.afroman.packet.PacketSetPlayerLocationClientServer;
-import ca.afroman.resource.IDCounter;
+import ca.afroman.packet.level.PacketSetPlayerLocationClientServer;
+import ca.afroman.packet.technical.PacketClientServerRequestID;
+import ca.afroman.packet.technical.PacketLoadLevels;
+import ca.afroman.packet.technical.PacketLogin;
+import ca.afroman.packet.technical.PacketPingClientServer;
+import ca.afroman.packet.technical.PacketPingServerClient;
+import ca.afroman.packet.technical.PacketPlayerDisconnect;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.SetInteger;
 import ca.afroman.resource.Vector2DDouble;
@@ -172,16 +173,9 @@ public class ClientGame extends Game
 	
 	private PlayerEntity thisPlayer = null;
 	
-	private BattleScene battle;
-	
 	public ClientGame()
 	{
 		super(false, newDefaultThreadGroupInstance(), "Game", 60);
-	}
-	
-	public void endBattle()
-	{
-		battle = null;
 	}
 	
 	public void exitFromGame(ExitGameReason reason)
@@ -343,27 +337,7 @@ public class ClientGame extends Game
 							
 							DenyJoinReason reason = DenyJoinReason.fromOrdinal(packet.getContent().get());
 							
-							switch (reason)
-							{
-								default:
-									new GuiClickNotification(getCurrentScreen(), -1, "CAN'T CONNECT", "TO SERVER");
-									break;
-								case DUPLICATE_USERNAME:
-									new GuiClickNotification(getCurrentScreen(), -1, "DUPLICATE", "USERNAME");
-									break;
-								case FULL_SERVER:
-									new GuiClickNotification(getCurrentScreen(), -1, "SERVER", "FULL");
-									break;
-								case NEED_PASSWORD:
-									new GuiClickNotification(getCurrentScreen(), -1, "INVALID", "PASSWORD");
-									break;
-								case OLD_CLIENT:
-									new GuiClickNotification(getCurrentScreen(), -1, "CLIENT", "OUTDATED");
-									break;
-								case OLD_SERVER:
-									new GuiClickNotification(getCurrentScreen(), -1, "SERVER", "OUTDATED");
-									break;
-							}
+							new GuiClickNotification(getCurrentScreen(), -1, reason.getTopText(), reason.getBottomText());
 						}
 							break;
 						case START_BATTLE:
@@ -399,20 +373,12 @@ public class ClientGame extends Game
 								level = p2.getLevel();
 							}
 							
-							if (level != null)
-							{
-								level.startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
-							}
-							else
-							{
-								logger().log(ALogType.CRITICAL, "Level is null while trying to start a battle");
-							}
+							startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
 						}
 							break;
 						case ASSIGN_CLIENTID:
 						{
 							id = packet.getContent().getShort();
-							System.out.println("Received ID: " + id);
 						}
 							break;
 						case START_TCP:
@@ -768,6 +734,65 @@ public class ClientGame extends Game
 							}
 						}
 							break;
+						case BATTLE_UPDATE_SELECTED_OPTION:
+						{
+							int battleID = packet.getContent().getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								byte ord = packet.getContent().get();
+								BattleOption option = BattleOption.fromOrdinal(ord);
+								
+								if (option != null)
+								{
+									BattlingPlayerWrapper p = getThisPlayer().getBattle().getPlayerWhosTurnItIs();
+									
+									if (p != null)
+									{
+										p.setBattleOption(option);
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "getThisPlayer().getBattle().getPlayerWhosTurnItIs() returned null");
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
+						case BATTLE_UPDATE_TURN:
+						{
+							int battleID = packet.getContent().getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								byte ord = packet.getContent().get();
+								Role role = Role.fromOrdinal(ord);
+								
+								if (role != null)
+								{
+									battle.setWhosTurnItIs(role);
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No Role with ord " + ord);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
 						case ACTIVATE_TRIGGER:
 						{
 							LevelType levelType = LevelType.fromOrdinal(packet.getContent().getShort());
@@ -920,9 +945,9 @@ public class ClientGame extends Game
 			screen.getGraphics().setColor(Color.WHITE);
 			screen.getGraphics().fillRect(0, 0, screen.getWidth(), screen.getHeight());
 			
-			if (battle != null && getThisPlayer() != null && getThisPlayer().isInBattle())
+			if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 			{
-				battle.render(screen);
+				getThisPlayer().getBattle().render(screen);
 			}
 			else if (getCurrentLevel() != null)
 			{
@@ -1103,12 +1128,10 @@ public class ClientGame extends Game
 		{
 			Options.instance().fullscreen = isFullScreen;
 			
-			System.out.println("Hiding current frame");
 			frame.setVisible(false);
 			// frame.getContentPane().remove(canvas);
 			JFrame old = frame;
 			
-			System.out.println("Creating new frame");
 			frame = new JFrame(NAME);
 			
 			frame.setIconImage(ICON);
@@ -1233,8 +1256,6 @@ public class ClientGame extends Game
 		
 		if (isInGame)
 		{
-			getLevels().clear();
-			
 			if (!(getCurrentScreen() instanceof GuiSendingLevels))
 			{
 				setCurrentScreen(new GuiSendingLevels(null));
@@ -1259,16 +1280,13 @@ public class ClientGame extends Game
 			waitingForOthersToLoad = false;
 			id = -1;
 			
-			endBattle();
-			
 			thisPlayer = null;
 			
 			stopSocket();
 			
-			getLevels().clear();
-			setCurrentLevel(null);
+			flushResources();
 			
-			IDCounter.resetAll();
+			setCurrentLevel(null);
 			
 			// resets the player entities
 			for (PlayerEntity e : getPlayers())
@@ -1292,9 +1310,17 @@ public class ClientGame extends Game
 		this.spectatingRole = role;
 	}
 	
-	public void startBattle(BattleScene battleScene)
+	public void startBattle(Entity e, PlayerEntity p1, PlayerEntity p2)
 	{
-		battle = battleScene;
+		BattleScene battle = new BattleScene(isServerSide());
+		
+		e.setBattle(battle);
+		if (p1 != null) p1.setBattle(battle);
+		if (p2 != null) p2.setBattle(battle);
+		
+		logger().log(ALogType.DEBUG, "Starting client-side battle (" + e + ", " + p1 + ", " + p2 + ")");
+		
+		getBattles().add(battle);
 	}
 	
 	@Override
@@ -1471,7 +1497,6 @@ public class ClientGame extends Game
 	{
 		super.stopThis();
 		
-		getLevels().clear();
 		setCurrentLevel(null);
 		setCurrentScreen(null);
 		
@@ -1614,9 +1639,9 @@ public class ClientGame extends Game
 			getCurrentScreen().tick();
 		}
 		
-		if (battle != null)
+		if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 		{
-			battle.tick();
+			getThisPlayer().getBattle().tick();
 		}
 		
 		if (!waitingForOthersToLoad) // && getCurrentLevel() != null

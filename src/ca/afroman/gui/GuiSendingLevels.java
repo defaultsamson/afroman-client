@@ -3,8 +3,8 @@ package ca.afroman.gui;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
-import ca.afroman.packet.PacketPlayerDisconnect;
-import ca.afroman.packet.PacketStartServer;
+import ca.afroman.packet.technical.PacketPlayerDisconnect;
+import ca.afroman.packet.technical.PacketStartServer;
 
 public class GuiSendingLevels extends GuiScreen
 {

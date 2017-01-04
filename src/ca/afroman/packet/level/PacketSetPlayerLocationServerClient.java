@@ -1,9 +1,11 @@
-package ca.afroman.packet;
+package ca.afroman.packet.level;
 
 import java.nio.ByteBuffer;
 
 import ca.afroman.game.Role;
 import ca.afroman.network.IPConnection;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
 

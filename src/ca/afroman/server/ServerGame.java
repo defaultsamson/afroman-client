@@ -2,8 +2,12 @@ package ca.afroman.server;
 
 import java.nio.ByteBuffer;
 
+import ca.afroman.battle.BattleOption;
+import ca.afroman.battle.BattleScene;
+import ca.afroman.battle.BattlingPlayerWrapper;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.entity.api.Entity;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
@@ -16,14 +20,16 @@ import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
-import ca.afroman.packet.PacketAssignClientID;
-import ca.afroman.packet.PacketDenyJoin;
-import ca.afroman.packet.PacketLoadLevels;
-import ca.afroman.packet.PacketPingServerClient;
-import ca.afroman.packet.PacketPlayerMoveServerClient;
-import ca.afroman.packet.PacketReturnToLobby;
-import ca.afroman.packet.PacketSetPlayerLocationServerClient;
 import ca.afroman.packet.PacketType;
+import ca.afroman.packet.battle.PacketStartBattle;
+import ca.afroman.packet.battle.PacketUpdateSelectedBattleOptionServerClient;
+import ca.afroman.packet.level.PacketPlayerMoveServerClient;
+import ca.afroman.packet.level.PacketSetPlayerLocationServerClient;
+import ca.afroman.packet.technical.PacketAssignClientID;
+import ca.afroman.packet.technical.PacketDenyJoin;
+import ca.afroman.packet.technical.PacketLoadLevels;
+import ca.afroman.packet.technical.PacketPingServerClient;
+import ca.afroman.packet.technical.PacketReturnToLobby;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.util.ByteUtil;
@@ -391,6 +397,47 @@ public class ServerGame extends Game
 						}
 					}
 						break;
+					case BATTLE_UPDATE_SELECTED_OPTION:
+					{
+						PlayerEntity pe = getPlayer(sender.getRole());
+						
+						if (pe != null)
+						{
+							byte ord = packet.getContent().get();
+							BattleOption option = BattleOption.fromOrdinal(ord);
+							
+							if (option != null)
+							{
+								BattlingPlayerWrapper p = pe.getBattle().getPlayerWhosTurnItIs();
+								
+								if (p != null)
+								{
+									if (p.getFightingEnemy().getRole() == pe.getRole())
+									{
+										p.setBattleOption(option);
+										sockets().sender().sendPacketToAllClients(new PacketUpdateSelectedBattleOptionServerClient(pe.getBattle().getID(), option));
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "A player is trying to change the selected battle option when they're not the battler");
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "pe.getBattle().getPlayerWhosTurnItIs() returned null");
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
+						}
+					}
+						break;
 					case PLAYER_INTERACT:
 					{
 						PlayerEntity pe = getPlayer(sender.getRole());
@@ -558,17 +605,41 @@ public class ServerGame extends Game
 			
 			loadLevels();
 			
-			players.clear();
-			players.add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80.0, 80.0)));
-			players.add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(112.0, 80.0)));
+			getPlayers().clear();
+			getPlayers().add(new PlayerEntity(true, Role.PLAYER1, new Vector2DDouble(80.0, 80.0)));
+			getPlayers().add(new PlayerEntity(true, Role.PLAYER2, new Vector2DDouble(112.0, 80.0)));
 			
-			for (int i = 0; i < players.size(); i++)
+			for (int i = 0; i < getPlayers().size(); i++)
 			{
-				PlayerEntity player = players.get(i);
+				PlayerEntity player = getPlayers().get(i);
 				player.addToLevel(getLevel(LevelType.MAIN)); // TODO make the save files specify this
 				player.setPosition(player.getPosition().getX(), player.getPosition().getY());
 			}
 		}
+	}
+	
+	public void startBattle(Entity e, PlayerEntity p)
+	{
+		BattleScene battle = new BattleScene(isServerSide());
+		e.setBattle(battle);
+		p.setBattle(battle);
+		
+		// Checks to see if the other player is within the range of 30 pixels
+		for (PlayerEntity pl : ServerGame.instance().getPlayers())
+		{
+			if (p != pl && p.getLevel() == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
+			{
+				pl.setBattle(battle);
+				sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
+				battle.setWhosTurnItIs(p.getRole());
+				getBattles().add(battle);
+				return;
+			}
+		}
+		
+		sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
+		battle.setWhosTurnItIs(p.getRole());
+		getBattles().add(battle);
 	}
 	
 	@Override
@@ -618,12 +689,14 @@ public class ServerGame extends Game
 		
 		if (isInGame() && !waitingForPlayersToLoad)
 		{
-			if (getLevels() != null)
+			for (Level level : getLevels())
 			{
-				for (Level level : getLevels())
-				{
-					level.tick();
-				}
+				level.tick();
+			}
+			
+			for (BattleScene b : getBattles())
+			{
+				b.tick();
 			}
 		}
 	}

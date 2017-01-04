@@ -1,9 +1,11 @@
-package ca.afroman.packet;
+package ca.afroman.packet.technical;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.afroman.network.IPConnection;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
 import ca.afroman.server.ConsoleCommand;
 import ca.afroman.util.ByteUtil;
 import ca.afroman.util.ListUtil;

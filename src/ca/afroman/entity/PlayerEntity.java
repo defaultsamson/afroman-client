@@ -5,7 +5,6 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.battle.BattlingEntityWrapper;
 import ca.afroman.battle.BattlingPlayerWrapper;
-import ca.afroman.battle.IBattleable;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
@@ -13,13 +12,13 @@ import ca.afroman.game.Role;
 import ca.afroman.inventory.Inventory;
 import ca.afroman.level.api.Level;
 import ca.afroman.log.ALogType;
-import ca.afroman.packet.PacketPlayerInteract;
-import ca.afroman.packet.PacketSetPlayerLevel;
-import ca.afroman.packet.PacketSetPlayerLocationServerClient;
+import ca.afroman.packet.level.PacketPlayerInteract;
+import ca.afroman.packet.level.PacketSetPlayerLevel;
+import ca.afroman.packet.level.PacketSetPlayerLocationServerClient;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class PlayerEntity extends DrawableEntityDirectional implements IBattleable
+public class PlayerEntity extends DrawableEntityDirectional
 {
 	private static SpriteAnimation getDown(boolean isServerSide, Role role)
 	{
@@ -138,6 +137,7 @@ public class PlayerEntity extends DrawableEntityDirectional implements IBattleab
 	{
 		setCameraToFollow(false);
 		removeFromLevel();
+		setBattle(null);
 	}
 	
 	@Override

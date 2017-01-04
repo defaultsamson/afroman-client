@@ -1,13 +1,17 @@
 package ca.afroman.entity.api;
 
+import ca.afroman.battle.BattleScene;
+import ca.afroman.battle.BattlingEntityWrapper;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.game.Game;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;
-import ca.afroman.packet.PacketEntityMove;
-import ca.afroman.packet.PacketPlayerMoveClientServer;
-import ca.afroman.packet.PacketSetEntityLocation;
-import ca.afroman.packet.PacketSetPlayerLocationServerClient;
+import ca.afroman.log.ALogType;
+import ca.afroman.packet.level.PacketEntityMove;
+import ca.afroman.packet.level.PacketPlayerMoveClientServer;
+import ca.afroman.packet.level.PacketSetEntityLocation;
+import ca.afroman.packet.level.PacketSetPlayerLocationServerClient;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ModulusCounter;
 import ca.afroman.resource.Vector2DDouble;
@@ -56,7 +60,8 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	protected Direction direction;
 	protected Direction lastDirection;
 	private boolean cameraFollow;
-	private boolean isInBattle;
+	private BattleScene battle;
+	protected BattlingEntityWrapper battleWrapper;
 	
 	private byte deltaXa = 0;
 	private byte deltaYa = 0;
@@ -87,7 +92,8 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		hitbox = hasHitbox ? hitboxes : null;
 		updateHitboxInLevel();
 		
-		isInBattle = false;
+		battle = null;
+		battleWrapper = null;
 		
 		speed = 1.0;
 		originalSpeed = speed;
@@ -132,6 +138,16 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	{
 		this.deltaXa += dXa;
 		this.deltaYa += dYa;
+	}
+	
+	public BattleScene getBattle()
+	{
+		return battle;
+	}
+	
+	public BattlingEntityWrapper getBattleWrapper()
+	{
+		return battleWrapper;
 	}
 	
 	/**
@@ -201,6 +217,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		return hasHitbox;
 	}
 	
+	public boolean isBattleable()
+	{
+		return battleWrapper != null;
+	}
+	
 	//
 	// /**
 	// * @return the hitbox of this with the offset of this's in-level coordinates.
@@ -249,7 +270,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	
 	public boolean isInBattle()
 	{
-		return isInBattle;
+		return battle != null;
 	}
 	
 	/**
@@ -460,6 +481,26 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		speed = originalSpeed;
 	}
 	
+	public void setBattle(BattleScene battle)
+	{
+		if (battle == null)
+		{
+			this.battle = battle;
+		}
+		else
+		{
+			if (isInBattle())
+			{
+				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in a battle");
+			}
+			else
+			{
+				this.battle = battle;
+				battle.addEntityBattleWrapper(getBattleWrapper());
+			}
+		}
+	}
+	
 	/**
 	 * Makes the level camera follow this Entity or not.
 	 * 
@@ -468,11 +509,6 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	public void setCameraToFollow(boolean follow)
 	{
 		cameraFollow = follow;
-	}
-	
-	public void setIsInBattle(boolean isInBattle)
-	{
-		this.isInBattle = isInBattle;
 	}
 	
 	/**
@@ -550,18 +586,12 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			{
 				if (hasDeltaDeltaMovement() && deltaMoveCounter.isAtInterval())
 				{
-					// System.out.println("Moveing: " + deltaXa + ", " + deltaYa);
 					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketEntityMove(level.getLevelType(), getID(), deltaXaMoved, deltaYaMoved));
 					
 					deltaXaMoved = 0;
 					deltaYaMoved = 0;
 				}
 			}
-			
-			// move(deltaXa, deltaYa, true);
-			//
-			// deltaXa = 0;
-			// deltaYa = 0;
 			
 			// Old system for moving client-side entities smoothly
 			byte xa = 0;
@@ -644,68 +674,6 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				move(xa, ya, true);
 			}
 		}
-		
-		// // If it's the client side player that is controlled by the keyboard input
-		// // Then use the deltaX and deltaY to tell the server where it's moved
-		// if (this instanceof PlayerEntity && !isServerSide() && ((PlayerEntity) this).getRole() == ClientGame.instance().getRole())
-		// {
-		// if (hasDeltaMovement())
-		// {
-		// if (deltaMoveCounter.isAtInterval())
-		// {
-		// if (this instanceof PlayerEntity)
-		// {
-		// // TODO Add Entity delta movement in addition to this player code
-		// ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
-		//
-		// deltaXa = 0;
-		// deltaYa = 0;
-		// }
-		// }
-		// }
-		// }
-		// else
-		// // If it's not a player that is controlled by the ClientGame instance (the keyboard input)
-		// // Then automatically move it using its deltaX and deltaY
-		// {
-		// if (isServerSide())
-		// {
-		// move(deltaXa, deltaYa, true);
-		//
-		// deltaXa = 0;
-		// deltaYa = 0;
-		// }
-		// else
-		// {
-		// // Old system for moving client-side entities smoothly
-		// byte xa = 0;
-		// byte ya = 0;
-		//
-		// if (deltaXa > 0)
-		// {
-		// xa = 1;
-		// deltaXa -= 1;
-		// }
-		// else if (deltaXa < 0)
-		// {
-		// xa = -1;
-		// deltaXa += 1;
-		// }
-		//
-		// if (deltaYa > 0)
-		// {
-		// ya = 1;
-		// deltaYa -= 1;
-		// }
-		// else if (deltaYa < 0)
-		// {
-		// ya = -1;
-		// deltaYa += 1;
-		// }
-		//
-		// move(xa, ya, true);
-		// }
-		// }
 	}
 	
 	/**
