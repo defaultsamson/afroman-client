@@ -21,7 +21,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	public BattlingCrabWrapper(Crab fighting)
 	{
 		super(fighting);
-		this.fightPos = new Vector2DInt(52, 77);
+		this.fightPos = new Vector2DInt(40, 81);
 		
 		asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
 		idleAsset.getTickCounter().setInterval(15);
@@ -31,7 +31,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	@Override
 	public void render(Texture renderTo, LightMap map)
 	{
-		asset.render(renderTo, new Vector2DInt(52, 77)); // fightPos);
+		asset.render(renderTo, fightPos); // fightPos);
 		light.renderCentered(map);
 		light.renderCentered(map);
 	}

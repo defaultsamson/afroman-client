@@ -32,7 +32,7 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		inv = fighting.getInventory();
 		role = fighting.getRole();
 		
-		this.fightPos = role == Role.PLAYER1 ? new Vector2DInt(197, 51) : new Vector2DInt(162, 71);
+		this.fightPos = role == Role.PLAYER1 ? new Vector2DInt(183, 54) : new Vector2DInt(194, 79);
 		
 		asset = idleAsset = role == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_ONE) : Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_TWO);
 		shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
