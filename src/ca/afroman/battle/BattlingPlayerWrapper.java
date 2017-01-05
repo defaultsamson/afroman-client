@@ -36,6 +36,8 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 	
 	private int ticksUntilPass = -1;
 	
+	private boolean isBattling = false;
+	
 	public BattlingPlayerWrapper(PlayerEntity fighting)
 	{
 		super(fighting);
@@ -69,7 +71,7 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		}
 		else
 		{
-			
+			isBattling = true;
 		}
 	}
 	
@@ -87,7 +89,7 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		light.renderCentered(lightmap);
 		light.renderCentered(lightmap);
 		
-		if (isThisTurn())
+		if (isThisTurn() && !isBattling)
 		{
 			blackFont.renderRight(renderTo, fightPos.getX() - 4, fightPos.getY() + 16, "< " + option.getDisplayName() + " >");
 			whiteFont.renderRight(renderTo, fightPos.getX() - 5, fightPos.getY() + 15, "< " + option.getDisplayName() + " >");
@@ -154,24 +156,33 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		}
 		else
 		{
+			if (!isThisTurn())
+			{
+				isBattling = false;
+			}
+			
 			if (role == ClientGame.instance().getRole())
 			{
 				if (isThisTurn())
 				{
-					if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered())
+					if (!isBattling)
 					{
-						option = option.getNext();
-						ClientGame.instance().sockets().sender().sendPacket(new PacketUpdateSelectedBattleOptionClientServer(option));
-					}
-					else if (ClientGame.instance().input().prevItem.isPressedFiltered() || ClientGame.instance().input().left.isPressedFiltered())
-					{
-						option = option.getLast();
-						ClientGame.instance().sockets().sender().sendPacket(new PacketUpdateSelectedBattleOptionClientServer(option));
-					}
-					else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
-					{
-						ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteSelectedBattleOptionClientServer(option));
-						ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + option);
+						if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered())
+						{
+							option = option.getNext();
+							ClientGame.instance().sockets().sender().sendPacket(new PacketUpdateSelectedBattleOptionClientServer(option));
+						}
+						else if (ClientGame.instance().input().prevItem.isPressedFiltered() || ClientGame.instance().input().left.isPressedFiltered())
+						{
+							option = option.getLast();
+							ClientGame.instance().sockets().sender().sendPacket(new PacketUpdateSelectedBattleOptionClientServer(option));
+						}
+						else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
+						{
+							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteSelectedBattleOptionClientServer(option));
+							ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + option);
+							isBattling = true;
+						}
 					}
 				}
 				

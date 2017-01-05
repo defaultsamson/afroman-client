@@ -28,11 +28,14 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	public BattlingCrabWrapper(Crab fighting)
 	{
 		super(fighting);
-		this.fightPos = new Vector2DInt(40, 81);
 		
-		asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
-		idleAsset.getTickCounter().setInterval(15);
-		light = new FlickeringLight(true, fightPos.toVector2DDouble(), 55, 45, 4);
+		if (!isServerSide())
+		{
+			this.fightPos = new Vector2DInt(40, 81);
+			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
+			idleAsset.getTickCounter().setInterval(15);
+			light = new FlickeringLight(true, fightPos.toVector2DDouble(), 55, 45, 4);
+		}
 	}
 	
 	@Override
@@ -50,6 +53,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 			
 		}
 	}
+	
 	@Override
 	public void render(Texture renderTo, LightMap map)
 	{
@@ -92,18 +96,19 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 			}
 			else
 			{
-				
 				sentIt = false;
 			}
 		}
-		
-		if (asset instanceof ITickable)
+		else
 		{
-			// Ticks the IBattleables DrawableAsset
-			((ITickable) asset).tick();
+			if (asset instanceof ITickable)
+			{
+				// Ticks the IBattleables DrawableAsset
+				((ITickable) asset).tick();
+			}
+			
+			light.setPosition(fightPos.getX() + 8, fightPos.getY());
+			light.tick();
 		}
-		
-		light.setPosition(fightPos.getX() + 8, fightPos.getY());
-		light.tick();
 	}
 }
