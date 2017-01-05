@@ -106,6 +106,11 @@ public class BattleScene extends ServerClientObject implements ITickable
 		return false;
 	}
 	
+	public BattlingEntityWrapper getEntityWhosTurnItIs()
+	{
+		return player1 != null && player1.isThisTurn() ? player1 : player2 != null && player2.isThisTurn() ? player2 : entity;
+	}
+	
 	public int getID()
 	{
 		return id;
@@ -124,9 +129,26 @@ public class BattleScene extends ServerClientObject implements ITickable
 		}
 	}
 	
+	@Deprecated
 	public BattlingPlayerWrapper getPlayerWhosTurnItIs()
 	{
 		return player1 != null && player1.isThisTurn() ? player1 : player2 != null && player2.isThisTurn() ? player2 : null;
+	}
+	
+	public void passTurn()
+	{
+		if (player1 != null && player1.isThisTurn())
+		{
+			setWhosTurnItIs(Role.PLAYER2);
+		}
+		else if (player2 != null && player2.isThisTurn())
+		{
+			setWhosTurnItIs(Role.SPECTATOR);
+		}
+		else if (entity.isThisTurn())
+		{
+			setWhosTurnItIs(Role.PLAYER1);
+		}
 	}
 	
 	public void render(Texture renderTo)

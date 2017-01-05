@@ -13,6 +13,8 @@ import ca.afroman.interfaces.ITickable;
 import ca.afroman.inventory.Inventory;
 import ca.afroman.light.FlickeringLight;
 import ca.afroman.light.LightMap;
+import ca.afroman.log.ALogType;
+import ca.afroman.packet.battle.PacketExecuteSelectedBattleOptionClientServer;
 import ca.afroman.packet.battle.PacketUpdateSelectedBattleOptionClientServer;
 import ca.afroman.resource.Vector2DInt;
 
@@ -31,6 +33,8 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 	
 	private Inventory inv;
 	private Role role;
+	
+	private int ticksUntilPass = -1;
 	
 	public BattlingPlayerWrapper(PlayerEntity fighting)
 	{
@@ -55,6 +59,21 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 	}
 	
 	@Override
+	public void executeBattle(int battleID)
+	{
+		ticksUntilPass = 100;
+		
+		if (isServerSide())
+		{
+			
+		}
+		else
+		{
+			
+		}
+	}
+	
+	@Override
 	public PlayerEntity getFightingEnemy()
 	{
 		return (PlayerEntity) super.getFightingEnemy();
@@ -70,8 +89,43 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 		
 		if (isThisTurn())
 		{
-			blackFont.renderRight(renderTo, fightPos.getX() - 4, fightPos.getY() + 16, "< " + option + " >");
-			whiteFont.renderRight(renderTo, fightPos.getX() - 5, fightPos.getY() + 15, "< " + option + " >");
+			blackFont.renderRight(renderTo, fightPos.getX() - 4, fightPos.getY() + 16, "< " + option.getDisplayName() + " >");
+			whiteFont.renderRight(renderTo, fightPos.getX() - 5, fightPos.getY() + 15, "< " + option.getDisplayName() + " >");
+		}
+		
+		if (ticksUntilPass > 0)
+		{
+			String shit;
+			if (ticksUntilPass > 90)
+			{
+				shit = "Oh";
+			}
+			else if (ticksUntilPass > 70)
+			{
+				shit = "Fuck";
+			}
+			else if (ticksUntilPass > 50)
+			{
+				StringBuilder sb = new StringBuilder().append("H");
+				
+				for (int i = 0; i < 70 - ticksUntilPass; i++)
+				{
+					sb.append("o");
+				}
+				
+				shit = sb.toString();
+			}
+			else if (ticksUntilPass > 30)
+			{
+				shit = "Hooooooooooooooooooooly shit";
+			}
+			else
+			{
+				shit = "Nothing happened...";
+			}
+			
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 + 1, ClientGame.HEIGHT / 2 - 40 + 1, shit);
+			whiteFont.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT / 2 - 40, shit);
 		}
 	}
 	
@@ -83,9 +137,20 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 	@Override
 	public void tick()
 	{
+		if (ticksUntilPass > 0)
+		{
+			ticksUntilPass--;
+		}
+		else if (ticksUntilPass == 0)
+		{
+			ticksUntilPass--;
+			
+			if (isServerSide()) getFightingEnemy().getBattle().passTurn();
+		}
+		
 		if (isServerSide())
 		{
-			// TODO controls and shite
+			// TODO other controls and shite
 		}
 		else
 		{
@@ -105,7 +170,8 @@ public class BattlingPlayerWrapper extends BattlingEntityWrapper
 					}
 					else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
 					{
-						System.out.println("Doing option: " + option);
+						ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteSelectedBattleOptionClientServer(option));
+						ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + option);
 					}
 				}
 				

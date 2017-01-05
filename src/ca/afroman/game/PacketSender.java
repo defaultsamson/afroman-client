@@ -57,7 +57,7 @@ public class PacketSender extends DynamicTickThread
 	 * 
 	 * @param packet the packet
 	 */
-	public void sendPacket(BytePacket packet)
+	public void sendPacket(BytePacket packet, IPConnection... exceptedConnections)
 	{
 		if (!isServerSide()) // Pend the server connection
 		{

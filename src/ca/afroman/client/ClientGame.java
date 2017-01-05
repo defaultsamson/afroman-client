@@ -781,12 +781,53 @@ public class ClientGame extends Game
 								
 								if (role != null)
 								{
+									System.out.println("Setting turn: " + role);
 									battle.setWhosTurnItIs(role);
 								}
 								else
 								{
 									logger().log(ALogType.WARNING, "No Role with ord " + ord);
 								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
+						case BATTLE_EXECUTE_SELECTED_OPTION:
+						{
+							int battleID = packet.getContent().getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								byte ord = packet.getContent().get();
+								BattleOption option = BattleOption.fromOrdinal(ord);
+								
+								if (option != null)
+								{
+									battle.getPlayerWhosTurnItIs().executeBattle(option.ordinal());
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
+						case BATTLE_EXECUTE_ID:
+						{
+							int battleID = packet.getContent().getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								battle.getEntityWhosTurnItIs().executeBattle(packet.getContent().getInt());
 							}
 							else
 							{

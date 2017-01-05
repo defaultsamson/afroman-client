@@ -19,6 +19,8 @@ public abstract class BattlingEntityWrapper extends ServerClientObject implement
 		this.fighting = fighting;
 	}
 	
+	public abstract void executeBattle(int battleID);
+	
 	public Entity getFightingEnemy()
 	{
 		return fighting;
@@ -35,7 +37,4 @@ public abstract class BattlingEntityWrapper extends ServerClientObject implement
 	{
 		this.isThisTurn = isThisTurn;
 	}
-	
-	@Override
-	public abstract void tick();
 }

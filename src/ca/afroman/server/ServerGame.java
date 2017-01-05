@@ -21,6 +21,7 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketType;
+import ca.afroman.packet.battle.PacketExecuteSelectedBattleOptionServerClient;
 import ca.afroman.packet.battle.PacketStartBattle;
 import ca.afroman.packet.battle.PacketUpdateSelectedBattleOptionServerClient;
 import ca.afroman.packet.level.PacketPlayerMoveServerClient;
@@ -397,6 +398,48 @@ public class ServerGame extends Game
 						}
 					}
 						break;
+					case BATTLE_EXECUTE_SELECTED_OPTION:
+					{
+						PlayerEntity pe = getPlayer(sender.getRole());
+						
+						if (pe != null)
+						{
+							byte ord = packet.getContent().get();
+							BattleOption option = BattleOption.fromOrdinal(ord);
+							
+							if (option != null)
+							{
+								BattlingPlayerWrapper p = pe.getBattle().getPlayerWhosTurnItIs();
+								
+								if (p != null)
+								{
+									if (p.getFightingEnemy().getRole() == pe.getRole())
+									{
+										p.setBattleOption(option);
+										p.executeBattle(option.ordinal());
+										sockets().sender().sendPacketToAllClients(new PacketExecuteSelectedBattleOptionServerClient(pe.getBattle().getID(), option));
+									}
+									else
+									{
+										logger().log(ALogType.WARNING, "A player is trying to change the selected battle option when they're not the battler");
+									}
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "pe.getBattle().getPlayerWhosTurnItIs() returned null");
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
+						}
+					}
+						break;
 					case BATTLE_UPDATE_SELECTED_OPTION:
 					{
 						PlayerEntity pe = getPlayer(sender.getRole());
@@ -415,7 +458,7 @@ public class ServerGame extends Game
 									if (p.getFightingEnemy().getRole() == pe.getRole())
 									{
 										p.setBattleOption(option);
-										sockets().sender().sendPacketToAllClients(new PacketUpdateSelectedBattleOptionServerClient(pe.getBattle().getID(), option));
+										sockets().sender().sendPacketToAllClients(new PacketUpdateSelectedBattleOptionServerClient(pe.getBattle().getID(), option), sender.getConnection());
 									}
 									else
 									{

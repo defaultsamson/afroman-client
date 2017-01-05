@@ -7,13 +7,13 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketType;
 
-public class PacketUpdateSelectedBattleOptionClientServer extends BytePacket
+public class PacketExecuteSelectedBattleOptionClientServer extends BytePacket
 {
 	private static final int BUFFER_SIZE = 2;
 	
-	public PacketUpdateSelectedBattleOptionClientServer(BattleOption option, IPConnection... connection)
+	public PacketExecuteSelectedBattleOptionClientServer(BattleOption option, IPConnection... connection)
 	{
-		super(PacketType.BATTLE_UPDATE_SELECTED_OPTION, false, connection);
+		super(PacketType.BATTLE_EXECUTE_SELECTED_OPTION, true, connection);
 		
 		ByteBuffer buf = ByteBuffer.allocate(BUFFER_SIZE).put(typeOrd());
 		
