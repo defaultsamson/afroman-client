@@ -381,12 +381,12 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			Options.instance().serverPort = "" + port;
 			
 			try
-			{	
+			{
 				welcomeSocket = ServerSocketChannel.open();
 				welcomeSocket.socket().bind(new InetSocketAddress(serverConnection.getPort()));
 				welcomeSocket.configureBlocking(true);
 				welcomeSocket.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
-				//welcomeSocket.register(selector, TCPSocketChannel.serverOp, null);
+				// welcomeSocket.register(selector, TCPSocketChannel.serverOp, null);
 			}
 			catch (IOException e)
 			{
@@ -520,7 +520,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	public void keyCheck()
 	{
 		try
-		{	
+		{
 			int readyChannels = selector.selectNow();
 			
 			if (readyChannels == 0) return;
@@ -532,25 +532,29 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			{
 				SelectionKey key = keyIterator.next();
 				
+				if (!key.isValid()) {
+					System.out.println("invalid key");
+				}
+				
 				if (key.isAcceptable())
 				{
-					/*ServerSocketChannel server = (ServerSocketChannel) key.channel();
-					SocketChannel client = server.accept();
-					TCPSocketChannel tcp = new TCPSocketChannel(selector, client, false);
-					IPConnectedPlayer newConnection = (IPConnectedPlayer) key.attachment();
-					newConnection.getConnection().setTCPSocketChannel(tcp);
-					
-					synchronized (tcpSockets)
-					{
-						TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
-						tcpSockets.add(rec);
-						rec.startThis();
-					}*/
+					/*
+					 * ServerSocketChannel server = (ServerSocketChannel) key.channel();
+					 * SocketChannel client = server.accept();
+					 * TCPSocketChannel tcp = new TCPSocketChannel(selector, client, false);
+					 * IPConnectedPlayer newConnection = (IPConnectedPlayer) key.attachment();
+					 * newConnection.getConnection().setTCPSocketChannel(tcp);
+					 * synchronized (tcpSockets)
+					 * {
+					 * TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
+					 * tcpSockets.add(rec);
+					 * rec.startThis();
+					 * }
+					 */
 					ServerGame.instance().logger().log(ALogType.DEBUG, "Accepted client in a non-blocking format");
 				}
 				else if (key.isReadable())
 				{
-					((TCPSocketChannel) key.attachment()).read =
 					TCPSocketChannel.read(key);
 				}
 				else if (key.isWritable())

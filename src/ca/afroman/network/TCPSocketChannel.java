@@ -70,17 +70,20 @@ public class TCPSocketChannel
 		ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 		int bytesRead = socket.read(buffer);
 		
-		if (bytesRead == -1)
+		if (bytesRead == -1) // TODO: tell game that this socket has closed
 		{
 			socket.close();
 			((TCPSocketChannel) key.attachment()).read = null;
+			return null;
+		}
+		else if (bytesRead == 0)
+		{
 			return null;
 		}
 		else
 		{
 			buffer.flip();
 		}
-		ArrayUtil.asString(buffer.array(), "1", "1", "1");
 		
 		((TCPSocketChannel) key.attachment()).read = buffer.array();
 		return buffer.array();
@@ -90,9 +93,10 @@ public class TCPSocketChannel
 	{
 		SocketChannel socket = (SocketChannel) key.channel();
 		ByteBuffer output = ByteBuffer.wrap(((TCPSocketChannel) key.attachment()).write);
-		socket.write(output);
+		int bytesWritten = socket.write(output);
 		((TCPSocketChannel) key.attachment()).isWriting = false;
 		((TCPSocketChannel) key.attachment()).write = null;
+		key.cancel();
 	}
 	
 	public void sendData(byte[] data) throws ClosedChannelException
