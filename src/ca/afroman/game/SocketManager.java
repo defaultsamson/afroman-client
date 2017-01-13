@@ -532,10 +532,6 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			{
 				SelectionKey key = keyIterator.next();
 				
-				if (!key.isValid()) {
-					System.out.println("invalid key");
-				}
-				
 				if (key.isAcceptable())
 				{
 					/*
@@ -555,7 +551,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				}
 				else if (key.isReadable())
 				{
-					TCPSocketChannel.read(key);
+					((TCPSocketChannel) key.attachment()).read = TCPSocketChannel.read(key);
 				}
 				else if (key.isWritable())
 				{
@@ -564,9 +560,13 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 				keyIterator.remove();
 			}
 		}
-		catch (IOException e)
+		catch (IOException ioe)
 		{
-			game.logger().log(ALogType.WARNING, "I/O exception while completing keys", e);
+			game.logger().log(ALogType.WARNING, "I/O exception while completing keys", ioe);
+		}
+		catch (NullPointerException npe)
+		{
+			game.logger().log(ALogType.CRITICAL, "Null pointer when completing keys", npe);;
 		}
 	}
 }

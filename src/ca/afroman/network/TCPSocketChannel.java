@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
 import ca.afroman.client.ClientGame;
-import ca.afroman.util.ArrayUtil;
 
 public class TCPSocketChannel
 {
@@ -24,7 +23,7 @@ public class TCPSocketChannel
 	public boolean isWriting;
 	
 	public byte[] read = new byte[ClientGame.RECEIVE_PACKET_BUFFER_LIMIT];
-	public byte[] write;
+	public byte[] write = new byte[0];
 	
 	/**
 	 * Create a TCPSocketChannel to handle the use of a single SocketChannel
@@ -70,14 +69,10 @@ public class TCPSocketChannel
 		ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 		int bytesRead = socket.read(buffer);
 		
-		if (bytesRead == -1) // TODO: tell game that this socket has closed
+		if (bytesRead == -1)
 		{
 			socket.close();
 			((TCPSocketChannel) key.attachment()).read = null;
-			return null;
-		}
-		else if (bytesRead == 0)
-		{
 			return null;
 		}
 		else
@@ -93,17 +88,16 @@ public class TCPSocketChannel
 	{
 		SocketChannel socket = (SocketChannel) key.channel();
 		ByteBuffer output = ByteBuffer.wrap(((TCPSocketChannel) key.attachment()).write);
-		int bytesWritten = socket.write(output);
+		socket.write(output);
 		((TCPSocketChannel) key.attachment()).isWriting = false;
-		((TCPSocketChannel) key.attachment()).write = null;
-		key.cancel();
+		((TCPSocketChannel) key.attachment()).write = new byte[0];
 	}
 	
 	public void sendData(byte[] data) throws ClosedChannelException
 	{
-		isWriting = true;
-		write = data;
-		writeKey = socket.register(selector, writeOp, this);
+		this.isWriting = true;
+		this.write = data;
+		this.writeKey = socket.register(selector, writeOp, this);
 	}
 	
 	public byte[] receiveData() throws ClosedChannelException, PortUnreachableException
@@ -136,7 +130,9 @@ public class TCPSocketChannel
 	
 	public void close() throws IOException
 	{
-		writeKey.cancel();
+		if (writeKey != null && writeKey.isValid()) {
+			writeKey.cancel();
+		}
 		readKey.cancel();
 		socket.close();
 	}
