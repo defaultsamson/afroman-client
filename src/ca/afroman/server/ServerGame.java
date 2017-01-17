@@ -2,9 +2,7 @@ package ca.afroman.server;
 
 import java.nio.ByteBuffer;
 
-import ca.afroman.battle.BattleOption;
 import ca.afroman.battle.BattleScene;
-import ca.afroman.battle.BattlingPlayerWrapper;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
@@ -21,9 +19,7 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketType;
-import ca.afroman.packet.battle.PacketExecuteSelectedBattleOptionServerClient;
 import ca.afroman.packet.battle.PacketStartBattle;
-import ca.afroman.packet.battle.PacketUpdateSelectedBattleOptionServerClient;
 import ca.afroman.packet.level.PacketPlayerMoveServerClient;
 import ca.afroman.packet.level.PacketSetPlayerLocationServerClient;
 import ca.afroman.packet.technical.PacketAssignClientID;
@@ -398,81 +394,28 @@ public class ServerGame extends Game
 						}
 					}
 						break;
-					case BATTLE_EXECUTE_SELECTED_OPTION:
+					case BATTLE_EXECUTE_ID:
 					{
 						PlayerEntity pe = getPlayer(sender.getRole());
 						
 						if (pe != null)
 						{
-							byte ord = packet.getContent().get();
-							BattleOption option = BattleOption.fromOrdinal(ord);
+							BattleScene battle = pe.getBattle();
 							
-							if (option != null)
+							if (battle != null)
 							{
-								BattlingPlayerWrapper p = pe.getBattle().getPlayerWhosTurnItIs();
-								
-								if (p != null)
+								if (pe.getBattleEntity1().isThisTurn())
 								{
-									if (p.getFightingEnemy().getRole() == pe.getRole())
-									{
-										p.setBattleOption(option);
-										p.executeBattle(option.ordinal());
-										sockets().sender().sendPacketToAllClients(new PacketExecuteSelectedBattleOptionServerClient(pe.getBattle().getID(), option));
-									}
-									else
-									{
-										logger().log(ALogType.WARNING, "A player is trying to change the selected battle option when they're not the battler");
-									}
+									battle.executeBattle(packet.getContent().getInt());
 								}
 								else
 								{
-									logger().log(ALogType.WARNING, "pe.getBattle().getPlayerWhosTurnItIs() returned null");
+									logger().log(ALogType.WARNING, "It's not " + sender.getRole() + "'s turn in battle: " + battle.getID());
 								}
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
-							}
-						}
-						else
-						{
-							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
-						}
-					}
-						break;
-					case BATTLE_UPDATE_SELECTED_OPTION:
-					{
-						PlayerEntity pe = getPlayer(sender.getRole());
-						
-						if (pe != null)
-						{
-							byte ord = packet.getContent().get();
-							BattleOption option = BattleOption.fromOrdinal(ord);
-							
-							if (option != null)
-							{
-								BattlingPlayerWrapper p = pe.getBattle().getPlayerWhosTurnItIs();
-								
-								if (p != null)
-								{
-									if (p.getFightingEnemy().getRole() == pe.getRole())
-									{
-										p.setBattleOption(option);
-										sockets().sender().sendPacketToAllClients(new PacketUpdateSelectedBattleOptionServerClient(pe.getBattle().getID(), option), sender.getConnection());
-									}
-									else
-									{
-										logger().log(ALogType.WARNING, "A player is trying to change the selected battle option when they're not the battler");
-									}
-								}
-								else
-								{
-									logger().log(ALogType.WARNING, "pe.getBattle().getPlayerWhosTurnItIs() returned null");
-								}
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
+								logger().log(ALogType.WARNING, "Player " + sender.getRole() + " is not in battle and it trying to execute ID's");
 							}
 						}
 						else
@@ -674,14 +617,14 @@ public class ServerGame extends Game
 			{
 				pl.setBattle(battle);
 				sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
-				battle.setWhosTurnItIs(p.getRole());
+				battle.setTurn(p.getRole());
 				getBattles().add(battle);
 				return;
 			}
 		}
 		
 		sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
-		battle.setWhosTurnItIs(p.getRole());
+		battle.setTurn(p.getRole());
 		getBattles().add(battle);
 	}
 	

@@ -4,8 +4,7 @@ import java.util.Random;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
-import ca.afroman.battle.BattlingCrabWrapper;
-import ca.afroman.battle.BattlingEntityWrapper;
+import ca.afroman.battle.BattleCrabEntity;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.resource.ModulusCounter;
@@ -21,12 +20,10 @@ public class Crab extends DrawableEntityDirectional
 		super(isServerSide, isMicromanaged, position, isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_UP), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_DOWN), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_LEFT), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_RIGHT), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_IDLE_UP), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_IDLE_DOWN), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_IDLE_LEFT), isServerSide ? null : Assets.getSpriteAnimation(AssetType.CRAB_IDLE_RIGHT), new Hitbox(isServerSide, true, 3, 5, 10, 11));
 		
 		moveWaiter = isServerSide ? new ModulusCounter(60 * 9) : null;
-	}
-	
-	@Override
-	public BattlingEntityWrapper getBattleWrapper()
-	{
-		return new BattlingCrabWrapper(this);
+		
+		battleEntity1 = new BattleCrabEntity(this, 1);
+		battleEntity2 = new BattleCrabEntity(this, 2);
+		battleEntity3 = new BattleCrabEntity(this, 3);
 	}
 	
 	@Override

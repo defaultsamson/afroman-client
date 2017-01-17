@@ -27,9 +27,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
-import ca.afroman.battle.BattleOption;
 import ca.afroman.battle.BattleScene;
-import ca.afroman.battle.BattlingPlayerWrapper;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Item;
@@ -735,41 +733,7 @@ public class ClientGame extends Game
 							}
 						}
 							break;
-						case BATTLE_UPDATE_SELECTED_OPTION:
-						{
-							int battleID = packet.getContent().getInt();
-							BattleScene battle = getBattle(battleID);
-							
-							if (battle != null)
-							{
-								byte ord = packet.getContent().get();
-								BattleOption option = BattleOption.fromOrdinal(ord);
-								
-								if (option != null)
-								{
-									BattlingPlayerWrapper p = getThisPlayer().getBattle().getPlayerWhosTurnItIs();
-									
-									if (p != null)
-									{
-										p.setBattleOption(option);
-									}
-									else
-									{
-										logger().log(ALogType.WARNING, "getThisPlayer().getBattle().getPlayerWhosTurnItIs() returned null");
-									}
-								}
-								else
-								{
-									logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
-								}
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
-							}
-						}
-							break;
-						case BATTLE_UPDATE_TURN:
+						case BATTLE_UPDATE_TURN_ROLE:
 						{
 							int battleID = packet.getContent().getInt();
 							BattleScene battle = getBattle(battleID);
@@ -781,8 +745,7 @@ public class ClientGame extends Game
 								
 								if (role != null)
 								{
-									System.out.println("Setting turn: " + role);
-									battle.setWhosTurnItIs(role);
+									battle.setTurn(role);
 								}
 								else
 								{
@@ -795,24 +758,14 @@ public class ClientGame extends Game
 							}
 						}
 							break;
-						case BATTLE_EXECUTE_SELECTED_OPTION:
+						case BATTLE_UPDATE_TURN_ORD:
 						{
 							int battleID = packet.getContent().getInt();
 							BattleScene battle = getBattle(battleID);
 							
 							if (battle != null)
 							{
-								byte ord = packet.getContent().get();
-								BattleOption option = BattleOption.fromOrdinal(ord);
-								
-								if (option != null)
-								{
-									battle.getPlayerWhosTurnItIs().executeBattle(option.ordinal());
-								}
-								else
-								{
-									logger().log(ALogType.WARNING, "No battleOption with ord " + ord);
-								}
+								battle.setTurn(packet.getContent().getInt());
 							}
 							else
 							{
@@ -827,7 +780,7 @@ public class ClientGame extends Game
 							
 							if (battle != null)
 							{
-								battle.getEntityWhosTurnItIs().executeBattle(packet.getContent().getInt());
+								battle.executeBattle(packet.getContent().getInt());
 							}
 							else
 							{

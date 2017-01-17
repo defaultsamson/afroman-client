@@ -3,8 +3,7 @@ package ca.afroman.entity;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
-import ca.afroman.battle.BattlingEntityWrapper;
-import ca.afroman.battle.BattlingPlayerWrapper;
+import ca.afroman.battle.BattlePlayerEntity;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
@@ -76,6 +75,8 @@ public class PlayerEntity extends DrawableEntityDirectional
 		
 		this.role = role;
 		inv = new Inventory(this);
+		
+		battleEntity1 = new BattlePlayerEntity(this);
 	}
 	
 	/**
@@ -109,12 +110,6 @@ public class PlayerEntity extends DrawableEntityDirectional
 		{
 			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server-side PlayerEntity cannot be added to a null level");
 		}
-	}
-	
-	@Override
-	public BattlingEntityWrapper getBattleWrapper()
-	{
-		return new BattlingPlayerWrapper(this);
 	}
 	
 	public Inventory getInventory()

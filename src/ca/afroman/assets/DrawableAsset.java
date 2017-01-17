@@ -51,7 +51,7 @@ public abstract class DrawableAsset extends Asset
 	 * @param renderTo the object to draw this to
 	 * @param pos the position to draw this at
 	 */
-	public void render(Texture renderTo, Vector2DInt pos)
+	public final void render(Texture renderTo, Vector2DInt pos)
 	{
 		render(renderTo, pos.getX(), pos.getY());
 	}

@@ -90,16 +90,6 @@ public class Font extends DrawableAssetArray
 	}
 	
 	/**
-	 * @deprecated Cannot draw a Font. Use render(Texture, Vector2DInt, String)
-	 */
-	@Override
-	@Deprecated
-	public void render(Texture renderTo, Vector2DInt pos)
-	{
-		
-	}
-	
-	/**
 	 * Renders a String of text, anchoring the left of the text to the provided position.
 	 * 
 	 * @param renderTo the object to draw this to

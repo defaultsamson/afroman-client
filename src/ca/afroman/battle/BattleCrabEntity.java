@@ -6,47 +6,61 @@ import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
-import ca.afroman.entity.Crab;
+import ca.afroman.entity.api.Entity;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.light.FlickeringLight;
 import ca.afroman.light.LightMap;
 import ca.afroman.packet.battle.PacketExecuteBattleIDServerClient;
-import ca.afroman.resource.Vector2DInt;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class BattlingCrabWrapper extends BattlingEntityWrapper
+public class BattleCrabEntity extends BattleEntityAutomated
 {
-	private FlickeringLight light;
-	private DrawableAsset asset;
-	private SpriteAnimation idleAsset;
-	private Vector2DInt fightPos;
+	// Server/client
+	public int health = 20;
 	
 	private int ticksUntilPass = -1;
 	
-	private boolean sentIt = false;
+	// Client only
+	private Vector2DDouble fightPos;
+	private Vector2DDouble originPos;
 	
-	public BattlingCrabWrapper(Crab fighting)
+	private FlickeringLight light;
+	private Texture shadow;
+	private DrawableAsset asset;
+	private SpriteAnimation idleAsset;
+	
+	// Server only
+	private boolean sentIt;
+	
+	public BattleCrabEntity(Entity levelEntity, int pos)
 	{
-		super(fighting);
+		super(levelEntity);
 		
 		if (!isServerSide())
 		{
-			this.fightPos = new Vector2DInt(40, 81);
+			fightPos = pos == 1 ? new Vector2DDouble(39, 98) : pos == 2 ? new Vector2DDouble(49, 81) : new Vector2DDouble(59, 67);
+			originPos = fightPos.clone();
+			
+			light = new FlickeringLight(true, fightPos.clone(), 55, 49, 3 + pos);
+			shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
 			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
-			idleAsset.getTickCounter().setInterval(15);
-			light = new FlickeringLight(true, fightPos.toVector2DDouble(), 55, 45, 4);
+			idleAsset.getTickCounter().setInterval(14 + pos);
+		}
+		else
+		{
+			sentIt = false;
 		}
 	}
 	
 	@Override
 	public void executeBattle(int battleID)
 	{
-		System.out.println("Crab Execution: " + battleID);
 		ticksUntilPass = 60;
 		
 		if (isServerSide())
 		{
-			
+			System.out.println("Crab Execution: " + battleID);
 		}
 		else
 		{
@@ -55,12 +69,23 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 	}
 	
 	@Override
-	public void render(Texture renderTo, LightMap map)
+	public boolean isAlive()
 	{
-		asset.render(renderTo, fightPos); // fightPos);
-		light.renderCentered(map);
-		light.renderCentered(map);
-		
+		return health > 0;
+	}
+	
+	@Override
+	public void render(Texture renderTo, LightMap lightmap)
+	{
+		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 25);
+		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY()); // fightPos);
+		light.renderCentered(lightmap);
+		light.renderCentered(lightmap);
+	}
+	
+	@Override
+	public void renderPostLightmap(Texture renderTo)
+	{
 		if (ticksUntilPass > 10)
 		{
 			Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2 + 1, ClientGame.HEIGHT / 2 + 1, "Uhh... Useless Mr Crabs");
@@ -79,7 +104,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 		{
 			ticksUntilPass--;
 			
-			if (isServerSide()) getFightingEnemy().getBattle().passTurn();
+			if (isServerSide()) finishTurn();
 		}
 		
 		if (isServerSide())
@@ -89,7 +114,7 @@ public class BattlingCrabWrapper extends BattlingEntityWrapper
 				if (!sentIt)
 				{
 					sentIt = true;
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getFightingEnemy().getBattle().getID(), 2));
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getLevelEntity().getBattle().getID(), 2));
 					
 					executeBattle(2);
 				}

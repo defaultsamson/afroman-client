@@ -2,7 +2,6 @@ package ca.afroman.assets;
 
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.resource.ModulusCounter;
-import ca.afroman.resource.Vector2DInt;
 
 public class SpriteAnimation extends DrawableAssetArray implements ITickable, ITextureDrawable
 {
@@ -104,9 +103,9 @@ public class SpriteAnimation extends DrawableAssetArray implements ITickable, IT
 	}
 	
 	@Override
-	public void render(Texture renderTo, Vector2DInt pos)
+	public void render(Texture renderTo, int x, int y)
 	{
-		renderTo.draw(getDisplayedTexture(), pos);
+		renderTo.draw(getDisplayedTexture(), x, y);
 	}
 	
 	/**

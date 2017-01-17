@@ -1,7 +1,7 @@
 package ca.afroman.entity.api;
 
+import ca.afroman.battle.BattleEntity;
 import ca.afroman.battle.BattleScene;
-import ca.afroman.battle.BattlingEntityWrapper;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.game.Game;
@@ -61,7 +61,9 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	protected Direction lastDirection;
 	private boolean cameraFollow;
 	private BattleScene battle;
-	protected BattlingEntityWrapper battleWrapper;
+	protected BattleEntity battleEntity1;
+	protected BattleEntity battleEntity2;
+	protected BattleEntity battleEntity3;
 	
 	private byte deltaXa = 0;
 	private byte deltaYa = 0;
@@ -93,7 +95,6 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		updateHitboxInLevel();
 		
 		battle = null;
-		battleWrapper = null;
 		
 		speed = 1.0;
 		originalSpeed = speed;
@@ -145,9 +146,19 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		return battle;
 	}
 	
-	public BattlingEntityWrapper getBattleWrapper()
+	public BattleEntity getBattleEntity1()
 	{
-		return battleWrapper;
+		return battleEntity1;
+	}
+	
+	public BattleEntity getBattleEntity2()
+	{
+		return battleEntity2;
+	}
+	
+	public BattleEntity getBattleEntity3()
+	{
+		return battleEntity3;
 	}
 	
 	/**
@@ -219,7 +230,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	
 	public boolean isBattleable()
 	{
-		return battleWrapper != null;
+		return battleEntity1 != null || battleEntity2 != null || battleEntity3 != null;
 	}
 	
 	//
@@ -485,18 +496,26 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	{
 		if (battle == null)
 		{
-			this.battle = battle;
-		}
-		else
-		{
-			if (isInBattle())
+			if (this.battle != null)
 			{
-				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in a battle");
+				this.battle.removeEntityFromBattle(this);
+				this.battle = battle;
 			}
 			else
 			{
+				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in a null battle");
+			}
+		}
+		else
+		{
+			if (this.battle == null)
+			{
 				this.battle = battle;
-				battle.addEntityBattleWrapper(getBattleWrapper());
+				battle.addEntityToBattle(this);
+			}
+			else
+			{
+				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in a battle");
 			}
 		}
 	}

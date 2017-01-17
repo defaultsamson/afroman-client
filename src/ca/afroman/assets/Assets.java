@@ -13,7 +13,7 @@ public class Assets
 	
 	// Used for displaying in the progress bar when loading
 	private static int loadedAssetCount;
-	private static final double ASSET_COUNT = 107;
+	private static final double ASSET_COUNT = 112;
 	private static int initPercValue;
 	private static final int PERC_DIFF = 70;
 	
