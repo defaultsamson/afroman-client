@@ -60,7 +60,7 @@ public class BattlePlayerEntity extends BattleEntity
 			fightPos = levelEntity.getRole() == Role.PLAYER1 ? new Vector2DDouble(173, 54) : new Vector2DDouble(184, 79);
 			originPos = fightPos.clone();
 			
-			light = new FlickeringLight(true, fightPos.clone(), 60, 70, 3);
+			light = new FlickeringLight(true, fightPos.clone(), 60, 70, 5);
 			shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
 			asset = idleAsset = levelEntity.getRole() == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_ONE) : Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_TWO);
 			

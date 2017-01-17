@@ -147,6 +147,16 @@ public class BattleScene extends ServerClientObject implements ITickable
 		return id;
 	}
 	
+	public BattlePlayerEntity getPlayer1()
+	{
+		return player1;
+	}
+	
+	public BattlePlayerEntity getPlayer2()
+	{
+		return player2;
+	}
+	
 	public void progressTurn()
 	{
 		int lastIsTurnIndex = -1;

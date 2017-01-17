@@ -400,7 +400,7 @@ public class Assets
 		addAsset(perc, buttons.getSubTexture(AssetType.TEXT_FIELD, 9, 0, 3, 16));
 		addAsset(perc, buttons.getSubTexture(AssetType.TEXT_FIELD_CLEAR, 12, 0, 3, 16));
 		
-		addAsset(perc, Texture.fromResource(AssetType.BATTLE_RUINS_BG, "battle/ruins.png"));
+		addAsset(perc, Texture.fromResource(AssetType.BATTLE_RUINS_BG, "battle/overgrownbg.png"));
 		
 		Texture afroBattle = Texture.fromResource(AssetType.INVALID, "battle/afroman.png");
 		Texture[] afroBattle2 = afroBattle.toTextureArray(5, 1);

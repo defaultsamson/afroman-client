@@ -1,5 +1,7 @@
 package ca.afroman.battle;
 
+import java.util.Random;
+
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
@@ -30,9 +32,6 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
 	
-	// Server only
-	private boolean sentIt;
-	
 	public BattleCrabEntity(Entity levelEntity, int pos)
 	{
 		super(levelEntity);
@@ -47,10 +46,38 @@ public class BattleCrabEntity extends BattleEntityAutomated
 			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
 			idleAsset.getTickCounter().setInterval(14 + pos);
 		}
+	}
+	
+	@Override
+	protected void aiAttack(BattlePlayerEntity pl1, BattlePlayerEntity pl2)
+	{
+		// TODO simplify expression
+		if (pl1 == null)
+		{
+			attackPlayer(2);
+		}
+		else if (pl2 == null)
+		{
+			attackPlayer(1);
+		}
 		else
 		{
-			sentIt = false;
+			if (new Random().nextBoolean())
+			{
+				attackPlayer(2);
+			}
+			else
+			{
+				attackPlayer(1);
+			}
 		}
+	}
+	
+	private void attackPlayer(int player)
+	{
+		System.out.println("Attacking player " + player);
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getLevelEntity().getBattle().getID(), player));
+		executeBattle(player);
 	}
 	
 	@Override
@@ -77,7 +104,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	@Override
 	public void render(Texture renderTo, LightMap lightmap)
 	{
-		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 25);
+		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 8);
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY()); // fightPos);
 		light.renderCentered(lightmap);
 		light.renderCentered(lightmap);
@@ -96,6 +123,8 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	@Override
 	public void tick()
 	{
+		super.tick();
+		
 		if (ticksUntilPass > 0)
 		{
 			ticksUntilPass--;
@@ -109,20 +138,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 		
 		if (isServerSide())
 		{
-			if (isThisTurn())
-			{
-				if (!sentIt)
-				{
-					sentIt = true;
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getLevelEntity().getBattle().getID(), 2));
-					
-					executeBattle(2);
-				}
-			}
-			else
-			{
-				sentIt = false;
-			}
+			
 		}
 		else
 		{
