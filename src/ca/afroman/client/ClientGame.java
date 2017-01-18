@@ -27,6 +27,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.BattlePosition;
 import ca.afroman.battle.BattleScene;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
@@ -781,6 +782,21 @@ public class ClientGame extends Game
 							if (battle != null)
 							{
 								battle.executeBattle(packet.getContent().getInt());
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
+						case BATTLE_SELECT_ENTITY:
+						{
+							int battleID = packet.getContent().getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								battle.setEnemySelected(BattlePosition.fromOrdinal(packet.getContent().get()), sockets().getServerConnection());
 							}
 							else
 							{

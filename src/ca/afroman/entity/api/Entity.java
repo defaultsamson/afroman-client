@@ -61,8 +61,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	protected Direction lastDirection;
 	private boolean cameraFollow;
 	private BattleScene battle;
+	/** Left bottom **/
 	protected BattleEntity battleEntity1;
+	/** Left middle **/
 	protected BattleEntity battleEntity2;
+	/** Left top **/
 	protected BattleEntity battleEntity3;
 	
 	private byte deltaXa = 0;
@@ -146,16 +149,19 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		return battle;
 	}
 	
+	/** Left bottom **/
 	public BattleEntity getBattleEntity1()
 	{
 		return battleEntity1;
 	}
 	
+	/** Left middle **/
 	public BattleEntity getBattleEntity2()
 	{
 		return battleEntity2;
 	}
 	
+	/** Left top **/
 	public BattleEntity getBattleEntity3()
 	{
 		return battleEntity3;

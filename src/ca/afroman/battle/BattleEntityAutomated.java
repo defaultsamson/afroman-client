@@ -6,9 +6,9 @@ public abstract class BattleEntityAutomated extends BattleEntity
 {
 	private boolean isTurnLast;
 	
-	public BattleEntityAutomated(Entity levelEntity)
+	public BattleEntityAutomated(Entity levelEntity, BattlePosition pos)
 	{
-		super(levelEntity);
+		super(levelEntity, pos);
 		
 		if (isServerSide())
 		{

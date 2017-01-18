@@ -13,6 +13,7 @@ import ca.afroman.game.Role;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.light.LightMap;
 import ca.afroman.log.ALogType;
+import ca.afroman.network.IPConnection;
 import ca.afroman.packet.battle.PacketUpdateTurn;
 import ca.afroman.resource.IDCounter;
 import ca.afroman.resource.ServerClientObject;
@@ -47,10 +48,15 @@ public class BattleScene extends ServerClientObject implements ITickable
 	
 	private int id;
 	private LightMap lightmap;
+	/** Left bottom **/
 	private BattleEntity enemy1;
+	/** Left middle **/
 	private BattleEntity enemy2;
+	/** Left top **/
 	private BattleEntity enemy3;
+	/** Right top **/
 	private BattlePlayerEntity player1;
+	/** Right bottom **/
 	private BattlePlayerEntity player2;
 	private BattleEntity[] fighters = { enemy1, enemy2, enemy3, player1, player2 };
 	
@@ -142,6 +148,141 @@ public class BattleScene extends ServerClientObject implements ITickable
 		}
 	}
 	
+	/**
+	 * To be used by the server only.
+	 * 
+	 * @param pos
+	 * @param sender
+	 */
+	public void setEnemySelected(BattlePosition pos, IPConnection sender)
+	{
+		enemy1.setIsSelected(pos == BattlePosition.LEFT_BOTTOM, sender);
+		enemy2.setIsSelected(pos == BattlePosition.LEFT_MIDDLE, sender);
+		enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
+		player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
+		player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
+	}
+	
+	/**
+	 * Only to be used by client.
+	 */
+	public void selectEnemyInit()
+	{
+		for (BattleEntity e : fighters)
+			if (e != null) e.setIsSelected(false);
+		
+		if (enemy2 != null) enemy2.setIsSelected(true);
+		else if (enemy1 != null) enemy1.setIsSelected(true);
+		else if (enemy3 != null) enemy3.setIsSelected(true);
+		else
+			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "BattleScene " + getID() + " has no enemies to select");
+	}
+//	
+//	public boolean clearSelectedEnemy()
+//	{
+//		
+//	}
+	
+	/**
+	 * Only to be used by client.
+	 */
+	public void selectEnemyNext()
+	{
+		if (enemy1 != null && enemy1.isThisSelected())
+		{
+			if (enemy2 != null)
+			{
+				enemy1.setIsSelected(false);
+				enemy2.setIsSelected(true);
+			}
+			else if (enemy3 != null)
+			{
+				enemy1.setIsSelected(false);
+				enemy3.setIsSelected(true);
+			}
+		}
+		else if (enemy2 != null && enemy2.isThisSelected())
+		{
+			if (enemy3 != null)
+			{
+				enemy2.setIsSelected(false);
+				enemy3.setIsSelected(true);
+			}
+			else if (enemy1 != null)
+			{
+				enemy2.setIsSelected(false);
+				enemy1.setIsSelected(true);
+			}
+		}
+		else if (enemy3 != null && enemy3.isThisSelected())
+		{
+			if (enemy1 != null)
+			{
+				enemy3.setIsSelected(false);
+				enemy1.setIsSelected(true);
+			}
+			else if (enemy2 != null)
+			{
+				enemy3.setIsSelected(false);
+				enemy2.setIsSelected(true);
+			}
+		}
+		else
+		{
+			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "BattleScene " + getID() + " has no enemies to select next");
+		}
+	}
+	
+	/**
+	 * Only to be used by client.
+	 */
+	public void selectEnemyPrev()
+	{
+		if (enemy1 != null && enemy1.isThisSelected())
+		{
+			if (enemy3 != null)
+			{
+				enemy1.setIsSelected(false);
+				enemy3.setIsSelected(true);
+			}
+			else if (enemy2 != null)
+			{
+				enemy1.setIsSelected(false);
+				enemy2.setIsSelected(true);
+			}
+		}
+		else if (enemy2 != null && enemy2.isThisSelected())
+		{
+			if (enemy1 != null)
+			{
+				enemy2.setIsSelected(false);
+				enemy1.setIsSelected(true);
+			}
+			else if (enemy3 != null)
+			{
+				enemy2.setIsSelected(false);
+				enemy3.setIsSelected(true);
+			}
+		}
+		else if (enemy3 != null && enemy3.isThisSelected())
+		{
+			if (enemy2 != null)
+			{
+				enemy3.setIsSelected(false);
+				enemy2.setIsSelected(true);
+			}
+			else if (enemy1 != null)
+			{
+				enemy3.setIsSelected(false);
+				enemy1.setIsSelected(true);
+			}
+		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "BattleScene " + getID() + " has no enemies to select next");
+		}
+	}
+	
 	public int getID()
 	{
 		return id;
@@ -155,6 +296,21 @@ public class BattleScene extends ServerClientObject implements ITickable
 	public BattlePlayerEntity getPlayer2()
 	{
 		return player2;
+	}
+	
+	public BattleEntity getBottomEnemy()
+	{
+		return enemy1;
+	}
+	
+	public BattleEntity getMiddleEnemy()
+	{
+		return enemy2;
+	}
+	
+	public BattleEntity getTopEnemy()
+	{
+		return enemy3;
 	}
 	
 	public void progressTurn()

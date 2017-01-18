@@ -4,6 +4,7 @@ import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.battle.BattlePlayerEntity;
+import ca.afroman.battle.BattlePosition;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
@@ -76,7 +77,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 		this.role = role;
 		inv = new Inventory(this);
 		
-		battleEntity1 = new BattlePlayerEntity(this);
+		battleEntity1 = new BattlePlayerEntity(this, role == Role.PLAYER1 ? BattlePosition.RIGHT_TOP : BattlePosition.RIGHT_BOTTOM);
 	}
 	
 	/**

@@ -32,19 +32,19 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
 	
-	public BattleCrabEntity(Entity levelEntity, int pos)
+	public BattleCrabEntity(Entity levelEntity, BattlePosition pos)
 	{
-		super(levelEntity);
+		super(levelEntity, pos);
 		
 		if (!isServerSide())
 		{
-			fightPos = pos == 1 ? new Vector2DDouble(39, 98) : pos == 2 ? new Vector2DDouble(49, 81) : new Vector2DDouble(59, 67);
+			fightPos = new Vector2DDouble(pos.getReferenceX() - 12, pos.getReferenceY() - 15);
 			originPos = fightPos.clone();
 			
-			light = new FlickeringLight(true, fightPos.clone(), 55, 49, 3 + pos);
+			light = new FlickeringLight(true, fightPos.clone(), 55, 49, 3 + pos.ordinal());
 			shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
 			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
-			idleAsset.getTickCounter().setInterval(14 + pos);
+			idleAsset.getTickCounter().setInterval(14 + pos.ordinal());
 		}
 	}
 	
@@ -115,8 +115,14 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	{
 		if (ticksUntilPass > 10)
 		{
-			Assets.getFont(AssetType.FONT_BLACK).renderCentered(renderTo, ClientGame.WIDTH / 2 + 1, ClientGame.HEIGHT / 2 + 1, "Uhh... Useless Mr Crabs");
-			Assets.getFont(AssetType.FONT_WHITE).renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT / 2, "Uhh... Useless Mr Crabs");
+			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 + 1, ClientGame.HEIGHT / 2 + 1, "Uhh... Useless Mr Crabs");
+			whiteFont.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT / 2, "Uhh... Useless Mr Crabs");
+		}
+		
+		if (isThisSelected())
+		{
+			blackFont.renderCentered(renderTo, (int) fightPos.getX() + 5, (int) fightPos.getY() - 8, "v");
+			whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 4, (int) fightPos.getY() - 9, "v");
 		}
 	}
 	

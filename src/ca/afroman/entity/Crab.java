@@ -5,6 +5,7 @@ import java.util.Random;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.battle.BattleCrabEntity;
+import ca.afroman.battle.BattlePosition;
 import ca.afroman.entity.api.DrawableEntityDirectional;
 import ca.afroman.entity.api.Hitbox;
 import ca.afroman.resource.ModulusCounter;
@@ -21,9 +22,9 @@ public class Crab extends DrawableEntityDirectional
 		
 		moveWaiter = isServerSide ? new ModulusCounter(60 * 9) : null;
 		
-		battleEntity1 = new BattleCrabEntity(this, 1);
-		battleEntity2 = new BattleCrabEntity(this, 2);
-		battleEntity3 = new BattleCrabEntity(this, 3);
+		battleEntity1 = new BattleCrabEntity(this, BattlePosition.LEFT_BOTTOM);
+		battleEntity2 = new BattleCrabEntity(this, BattlePosition.LEFT_MIDDLE);
+		battleEntity3 = new BattleCrabEntity(this, BattlePosition.LEFT_TOP);
 	}
 	
 	@Override

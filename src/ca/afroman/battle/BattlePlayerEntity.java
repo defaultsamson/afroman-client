@@ -30,9 +30,6 @@ public class BattlePlayerEntity extends BattleEntity
 	private int ticksUntilPass = -1;
 	
 	// Client only
-	private Font blackFont;
-	private Font whiteFont;
-	
 	private Vector2DDouble fightPos;
 	private Vector2DDouble originPos;
 	
@@ -44,20 +41,20 @@ public class BattlePlayerEntity extends BattleEntity
 	private BattleOption selectedOption;
 	private boolean isBattling = false;
 	
+	// For selecting an enemy to fight
+	private boolean isSelectingAttack = false;
+	
 	// For fighting animation
 	private double xInterpolation;
 	private double yInterpolation;
 	
-	public BattlePlayerEntity(PlayerEntity levelEntity)
+	public BattlePlayerEntity(PlayerEntity levelEntity, BattlePosition pos)
 	{
-		super(levelEntity);
+		super(levelEntity, pos);
 		
 		if (!isServerSide())
 		{
-			blackFont = Assets.getFont(AssetType.FONT_BLACK);
-			whiteFont = Assets.getFont(AssetType.FONT_WHITE);
-			
-			fightPos = levelEntity.getRole() == Role.PLAYER1 ? new Vector2DDouble(173, 54) : new Vector2DDouble(184, 79);
+			fightPos = new Vector2DDouble(pos.getReferenceX(), pos.getReferenceY() - 30); // levelEntity.getRole() == Role.PLAYER1 ? new Vector2DDouble(173, 54) : new Vector2DDouble(184, 79);
 			originPos = fightPos.clone();
 			
 			light = new FlickeringLight(true, fightPos.clone(), 60, 70, 5);
@@ -193,7 +190,28 @@ public class BattlePlayerEntity extends BattleEntity
 			{
 				if (isThisTurn())
 				{
-					if (!isBattling)
+					if (isSelectingAttack)
+					{
+						if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered() || ClientGame.instance().input().up.isPressedFiltered())
+						{
+							getLevelEntity().getBattle().selectEnemyNext();
+						}
+						else if (ClientGame.instance().input().prevItem.isPressedFiltered() || ClientGame.instance().input().left.isPressedFiltered() || ClientGame.instance().input().down.isPressedFiltered())
+						{
+							getLevelEntity().getBattle().selectEnemyPrev();
+						}
+						else if (ClientGame.instance().input().dropItem.isPressedFiltered() || ClientGame.instance().input().escape.isPressedFiltered())
+						{
+							isSelectingAttack = false;
+						}
+						else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
+						{
+							isSelectingAttack = false;
+							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
+							ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + selectedOption);
+						}
+					}
+					else if (!isBattling)
 					{
 						// Idle Controls
 						if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered())
@@ -208,9 +226,18 @@ public class BattlePlayerEntity extends BattleEntity
 						}
 						else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
 						{
-							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
-							ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + selectedOption);
-							isBattling = true;
+							switch (selectedOption)
+							{
+								case ATTACK:
+									isSelectingAttack = true;
+									getLevelEntity().getBattle().selectEnemyInit();
+									break;
+								default:
+									ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
+									ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + selectedOption);
+									isBattling = true;
+									break;
+							}
 						}
 					}
 				}
