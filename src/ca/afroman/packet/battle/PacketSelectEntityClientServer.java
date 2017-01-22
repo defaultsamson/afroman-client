@@ -11,6 +11,6 @@ public class PacketSelectEntityClientServer extends BytePacket
 	{
 		super(PacketType.BATTLE_SELECT_ENTITY, true, connection);
 		
-		content = new byte[]{typeOrd(), (byte) pos.ordinal()};
+		content = new byte[] { typeOrd(), (byte) pos.ordinal() };
 	}
 }

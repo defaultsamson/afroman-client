@@ -101,11 +101,14 @@ public class LightMap extends Texture
 	
 	public void clear()
 	{
-		for (int y = 0; y < getImage().getHeight(); ++y)
+		if (Options.instance().isLightingOn())
 		{
-			for (int x = 0; x < getImage().getWidth(); ++x)
+			for (int y = 0; y < getImage().getHeight(); ++y)
 			{
-				getImage().setRGB(x, y, ColourUtil.BUFFER_WASTE);
+				for (int x = 0; x < getImage().getWidth(); ++x)
+				{
+					getImage().setRGB(x, y, ColourUtil.BUFFER_WASTE);
+				}
 			}
 		}
 	}
@@ -208,35 +211,47 @@ public class LightMap extends Texture
 	 */
 	public void patch()
 	{
-		for (int y = 0; y < getImage().getHeight(); ++y)
+		if (Options.instance().isLightingOn())
 		{
-			for (int x = 0; x < getImage().getWidth(); ++x)
+			for (int y = 0; y < getImage().getHeight(); ++y)
 			{
-				if (getImage().getRGB(x, y) == ColourUtil.BUFFER_WASTE)
+				for (int x = 0; x < getImage().getWidth(); ++x)
 				{
-					getImage().setRGB(x, y, getAmbientColour().getRGB());
+					if (getImage().getRGB(x, y) == ColourUtil.BUFFER_WASTE)
+					{
+						getImage().setRGB(x, y, getAmbientColour().getRGB());
+					}
 				}
 			}
+			
+			// used for saving the filter
+			// if (!saved)
+			// {
+			// File outputFile = new File("garbag.png");
+			// try
+			// {
+			// outputFile.createNewFile();
+			// ImageIO.write(filter.getImage(), "png", outputFile);
+			// }
+			// catch (IOException e)
+			// {
+			// e.printStackTrace();
+			// }
+			//
+			// saved = true;
+			// }
+			
+			if (Options.instance().lighting == LightMapState.ON) this.draw(filter, 0, 0);
 		}
-		
-		// used for saving the filter
-		// if (!saved)
-		// {
-		// File outputFile = new File("garbag.png");
-		// try
-		// {
-		// outputFile.createNewFile();
-		// ImageIO.write(filter.getImage(), "png", outputFile);
-		// }
-		// catch (IOException e)
-		// {
-		// e.printStackTrace();
-		// }
-		//
-		// saved = true;
-		// }
-		
-		if (Options.instance().lighting == LightMapState.ON) this.draw(filter, 0, 0);
+	}
+	
+	@Override
+	public void render(Texture renderTo, int x, int y)
+	{
+		if (Options.instance().isLightingOn())
+		{
+			super.render(renderTo, x, y);
+		}
 	}
 	
 	// private boolean saved = false;

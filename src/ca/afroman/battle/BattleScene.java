@@ -148,19 +148,132 @@ public class BattleScene extends ServerClientObject implements ITickable
 		}
 	}
 	
-	/**
-	 * To be used by the server only.
-	 * 
-	 * @param pos
-	 * @param sender
-	 */
-	public void setEnemySelected(BattlePosition pos, IPConnection sender)
+	public BattleEntity getBottomEnemy()
 	{
-		enemy1.setIsSelected(pos == BattlePosition.LEFT_BOTTOM, sender);
-		enemy2.setIsSelected(pos == BattlePosition.LEFT_MIDDLE, sender);
-		enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
-		player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
-		player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
+		return enemy1;
+	}
+	
+	public BattleEntity getEnemySelected()
+	{
+		return enemy1.isThisSelected() ? enemy1 : enemy2.isThisSelected() ? enemy2 : enemy3.isThisSelected() ? enemy3 : player1.isThisSelected() ? player1 : player2.isThisSelected() ? player2 : null;
+	}
+	
+	public int getID()
+	{
+		return id;
+	}
+	
+	public BattleEntity getMiddleEnemy()
+	{
+		return enemy2;
+	}
+	
+	public BattlePlayerEntity getPlayer1()
+	{
+		return player1;
+	}
+	
+	public BattlePlayerEntity getPlayer2()
+	{
+		return player2;
+	}
+	
+	public BattleEntity getTopEnemy()
+	{
+		return enemy3;
+	}
+	
+	public void progressTurn()
+	{
+		int lastIsTurnIndex = -1;
+		for (int i = 0; i < fighters.length; i++)
+		{
+			if (fighters[i] != null && fighters[i].isThisTurn())
+			{
+				lastIsTurnIndex = i;
+				break;
+			}
+		}
+		
+		// Couldn't find the fighter who's turn it is
+		if (lastIsTurnIndex == -1)
+		{
+			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "Couldn't find the index of the entity who's turn it is while progressing turns");
+		}
+		else
+		{
+			// Go through all the fighters past lastIsTurnIndex
+			for (int i = 1; i < fighters.length; i++)
+			{
+				// Normalize the checkingID so that it is past lastIsTurnIndex and loops back around the array
+				int checkingID = lastIsTurnIndex + i;
+				if (checkingID >= fighters.length) checkingID -= fighters.length;
+				
+				// If the fighter isn't null, then set it to be their turn now
+				if (fighters[checkingID] != null)
+				{
+					setTurn(checkingID);
+					break;
+				}
+			}
+		}
+	}
+	
+	public void removeEntityFromBattle(Entity entity)
+	{
+		if (entity instanceof PlayerEntity)
+		{
+			PlayerEntity player = (PlayerEntity) entity;
+			
+			if (player.getRole() == Role.PLAYER1)
+			{
+				if (player1 != null)
+				{
+					player1 = null;
+					updateFightersArray();
+				}
+				else
+				{
+					Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Player 1 has already left from BattleScene: " + getID());
+				}
+			}
+			else if (player.getRole() == Role.PLAYER2)
+			{
+				if (player2 != null)
+				{
+					player2 = null;
+					updateFightersArray();
+				}
+				else
+				{
+					Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Player 2 has already left from BattleScene: " + getID());
+				}
+			}
+			else
+			{
+				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattlePlayerEntity with role " + player.getRole() + "is trying to be removed from BattleScene: " + getID());
+			}
+		}
+		else
+		{
+			Game.instance(isServerSide()).logger().log(ALogType.WARNING, "non-player Entities may not leave battles: " + getID());
+		}
+	}
+	
+	public void render(Texture renderTo)
+	{
+		bg.render(renderTo, 0, 0);
+		
+		lightmap.clear();
+		
+		for (BattleEntity e : fighters)
+			if (e != null) e.render(renderTo, lightmap);
+		
+		lightmap.patch();
+		lightmap.render(renderTo, 0, 0);
+		
+		for (BattleEntity e : fighters)
+			if (e != null) e.renderPostLightmap(renderTo);
 	}
 	
 	/**
@@ -177,11 +290,11 @@ public class BattleScene extends ServerClientObject implements ITickable
 		else
 			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "BattleScene " + getID() + " has no enemies to select");
 	}
-//	
-//	public boolean clearSelectedEnemy()
-//	{
-//		
-//	}
+	//
+	// public boolean clearSelectedEnemy()
+	// {
+	//
+	// }
 	
 	/**
 	 * Only to be used by client.
@@ -283,127 +396,19 @@ public class BattleScene extends ServerClientObject implements ITickable
 		}
 	}
 	
-	public int getID()
+	/**
+	 * To be used by the server only.
+	 * 
+	 * @param pos
+	 * @param sender
+	 */
+	public void setEnemySelected(BattlePosition pos, IPConnection sender)
 	{
-		return id;
-	}
-	
-	public BattlePlayerEntity getPlayer1()
-	{
-		return player1;
-	}
-	
-	public BattlePlayerEntity getPlayer2()
-	{
-		return player2;
-	}
-	
-	public BattleEntity getBottomEnemy()
-	{
-		return enemy1;
-	}
-	
-	public BattleEntity getMiddleEnemy()
-	{
-		return enemy2;
-	}
-	
-	public BattleEntity getTopEnemy()
-	{
-		return enemy3;
-	}
-	
-	public void progressTurn()
-	{
-		int lastIsTurnIndex = -1;
-		for (int i = 0; i < fighters.length; i++)
-		{
-			if (fighters[i] != null && fighters[i].isThisTurn())
-			{
-				lastIsTurnIndex = i;
-				break;
-			}
-		}
-		
-		// Couldn't find the fighter who's turn it is
-		if (lastIsTurnIndex == -1)
-		{
-			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "Couldn't find the index of the entity who's turn it is while progressing turns");
-		}
-		else
-		{
-			// Go through all the fighters past lastIsTurnIndex
-			for (int i = 1; i < fighters.length; i++)
-			{
-				// Normalize the checkingID so that it is past lastIsTurnIndex and loops back around the array
-				int checkingID = lastIsTurnIndex + i;
-				if (checkingID >= fighters.length) checkingID -= fighters.length;
-				
-				// If the fighter isn't null, then set it to be their turn now
-				if (fighters[checkingID] != null)
-				{
-					setTurn(checkingID);
-					break;
-				}
-			}
-		}
-	}
-	
-	public void removeEntityFromBattle(Entity entity)
-	{
-		if (entity instanceof PlayerEntity)
-		{
-			PlayerEntity player = (PlayerEntity) entity;
-			
-			if (player.getRole() == Role.PLAYER1)
-			{
-				if (player1 != null)
-				{
-					player1 = null;
-					updateFightersArray();
-				}
-				else
-				{
-					Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Player 1 has already left from BattleScene: " + getID());
-				}
-			}
-			else if (player.getRole() == Role.PLAYER2)
-			{
-				if (player2 != null)
-				{
-					player2 = null;
-					updateFightersArray();
-				}
-				else
-				{
-					Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Player 2 has already left from BattleScene: " + getID());
-				}
-			}
-			else
-			{
-				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattlePlayerEntity with role " + player.getRole() + "is trying to be removed from BattleScene: " + getID());
-			}
-		}
-		else
-		{
-			Game.instance(isServerSide()).logger().log(ALogType.WARNING, "non-player Entities may not leave battles: " + getID());
-		}
-	}
-	
-	public void render(Texture renderTo)
-	{
-		bg.render(renderTo, 0, 0);
-		
-		lightmap.clear();
-		
-		for (BattleEntity e : fighters)
-			if (e != null) e.render(renderTo, lightmap);
-		
-		lightmap.patch();
-		lightmap.render(renderTo, 0, 0);
-		
-		for (BattleEntity e : fighters)
-			if (e != null) e.renderPostLightmap(renderTo);
+		enemy1.setIsSelected(pos == BattlePosition.LEFT_BOTTOM, sender);
+		enemy2.setIsSelected(pos == BattlePosition.LEFT_MIDDLE, sender);
+		enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
+		player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
+		player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
 	}
 	
 	public void setTurn(int fighterOrd)

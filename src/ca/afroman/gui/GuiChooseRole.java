@@ -9,7 +9,6 @@ import ca.afroman.game.Role;
 import ca.afroman.light.FlickeringLight;
 import ca.afroman.light.LightMap;
 import ca.afroman.network.ConnectedPlayer;
-import ca.afroman.option.Options;
 import ca.afroman.packet.technical.PacketSetRole;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.resource.Vector2DInt;
@@ -66,15 +65,12 @@ public class GuiChooseRole extends GuiScreen
 		renderTo.draw(player1.getDisplayedTexture(), p1);
 		renderTo.draw(player2.getDisplayedTexture(), p2);
 		
-		if (Options.instance().isLightingOn())
-		{
-			lightmap.clear();
-			light1.renderCentered(lightmap);
-			light2.renderCentered(lightmap);
-			lightmap.patch();
-			
-			renderTo.draw(lightmap, 0, 0);
-		}
+		lightmap.clear();
+		light1.renderCentered(lightmap);
+		light2.renderCentered(lightmap);
+		lightmap.patch();
+		
+		lightmap.render(renderTo, 0, 0);
 		
 		blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2, 20, "Choose a new role for " + player.getUsername());
 	}
@@ -105,10 +101,7 @@ public class GuiChooseRole extends GuiScreen
 	{
 		super.tick();
 		
-		if (Options.instance().isLightingOn())
-		{
-			light1.tick();
-			light2.tick();
-		}
+		light1.tick();
+		light2.tick();
 	}
 }

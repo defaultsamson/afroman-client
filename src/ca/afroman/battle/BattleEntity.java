@@ -45,11 +45,6 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	
 	public abstract void executeBattle(int battleID);
 	
-	public BattlePosition getBattlePosition()
-	{
-		return pos;
-	}
-	
 	public void finishTurn()
 	{
 		if (levelEntity != null)
@@ -62,6 +57,11 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		}
 	}
 	
+	public BattlePosition getBattlePosition()
+	{
+		return pos;
+	}
+	
 	public Entity getLevelEntity()
 	{
 		return levelEntity;
@@ -69,14 +69,14 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	
 	public abstract boolean isAlive();
 	
-	public boolean isThisTurn()
-	{
-		return isThisTurn;
-	}
-	
 	public boolean isThisSelected()
 	{
 		return isThisSelected;
+	}
+	
+	public boolean isThisTurn()
+	{
+		return isThisTurn;
 	}
 	
 	public abstract void render(Texture renderTo, LightMap lightmap);
@@ -88,9 +88,9 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	 * 
 	 * @param isThisTurn
 	 */
-	public void setIsTurn(boolean isThisTurn)
+	public final void setIsSelected(boolean isThisSelected)
 	{
-		this.isThisTurn = isThisTurn;
+		setIsSelected(isThisSelected, null);
 	}
 	
 	/**
@@ -120,8 +120,8 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	 * 
 	 * @param isThisTurn
 	 */
-	public final void setIsSelected(boolean isThisSelected)
+	public void setIsTurn(boolean isThisTurn)
 	{
-		setIsSelected(isThisSelected, null);
+		this.isThisTurn = isThisTurn;
 	}
 }

@@ -1,7 +1,6 @@
 package ca.afroman.battle;
 
 import ca.afroman.resource.Vector2DInt;
-import ca.afroman.server.ConsoleCommand;
 
 public enum BattlePosition
 {
@@ -12,11 +11,23 @@ public enum BattlePosition
 	RIGHT_TOP(new Vector2DInt(178, 88)),
 	RIGHT_BOTTOM(new Vector2DInt(188, 108));
 	
+	public static BattlePosition fromOrdinal(int ordinal)
+	{
+		if (ordinal < 0 || ordinal > values().length - 1) return null;
+		
+		return values()[ordinal];
+	}
+	
 	private Vector2DInt referencePos;
 	
 	BattlePosition(Vector2DInt referencePos)
 	{
 		this.referencePos = referencePos;
+	}
+	
+	public Vector2DInt getReference()
+	{
+		return referencePos;
 	}
 	
 	public int getReferenceX()
@@ -27,17 +38,5 @@ public enum BattlePosition
 	public int getReferenceY()
 	{
 		return referencePos.getY();
-	}
-	
-	public Vector2DInt getReference()
-	{
-		return referencePos;
-	}
-	
-	public static BattlePosition fromOrdinal(int ordinal)
-	{
-		if (ordinal < 0 || ordinal > values().length - 1) return null;
-		
-		return values()[ordinal];
 	}
 }

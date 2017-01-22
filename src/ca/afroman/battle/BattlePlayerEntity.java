@@ -3,7 +3,6 @@ package ca.afroman.battle;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
-import ca.afroman.assets.Font;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
@@ -83,8 +82,10 @@ public class BattlePlayerEntity extends BattleEntity
 					ticksUntilPass = 120;
 					if (!isServerSide())
 					{
-						xInterpolation = (fightPos.getX() - 50D) / 50D;
-						yInterpolation = 5D / 50D;
+						BattlePosition bPos = getLevelEntity().getBattle().getEnemySelected().getBattlePosition();
+						
+						xInterpolation = (getBattlePosition().getReferenceX() - bPos.getReferenceX()) / 50D;
+						yInterpolation = (getBattlePosition().getReferenceY() - bPos.getReferenceY()) / 50D;// 5D / 50D;
 					}
 					break;
 			}
@@ -127,6 +128,11 @@ public class BattlePlayerEntity extends BattleEntity
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY());// fightPos);
 		light.renderCentered(lightmap);
 		light.renderCentered(lightmap);
+		
+		// for (BattlePosition pos : BattlePosition.values())
+		// {
+		// renderTo.getGraphics().drawLine(pos.getReferenceX(), pos.getReferenceY(), pos.getReferenceX(), pos.getReferenceY());
+		// }
 	}
 	
 	@Override
@@ -136,6 +142,17 @@ public class BattlePlayerEntity extends BattleEntity
 		{
 			blackFont.renderRight(renderTo, (int) fightPos.getX() - 4, (int) fightPos.getY() + 16, "< " + selectedOption.getDisplayName() + " >");
 			whiteFont.renderRight(renderTo, (int) fightPos.getX() - 5, (int) fightPos.getY() + 15, "< " + selectedOption.getDisplayName() + " >");
+			
+			if (getLevelEntity().getRole() == ClientGame.instance().getRole())
+			{
+				blackFont.renderCentered(renderTo, (ClientGame.WIDTH / 2) + 1, 11, "Your Turn");
+				whiteFont.renderCentered(renderTo, (ClientGame.WIDTH / 2), 10, "Your Turn");
+			}
+			else
+			{
+				blackFont.renderCentered(renderTo, (ClientGame.WIDTH / 2) + 1, 11, "Other Player's Turn");
+				whiteFont.renderCentered(renderTo, (ClientGame.WIDTH / 2), 10, "Other Player's Turn");
+			}
 		}
 	}
 	

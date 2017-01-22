@@ -1,5 +1,6 @@
 package ca.afroman.light;
 
+import ca.afroman.option.Options;
 import ca.afroman.resource.Vector2DDouble;
 
 public class FlickeringLight extends PointLight
@@ -90,39 +91,42 @@ public class FlickeringLight extends PointLight
 	@Override
 	public void tick()
 	{
-		if (ticksPerFrame != 0)
+		if (Options.instance().isLightingOn())
 		{
-			tickCounter++;
-			
-			// If it's supposed to progress based on tpf
-			if (tickCounter >= ticksPerFrame)
+			if (ticksPerFrame != 0)
 			{
-				tickCounter = 0;
+				tickCounter++;
 				
-				if (goingUp)
+				// If it's supposed to progress based on tpf
+				if (tickCounter >= ticksPerFrame)
 				{
-					frame++;
-				}
-				else
-				{
-					frame--;
-				}
-				
-				// If it's going over the limit, loop back to frame 1, or ping pong
-				if (frame > radi.length - 1)
-				{
-					// Makes animation play the other way.
-					goingUp = !goingUp;
-					// Puts back to the next frame
-					frame -= 2;
-				}
-				
-				if (frame < 0)
-				{
-					// Makes animation play the other way.
-					goingUp = !goingUp;
-					// Puts back to the next frame
-					frame += 2;
+					tickCounter = 0;
+					
+					if (goingUp)
+					{
+						frame++;
+					}
+					else
+					{
+						frame--;
+					}
+					
+					// If it's going over the limit, loop back to frame 1, or ping pong
+					if (frame > radi.length - 1)
+					{
+						// Makes animation play the other way.
+						goingUp = !goingUp;
+						// Puts back to the next frame
+						frame -= 2;
+					}
+					
+					if (frame < 0)
+					{
+						// Makes animation play the other way.
+						goingUp = !goingUp;
+						// Puts back to the next frame
+						frame += 2;
+					}
 				}
 			}
 		}

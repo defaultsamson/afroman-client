@@ -62,18 +62,15 @@ public class GuiMenuOutline extends GuiScreen
 			renderTo.draw(player2.getDisplayedTexture(), player2Pos);
 		}
 		
-		if (Options.instance().isLightingOn())
+		if (lightmap != null)
 		{
-			if (lightmap != null)
-			{
-				lightmap.clear();
-				
-				if (light != null) light.renderCentered(lightmap);
-				
-				lightmap.patch();
-				
-				renderTo.draw(lightmap, 0, 0);
-			}
+			lightmap.clear();
+			
+			if (light != null) light.renderCentered(lightmap);
+			
+			lightmap.patch();
+			
+			renderTo.draw(lightmap, 0, 0);
 		}
 	}
 	
