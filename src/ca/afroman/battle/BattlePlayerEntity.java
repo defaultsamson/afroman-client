@@ -37,6 +37,7 @@ public class BattlePlayerEntity extends BattleEntity
 	private FlickeringLight light;
 	private Texture shadow;
 	private DrawableAsset asset;
+	@SuppressWarnings("unused")
 	private SpriteAnimation idleAsset;
 	
 	private BattleOption selectedOption;
@@ -74,7 +75,6 @@ public class BattlePlayerEntity extends BattleEntity
 		{
 			getBattle().setIsSelectingAttack(true);
 			getBattle().selectEnemyInit();
-			if (ClientGame.instance().getRole() == Role.PLAYER2) System.out.println("Doing dat boi");
 		}
 		else if (battleID == IS_NOT_SELECTING_ENEMY)
 		{
