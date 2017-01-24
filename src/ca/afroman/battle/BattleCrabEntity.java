@@ -9,9 +9,12 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.game.Game;
+import ca.afroman.game.Role;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.light.FlickeringLight;
 import ca.afroman.light.LightMap;
+import ca.afroman.log.ALogType;
 import ca.afroman.packet.battle.PacketExecuteBattleIDServerClient;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
@@ -31,6 +34,10 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private Texture shadow;
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
+	
+	// For fighting animation
+	private double xInterpolation;
+	private double yInterpolation;
 	
 	public BattleCrabEntity(Entity levelEntity, BattlePosition pos)
 	{
@@ -52,47 +59,56 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	protected void aiAttack(BattlePlayerEntity pl1, BattlePlayerEntity pl2)
 	{
 		// TODO simplify expression
-		if (pl1 == null)
+		if (pl1 == null || !pl1.isAlive())
 		{
-			attackPlayer(2);
+			attackPlayer(Role.PLAYER2);
 		}
-		else if (pl2 == null)
+		else if (pl2 == null || !pl2.isAlive())
 		{
-			attackPlayer(1);
+			attackPlayer(Role.PLAYER1);
 		}
 		else
 		{
 			if (new Random().nextBoolean())
 			{
-				attackPlayer(2);
+				attackPlayer(Role.PLAYER1);
 			}
 			else
 			{
-				attackPlayer(1);
+				attackPlayer(Role.PLAYER2);
 			}
 		}
 	}
 	
-	private void attackPlayer(int player)
+	private void attackPlayer(Role player)
 	{
 		System.out.println("Attacking player " + player);
-		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getLevelEntity().getBattle().getID(), player));
-		executeBattle(player);
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), player.ordinal()));
+		executeBattle(player.ordinal());
 	}
 	
 	@Override
 	public void executeBattle(int battleID)
 	{
-		ticksUntilPass = 60;
+		super.executeBattle(battleID);
 		
-		if (isServerSide())
+		BattlePlayerEntity player = getBattle().getPlayer(Role.fromOrdinal(battleID));
+		
+		if (player == null)
 		{
-			System.out.println("Crab Execution: " + battleID);
+			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "Crab couldn't attack player because the BattlePlayerEntity is null");
+			return;
 		}
-		else
+		
+		if (!isServerSide())
 		{
+			BattlePosition bPos = player.getBattlePosition();
 			
+			xInterpolation = (getBattlePosition().getReferenceX() - bPos.getReferenceX()) / 40D;
+			yInterpolation = (getBattlePosition().getReferenceY() - bPos.getReferenceY()) / 40D;// 5D / 50D;
 		}
+		
+		ticksUntilPass = 100;
 	}
 	
 	@Override
@@ -107,7 +123,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 8);
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY()); // fightPos);
 		light.renderCentered(lightmap);
-		light.renderCentered(lightmap);
+		// light.renderCentered(lightmap);
 	}
 	
 	@Override
@@ -119,7 +135,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 			whiteFont.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT / 2, "Uhh... Useless Mr Crabs");
 		}
 		
-		if (isThisSelected())
+		if (isThisSelected() && getBattle().isSelectingAttack())
 		{
 			blackFont.renderCentered(renderTo, (int) fightPos.getX() + 5, (int) fightPos.getY() - 8, "v");
 			whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 4, (int) fightPos.getY() - 9, "v");
@@ -134,11 +150,26 @@ public class BattleCrabEntity extends BattleEntityAutomated
 		if (ticksUntilPass > 0)
 		{
 			ticksUntilPass--;
+			
+			if (!isServerSide())
+			{
+				if (ticksUntilPass > 60)
+				{
+					fightPos.add(-xInterpolation, -yInterpolation);
+				}
+				else if (ticksUntilPass == 0)
+				{
+					fightPos.setVector(originPos);
+				}
+				else if (ticksUntilPass < 40)
+				{
+					fightPos.add(xInterpolation, yInterpolation);
+				}
+			}
 		}
 		else if (ticksUntilPass == 0)
 		{
 			ticksUntilPass--;
-			
 			if (isServerSide()) finishTurn();
 		}
 		

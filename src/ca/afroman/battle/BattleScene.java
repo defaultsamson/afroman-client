@@ -60,6 +60,8 @@ public class BattleScene extends ServerClientObject implements ITickable
 	private BattlePlayerEntity player2;
 	private BattleEntity[] fighters = { enemy1, enemy2, enemy3, player1, player2 };
 	
+	private boolean isSelectingAttack = false;
+	
 	public BattleScene(boolean isServerSide)
 	{
 		super(isServerSide);
@@ -168,6 +170,11 @@ public class BattleScene extends ServerClientObject implements ITickable
 		return enemy2;
 	}
 	
+	public BattlePlayerEntity getPlayer(Role role)
+	{
+		return role == Role.PLAYER1 ? player1 : role == Role.PLAYER2 ? player2 : null;
+	}
+	
 	public BattlePlayerEntity getPlayer1()
 	{
 		return player1;
@@ -181,6 +188,11 @@ public class BattleScene extends ServerClientObject implements ITickable
 	public BattleEntity getTopEnemy()
 	{
 		return enemy3;
+	}
+	
+	public boolean isSelectingAttack()
+	{
+		return isSelectingAttack;
 	}
 	
 	public void progressTurn()
@@ -409,6 +421,16 @@ public class BattleScene extends ServerClientObject implements ITickable
 		enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
 		player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
 		player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
+	}
+	
+	/**
+	 * Tells if the player is selecting an enemy to attack.
+	 * 
+	 * @param isSelecting
+	 */
+	public void setIsSelectingAttack(boolean isSelecting)
+	{
+		isSelectingAttack = isSelecting;
 	}
 	
 	public void setTurn(int fighterOrd)

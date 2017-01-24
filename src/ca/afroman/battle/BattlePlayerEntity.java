@@ -21,6 +21,8 @@ import ca.afroman.server.ServerGame;
 public class BattlePlayerEntity extends BattleEntity
 {
 	// executeBattle offset for updating display of the option
+	private static final int IS_SELECTING_ENEMY = 1;
+	private static final int IS_NOT_SELECTING_ENEMY = 2;
 	private static final int UPDATE_OPTION_OFFSET = 5000;
 	private static final int EXECUTE_OPTION_OFFSET = 6000;
 	
@@ -39,9 +41,6 @@ public class BattlePlayerEntity extends BattleEntity
 	
 	private BattleOption selectedOption;
 	private boolean isBattling = false;
-	
-	// For selecting an enemy to fight
-	private boolean isSelectingAttack = false;
 	
 	// For fighting animation
 	private double xInterpolation;
@@ -67,7 +66,21 @@ public class BattlePlayerEntity extends BattleEntity
 	@Override
 	public void executeBattle(int battleID)
 	{
-		if (battleID >= EXECUTE_OPTION_OFFSET)
+		super.executeBattle(battleID);
+		
+		boolean sendPacketToThisPlayer = false;
+		
+		if (battleID == IS_SELECTING_ENEMY)
+		{
+			getBattle().setIsSelectingAttack(true);
+			getBattle().selectEnemyInit();
+			if (ClientGame.instance().getRole() == Role.PLAYER2) System.out.println("Doing dat boi");
+		}
+		else if (battleID == IS_NOT_SELECTING_ENEMY)
+		{
+			getBattle().setIsSelectingAttack(false);
+		}
+		else if (battleID >= EXECUTE_OPTION_OFFSET)
 		{
 			int ord = battleID - EXECUTE_OPTION_OFFSET;
 			
@@ -82,7 +95,7 @@ public class BattlePlayerEntity extends BattleEntity
 					ticksUntilPass = 120;
 					if (!isServerSide())
 					{
-						BattlePosition bPos = getLevelEntity().getBattle().getEnemySelected().getBattlePosition();
+						BattlePosition bPos = getBattle().getEnemySelected().getBattlePosition();
 						
 						xInterpolation = (getBattlePosition().getReferenceX() - bPos.getReferenceX()) / 50D;
 						yInterpolation = (getBattlePosition().getReferenceY() - bPos.getReferenceY()) / 50D;// 5D / 50D;
@@ -92,7 +105,7 @@ public class BattlePlayerEntity extends BattleEntity
 			
 			if (isServerSide())
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getLevelEntity().getBattle().getID(), battleID));
+				sendPacketToThisPlayer = true;
 			}
 			else
 			{
@@ -104,8 +117,18 @@ public class BattlePlayerEntity extends BattleEntity
 			int ord = battleID - UPDATE_OPTION_OFFSET;
 			
 			selectedOption = BattleOption.fromOrdinal(ord);
-			
-			if (isServerSide()) ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getLevelEntity().getBattle().getID(), battleID), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+		}
+		
+		if (isServerSide())
+		{
+			if (sendPacketToThisPlayer)
+			{
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID));
+			}
+			else
+			{
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+			}
 		}
 	}
 	
@@ -127,7 +150,7 @@ public class BattlePlayerEntity extends BattleEntity
 		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 25);
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY());// fightPos);
 		light.renderCentered(lightmap);
-		light.renderCentered(lightmap);
+		// light.renderCentered(lightmap);
 		
 		// for (BattlePosition pos : BattlePosition.values())
 		// {
@@ -207,23 +230,23 @@ public class BattlePlayerEntity extends BattleEntity
 			{
 				if (isThisTurn())
 				{
-					if (isSelectingAttack)
+					if (getBattle().isSelectingAttack())
 					{
 						if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered() || ClientGame.instance().input().up.isPressedFiltered())
 						{
-							getLevelEntity().getBattle().selectEnemyNext();
+							getBattle().selectEnemyNext();
 						}
 						else if (ClientGame.instance().input().prevItem.isPressedFiltered() || ClientGame.instance().input().left.isPressedFiltered() || ClientGame.instance().input().down.isPressedFiltered())
 						{
-							getLevelEntity().getBattle().selectEnemyPrev();
+							getBattle().selectEnemyPrev();
 						}
 						else if (ClientGame.instance().input().dropItem.isPressedFiltered() || ClientGame.instance().input().escape.isPressedFiltered())
 						{
-							isSelectingAttack = false;
+							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(IS_NOT_SELECTING_ENEMY));
+							getBattle().setIsSelectingAttack(false);
 						}
 						else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
 						{
-							isSelectingAttack = false;
 							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
 							ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + selectedOption);
 						}
@@ -246,8 +269,9 @@ public class BattlePlayerEntity extends BattleEntity
 							switch (selectedOption)
 							{
 								case ATTACK:
-									isSelectingAttack = true;
-									getLevelEntity().getBattle().selectEnemyInit();
+									ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(IS_SELECTING_ENEMY));
+									getBattle().setIsSelectingAttack(true);
+									getBattle().selectEnemyInit();
 									break;
 								default:
 									ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));

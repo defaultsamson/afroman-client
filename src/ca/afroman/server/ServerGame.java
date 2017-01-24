@@ -407,7 +407,8 @@ public class ServerGame extends Game
 							{
 								if (pe.getBattleEntity1().isThisTurn())
 								{
-									battle.executeBattle(packet.getContent().getInt());
+									pe.getBattleEntity1().executeBattle(packet.getContent().getInt());
+									// battle.executeBattle(packet.getContent().getInt());
 								}
 								else
 								{

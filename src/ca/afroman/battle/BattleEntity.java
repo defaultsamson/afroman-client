@@ -43,18 +43,32 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		this.pos = pos;
 	}
 	
-	public abstract void executeBattle(int battleID);
+	public void executeBattle(int battleID)
+	{
+		getBattle().setIsSelectingAttack(false);
+	}
 	
 	public void finishTurn()
 	{
 		if (levelEntity != null)
 		{
-			levelEntity.getBattle().progressTurn();
+			getBattle().progressTurn();
 		}
 		else
 		{
 			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "Couldn't finish turn because BattleScene object could not be found for the level entity because the level entity is null");
 		}
+	}
+	
+	protected BattleScene getBattle()
+	{
+		if (getLevelEntity() == null)
+		{
+			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "BattleScene is null for " + this);
+			return null;
+		}
+		
+		return getLevelEntity().getBattle();
 	}
 	
 	public BattlePosition getBattlePosition()
