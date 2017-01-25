@@ -776,12 +776,29 @@ public class ClientGame extends Game
 							break;
 						case BATTLE_EXECUTE_ID:
 						{
-							int battleID = packet.getContent().getInt();
+							ByteBuffer buf = packet.getContent();
+							int battleID = buf.getInt();
 							BattleScene battle = getBattle(battleID);
 							
 							if (battle != null)
 							{
-								battle.executeBattle(packet.getContent().getInt());
+								battle.executeBattle(buf.getInt(), 0);
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
+						case BATTLE_EXECUTE_ID_HEALTH:
+						{
+							ByteBuffer buf = packet.getContent();
+							int battleID = buf.getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								battle.executeBattle(buf.getInt(), buf.getInt());
 							}
 							else
 							{

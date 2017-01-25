@@ -43,7 +43,7 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		this.pos = pos;
 	}
 	
-	public void executeBattle(int battleID)
+	public void executeBattle(int battleID, int deltaHealth)
 	{
 		getBattle().setIsSelectingAttack(false);
 	}

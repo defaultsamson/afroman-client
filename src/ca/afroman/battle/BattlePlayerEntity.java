@@ -65,9 +65,9 @@ public class BattlePlayerEntity extends BattleEntity
 	}
 	
 	@Override
-	public void executeBattle(int battleID)
+	public void executeBattle(int battleID, int deltaHealth)
 	{
-		super.executeBattle(battleID);
+		super.executeBattle(battleID, deltaHealth);
 		
 		boolean sendPacketToThisPlayer = false;
 		
@@ -163,19 +163,39 @@ public class BattlePlayerEntity extends BattleEntity
 	{
 		if (isThisTurn() && !isBattling)
 		{
-			blackFont.renderRight(renderTo, (int) fightPos.getX() - 4, (int) fightPos.getY() + 16, "< " + selectedOption.getDisplayName() + " >");
-			whiteFont.renderRight(renderTo, (int) fightPos.getX() - 5, (int) fightPos.getY() + 15, "< " + selectedOption.getDisplayName() + " >");
+			boolean isSelectingAttack = getBattle().isSelectingAttack();
+			if (!isSelectingAttack)
+			{
+				blackFont.renderRight(renderTo, (int) fightPos.getX() - 4, (int) fightPos.getY() + 16, "< " + selectedOption.getDisplayName() + " >");
+				whiteFont.renderRight(renderTo, (int) fightPos.getX() - 5, (int) fightPos.getY() + 15, "< " + selectedOption.getDisplayName() + " >");
+			}
 			
+			String headText;
 			if (getLevelEntity().getRole() == ClientGame.instance().getRole())
 			{
-				blackFont.renderCentered(renderTo, (ClientGame.WIDTH / 2) + 1, 11, "Your Turn");
-				whiteFont.renderCentered(renderTo, (ClientGame.WIDTH / 2), 10, "Your Turn");
+				if (isSelectingAttack)
+				{
+					headText = "Select enemy to attack";
+				}
+				else
+				{
+					headText = "Your turn";
+				}
 			}
 			else
 			{
-				blackFont.renderCentered(renderTo, (ClientGame.WIDTH / 2) + 1, 11, "Other Player's Turn");
-				whiteFont.renderCentered(renderTo, (ClientGame.WIDTH / 2), 10, "Other Player's Turn");
+				if (isSelectingAttack)
+				{
+					headText = "Other player is selecting enemy to attack";
+				}
+				else
+				{
+					headText = "Other player's turn";
+				}
 			}
+			
+			blackFont.renderCentered(renderTo, (ClientGame.WIDTH / 2) + 1, 11, headText);
+			whiteFont.renderCentered(renderTo, (ClientGame.WIDTH / 2), 10, headText);
 		}
 	}
 	

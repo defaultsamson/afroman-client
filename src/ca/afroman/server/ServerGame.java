@@ -395,6 +395,37 @@ public class ServerGame extends Game
 						}
 					}
 						break;
+					case BATTLE_EXECUTE_ID_HEALTH:
+					{
+						PlayerEntity pe = getPlayer(sender.getRole());
+						
+						if (pe != null)
+						{
+							BattleScene battle = pe.getBattle();
+							
+							if (battle != null)
+							{
+								if (pe.getBattleEntity1().isThisTurn())
+								{
+									pe.getBattleEntity1().executeBattle(packet.getContent().getInt(), packet.getContent().getInt());
+									// battle.executeBattle(packet.getContent().getInt());
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "It's not " + sender.getRole() + "'s turn in battle: " + battle.getID());
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "Player " + sender.getRole() + " is not in battle and it trying to execute ID's");
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "No PlayerEntity with role " + sender.getRole());
+						}
+					}
+						break;
 					case BATTLE_EXECUTE_ID:
 					{
 						PlayerEntity pe = getPlayer(sender.getRole());
@@ -407,7 +438,7 @@ public class ServerGame extends Game
 							{
 								if (pe.getBattleEntity1().isThisTurn())
 								{
-									pe.getBattleEntity1().executeBattle(packet.getContent().getInt());
+									pe.getBattleEntity1().executeBattle(packet.getContent().getInt(), 0);
 									// battle.executeBattle(packet.getContent().getInt());
 								}
 								else

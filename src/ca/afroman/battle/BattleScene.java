@@ -138,13 +138,13 @@ public class BattleScene extends ServerClientObject implements ITickable
 		}
 	}
 	
-	public void executeBattle(int battleID)
+	public void executeBattle(int battleID, int deltaHealth)
 	{
 		for (BattleEntity e : fighters)
 		{
 			if (e != null && e.isThisTurn())
 			{
-				e.executeBattle(battleID);
+				e.executeBattle(battleID, deltaHealth);
 				break;
 			}
 		}

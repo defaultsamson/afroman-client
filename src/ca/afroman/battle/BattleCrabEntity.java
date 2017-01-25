@@ -34,6 +34,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private Texture shadow;
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
+	private SpriteAnimation arrow;
 	
 	// For fighting animation
 	private double xInterpolation;
@@ -52,6 +53,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 			shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
 			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
 			idleAsset.getTickCounter().setInterval(14 + pos.ordinal());
+			arrow = Assets.getSpriteAnimation(AssetType.BATTLE_ARROW);
 		}
 	}
 	
@@ -83,14 +85,15 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private void attackPlayer(Role player)
 	{
 		System.out.println("Attacking player " + player);
-		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), player.ordinal()));
-		executeBattle(player.ordinal());
+		int damage = 3 + new Random().nextInt(5);
+		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), player.ordinal(), damage));
+		executeBattle(player.ordinal(), damage);
 	}
 	
 	@Override
-	public void executeBattle(int battleID)
+	public void executeBattle(int battleID, int deltaHealth)
 	{
-		super.executeBattle(battleID);
+		super.executeBattle(battleID, deltaHealth);
 		
 		BattlePlayerEntity player = getBattle().getPlayer(Role.fromOrdinal(battleID));
 		
@@ -137,8 +140,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 		
 		if (isThisSelected() && getBattle().isSelectingAttack())
 		{
-			blackFont.renderCentered(renderTo, (int) fightPos.getX() + 5, (int) fightPos.getY() - 8, "v");
-			whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 4, (int) fightPos.getY() - 9, "v");
+			arrow.render(renderTo, (int) fightPos.getX() + 2, (int) fightPos.getY() - 10);
 		}
 	}
 	
@@ -184,6 +186,8 @@ public class BattleCrabEntity extends BattleEntityAutomated
 				// Ticks the IBattleables DrawableAsset
 				((ITickable) asset).tick();
 			}
+			
+			arrow.tick();
 			
 			light.setPosition(fightPos.getX() + 8, fightPos.getY());
 			light.tick();
