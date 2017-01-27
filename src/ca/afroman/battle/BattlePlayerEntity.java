@@ -5,6 +5,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.animation.BattleAnimationAttack;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.game.Role;
@@ -33,10 +34,8 @@ public class BattlePlayerEntity extends BattleEntity
 	private static final int DAMAGE_TRAVEL_TICKS = 80;
 	
 	// Server and client
-	private int ticksUntilPass = -1;
+	
 	// Client only
-	private Vector2DDouble fightPos;
-	private Vector2DDouble originPos;
 	private FlickeringLight light;
 	
 	private Texture shadow;
@@ -47,9 +46,8 @@ public class BattlePlayerEntity extends BattleEntity
 	private BattleOption selectedOption;
 	
 	private boolean isBattling = false;
+	
 	// For fighting animation
-	private double xInterpolation;
-	private double yInterpolation;
 	private int damageTaken;
 	private boolean triggerDamage;
 	private int damageYOffset;
@@ -118,17 +116,9 @@ public class BattlePlayerEntity extends BattleEntity
 			switch (selectedOption)
 			{
 				default:
-					ticksUntilPass = 100;
 					break;
 				case ATTACK:
-					ticksUntilPass = 120;
-					if (!isServerSide())
-					{
-						BattlePosition bPos = getBattle().getEnemySelected().getBattlePosition();
-						
-						xInterpolation = (getBattlePosition().getReferenceX() - bPos.getReferenceX()) / 50D;
-						yInterpolation = (getBattlePosition().getReferenceY() - bPos.getReferenceY()) / 50D;// 5D / 50D;
-					}
+					new BattleAnimationAttack(isServerSide(), getBattlePosition(), getBattle().getEnemySelected().getBattlePosition(), 50, 20, fightPos).addToBattleEntity(this);
 					break;
 			}
 			
@@ -170,20 +160,18 @@ public class BattlePlayerEntity extends BattleEntity
 	@Override
 	public void render(Texture renderTo, LightMap lightmap)
 	{
+		super.render(renderTo, lightmap);
+		
 		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 25);
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY());// fightPos);
 		light.renderCentered(lightmap);
-		// light.renderCentered(lightmap);
-		
-		// for (BattlePosition pos : BattlePosition.values())
-		// {
-		// renderTo.getGraphics().drawLine(pos.getReferenceX(), pos.getReferenceY(), pos.getReferenceX(), pos.getReferenceY());
-		// }
 	}
 	
 	@Override
 	public void renderPostLightmap(Texture renderTo)
 	{
+		super.renderPostLightmap(renderTo);
+		
 		if (triggerDamage)
 		{
 			String display = damageTaken > 0 ? "+" + damageTaken : "" + damageTaken;
@@ -237,38 +225,7 @@ public class BattlePlayerEntity extends BattleEntity
 	@Override
 	public void tick()
 	{
-		if (ticksUntilPass > 0)
-		{
-			ticksUntilPass--;
-			
-			if (!isServerSide())
-			{
-				switch (selectedOption)
-				{
-					default:
-						break;
-					case ATTACK:
-						if (ticksUntilPass > 70)
-						{
-							fightPos.add(-xInterpolation, -yInterpolation);
-						}
-						else if (ticksUntilPass == 0)
-						{
-							fightPos.setVector(originPos);
-						}
-						else if (ticksUntilPass < 50)
-						{
-							fightPos.add(xInterpolation, yInterpolation);
-						}
-						break;
-				}
-			}
-		}
-		else if (ticksUntilPass == 0)
-		{
-			ticksUntilPass--;
-			if (isServerSide()) finishTurn();
-		}
+		super.tick();
 		
 		if (isServerSide())
 		{

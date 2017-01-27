@@ -222,7 +222,6 @@ public class ClientGame extends Game
 			StringBuilder sb = new StringBuilder();
 			sb.append(tag);
 			sb.append(": ");
-			
 			sb.append(ping);
 			
 			return sb.toString();

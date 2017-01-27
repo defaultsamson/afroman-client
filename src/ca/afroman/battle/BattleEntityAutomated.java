@@ -21,6 +21,8 @@ public abstract class BattleEntityAutomated extends BattleEntity
 	@Override
 	public void tick()
 	{
+		super.tick();
+		
 		// framework for automated turns that only triggers when it first becomes this entity's turn
 		if (isServerSide())
 		{

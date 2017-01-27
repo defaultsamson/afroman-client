@@ -1,9 +1,12 @@
 package ca.afroman.battle;
 
+import java.util.ArrayList;
+
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.animation.BattleAnimation;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.game.Game;
@@ -14,6 +17,7 @@ import ca.afroman.network.IPConnection;
 import ca.afroman.packet.battle.PacketSelectEntityClientServer;
 import ca.afroman.packet.battle.PacketSelectEntityServerClient;
 import ca.afroman.resource.ServerClientObject;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
 public abstract class BattleEntity extends ServerClientObject implements ITickable
@@ -25,9 +29,14 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	private Entity levelEntity;
 	private BattlePosition pos;
 	
+	private ArrayList<BattleAnimation> animations;
+	private ArrayList<BattleAnimation> animationsToRemove;
+	
 	// Client only
 	protected Font blackFont;
 	protected Font whiteFont;
+	protected Vector2DDouble fightPos;
+	protected Vector2DDouble originPos;
 	
 	public BattleEntity(Entity levelEntity, BattlePosition pos)
 	{
@@ -45,6 +54,9 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		isThisSelected = false;
 		this.levelEntity = levelEntity;
 		this.pos = pos;
+		
+		animations = new ArrayList<BattleAnimation>();
+		animationsToRemove = new ArrayList<BattleAnimation>();
 	}
 	
 	/**
@@ -75,6 +87,11 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		}
 	}
 	
+	public ArrayList<BattleAnimation> getAnimations()
+	{
+		return animations;
+	}
+	
 	protected BattleScene getBattle()
 	{
 		if (getLevelEntity() == null)
@@ -91,9 +108,19 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		return pos;
 	}
 	
+	public Vector2DDouble getFightPosition()
+	{
+		return fightPos;
+	}
+	
 	public Entity getLevelEntity()
 	{
 		return levelEntity;
+	}
+	
+	public Vector2DDouble getOriginPosition()
+	{
+		return originPos;
 	}
 	
 	public boolean isAlive()
@@ -112,9 +139,26 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		return isThisTurn;
 	}
 	
-	public abstract void render(Texture renderTo, LightMap lightmap);
+	public void removeBattleAnimation(BattleAnimation b)
+	{
+		animationsToRemove.add(b);
+	}
 	
-	public abstract void renderPostLightmap(Texture renderTo);
+	public void render(Texture renderTo, LightMap lightmap)
+	{
+		for (BattleAnimation b : animations)
+		{
+			b.render(renderTo, lightmap);
+		}
+	}
+	
+	public void renderPostLightmap(Texture renderTo)
+	{
+		for (BattleAnimation b : animations)
+		{
+			b.renderPostLightmap(renderTo);
+		}
+	}
 	
 	/**
 	 * <b>WARNING:</b> Only designed to be used by BattleScene.
@@ -156,5 +200,19 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	public void setIsTurn(boolean isThisTurn)
 	{
 		this.isThisTurn = isThisTurn;
+	}
+	
+	@Override
+	public void tick()
+	{
+		for (BattleAnimation b : animations)
+		{
+			b.tick();
+		}
+		
+		for (BattleAnimation b : animationsToRemove)
+		{
+			animations.remove(b);
+		}
 	}
 }

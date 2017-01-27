@@ -25,9 +25,6 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private int ticksUntilPass = -1;
 	
 	// Client only
-	private Vector2DDouble fightPos;
-	private Vector2DDouble originPos;
-	
 	private FlickeringLight light;
 	private Texture shadow;
 	private DrawableAsset asset;
@@ -121,6 +118,8 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	@Override
 	public void render(Texture renderTo, LightMap lightmap)
 	{
+		super.render(renderTo, lightmap);
+		
 		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 8);
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY()); // fightPos);
 		light.renderCentered(lightmap);
@@ -130,6 +129,8 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	@Override
 	public void renderPostLightmap(Texture renderTo)
 	{
+		super.renderPostLightmap(renderTo);
+		
 		if (ticksUntilPass > 10)
 		{
 			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 + 1, ClientGame.HEIGHT / 2 + 1, "Uhh... Useless Mr Crabs");
