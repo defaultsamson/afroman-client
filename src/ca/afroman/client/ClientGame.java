@@ -62,7 +62,6 @@ import ca.afroman.packet.level.PacketSetPlayerLocationClientServer;
 import ca.afroman.packet.technical.PacketClientServerRequestID;
 import ca.afroman.packet.technical.PacketLoadLevels;
 import ca.afroman.packet.technical.PacketLogin;
-import ca.afroman.packet.technical.PacketPingClientServer;
 import ca.afroman.packet.technical.PacketPingServerClient;
 import ca.afroman.packet.technical.PacketPlayerDisconnect;
 import ca.afroman.resource.IDCounter;
@@ -224,15 +223,7 @@ public class ClientGame extends Game
 			sb.append(tag);
 			sb.append(": ");
 			
-			if (ping1 == PacketPingServerClient.OVER_MAX)
-			{
-				sb.append('>');
-				sb.append(PacketPingServerClient.MAX_SENDABLE);
-			}
-			else
-			{
-				sb.append(ping);
-			}
+			sb.append(ping);
 			
 			return sb.toString();
 		}
@@ -325,11 +316,11 @@ public class ClientGame extends Game
 							exitFromGame(ExitGameReason.CONNECTION_LOST);
 							break;
 						case TEST_PING:
-							ping = (short) (packet.getContent().get() + Byte.MAX_VALUE);
-							ping1 = (short) (packet.getContent().get() + Byte.MAX_VALUE);
-							ping2 = (short) (packet.getContent().get() + Byte.MAX_VALUE);
+							ping = packet.getContent().getShort();
+							ping1 = packet.getContent().getShort();
+							ping2 = packet.getContent().getShort();
 							
-							sockets().sender().sendPacket(new PacketPingClientServer());
+							// sockets().sender().sendPacket(new PacketPingClientServer());
 							break;
 						case DENY_JOIN:
 						{

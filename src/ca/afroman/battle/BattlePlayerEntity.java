@@ -26,26 +26,34 @@ public class BattlePlayerEntity extends BattleEntity
 	private static final int UPDATE_OPTION_OFFSET = 5000;
 	private static final int EXECUTE_OPTION_OFFSET = 6000;
 	
-	// Server and client
-	private int health = 100;
-	private int ticksUntilPass = -1;
+	// For taking damage
+	private static final int DAMAGE_TRAVEL_MAX = 4;
 	
+	private static final int DAMAGE_TRAVEL_MIN = -10;
+	private static final int DAMAGE_TRAVEL_TICKS = 80;
+	
+	// Server and client
+	private int ticksUntilPass = -1;
 	// Client only
 	private Vector2DDouble fightPos;
 	private Vector2DDouble originPos;
-	
 	private FlickeringLight light;
+	
 	private Texture shadow;
 	private DrawableAsset asset;
+	
 	@SuppressWarnings("unused")
 	private SpriteAnimation idleAsset;
-	
 	private BattleOption selectedOption;
-	private boolean isBattling = false;
 	
+	private boolean isBattling = false;
 	// For fighting animation
 	private double xInterpolation;
 	private double yInterpolation;
+	private int damageTaken;
+	private boolean triggerDamage;
+	private int damageYOffset;
+	private int damageDisplayCounter;
 	
 	public BattlePlayerEntity(PlayerEntity levelEntity, BattlePosition pos)
 	{
@@ -61,7 +69,28 @@ public class BattlePlayerEntity extends BattleEntity
 			asset = idleAsset = levelEntity.getRole() == Role.PLAYER1 ? Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_ONE) : Assets.getSpriteAnimation(AssetType.BATTLE_PLAYER_TWO);
 			
 			selectedOption = BattleOption.ATTACK;
+			
+			damageTaken = 0;
+			triggerDamage = false;
+			damageYOffset = 0;
+			damageDisplayCounter = 0;
 		}
+	}
+	
+	@Override
+	public int addHealth(int deltaHealth)
+	{
+		int trueDelta = super.addHealth(deltaHealth);
+		
+		if (!isServerSide())
+		{
+			triggerDamage = true;
+			damageTaken = trueDelta;
+			damageYOffset = DAMAGE_TRAVEL_MAX;
+			damageDisplayCounter = DAMAGE_TRAVEL_TICKS;
+		}
+		
+		return trueDelta;
 	}
 	
 	@Override
@@ -139,12 +168,6 @@ public class BattlePlayerEntity extends BattleEntity
 	}
 	
 	@Override
-	public boolean isAlive()
-	{
-		return health > 0;
-	}
-	
-	@Override
 	public void render(Texture renderTo, LightMap lightmap)
 	{
 		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 25);
@@ -161,13 +184,25 @@ public class BattlePlayerEntity extends BattleEntity
 	@Override
 	public void renderPostLightmap(Texture renderTo)
 	{
+		if (triggerDamage)
+		{
+			String display = damageTaken > 0 ? "+" + damageTaken : "" + damageTaken;
+			
+			blackFont.renderCentered(renderTo, (int) fightPos.getX() + 11, (int) fightPos.getY() + damageYOffset + 1, display);
+			whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 10, (int) fightPos.getY() + damageYOffset, display);
+		}
+		
+		blackFont.renderCentered(renderTo, (int) fightPos.getX() + 11, (int) fightPos.getY() + 41, "" + health);
+		whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 10, (int) fightPos.getY() + 40, "" + health);
+		
 		if (isThisTurn() && !isBattling)
 		{
 			boolean isSelectingAttack = getBattle().isSelectingAttack();
 			if (!isSelectingAttack)
 			{
-				blackFont.renderRight(renderTo, (int) fightPos.getX() - 4, (int) fightPos.getY() + 16, "< " + selectedOption.getDisplayName() + " >");
-				whiteFont.renderRight(renderTo, (int) fightPos.getX() - 5, (int) fightPos.getY() + 15, "< " + selectedOption.getDisplayName() + " >");
+				String attackDisplay = "< " + selectedOption.getDisplayName() + " >";
+				blackFont.renderRight(renderTo, (int) fightPos.getX() - 4, (int) fightPos.getY() + 16, attackDisplay);
+				whiteFont.renderRight(renderTo, (int) fightPos.getX() - 5, (int) fightPos.getY() + 15, attackDisplay);
 			}
 			
 			String headText;
@@ -314,6 +349,22 @@ public class BattlePlayerEntity extends BattleEntity
 				{
 					
 				}
+			}
+			
+			// If the damage display has been triggered
+			if (triggerDamage)
+			{
+				if (damageYOffset > DAMAGE_TRAVEL_MIN) // Otherwise make text rise up
+				{
+					damageYOffset--;
+				}
+				
+				if (damageDisplayCounter <= 0)
+				{
+					triggerDamage = false;
+				}
+				
+				damageDisplayCounter--;
 			}
 			
 			if (asset instanceof ITickable)

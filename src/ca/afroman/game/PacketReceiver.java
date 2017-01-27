@@ -12,8 +12,11 @@ import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
+import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
+import ca.afroman.packet.technical.PacketPingClientServer;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
@@ -48,7 +51,39 @@ public class PacketReceiver extends DynamicThread
 			int port = packet.getPort();
 			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + pack.getType());
 			
-			manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
+			// Faster ping times because it doesn't have to go through the client's tick system
+			if (pack.getType() == PacketType.TEST_PING)
+			{
+				if (isServerSide())
+				{
+					IPConnectedPlayer sender = manager.getPlayerConnection(address, port);
+					
+					if (sender != null)
+					{
+						if (sender.isPendingPingUpdate())
+						{
+							sender.updatePing(System.currentTimeMillis());
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "Received ping response from a client that isn't pending a ping update: " + sender.getConnection().asReadable());
+						}
+					}
+					else
+					{
+						logger().log(ALogType.WARNING, "Received ping response from a client isn't connected [" + IPUtil.asReadable(address, port) + "]");
+					}
+				}
+				else
+				{
+					manager.sender().sendPacket(new PacketPingClientServer());
+					manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
+				}
+			}
+			else
+			{
+				manager.getGame().addPacketToParse(new IncomingPacketWrapper(pack, address, port));
+			}
 		}
 		catch (PortUnreachableException e)
 		{

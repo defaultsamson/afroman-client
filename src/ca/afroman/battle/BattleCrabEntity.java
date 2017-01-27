@@ -22,8 +22,6 @@ import ca.afroman.server.ServerGame;
 public class BattleCrabEntity extends BattleEntityAutomated
 {
 	// Server/client
-	public int health = 20;
-	
 	private int ticksUntilPass = -1;
 	
 	// Client only
@@ -39,6 +37,9 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	// For fighting animation
 	private double xInterpolation;
 	private double yInterpolation;
+	
+	private BattlePlayerEntity playerAttacking;
+	private int deltaDamage;
 	
 	public BattleCrabEntity(Entity levelEntity, BattlePosition pos)
 	{
@@ -85,7 +86,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	private void attackPlayer(Role player)
 	{
 		System.out.println("Attacking player " + player);
-		int damage = 3 + new Random().nextInt(5);
+		int damage = -3 - new Random().nextInt(5);
 		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), player.ordinal(), damage));
 		executeBattle(player.ordinal(), damage);
 	}
@@ -103,6 +104,9 @@ public class BattleCrabEntity extends BattleEntityAutomated
 			return;
 		}
 		
+		playerAttacking = player;
+		this.deltaDamage = deltaHealth;
+		
 		if (!isServerSide())
 		{
 			BattlePosition bPos = player.getBattlePosition();
@@ -112,12 +116,6 @@ public class BattleCrabEntity extends BattleEntityAutomated
 		}
 		
 		ticksUntilPass = 100;
-	}
-	
-	@Override
-	public boolean isAlive()
-	{
-		return health > 0;
 	}
 	
 	@Override
@@ -167,6 +165,12 @@ public class BattleCrabEntity extends BattleEntityAutomated
 				{
 					fightPos.add(xInterpolation, yInterpolation);
 				}
+			}
+			
+			if (ticksUntilPass == 60)
+			{
+				// TODO make a way to defend against this attack?
+				playerAttacking.addHealth(deltaDamage);
 			}
 		}
 		else if (ticksUntilPass == 0)

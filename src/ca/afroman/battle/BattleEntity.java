@@ -18,14 +18,16 @@ import ca.afroman.server.ServerGame;
 
 public abstract class BattleEntity extends ServerClientObject implements ITickable
 {
-	// Client only
-	protected Font blackFont;
-	protected Font whiteFont;
-	
+	protected int maxHealth;
+	protected int health;
 	private boolean isThisTurn;
 	private boolean isThisSelected;
 	private Entity levelEntity;
 	private BattlePosition pos;
+	
+	// Client only
+	protected Font blackFont;
+	protected Font whiteFont;
 	
 	public BattleEntity(Entity levelEntity, BattlePosition pos)
 	{
@@ -37,10 +39,23 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 			whiteFont = Assets.getFont(AssetType.FONT_WHITE);
 		}
 		
+		maxHealth = 100;
+		health = 100;
 		isThisTurn = false;
 		isThisSelected = false;
 		this.levelEntity = levelEntity;
 		this.pos = pos;
+	}
+	
+	/**
+	 * @param deltaHealth
+	 * @return the allowed deltaHealth
+	 */
+	public int addHealth(int deltaHealth)
+	{
+		int prev = health;
+		health = Math.min(Math.max(0, health + deltaHealth), maxHealth);
+		return health - prev;
 	}
 	
 	public void executeBattle(int battleID, int deltaHealth)
@@ -81,7 +96,11 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		return levelEntity;
 	}
 	
-	public abstract boolean isAlive();
+	public boolean isAlive()
+	{
+		System.out.println("is alive: " + health);
+		return health > 0;
+	}
 	
 	public boolean isThisSelected()
 	{
