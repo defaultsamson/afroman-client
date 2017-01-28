@@ -1,10 +1,13 @@
 package ca.afroman.battle;
 
+import java.util.Random;
+
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.animation.BattleAnimationAdministerDamage;
 import ca.afroman.battle.animation.BattleAnimationAttack;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
@@ -27,17 +30,8 @@ public class BattlePlayerEntity extends BattleEntity
 	private static final int UPDATE_OPTION_OFFSET = 5000;
 	private static final int EXECUTE_OPTION_OFFSET = 6000;
 	
-	// For taking damage
-	private static final int DAMAGE_TRAVEL_MAX = 4;
-	
-	private static final int DAMAGE_TRAVEL_MIN = -10;
-	private static final int DAMAGE_TRAVEL_TICKS = 80;
-	
-	// Server and client
-	
 	// Client only
 	private FlickeringLight light;
-	
 	private Texture shadow;
 	private DrawableAsset asset;
 	
@@ -45,21 +39,16 @@ public class BattlePlayerEntity extends BattleEntity
 	private SpriteAnimation idleAsset;
 	private BattleOption selectedOption;
 	
-	private boolean isBattling = false;
+	private boolean isBattling;
 	
 	// For fighting animation
-	private int damageTaken;
-	private boolean triggerDamage;
-	private int damageYOffset;
-	private int damageDisplayCounter;
-	
 	public BattlePlayerEntity(PlayerEntity levelEntity, BattlePosition pos)
 	{
 		super(levelEntity, pos);
 		
 		if (!isServerSide())
 		{
-			fightPos = new Vector2DDouble(pos.getReferenceX(), pos.getReferenceY() - 30); // levelEntity.getRole() == Role.PLAYER1 ? new Vector2DDouble(173, 54) : new Vector2DDouble(184, 79);
+			fightPos = new Vector2DDouble(pos.getReferenceX(), pos.getReferenceY() - 30);
 			originPos = fightPos.clone();
 			
 			light = new FlickeringLight(true, fightPos.clone(), 60, 70, 5);
@@ -68,27 +57,21 @@ public class BattlePlayerEntity extends BattleEntity
 			
 			selectedOption = BattleOption.ATTACK;
 			
-			damageTaken = 0;
-			triggerDamage = false;
-			damageYOffset = 0;
-			damageDisplayCounter = 0;
+			isBattling = false;
 		}
 	}
 	
 	@Override
 	public int addHealth(int deltaHealth)
 	{
-		int trueDelta = super.addHealth(deltaHealth);
-		
 		if (!isServerSide())
 		{
-			triggerDamage = true;
-			damageTaken = trueDelta;
-			damageYOffset = DAMAGE_TRAVEL_MAX;
-			damageDisplayCounter = DAMAGE_TRAVEL_TICKS;
+			return super.addHealth(deltaHealth, asset.getWidth());
 		}
-		
-		return trueDelta;
+		else
+		{
+			return super.addHealth(deltaHealth);
+		}
 	}
 	
 	@Override
@@ -118,7 +101,13 @@ public class BattlePlayerEntity extends BattleEntity
 				default:
 					break;
 				case ATTACK:
-					new BattleAnimationAttack(isServerSide(), getBattlePosition(), getBattle().getEnemySelected().getBattlePosition(), 50, 20, fightPos).addToBattleEntity(this);
+					BattleEntity bat = getBattle().getEnemySelected();
+					int travelTicks = 50;
+					
+					if (isServerSide()) deltaHealth = -8 - new Random().nextInt(4);
+					
+					new BattleAnimationAdministerDamage(isServerSide(), bat, travelTicks, deltaHealth).addToBattleEntity(this);
+					new BattleAnimationAttack(isServerSide(), getBattlePosition(), bat.getBattlePosition(), travelTicks, 10, fightPos).addToBattleEntity(this);
 					break;
 			}
 			
@@ -142,11 +131,25 @@ public class BattlePlayerEntity extends BattleEntity
 		{
 			if (sendPacketToThisPlayer)
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID));
+				if (deltaHealth != 0)
+				{
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID, deltaHealth));
+				}
+				else
+				{
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID));
+				}
 			}
 			else
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+				if (deltaHealth != 0)
+				{
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID, deltaHealth), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+				}
+				else
+				{
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+				}
 			}
 		}
 	}
@@ -160,26 +163,16 @@ public class BattlePlayerEntity extends BattleEntity
 	@Override
 	public void render(Texture renderTo, LightMap lightmap)
 	{
-		super.render(renderTo, lightmap);
-		
 		shadow.render(renderTo, (int) fightPos.getX() - 1, (int) fightPos.getY() + 25);
 		asset.render(renderTo, (int) fightPos.getX(), (int) fightPos.getY());// fightPos);
 		light.renderCentered(lightmap);
+		
+		super.render(renderTo, lightmap);
 	}
 	
 	@Override
 	public void renderPostLightmap(Texture renderTo)
 	{
-		super.renderPostLightmap(renderTo);
-		
-		if (triggerDamage)
-		{
-			String display = damageTaken > 0 ? "+" + damageTaken : "" + damageTaken;
-			
-			blackFont.renderCentered(renderTo, (int) fightPos.getX() + 11, (int) fightPos.getY() + damageYOffset + 1, display);
-			whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 10, (int) fightPos.getY() + damageYOffset, display);
-		}
-		
 		blackFont.renderCentered(renderTo, (int) fightPos.getX() + 11, (int) fightPos.getY() + 41, "" + health);
 		whiteFont.renderCentered(renderTo, (int) fightPos.getX() + 10, (int) fightPos.getY() + 40, "" + health);
 		
@@ -220,6 +213,8 @@ public class BattlePlayerEntity extends BattleEntity
 			blackFont.renderCentered(renderTo, (ClientGame.WIDTH / 2) + 1, 11, headText);
 			whiteFont.renderCentered(renderTo, (ClientGame.WIDTH / 2), 10, headText);
 		}
+		
+		super.renderPostLightmap(renderTo);
 	}
 	
 	@Override
@@ -254,6 +249,10 @@ public class BattlePlayerEntity extends BattleEntity
 						}
 						else if (ClientGame.instance().input().dropItem.isPressedFiltered() || ClientGame.instance().input().escape.isPressedFiltered())
 						{
+							// Clears the release on ESCAPE so that it doesn't trigger the in-game menu
+							ClientGame.instance().input().escape.setPressed(false);
+							ClientGame.instance().input().escape.isReleasedFiltered();
+							
 							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(IS_NOT_SELECTING_ENEMY));
 							getBattle().setIsSelectingAttack(false);
 						}
@@ -306,22 +305,6 @@ public class BattlePlayerEntity extends BattleEntity
 				{
 					
 				}
-			}
-			
-			// If the damage display has been triggered
-			if (triggerDamage)
-			{
-				if (damageYOffset > DAMAGE_TRAVEL_MIN) // Otherwise make text rise up
-				{
-					damageYOffset--;
-				}
-				
-				if (damageDisplayCounter <= 0)
-				{
-					triggerDamage = false;
-				}
-				
-				damageDisplayCounter--;
 			}
 			
 			if (asset instanceof ITickable)

@@ -224,7 +224,6 @@ public class BattleScene extends ServerClientObject implements ITickable
 				// If the fighter isn't null, then set it to be their turn now
 				if (fighters[checkingID] != null && fighters[checkingID].isAlive())
 				{
-					System.out.println(fighters[checkingID] + ", " + fighters[checkingID].isAlive());
 					setTurn(checkingID);
 					break;
 				}

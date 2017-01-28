@@ -7,7 +7,8 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.DrawableAsset;
 import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
-import ca.afroman.client.ClientGame;
+import ca.afroman.battle.animation.BattleAnimationAdministerDamage;
+import ca.afroman.battle.animation.BattleAnimationAttack;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -21,22 +22,12 @@ import ca.afroman.server.ServerGame;
 
 public class BattleCrabEntity extends BattleEntityAutomated
 {
-	// Server/client
-	private int ticksUntilPass = -1;
-	
 	// Client only
 	private FlickeringLight light;
 	private Texture shadow;
 	private DrawableAsset asset;
 	private SpriteAnimation idleAsset;
 	private SpriteAnimation arrow;
-	
-	// For fighting animation
-	private double xInterpolation;
-	private double yInterpolation;
-	
-	private BattlePlayerEntity playerAttacking;
-	private int deltaDamage;
 	
 	public BattleCrabEntity(Entity levelEntity, BattlePosition pos)
 	{
@@ -52,6 +43,22 @@ public class BattleCrabEntity extends BattleEntityAutomated
 			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
 			idleAsset.getTickCounter().setInterval(14 + pos.ordinal());
 			arrow = Assets.getSpriteAnimation(AssetType.BATTLE_ARROW);
+		}
+		
+		health = 20;
+		maxHealth = 20;
+	}
+	
+	@Override
+	public int addHealth(int deltaHealth)
+	{
+		if (!isServerSide())
+		{
+			return super.addHealth(deltaHealth, asset.getWidth());
+		}
+		else
+		{
+			return super.addHealth(deltaHealth);
 		}
 	}
 	
@@ -101,18 +108,9 @@ public class BattleCrabEntity extends BattleEntityAutomated
 			return;
 		}
 		
-		playerAttacking = player;
-		this.deltaDamage = deltaHealth;
-		
-		if (!isServerSide())
-		{
-			BattlePosition bPos = player.getBattlePosition();
-			
-			xInterpolation = (getBattlePosition().getReferenceX() - bPos.getReferenceX()) / 40D;
-			yInterpolation = (getBattlePosition().getReferenceY() - bPos.getReferenceY()) / 40D;// 5D / 50D;
-		}
-		
-		ticksUntilPass = 100;
+		int travelTicks = 40;
+		new BattleAnimationAdministerDamage(isServerSide(), player, travelTicks, deltaHealth).addToBattleEntity(this);
+		new BattleAnimationAttack(isServerSide(), getBattlePosition(), player.getBattlePosition(), travelTicks, 10, fightPos).addToBattleEntity(this);
 	}
 	
 	@Override
@@ -131,12 +129,6 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	{
 		super.renderPostLightmap(renderTo);
 		
-		if (ticksUntilPass > 10)
-		{
-			blackFont.renderCentered(renderTo, ClientGame.WIDTH / 2 + 1, ClientGame.HEIGHT / 2 + 1, "Uhh... Useless Mr Crabs");
-			whiteFont.renderCentered(renderTo, ClientGame.WIDTH / 2, ClientGame.HEIGHT / 2, "Uhh... Useless Mr Crabs");
-		}
-		
 		if (isThisSelected() && getBattle().isSelectingAttack())
 		{
 			arrow.render(renderTo, (int) fightPos.getX() + 2, (int) fightPos.getY() - 10);
@@ -147,38 +139,6 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	public void tick()
 	{
 		super.tick();
-		
-		if (ticksUntilPass > 0)
-		{
-			ticksUntilPass--;
-			
-			if (!isServerSide())
-			{
-				if (ticksUntilPass > 60)
-				{
-					fightPos.add(-xInterpolation, -yInterpolation);
-				}
-				else if (ticksUntilPass == 0)
-				{
-					fightPos.setVector(originPos);
-				}
-				else if (ticksUntilPass < 40)
-				{
-					fightPos.add(xInterpolation, yInterpolation);
-				}
-			}
-			
-			if (ticksUntilPass == 60)
-			{
-				// TODO make a way to defend against this attack?
-				playerAttacking.addHealth(deltaDamage);
-			}
-		}
-		else if (ticksUntilPass == 0)
-		{
-			ticksUntilPass--;
-			if (isServerSide()) finishTurn();
-		}
 		
 		if (isServerSide())
 		{

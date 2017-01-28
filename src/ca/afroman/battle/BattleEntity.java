@@ -7,6 +7,7 @@ import ca.afroman.assets.Assets;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.battle.animation.BattleAnimation;
+import ca.afroman.battle.animation.BattleAnimationDisplayDeltaHealth;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.game.Game;
@@ -65,9 +66,26 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	 */
 	public int addHealth(int deltaHealth)
 	{
+		return addHealth(deltaHealth, 0);
+	}
+	
+	/**
+	 * @param deltaHealth
+	 * @return the allowed deltaHealth
+	 */
+	public int addHealth(int deltaHealth, int clientAssetWidth)
+	{
 		int prev = health;
 		health = Math.min(Math.max(0, health + deltaHealth), maxHealth);
-		return health - prev;
+		
+		int trueDelta = health - prev;
+		
+		if (!isServerSide())
+		{
+			new BattleAnimationDisplayDeltaHealth(isServerSide(), trueDelta, 14, 60, fightPos.getX() + (clientAssetWidth / 2), fightPos.getY() - 10).addToBattleEntity(this);
+		}
+		
+		return trueDelta;
 	}
 	
 	public void executeBattle(int battleID, int deltaHealth)

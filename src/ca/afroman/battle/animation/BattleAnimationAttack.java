@@ -61,6 +61,18 @@ public class BattleAnimationAttack extends BattleAnimation
 	{
 		ticksUntilPass--;
 		
+		if (!isServerSide())
+		{
+			if (ticksUntilPass > upperFrameBound)
+			{
+				position.add(-xInterpolation, -yInterpolation);
+			}
+			else if (ticksUntilPass < lowerFrameBound)
+			{
+				position.add(xInterpolation, yInterpolation);
+			}
+		}
+		
 		if (ticksUntilPass == 0)
 		{
 			if (isServerSide())
@@ -71,18 +83,6 @@ public class BattleAnimationAttack extends BattleAnimation
 			{
 				position.setVector(originX, originY);
 				removeFromBattleEntity();
-			}
-		}
-		
-		if (!isServerSide())
-		{
-			if (ticksUntilPass > upperFrameBound)
-			{
-				position.add(-xInterpolation, -yInterpolation);
-			}
-			else if (ticksUntilPass < lowerFrameBound)
-			{
-				position.add(xInterpolation, yInterpolation);
 			}
 		}
 	}

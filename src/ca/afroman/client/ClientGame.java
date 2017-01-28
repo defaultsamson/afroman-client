@@ -1653,14 +1653,14 @@ public class ClientGame extends Game
 			}
 		}
 		
-		if (getCurrentScreen() != null)
-		{
-			getCurrentScreen().tick();
-		}
-		
 		if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 		{
 			getThisPlayer().getBattle().tick();
+		}
+		
+		if (getCurrentScreen() != null)
+		{
+			getCurrentScreen().tick();
 		}
 		
 		if (!waitingForOthersToLoad) // && getCurrentLevel() != null
