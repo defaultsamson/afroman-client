@@ -34,6 +34,12 @@ public class BattleScene extends HitboxTrigger
 	
 	private static final Texture bg = Assets.getTexture(AssetType.BATTLE_RUINS_BG);
 	
+	private static List<TriggerType> getTriggerTypeList()
+	{
+		ArrayList<TriggerType> list = new ArrayList<TriggerType>();
+		list.add(TriggerType.PLAYER_COLLIDE);
+		return list;
+	}
 	private LightMap lightmap;
 	/** Left bottom **/
 	private BattleEntity enemy1;
@@ -45,16 +51,10 @@ public class BattleScene extends HitboxTrigger
 	private BattlePlayerEntity player1;
 	/** Right bottom **/
 	private BattlePlayerEntity player2;
+	
 	private BattleEntity[] fighters = { enemy1, enemy2, enemy3, player1, player2 };
 	
 	private boolean isSelectingAttack = false;
-	
-	private static List<TriggerType> getTriggerTypeList()
-	{
-		ArrayList<TriggerType> list = new ArrayList<TriggerType>();
-		list.add(TriggerType.PLAYER_COLLIDE);
-		return list;
-	}
 	
 	private Tile tile;
 	
@@ -71,52 +71,6 @@ public class BattleScene extends HitboxTrigger
 			ClientGame.instance().playMusic(Assets.getAudioClip(AssetType.AUDIO_BATTLE_MUSIC), true);
 			lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
 			tile = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, isServerSide ? null : Assets.getDrawableAsset(AssetType.BATTLE_TUMBLE).clone()); // Assets.getDrawableAsset(AssetType.CAT));
-		}
-	}
-	
-	@Override
-	public void addToLevel(Level newLevel)
-	{
-		if (level == newLevel) return;
-		
-		if (level != null)
-		{
-			if (!isServerSide())
-			{
-				tile.removeFromLevel();
-			}
-			
-			level.getEvents().remove(this);
-		}
-		
-		// Sets the new level
-		level = newLevel;
-		
-		if (level != null)
-		{
-			if (!isServerSide())
-			{
-				tile.setLayer(level.getDynamicLayer());
-				tile.addToLevel(level);
-			}
-			
-			level.getEvents().add(this);
-		}
-	}
-	
-	@Override
-	public void trigger(Entity triggerer)
-	{
-		if (triggerer instanceof PlayerEntity)
-		{
-			PlayerEntity p = (PlayerEntity) triggerer;
-			
-			addEntityToBattle(p);
-			// TODO EntityJoinPacket thing
-		}
-		else
-		{
-			Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattleTumble was triggered by a non-PlayerEntity");
 		}
 	}
 	
@@ -176,6 +130,36 @@ public class BattleScene extends HitboxTrigger
 			{
 				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattleScene already has an enemy in it: " + getID());
 			}
+		}
+	}
+	
+	@Override
+	public void addToLevel(Level newLevel)
+	{
+		if (level == newLevel) return;
+		
+		if (level != null)
+		{
+			if (!isServerSide())
+			{
+				tile.removeFromLevel();
+			}
+			
+			level.getEvents().remove(this);
+		}
+		
+		// Sets the new level
+		level = newLevel;
+		
+		if (level != null)
+		{
+			if (!isServerSide())
+			{
+				tile.setLayer(level.getDynamicLayer());
+				tile.addToLevel(level);
+			}
+			
+			level.getEvents().add(this);
 		}
 	}
 	
@@ -496,15 +480,6 @@ public class BattleScene extends HitboxTrigger
 		if (player2 != null) player2.setIsTurn(role == Role.PLAYER2);
 	}
 	
-	private void updateFightersArray()
-	{
-		fighters[0] = enemy1;
-		fighters[1] = enemy2;
-		fighters[2] = enemy3;
-		fighters[3] = player1;
-		fighters[4] = player2;
-	}
-	
 	@Override
 	public void tick()
 	{
@@ -512,5 +487,29 @@ public class BattleScene extends HitboxTrigger
 		
 		for (BattleEntity e : fighters)
 			if (e != null) e.tick();
+	}
+	
+	@Override
+	public void trigger(Entity triggerer)
+	{
+		if (triggerer instanceof PlayerEntity)
+		{
+			PlayerEntity p = (PlayerEntity) triggerer;
+			p.setBattle(this);
+			// TODO EntityJoinPacket thing
+		}
+		else
+		{
+			Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattleTumble was triggered by a non-PlayerEntity");
+		}
+	}
+	
+	private void updateFightersArray()
+	{
+		fighters[0] = enemy1;
+		fighters[1] = enemy2;
+		fighters[2] = enemy3;
+		fighters[3] = player1;
+		fighters[4] = player2;
 	}
 }

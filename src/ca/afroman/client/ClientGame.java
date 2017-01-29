@@ -1665,24 +1665,24 @@ public class ClientGame extends Game
 		
 		if (!waitingForOthersToLoad) // && getCurrentLevel() != null
 		{
-			Level level1 = getPlayers().get(0).getLevel();
-			Level level2 = getPlayers().get(1).getLevel();
-			
-			// Only ticks the levels that the players are in
-			if (level1 == level2)
-			{
-				if (level1 != null) level1.tick();
-			}
-			else
-			{
-				if (level1 != null) level1.tick();
-				if (level2 != null) level2.tick();
-			}
-			
-			// for (Level l : getLevels())
+			// Level level1 = getPlayers().get(0).getLevel();
+			// Level level2 = getPlayers().get(1).getLevel();
+			//
+			// TODO Only ticks the levels that the players are in
+			// if (level1 == level2)
 			// {
-			// l.tick();
+			// if (level1 != null) level1.tick();
 			// }
+			// else
+			// {
+			// if (level1 != null) level1.tick();
+			// if (level2 != null) level2.tick();
+			// }
+			
+			for (Level l : getLevels())
+			{
+				l.tick();
+			}
 			// getCurrentLevel().tick();
 		}
 		

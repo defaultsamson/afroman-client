@@ -507,7 +507,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			if (this.battle != null)
 			{
 				this.battle.removeEntityFromBattle(this);
-				// this.addToLevel(this.battle.getLevel());
+				this.addToLevel(this.battle.getLevel());
 				this.battle = null;
 			}
 			else
