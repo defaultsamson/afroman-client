@@ -1,9 +1,9 @@
 package ca.afroman.entity.api;
 
 import ca.afroman.battle.BattleEntity;
-import ca.afroman.battle.BattleScene;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.events.BattleScene;
 import ca.afroman.game.Game;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.level.api.Level;

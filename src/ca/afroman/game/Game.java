@@ -2,10 +2,10 @@ package ca.afroman.game;
 
 import java.util.ArrayList;
 
-import ca.afroman.battle.BattleScene;
 import ca.afroman.client.ClientGame;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
+import ca.afroman.events.BattleScene;
 import ca.afroman.interfaces.IPacketParser;
 import ca.afroman.level.MainLevel;
 import ca.afroman.level.api.Level;

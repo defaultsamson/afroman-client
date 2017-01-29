@@ -4,12 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import ca.afroman.battle.BattlePosition;
-import ca.afroman.battle.BattleScene;
 import ca.afroman.battle.BattleStartWrapper;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
-import ca.afroman.events.BattleTumble;
+import ca.afroman.events.BattleScene;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
@@ -677,30 +676,30 @@ public class ServerGame extends Game
 	{
 		Entity e = w.getEntity();
 		PlayerEntity p = w.getPlayerEntity();
+		Level level = e.getLevel();
 		
-		BattleScene battle = new BattleScene(isServerSide());// , false, e.getPosition().clone()
+		// Creates the new battle scene
+		BattleScene battle = new BattleScene(isServerSide(), false, e.getPosition().clone());// , false, e.getPosition().clone()
+		battle.addToLevel(level);
+		getBattles().add(battle);
+		
 		e.setBattle(battle);
-		Level pLastLevel = p.getLevel();
 		p.setBattle(battle);
-		
-		new BattleTumble(isServerSide(), false, e.getPosition().clone(), battle).addToLevel(pLastLevel);
 		
 		// Checks to see if the other player is within the range of 30 pixels
 		for (PlayerEntity pl : ServerGame.instance().getPlayers())
 		{
-			if (p != pl && pLastLevel == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
+			if (p != pl && level == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
 			{
 				pl.setBattle(battle);
 				sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
 				battle.setTurn(p.getRole());
-				getBattles().add(battle);
 				return;
 			}
 		}
 		
 		sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
 		battle.setTurn(p.getRole());
-		getBattles().add(battle);
 	}
 	
 	public void startBattle(Entity e, PlayerEntity p)
@@ -765,11 +764,6 @@ public class ServerGame extends Game
 				startBattle(w);
 			}
 			battleWrappers.clear();
-			
-			for (BattleScene b : getBattles())
-			{
-				b.tick();
-			}
 		}
 	}
 }

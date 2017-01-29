@@ -1,52 +1,39 @@
-package ca.afroman.battle;
+package ca.afroman.events;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.Texture;
+import ca.afroman.battle.BattleEntity;
+import ca.afroman.battle.BattlePlayerEntity;
+import ca.afroman.battle.BattlePosition;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.entity.api.Hitbox;
+import ca.afroman.entity.api.Tile;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
-import ca.afroman.interfaces.ITickable;
+import ca.afroman.level.api.Level;
 import ca.afroman.light.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.IPConnection;
 import ca.afroman.packet.battle.PacketUpdateTurn;
-import ca.afroman.resource.IDCounter;
-import ca.afroman.resource.ServerClientObject;
+import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class BattleScene extends ServerClientObject implements ITickable
+public class BattleScene extends HitboxTrigger
 {
-	private static IDCounter serverIdCounter = null;
-	private static IDCounter clientIdCounter = null;
+	private static final double HITBOX_WIDTH = 12;
+	private static final double HITBOX_HEIGHT = 12;
+	private static final double HITBOX_X_OFF = 2;
+	private static final double HITBOX_Y_OFF = 2;
 	
 	private static final Texture bg = Assets.getTexture(AssetType.BATTLE_RUINS_BG);
 	
-	/**
-	 * The ID counter that keeps track of Entity ID's.
-	 * 
-	 * @param isServerSide whether this is being counted from the server or the client
-	 * @return the ID counter for the specified game instance.
-	 */
-	private static IDCounter getIDCounter(boolean isServerSide)
-	{
-		if (isServerSide)
-		{
-			if (serverIdCounter == null) serverIdCounter = new IDCounter();
-			return serverIdCounter;
-		}
-		else
-		{
-			if (clientIdCounter == null) clientIdCounter = new IDCounter();
-			return clientIdCounter;
-		}
-	}
-	
-	private int id;
 	private LightMap lightmap;
 	/** Left bottom **/
 	private BattleEntity enemy1;
@@ -62,11 +49,18 @@ public class BattleScene extends ServerClientObject implements ITickable
 	
 	private boolean isSelectingAttack = false;
 	
-	public BattleScene(boolean isServerSide)
+	private static List<TriggerType> getTriggerTypeList()
 	{
-		super(isServerSide);
-		
-		id = getIDCounter(isServerSide).getNext();
+		ArrayList<TriggerType> list = new ArrayList<TriggerType>();
+		list.add(TriggerType.PLAYER_COLLIDE);
+		return list;
+	}
+	
+	private Tile tile;
+	
+	public BattleScene(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
+	{
+		super(isServerSide, isMicromanaged, position, null, null, getTriggerTypeList(), new Hitbox(isServerSide, true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
 		
 		if (isServerSide())
 		{
@@ -76,6 +70,53 @@ public class BattleScene extends ServerClientObject implements ITickable
 		{
 			ClientGame.instance().playMusic(Assets.getAudioClip(AssetType.AUDIO_BATTLE_MUSIC), true);
 			lightmap = new LightMap(ClientGame.WIDTH, ClientGame.HEIGHT, new Color(0F, 0F, 0F, 0.5F));
+			tile = new Tile(Level.DEFAULT_DYNAMIC_TILE_LAYER_INDEX, true, position, isServerSide ? null : Assets.getDrawableAsset(AssetType.BATTLE_TUMBLE).clone()); // Assets.getDrawableAsset(AssetType.CAT));
+		}
+	}
+	
+	@Override
+	public void addToLevel(Level newLevel)
+	{
+		if (level == newLevel) return;
+		
+		if (level != null)
+		{
+			if (!isServerSide())
+			{
+				tile.removeFromLevel();
+			}
+			
+			level.getEvents().remove(this);
+		}
+		
+		// Sets the new level
+		level = newLevel;
+		
+		if (level != null)
+		{
+			if (!isServerSide())
+			{
+				tile.setLayer(level.getDynamicLayer());
+				tile.addToLevel(level);
+			}
+			
+			level.getEvents().add(this);
+		}
+	}
+	
+	@Override
+	public void trigger(Entity triggerer)
+	{
+		if (triggerer instanceof PlayerEntity)
+		{
+			PlayerEntity p = (PlayerEntity) triggerer;
+			
+			addEntityToBattle(p);
+			// TODO EntityJoinPacket thing
+		}
+		else
+		{
+			Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattleTumble was triggered by a non-PlayerEntity");
 		}
 	}
 	
@@ -158,11 +199,6 @@ public class BattleScene extends ServerClientObject implements ITickable
 	public BattleEntity getEnemySelected()
 	{
 		return enemy1.isThisSelected() ? enemy1 : enemy2.isThisSelected() ? enemy2 : enemy3.isThisSelected() ? enemy3 : player1.isThisSelected() ? player1 : player2.isThisSelected() ? player2 : null;
-	}
-	
-	public int getID()
-	{
-		return id;
 	}
 	
 	public BattleEntity getMiddleEnemy()
@@ -272,7 +308,7 @@ public class BattleScene extends ServerClientObject implements ITickable
 		}
 	}
 	
-	public void render(Texture renderTo)
+	public void renderBattle(Texture renderTo)
 	{
 		bg.render(renderTo, 0, 0);
 		
@@ -416,11 +452,13 @@ public class BattleScene extends ServerClientObject implements ITickable
 	 */
 	public void setEnemySelected(BattlePosition pos, IPConnection sender)
 	{
-		enemy1.setIsSelected(pos == BattlePosition.LEFT_BOTTOM, sender);
-		enemy2.setIsSelected(pos == BattlePosition.LEFT_MIDDLE, sender);
-		enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
-		player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
-		player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
+		for (BattleEntity e : fighters)
+			if (e != null) e.setIsSelected(pos == e.getBattlePosition(), sender);
+		// if (enemy1 != null) enemy1.setIsSelected(pos == enemy1.getBattlePosition(), sender);
+		// if (enemy2 != null) enemy2.setIsSelected(pos == BattlePosition.LEFT_MIDDLE, sender);
+		// if (enemy3 != null) enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
+		// if (player1 != null) player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
+		// if (player2 != null) player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
 	}
 	
 	/**
@@ -458,13 +496,6 @@ public class BattleScene extends ServerClientObject implements ITickable
 		if (player2 != null) player2.setIsTurn(role == Role.PLAYER2);
 	}
 	
-	@Override
-	public void tick()
-	{
-		for (BattleEntity e : fighters)
-			if (e != null) e.tick();
-	}
-	
 	private void updateFightersArray()
 	{
 		fighters[0] = enemy1;
@@ -472,5 +503,14 @@ public class BattleScene extends ServerClientObject implements ITickable
 		fighters[2] = enemy3;
 		fighters[3] = player1;
 		fighters[4] = player2;
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
+		
+		for (BattleEntity e : fighters)
+			if (e != null) e.tick();
 	}
 }

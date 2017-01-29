@@ -28,11 +28,10 @@ import ca.afroman.assets.AudioClip;
 import ca.afroman.assets.Font;
 import ca.afroman.assets.Texture;
 import ca.afroman.battle.BattlePosition;
-import ca.afroman.battle.BattleScene;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Item;
-import ca.afroman.events.BattleTumble;
+import ca.afroman.events.BattleScene;
 import ca.afroman.events.Event;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -967,7 +966,7 @@ public class ClientGame extends Game
 			if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 			{
 				// System.out.println("Dong:");
-				getThisPlayer().getBattle().render(screen); // TODO
+				getThisPlayer().getBattle().renderBattle(screen); // TODO
 			}
 			else if (getCurrentLevel() != null)
 			{
@@ -1333,20 +1332,19 @@ public class ClientGame extends Game
 	
 	public void startBattle(Entity e, PlayerEntity p1, PlayerEntity p2)
 	{
-		BattleScene battle = new BattleScene(isServerSide()); // , false, e.getPosition().clone()
-		// battle.addToLevel(e.getLevel());
 		Level level = e.getLevel();
+		
+		// Creates the battle scene
+		BattleScene battle = new BattleScene(isServerSide(), false, e.getPosition().clone()); // , false, e.getPosition().clone()
+		battle.addToLevel(level);
+		getBattles().add(battle);
+		
+		// Adds entities to the battle
 		e.setBattle(battle);
 		if (p1 != null) p1.setBattle(battle);
 		if (p2 != null) p2.setBattle(battle);
 		
-		BattleTumble tum = new BattleTumble(isServerSide(), false, e.getPosition().clone(), battle);
-		tum.addToLevel(level);
-		System.out.println("Donging it" + tum.getID());
-		
-		logger().log(ALogType.DEBUG, "Starting client-side battle (" + e + ", " + p1 + ", " + p2 + ")");
-		
-		getBattles().add(battle);
+		logger().log(ALogType.DEBUG, "Starting client-side battle [" + battle.getID() + "] (" + e + ", " + p1 + ", " + p2 + ")");
 	}
 	
 	@Override
@@ -1660,12 +1658,6 @@ public class ClientGame extends Game
 			}
 		}
 		
-		// TODO?
-		if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
-		{
-			getThisPlayer().getBattle().tick();
-		}
-		
 		if (getCurrentScreen() != null)
 		{
 			getCurrentScreen().tick();
@@ -1673,10 +1665,24 @@ public class ClientGame extends Game
 		
 		if (!waitingForOthersToLoad) // && getCurrentLevel() != null
 		{
-			for (Level l : getLevels())
+			Level level1 = getPlayers().get(0).getLevel();
+			Level level2 = getPlayers().get(1).getLevel();
+			
+			// Only ticks the levels that the players are in
+			if (level1 == level2)
 			{
-				l.tick();
+				if (level1 != null) level1.tick();
 			}
+			else
+			{
+				if (level1 != null) level1.tick();
+				if (level2 != null) level2.tick();
+			}
+			
+			// for (Level l : getLevels())
+			// {
+			// l.tick();
+			// }
 			// getCurrentLevel().tick();
 		}
 		

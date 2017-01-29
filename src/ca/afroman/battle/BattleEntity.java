@@ -10,6 +10,7 @@ import ca.afroman.battle.animation.BattleAnimation;
 import ca.afroman.battle.animation.BattleAnimationDisplayDeltaHealth;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.events.BattleScene;
 import ca.afroman.game.Game;
 import ca.afroman.interfaces.ITickable;
 import ca.afroman.light.LightMap;
