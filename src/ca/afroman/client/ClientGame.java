@@ -32,6 +32,7 @@ import ca.afroman.battle.BattleScene;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
 import ca.afroman.entity.api.Item;
+import ca.afroman.events.BattleTumble;
 import ca.afroman.events.Event;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
@@ -965,7 +966,8 @@ public class ClientGame extends Game
 			
 			if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 			{
-				getThisPlayer().getBattle().render(screen);
+				// System.out.println("Dong:");
+				getThisPlayer().getBattle().render(screen); // TODO
 			}
 			else if (getCurrentLevel() != null)
 			{
@@ -1331,11 +1333,16 @@ public class ClientGame extends Game
 	
 	public void startBattle(Entity e, PlayerEntity p1, PlayerEntity p2)
 	{
-		BattleScene battle = new BattleScene(isServerSide());
-		
+		BattleScene battle = new BattleScene(isServerSide()); // , false, e.getPosition().clone()
+		// battle.addToLevel(e.getLevel());
+		Level level = e.getLevel();
 		e.setBattle(battle);
 		if (p1 != null) p1.setBattle(battle);
 		if (p2 != null) p2.setBattle(battle);
+		
+		BattleTumble tum = new BattleTumble(isServerSide(), false, e.getPosition().clone(), battle);
+		tum.addToLevel(level);
+		System.out.println("Donging it" + tum.getID());
 		
 		logger().log(ALogType.DEBUG, "Starting client-side battle (" + e + ", " + p1 + ", " + p2 + ")");
 		
@@ -1653,6 +1660,7 @@ public class ClientGame extends Game
 			}
 		}
 		
+		// TODO?
 		if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 		{
 			getThisPlayer().getBattle().tick();

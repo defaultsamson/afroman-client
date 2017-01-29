@@ -245,7 +245,7 @@ public class Level extends ServerClientObject implements ITickable
 					sb.append(cPrefix);
 					sb.append("new Tile(");
 					sb.append(i);
-					sb.append(", false, new Vector2DDouble(");
+					sb.append(", true, new Vector2DDouble(");
 					sb.append(CastUtil.normalizeDouble(tile.getPosition().getX()));
 					sb.append(", ");
 					sb.append(CastUtil.normalizeDouble(tile.getPosition().getY()));

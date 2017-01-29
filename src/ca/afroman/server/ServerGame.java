@@ -1,12 +1,15 @@
 package ca.afroman.server;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import ca.afroman.battle.BattlePosition;
 import ca.afroman.battle.BattleScene;
+import ca.afroman.battle.BattleStartWrapper;
 import ca.afroman.client.ExitGameReason;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
+import ca.afroman.events.BattleTumble;
 import ca.afroman.game.Game;
 import ca.afroman.game.Role;
 import ca.afroman.game.SocketManager;
@@ -58,6 +61,8 @@ public class ServerGame extends Game
 	
 	private boolean isReturnedToLobby = false;
 	
+	private ArrayList<BattleStartWrapper> battleWrappers;
+	
 	public ServerGame(boolean commandLine, String ip, String password, String port)
 	{
 		super(true, newDefaultThreadGroupInstance(), "Game", 60);
@@ -77,6 +82,7 @@ public class ServerGame extends Game
 		this.password = password;
 		
 		updatePing = new ModulusCounter((int) ticksPerSecond * 2);
+		battleWrappers = new ArrayList<BattleStartWrapper>();
 		
 		int valPort = SocketManager.validatedPort(port);
 		boolean started = startSocket(ip, valPort);
@@ -84,7 +90,7 @@ public class ServerGame extends Game
 		if (started)
 		{
 			logger().log(ALogType.DEBUG, "Server connected on " + sockets().getServerConnection().asReadable());
-			super.startThis();
+			startThis();
 		}
 		else
 		{
@@ -667,16 +673,22 @@ public class ServerGame extends Game
 		}
 	}
 	
-	public void startBattle(Entity e, PlayerEntity p)
+	private void startBattle(BattleStartWrapper w)
 	{
-		BattleScene battle = new BattleScene(isServerSide());
+		Entity e = w.getEntity();
+		PlayerEntity p = w.getPlayerEntity();
+		
+		BattleScene battle = new BattleScene(isServerSide());// , false, e.getPosition().clone()
 		e.setBattle(battle);
+		Level pLastLevel = p.getLevel();
 		p.setBattle(battle);
+		
+		new BattleTumble(isServerSide(), false, e.getPosition().clone(), battle).addToLevel(pLastLevel);
 		
 		// Checks to see if the other player is within the range of 30 pixels
 		for (PlayerEntity pl : ServerGame.instance().getPlayers())
 		{
-			if (p != pl && p.getLevel() == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
+			if (p != pl && pLastLevel == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
 			{
 				pl.setBattle(battle);
 				sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
@@ -689,6 +701,11 @@ public class ServerGame extends Game
 		sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
 		battle.setTurn(p.getRole());
 		getBattles().add(battle);
+	}
+	
+	public void startBattle(Entity e, PlayerEntity p)
+	{
+		battleWrappers.add(new BattleStartWrapper(e, p));
 	}
 	
 	@Override
@@ -742,6 +759,12 @@ public class ServerGame extends Game
 			{
 				level.tick();
 			}
+			
+			for (BattleStartWrapper w : battleWrappers)
+			{
+				startBattle(w);
+			}
+			battleWrappers.clear();
 			
 			for (BattleScene b : getBattles())
 			{

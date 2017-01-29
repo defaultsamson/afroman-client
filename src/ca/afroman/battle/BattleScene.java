@@ -444,7 +444,7 @@ public class BattleScene extends ServerClientObject implements ITickable
 		if (isServerSide()) ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateTurn(getID(), fighterOrd));
 		
 		for (int i = 0; i < fighters.length; i++)
-			fighters[i].setIsTurn(i == fighterOrd);
+			if (fighters[i] != null) fighters[i].setIsTurn(i == fighterOrd);
 	}
 	
 	public void setTurn(Role role)

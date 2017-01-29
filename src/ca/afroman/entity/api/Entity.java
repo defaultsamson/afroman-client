@@ -93,6 +93,8 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		
 		this.id = isMicromanaged ? MICROMANAGED_ID : getIDCounter(isServerSide).getNext(); // -1 if this is not an object in a level
 		
+		// if (!isMicromanaged) System.out.println(isServerSide + ": Doing Ur Mum: (" + this.id + ")" + this);
+		
 		this.hasHitbox = hitboxes.length > 0;
 		hitbox = hasHitbox ? hitboxes : null;
 		updateHitboxInLevel();
@@ -505,7 +507,8 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			if (this.battle != null)
 			{
 				this.battle.removeEntityFromBattle(this);
-				this.battle = battle;
+				// this.addToLevel(this.battle.getLevel());
+				this.battle = null;
 			}
 			else
 			{
@@ -518,6 +521,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			{
 				this.battle = battle;
 				battle.addEntityToBattle(this);
+				removeFromLevel();
 			}
 			else
 			{

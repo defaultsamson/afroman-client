@@ -415,6 +415,8 @@ public class Assets
 		Texture arrowText = Texture.fromResource(AssetType.INVALID, "battle/arrow.png");
 		Texture[] arrowText2 = arrowText.toTextureArray(5, 1);
 		
+		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_TUMBLE, false, 10, Texture.fromResource(AssetType.INVALID, "battle/tumble.png").toTextureArray(4, 2)));
+		
 		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_ARROW, true, 5, arrowText2[0], arrowText2[0], arrowText2[0], arrowText2[0], arrowText2[1], arrowText2[2], arrowText2[3], arrowText2[4], arrowText2[4], arrowText2[4], arrowText2[4], arrowText2[4]));
 		
 		addAsset(perc, AudioClip.fromResource(AssetType.AUDIO_BUTTON_PUSH, "but_down", AudioType.SFX));

@@ -146,6 +146,7 @@ public enum AssetType
 	BATTLE_PLAYER_TWO(false),
 	BATTLE_SHADOW(false),
 	BATTLE_ARROW(false),
+	BATTLE_TUMBLE(false),
 	
 	TEXT_FIELD(false),
 	TEXT_FIELD_CLEAR(false),
