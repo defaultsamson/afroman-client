@@ -965,8 +965,7 @@ public class ClientGame extends Game
 			
 			if (getThisPlayer() != null && getThisPlayer().getBattle() != null)
 			{
-				// System.out.println("Dong:");
-				getThisPlayer().getBattle().renderBattle(screen); // TODO
+				getThisPlayer().getBattle().renderBattle(screen);
 			}
 			else if (getCurrentLevel() != null)
 			{

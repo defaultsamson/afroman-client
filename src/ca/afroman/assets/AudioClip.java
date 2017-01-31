@@ -541,7 +541,7 @@ public class AudioClip extends Asset
 	{
 		// return (float) percentage * 100;
 		// return (float) Math.max(0, (Math.log(percentage) / 20.0));
-		return (float) (Math.log(percentage) / Math.log(10.0) * 20.0);
+		return (float) (Math.log(percentage) / Math.log(10.0) * 20.0); // TODO fix this shit
 	}
 	
 	public void resume()

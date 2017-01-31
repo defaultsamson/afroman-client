@@ -134,6 +134,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 		setCameraToFollow(false);
 		removeFromLevel();
 		setBattle(null);
+		battleEntity1.reset();
 	}
 	
 	@Override

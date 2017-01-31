@@ -10,6 +10,7 @@ import ca.afroman.assets.Texture;
 import ca.afroman.battle.BattleEntity;
 import ca.afroman.battle.BattlePlayerEntity;
 import ca.afroman.battle.BattlePosition;
+import ca.afroman.battle.animation.BattleAnimationEnter;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.entity.api.Entity;
@@ -40,6 +41,7 @@ public class BattleScene extends HitboxTrigger
 		list.add(TriggerType.PLAYER_COLLIDE);
 		return list;
 	}
+	
 	private LightMap lightmap;
 	/** Left bottom **/
 	private BattleEntity enemy1;
@@ -92,7 +94,9 @@ public class BattleScene extends HitboxTrigger
 				if (player1 == null)
 				{
 					player1 = battleEntity;
+					if (!isServerSide()) new BattleAnimationEnter(isServerSide(), player1.getBattlePosition(), player1.getFightPosition()).addToBattleEntity(player1);
 					updateFightersArray();
+					System.out.println("This code is fucked: " + isServerSide());
 				}
 				else
 				{
@@ -104,7 +108,9 @@ public class BattleScene extends HitboxTrigger
 				if (player2 == null)
 				{
 					player2 = battleEntity;
+					if (!isServerSide()) new BattleAnimationEnter(isServerSide(), player2.getBattlePosition(), player2.getFightPosition()).addToBattleEntity(player2);
 					updateFightersArray();
+					System.out.println("This code is fucked: " + isServerSide());
 				}
 				else
 				{

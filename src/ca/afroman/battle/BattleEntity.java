@@ -50,15 +50,13 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 			whiteFont = Assets.getFont(AssetType.FONT_WHITE);
 		}
 		
-		maxHealth = 100;
-		health = 100;
-		isThisTurn = false;
-		isThisSelected = false;
 		this.levelEntity = levelEntity;
 		this.pos = pos;
 		
 		animations = new ArrayList<BattleAnimation>();
 		animationsToRemove = new ArrayList<BattleAnimation>();
+		
+		reset();
 	}
 	
 	/**
@@ -233,5 +231,17 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		{
 			animations.remove(b);
 		}
+		
+		animationsToRemove.clear();
+	}
+	
+	public void reset()
+	{
+		animationsToRemove.clear();
+		animations.clear();
+		maxHealth = 100;
+		health = 100;
+		isThisTurn = false;
+		isThisSelected = false;
 	}
 }
