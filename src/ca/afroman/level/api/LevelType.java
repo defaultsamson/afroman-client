@@ -2,6 +2,7 @@ package ca.afroman.level.api;
 
 public enum LevelType
 {
+	NULL("null"),
 	MAIN("Main"),
 	TEST("Testing"),
 	SECOND("Second");

@@ -61,7 +61,6 @@ public class BattleAnimationFlee extends BattleAnimation
 		{
 			entity.finishTurn();
 			entity.getLevelEntity().setBattle(null);
-			entity.getLevelEntity().setTempInvincible(true);
 			removeFromBattleEntity();
 		}
 	}

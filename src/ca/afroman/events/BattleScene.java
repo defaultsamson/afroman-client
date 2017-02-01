@@ -1,8 +1,6 @@
 package ca.afroman.events;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
@@ -22,11 +20,12 @@ import ca.afroman.level.api.Level;
 import ca.afroman.light.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.network.IPConnection;
+import ca.afroman.packet.battle.PacketAddPlayerToBattle;
 import ca.afroman.packet.battle.PacketUpdateTurn;
 import ca.afroman.resource.Vector2DDouble;
 import ca.afroman.server.ServerGame;
 
-public class BattleScene extends HitboxTrigger
+public class BattleScene extends Entity
 {
 	private static final double HITBOX_WIDTH = 12;
 	private static final double HITBOX_HEIGHT = 12;
@@ -34,13 +33,6 @@ public class BattleScene extends HitboxTrigger
 	private static final double HITBOX_Y_OFF = 2;
 	
 	private static final Texture bg = Assets.getTexture(AssetType.BATTLE_RUINS_BG);
-	
-	private static List<TriggerType> getTriggerTypeList()
-	{
-		ArrayList<TriggerType> list = new ArrayList<TriggerType>();
-		list.add(TriggerType.PLAYER_COLLIDE);
-		return list;
-	}
 	
 	private LightMap lightmap;
 	/** Left bottom **/
@@ -62,7 +54,7 @@ public class BattleScene extends HitboxTrigger
 	
 	public BattleScene(boolean isServerSide, boolean isMicromanaged, Vector2DDouble position)
 	{
-		super(isServerSide, isMicromanaged, position, null, null, getTriggerTypeList(), new Hitbox(isServerSide, true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
+		super(isServerSide, isMicromanaged, position, new Hitbox(isServerSide, true, HITBOX_X_OFF, HITBOX_Y_OFF, HITBOX_WIDTH, HITBOX_HEIGHT));
 		
 		if (isServerSide())
 		{
@@ -159,7 +151,7 @@ public class BattleScene extends HitboxTrigger
 				tile.removeFromLevel();
 			}
 			
-			level.getEvents().remove(this);
+			level.getEntities().remove(this);
 		}
 		
 		// Sets the new level
@@ -173,7 +165,7 @@ public class BattleScene extends HitboxTrigger
 				tile.addToLevel(level);
 			}
 			
-			level.getEvents().add(this);
+			level.getEntities().add(this);
 		}
 	}
 	
@@ -494,22 +486,21 @@ public class BattleScene extends HitboxTrigger
 	{
 		super.tick();
 		
+		if (isServerSide())
+		{
+			for (PlayerEntity p : ServerGame.instance().getPlayers())
+			{
+				// If this is colliding with a player that isn't in battle already
+				if (!p.isInBattle() && p.isColliding(this) && !p.isInvincible())
+				{
+					p.setBattle(this);
+					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketAddPlayerToBattle(this.getID(), p.getRole()));
+				}
+			}
+		}
+		
 		for (BattleEntity e : fighters)
 			if (e != null) e.tick();
-	}
-	
-	@Override
-	public void trigger(Entity triggerer)
-	{
-		if (!triggerer.isInvincible() && triggerer instanceof PlayerEntity)
-		{
-			PlayerEntity p = (PlayerEntity) triggerer;
-			p.setBattle(this);
-		}
-		else
-		{
-			Game.instance(isServerSide()).logger().log(ALogType.WARNING, "BattleTumble was triggered by a non-PlayerEntity");
-		}
 	}
 	
 	private void updateFightersArray()
@@ -519,5 +510,12 @@ public class BattleScene extends HitboxTrigger
 		fighters[2] = enemy3;
 		fighters[3] = player1;
 		fighters[4] = player2;
+	}
+	
+	@Override
+	public void tryInteract(PlayerEntity triggerer)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

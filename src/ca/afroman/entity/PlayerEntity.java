@@ -3,6 +3,7 @@ package ca.afroman.entity;
 import ca.afroman.assets.AssetType;
 import ca.afroman.assets.Assets;
 import ca.afroman.assets.SpriteAnimation;
+import ca.afroman.assets.Texture;
 import ca.afroman.battle.BattlePlayerEntity;
 import ca.afroman.battle.BattlePosition;
 import ca.afroman.client.ClientGame;
@@ -11,6 +12,7 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.game.Role;
 import ca.afroman.inventory.Inventory;
 import ca.afroman.level.api.Level;
+import ca.afroman.level.api.LevelType;
 import ca.afroman.log.ALogType;
 import ca.afroman.packet.level.PacketPlayerInteract;
 import ca.afroman.packet.level.PacketSetPlayerLevel;
@@ -20,6 +22,9 @@ import ca.afroman.server.ServerGame;
 
 public class PlayerEntity extends DrawableEntityDirectional
 {
+	private static final int INVINCIBILITY_FLICKER_TICKS_SLOW = 15;
+	private static final int INVINCIBILITY_FLICKER_TICKS_FAST = 5;
+	
 	private static SpriteAnimation getDown(boolean isServerSide, Role role)
 	{
 		return isServerSide ? null : role == Role.PLAYER1 ? (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_ONE_DOWN).clone() : (SpriteAnimation) Assets.getSpriteAnimation(AssetType.PLAYER_TWO_DOWN).clone();
@@ -104,12 +109,12 @@ public class PlayerEntity extends DrawableEntityDirectional
 			
 			if (isServerSide())
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level.getLevelType()));
+				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level == null ? LevelType.NULL : level.getLevelType()));
 			}
 		}
 		else if (isServerSide())
 		{
-			ServerGame.instance().logger().log(ALogType.CRITICAL, "Server-side PlayerEntity cannot be added to a null level");
+			ServerGame.instance().logger().log(ALogType.IMPORTANT, "Shouldn't be adding a player to a null level... Do something to fix this?");
 		}
 	}
 	
@@ -154,6 +159,19 @@ public class PlayerEntity extends DrawableEntityDirectional
 	}
 	
 	@Override
+	public void render(Texture renderTo)
+	{
+		if (!isInvincible() || invincibilityFlicker)
+		{
+			super.render(renderTo);
+		}
+	}
+	
+	private boolean invincibilityFlicker = false;
+	
+	private int invincibilityFlickerCounter = 0;
+	
+	@Override
 	public void tick()
 	{
 		super.tick();
@@ -164,6 +182,28 @@ public class PlayerEntity extends DrawableEntityDirectional
 		}
 		else
 		{
+			// Does the invincibility flicker
+			if (isInvincible())
+			{
+				invincibilityFlickerCounter++;
+				
+				// Flickers slowly until the last second (60 frames)
+				if (invincibilityFrames > 60)
+				{
+					if (invincibilityFlickerCounter > INVINCIBILITY_FLICKER_TICKS_SLOW)
+					{
+						invincibilityFlickerCounter = 0;
+						invincibilityFlicker = !invincibilityFlicker;
+					}
+				}
+				// Within the last second it flickers quickly
+				else if (invincibilityFlickerCounter > INVINCIBILITY_FLICKER_TICKS_FAST)
+				{
+					invincibilityFlickerCounter = 0;
+					invincibilityFlicker = !invincibilityFlicker;
+				}
+			}
+			
 			// If it's not in build mode and the role of this is the role of the client, let them move
 			if (!ClientGame.instance().isBuildMode() && this.role == ClientGame.instance().getRole())
 			{

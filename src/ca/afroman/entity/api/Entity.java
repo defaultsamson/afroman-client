@@ -60,7 +60,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	protected Direction direction;
 	protected Direction lastDirection;
 	private boolean cameraFollow;
-	private int invincibilityFrames = 0;
+	protected int invincibilityFrames = 0;
 	private BattleScene battle;
 	/** Left bottom **/
 	protected BattleEntity battleEntity1;
@@ -512,8 +512,10 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		{
 			if (this.battle != null)
 			{
+				// Remove from existing battle
 				this.battle.removeEntityFromBattle(this);
-				this.addToLevel(this.battle.getLevel());
+				addToLevel(this.battle.getLevel());
+				setTempInvincible(true);
 				this.battle = null;
 			}
 			else
@@ -525,6 +527,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		{
 			if (this.battle == null)
 			{
+				// Add to a battle
 				this.battle = battle;
 				battle.addEntityToBattle(this);
 				removeFromLevel();

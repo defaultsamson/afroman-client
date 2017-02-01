@@ -796,6 +796,31 @@ public class ClientGame extends Game
 							}
 						}
 							break;
+						case BATTLE_ADD_PLAYER:
+						{
+							int battleID = packet.getContent().getInt();
+							BattleScene battle = getBattle(battleID);
+							
+							if (battle != null)
+							{
+								Role role = Role.fromOrdinal(packet.getContent().get());
+								PlayerEntity player = getPlayer(role);
+								
+								if (player != null)
+								{
+									player.setBattle(battle);
+								}
+								else
+								{
+									logger().log(ALogType.WARNING, "No player with role " + role);
+								}
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+							}
+						}
+							break;
 						case BATTLE_SELECT_ENTITY:
 						{
 							int battleID = packet.getContent().getInt();
