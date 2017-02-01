@@ -9,6 +9,7 @@ import ca.afroman.assets.SpriteAnimation;
 import ca.afroman.assets.Texture;
 import ca.afroman.battle.animation.BattleAnimationAdministerDamage;
 import ca.afroman.battle.animation.BattleAnimationAttack;
+import ca.afroman.battle.animation.BattleAnimationFlee;
 import ca.afroman.client.ClientGame;
 import ca.afroman.entity.PlayerEntity;
 import ca.afroman.game.Role;
@@ -99,15 +100,19 @@ public class BattlePlayerEntity extends BattleEntity
 			switch (selectedOption)
 			{
 				default:
+					if (isServerSide()) finishTurn();
 					break;
 				case ATTACK:
-					BattleEntity bat = getBattle().getEnemySelected();
+					BattleEntity selected = getBattle().getEnemySelected();
 					int travelTicks = 50;
 					
 					if (isServerSide()) deltaHealth = -8 - new Random().nextInt(4);
 					
-					new BattleAnimationAdministerDamage(isServerSide(), bat, travelTicks, deltaHealth).addToBattleEntity(this);
-					new BattleAnimationAttack(isServerSide(), getBattlePosition(), bat.getBattlePosition(), travelTicks, 10, fightPos).addToBattleEntity(this);
+					new BattleAnimationAdministerDamage(isServerSide(), selected, travelTicks, deltaHealth).addToBattleEntity(this);
+					new BattleAnimationAttack(isServerSide(), getBattlePosition(), selected.getBattlePosition(), travelTicks, 10, fightPos).addToBattleEntity(this);
+					break;
+				case FLEE:
+					new BattleAnimationFlee(isServerSide(), fightPos, 30).addToBattleEntity(this);
 					break;
 			}
 			
@@ -235,7 +240,7 @@ public class BattlePlayerEntity extends BattleEntity
 			
 			if (getLevelEntity().getRole() == ClientGame.instance().getRole())
 			{
-				if (isThisTurn())
+				if (isThisTurn() && getBattle() != null)
 				{
 					if (getBattle().isSelectingAttack())
 					{

@@ -44,7 +44,7 @@ public class Crab extends DrawableEntityDirectional
 				for (PlayerEntity p : ServerGame.instance().getPlayers())
 				{
 					// If this is colliding with a player that isn't in battle already
-					if (!p.isInBattle() && p.isColliding(this))
+					if (!p.isInBattle() && p.isColliding(this) && !p.isInvincible())
 					{
 						ServerGame.instance().startBattle(this, p);
 						break;

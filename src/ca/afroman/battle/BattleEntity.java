@@ -177,6 +177,16 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		}
 	}
 	
+	public void reset()
+	{
+		animationsToRemove.clear();
+		animations.clear();
+		maxHealth = 100;
+		health = 100;
+		isThisTurn = false;
+		isThisSelected = false;
+	}
+	
 	/**
 	 * <b>WARNING:</b> Only designed to be used by BattleScene.
 	 * 
@@ -233,15 +243,5 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		}
 		
 		animationsToRemove.clear();
-	}
-	
-	public void reset()
-	{
-		animationsToRemove.clear();
-		animations.clear();
-		maxHealth = 100;
-		health = 100;
-		isThisTurn = false;
-		isThisSelected = false;
 	}
 }

@@ -60,6 +60,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	protected Direction direction;
 	protected Direction lastDirection;
 	private boolean cameraFollow;
+	private int invincibilityFrames = 0;
 	private BattleScene battle;
 	/** Left bottom **/
 	protected BattleEntity battleEntity1;
@@ -290,6 +291,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	public boolean isInBattle()
 	{
 		return battle != null;
+	}
+	
+	public boolean isInvincible()
+	{
+		return invincibilityFrames > 0;
 	}
 	
 	/**
@@ -540,6 +546,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 		cameraFollow = follow;
 	}
 	
+	public void setInvincibleFrames(int invincibilityFrames)
+	{
+		this.invincibilityFrames = invincibilityFrames;
+	}
+	
 	/**
 	 * Sets a new previous direction for this. Useful for
 	 * setting the direction that this Entity is facing when
@@ -582,6 +593,18 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 	public void setSpeed(double speed)
 	{
 		this.speed = speed;
+	}
+	
+	public void setTempInvincible(boolean isInvincible)
+	{
+		if (isInvincible)
+		{
+			invincibilityFrames = 60 * 3; // 3 seconds of invincibility
+		}
+		else
+		{
+			invincibilityFrames = 0;
+		}
 	}
 	
 	@Override
@@ -702,6 +725,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				
 				move(xa, ya, true);
 			}
+		}
+		
+		if (isInvincible())
+		{
+			invincibilityFrames--;
 		}
 	}
 	

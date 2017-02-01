@@ -94,7 +94,11 @@ public class BattleScene extends HitboxTrigger
 				if (player1 == null)
 				{
 					player1 = battleEntity;
-					if (!isServerSide()) new BattleAnimationEnter(isServerSide(), player1.getBattlePosition(), player1.getFightPosition()).addToBattleEntity(player1);
+					if (!isServerSide())
+					{
+						player1.getFightPosition().setVector(player1.getOriginPosition());
+						new BattleAnimationEnter(isServerSide(), player1.getBattlePosition(), player1.getFightPosition()).addToBattleEntity(player1);
+					}
 					updateFightersArray();
 					System.out.println("This code is fucked: " + isServerSide());
 				}
@@ -108,7 +112,11 @@ public class BattleScene extends HitboxTrigger
 				if (player2 == null)
 				{
 					player2 = battleEntity;
-					if (!isServerSide()) new BattleAnimationEnter(isServerSide(), player2.getBattlePosition(), player2.getFightPosition()).addToBattleEntity(player2);
+					if (!isServerSide())
+					{
+						player2.getFightPosition().setVector(player2.getOriginPosition());
+						new BattleAnimationEnter(isServerSide(), player2.getBattlePosition(), player2.getFightPosition()).addToBattleEntity(player2);
+					}
 					updateFightersArray();
 					System.out.println("This code is fucked: " + isServerSide());
 				}
@@ -444,11 +452,6 @@ public class BattleScene extends HitboxTrigger
 	{
 		for (BattleEntity e : fighters)
 			if (e != null) e.setIsSelected(pos == e.getBattlePosition(), sender);
-		// if (enemy1 != null) enemy1.setIsSelected(pos == enemy1.getBattlePosition(), sender);
-		// if (enemy2 != null) enemy2.setIsSelected(pos == BattlePosition.LEFT_MIDDLE, sender);
-		// if (enemy3 != null) enemy3.setIsSelected(pos == BattlePosition.LEFT_TOP, sender);
-		// if (player1 != null) player1.setIsSelected(pos == BattlePosition.RIGHT_TOP, sender);
-		// if (player2 != null) player2.setIsSelected(pos == BattlePosition.RIGHT_BOTTOM, sender);
 	}
 	
 	/**
@@ -498,11 +501,10 @@ public class BattleScene extends HitboxTrigger
 	@Override
 	public void trigger(Entity triggerer)
 	{
-		if (triggerer instanceof PlayerEntity)
+		if (!triggerer.isInvincible() && triggerer instanceof PlayerEntity)
 		{
 			PlayerEntity p = (PlayerEntity) triggerer;
 			p.setBattle(this);
-			// TODO EntityJoinPacket thing
 		}
 		else
 		{

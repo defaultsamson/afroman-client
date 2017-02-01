@@ -2,10 +2,10 @@ package ca.afroman.battle.animation;
 
 import ca.afroman.assets.Texture;
 import ca.afroman.battle.BattlePosition;
-import ca.afroman.game.Game;
 import ca.afroman.light.LightMap;
 import ca.afroman.log.ALogType;
 import ca.afroman.resource.Vector2DDouble;
+import ca.afroman.server.ServerGame;
 
 public class BattleAnimationEnter extends BattleAnimation
 {
@@ -36,7 +36,7 @@ public class BattleAnimationEnter extends BattleAnimation
 		}
 		else
 		{
-			Game.instance(isServerSide()).logger().log(ALogType.CRITICAL, "BattleAnimationEnter should never be on the server-side. It's only here to look cool for the client.");
+			ServerGame.instance().logger().log(ALogType.CRITICAL, "BattleAnimationEnter should never be on the server-side. It's only here to look cool for the client.");
 		}
 	}
 	
