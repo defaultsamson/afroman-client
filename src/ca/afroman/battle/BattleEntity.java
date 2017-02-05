@@ -142,7 +142,6 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 	
 	public boolean isAlive()
 	{
-		System.out.println("is alive: " + health);
 		return health > 0;
 	}
 	
@@ -175,6 +174,8 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		{
 			b.renderPostLightmap(renderTo);
 		}
+		
+		// renderTo.getGraphics().drawLine(getBattlePosition().getReferenceX(), getBattlePosition().getReferenceY(), getBattlePosition().getReferenceX(), getBattlePosition().getReferenceY());
 	}
 	
 	public void reset()

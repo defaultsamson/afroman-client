@@ -613,9 +613,7 @@ public class ServerGame extends Game
 				}
 			}
 		}
-		catch (
-		
-		Exception e)
+		catch (Exception e)
 		{
 			logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
 		}
@@ -692,13 +690,13 @@ public class ServerGame extends Game
 			if (p != pl && level == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
 			{
 				pl.setBattle(battle);
-				sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), true, true));
+				sockets().sender().sendPacketToAllClients(new PacketStartBattle(level.getLevelType(), e.getID(), true, true));
 				battle.setTurn(p.getRole());
 				return;
 			}
 		}
 		
-		sockets().sender().sendPacketToAllClients(new PacketStartBattle(e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
+		sockets().sender().sendPacketToAllClients(new PacketStartBattle(level.getLevelType(), e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
 		battle.setTurn(p.getRole());
 	}
 	

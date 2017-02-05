@@ -144,6 +144,7 @@ public enum AssetType
 	BATTLE_RUINS_BG(false),
 	BATTLE_PLAYER_ONE(false),
 	BATTLE_PLAYER_TWO(false),
+	BATTLE_CRAB(false),
 	BATTLE_SHADOW(false),
 	BATTLE_ARROW(false),
 	BATTLE_TUMBLE(false),

@@ -35,13 +35,13 @@ public class BattleCrabEntity extends BattleEntityAutomated
 		
 		if (!isServerSide())
 		{
-			fightPos = new Vector2DDouble(pos.getReferenceX() - 12, pos.getReferenceY() - 15);
+			fightPos = new Vector2DDouble(pos.getReferenceX() - 31, pos.getReferenceY() - 29);
 			originPos = fightPos.clone();
 			
 			light = new FlickeringLight(true, fightPos.clone(), 55, 49, 3 + pos.ordinal());
 			shadow = Assets.getTexture(AssetType.BATTLE_SHADOW);
-			asset = idleAsset = Assets.getSpriteAnimation(AssetType.CRAB_RIGHT).clone();
-			idleAsset.getTickCounter().setInterval(14 + pos.ordinal());
+			asset = idleAsset = Assets.getSpriteAnimation(AssetType.BATTLE_CRAB).clone();
+			idleAsset.getTickCounter().setInterval(7 + pos.ordinal());
 			arrow = Assets.getSpriteAnimation(AssetType.BATTLE_ARROW);
 		}
 		

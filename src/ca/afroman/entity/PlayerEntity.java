@@ -12,8 +12,6 @@ import ca.afroman.entity.api.Hitbox;
 import ca.afroman.game.Role;
 import ca.afroman.inventory.Inventory;
 import ca.afroman.level.api.Level;
-import ca.afroman.level.api.LevelType;
-import ca.afroman.log.ALogType;
 import ca.afroman.packet.level.PacketPlayerInteract;
 import ca.afroman.packet.level.PacketSetPlayerLevel;
 import ca.afroman.packet.level.PacketSetPlayerLocationServerClient;
@@ -68,6 +66,10 @@ public class PlayerEntity extends DrawableEntityDirectional
 	private Role role;
 	private Inventory inv;
 	
+	private boolean invincibilityFlicker = false;
+	
+	private int invincibilityFlickerCounter = 0;
+	
 	/**
 	 * An entity representing a human player.
 	 * 
@@ -106,16 +108,17 @@ public class PlayerEntity extends DrawableEntityDirectional
 		if (level != null)
 		{
 			level.getPlayers().add(this);
-			
-			if (isServerSide())
-			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level == null ? LevelType.NULL : level.getLevelType()));
-			}
 		}
-		else if (isServerSide())
+		
+		if (isServerSide())
 		{
-			ServerGame.instance().logger().log(ALogType.IMPORTANT, "Shouldn't be adding a player to a null level... Do something to fix this?");
+			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level));
 		}
+		// }
+		// else if (isServerSide())
+		// {
+		// ServerGame.instance().logger().log(ALogType.IMPORTANT, "Shouldn't be adding a player to a null level... Do something to fix this?");
+		// }
 	}
 	
 	public Inventory getInventory()
@@ -129,6 +132,15 @@ public class PlayerEntity extends DrawableEntityDirectional
 	public Role getRole()
 	{
 		return role;
+	}
+	
+	@Override
+	public void render(Texture renderTo)
+	{
+		if (!isInvincible() || invincibilityFlicker)
+		{
+			super.render(renderTo);
+		}
 	}
 	
 	/**
@@ -157,19 +169,6 @@ public class PlayerEntity extends DrawableEntityDirectional
 			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(getRole(), getPosition(), true));
 		}
 	}
-	
-	@Override
-	public void render(Texture renderTo)
-	{
-		if (!isInvincible() || invincibilityFlicker)
-		{
-			super.render(renderTo);
-		}
-	}
-	
-	private boolean invincibilityFlicker = false;
-	
-	private int invincibilityFlickerCounter = 0;
 	
 	@Override
 	public void tick()

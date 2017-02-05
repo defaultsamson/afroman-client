@@ -352,18 +352,16 @@ public class ClientGame extends Game
 							PlayerEntity p1 = player1 ? getPlayer(Role.PLAYER1) : null;
 							PlayerEntity p2 = player2 ? getPlayer(Role.PLAYER2) : null;
 							
-							Level level = null;
+							Level level = getLevel(LevelType.fromOrdinal(packet.getContent().getShort()));
 							
-							if (p1 != null)
+							if (level != null)
 							{
-								level = p1.getLevel();
+								startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
 							}
-							else if (p2 != null)
+							else
 							{
-								level = p2.getLevel();
+								logger().log(ALogType.WARNING, "Level is null when starting battle");
 							}
-							
-							startBattle(level.getEntity(packet.getContent().getInt()), p1, p2);
 						}
 							break;
 						case ASSIGN_CLIENTID:
@@ -745,7 +743,7 @@ public class ClientGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+								logger().log(ALogType.WARNING, "6: No battle with id " + battleID);
 							}
 						}
 							break;
@@ -760,7 +758,7 @@ public class ClientGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+								logger().log(ALogType.WARNING, "1: No battle with id " + battleID);
 							}
 						}
 							break;
@@ -776,7 +774,7 @@ public class ClientGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+								logger().log(ALogType.WARNING, "2: No battle with id " + battleID);
 							}
 						}
 							break;
@@ -792,7 +790,7 @@ public class ClientGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+								logger().log(ALogType.WARNING, "3: No battle with id " + battleID);
 							}
 						}
 							break;
@@ -817,7 +815,7 @@ public class ClientGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+								logger().log(ALogType.WARNING, "4: No battle with id " + battleID);
 							}
 						}
 							break;
@@ -832,7 +830,7 @@ public class ClientGame extends Game
 							}
 							else
 							{
-								logger().log(ALogType.WARNING, "No battle with id " + battleID);
+								logger().log(ALogType.WARNING, "5: No battle with id " + battleID);
 							}
 						}
 							break;
@@ -896,13 +894,13 @@ public class ClientGame extends Game
 				}
 				catch (Exception e)
 				{
-					// TODO Unable to print who was sending this packet
+					logger().log(ALogType.CRITICAL, "Was send packet from an unreadable address", e);
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			// TODO logger().log(ALogType.IMPORTANT, "Exception upon packet parsing", e);
+			logger().log(ALogType.WARNING, "Exception upon packet parsing", e);
 		}
 	}
 	
@@ -1367,7 +1365,6 @@ public class ClientGame extends Game
 		e.setBattle(battle);
 		if (p1 != null) p1.setBattle(battle);
 		if (p2 != null) p2.setBattle(battle);
-		
 		logger().log(ALogType.DEBUG, "Starting client-side battle [" + battle.getID() + "] (" + e + ", " + p1 + ", " + p2 + ")");
 	}
 	

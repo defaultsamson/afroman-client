@@ -46,7 +46,7 @@ public class BattleScene extends Entity
 	/** Right bottom **/
 	private BattlePlayerEntity player2;
 	
-	private BattleEntity[] fighters = { enemy1, enemy2, enemy3, player1, player2 };
+	private BattleEntity[] fighters = { enemy3, enemy2, enemy1, player1, player2 };
 	
 	private boolean isSelectingAttack = false;
 	
@@ -92,7 +92,6 @@ public class BattleScene extends Entity
 						new BattleAnimationEnter(isServerSide(), player1.getBattlePosition(), player1.getFightPosition()).addToBattleEntity(player1);
 					}
 					updateFightersArray();
-					System.out.println("This code is fucked: " + isServerSide());
 				}
 				else
 				{
@@ -110,7 +109,6 @@ public class BattleScene extends Entity
 						new BattleAnimationEnter(isServerSide(), player2.getBattlePosition(), player2.getFightPosition()).addToBattleEntity(player2);
 					}
 					updateFightersArray();
-					System.out.println("This code is fucked: " + isServerSide());
 				}
 				else
 				{
@@ -474,9 +472,9 @@ public class BattleScene extends Entity
 	{
 		if (isServerSide()) ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateTurn(getID(), role));
 		
-		if (enemy1 != null) enemy1.setIsTurn(role != Role.PLAYER1 && role != Role.PLAYER2);
+		if (enemy1 != null) enemy1.setIsTurn(false);
 		if (enemy2 != null) enemy2.setIsTurn(false);
-		if (enemy3 != null) enemy3.setIsTurn(false);
+		if (enemy3 != null) enemy3.setIsTurn(role != Role.PLAYER1 && role != Role.PLAYER2);
 		if (player1 != null) player1.setIsTurn(role == Role.PLAYER1);
 		if (player2 != null) player2.setIsTurn(role == Role.PLAYER2);
 	}
@@ -503,19 +501,19 @@ public class BattleScene extends Entity
 			if (e != null) e.tick();
 	}
 	
-	private void updateFightersArray()
-	{
-		fighters[0] = enemy1;
-		fighters[1] = enemy2;
-		fighters[2] = enemy3;
-		fighters[3] = player1;
-		fighters[4] = player2;
-	}
-	
 	@Override
 	public void tryInteract(PlayerEntity triggerer)
 	{
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private void updateFightersArray()
+	{
+		fighters[0] = enemy3;
+		fighters[1] = enemy2;
+		fighters[2] = enemy1;
+		fighters[3] = player1;
+		fighters[4] = player2;
 	}
 }

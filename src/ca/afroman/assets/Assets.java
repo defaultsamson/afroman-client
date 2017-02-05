@@ -410,6 +410,10 @@ public class Assets
 		Texture[] afro2Battle2 = afro2Battle.toTextureArray(5, 1);
 		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_PLAYER_TWO, false, 7, afro2Battle2[0], afro2Battle2[0], afro2Battle2[1], afro2Battle2[2], afro2Battle2[3], afro2Battle2[4], afro2Battle2[4], afro2Battle2[3], afro2Battle2[2], afro2Battle2[1]));
 		
+		Texture crabBattle = Texture.fromResource(AssetType.INVALID, "battle/crab.png");
+		Texture[] crabBattle2 = crabBattle.toTextureArray(2, 2);
+		addAsset(perc, new SpriteAnimation(AssetType.BATTLE_CRAB, false, 7, crabBattle2[0], crabBattle2[1], crabBattle2[2], crabBattle2[3]));
+		
 		addAsset(perc, Texture.fromResource(AssetType.BATTLE_SHADOW, "battle/shadow.png"));
 		
 		Texture arrowText = Texture.fromResource(AssetType.INVALID, "battle/arrow.png");

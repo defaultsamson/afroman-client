@@ -534,7 +534,14 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			}
 			else
 			{
-				Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in a battle");
+				if (this.battle == battle)
+				{
+					Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in this battle");
+				}
+				else
+				{
+					Game.instance(isServerSide()).logger().log(ALogType.WARNING, "Entity " + id + " is already in a battle");
+				}
 			}
 		}
 	}
