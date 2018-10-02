@@ -9,6 +9,7 @@ import java.net.SocketException;
 import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.resource.ServerClientObject;
 
+@Deprecated
 public class TCPSocket extends ServerClientObject implements IDynamicRunning
 {
 	private Socket socket;

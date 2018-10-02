@@ -1,14 +1,29 @@
 package ca.afroman.game;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.PortUnreachableException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiClickNotification;
@@ -16,19 +31,25 @@ import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.log.ALogType;
+import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
+import ca.afroman.network.IncomingPacketWrapper;
 import ca.afroman.network.TCPSocket;
 import ca.afroman.option.Options;
+import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.PacketType;
 import ca.afroman.packet.technical.PacketAssignClientID;
+import ca.afroman.packet.technical.PacketPingClientServer;
 import ca.afroman.packet.technical.PacketServerClientStartTCP;
 import ca.afroman.packet.technical.PacketUpdatePlayerList;
 import ca.afroman.resource.ServerClientObject;
 import ca.afroman.server.ServerGame;
+import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
-public class SocketManager extends ServerClientObject implements IDynamicRunning
+public class SocketManager extends DynamicThread
 {
 	/**
 	 * Returns a usable port. If the provided one is eligible then it will return it, otherwise it will return the default port.
@@ -71,37 +92,30 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	private List<ConnectedPlayer> playerList;
 	private IPConnection serverConnection;
 	
-	private ServerSocket welcomeSocket = null;
-	private DatagramSocket socket = null;
-	private PacketReceiver rSocket = null;
-	private PacketSender sSocket = null;
-	
-	private List<TCPReceiver> tcpSockets = null;
-	
-	private boolean isStopping = false;
+	private ServerSocketChannel server;
+	private DatagramChannel datagram;
+	private Selector selector;
+		
+	private boolean isStopping;
 	
 	public SocketManager(Game game)
 	{
-		super(game.isServerSide());
+		super(game.isServerSide(), game.getThread().getThreadGroup(), "SocketManager");
 		
 		this.game = game;
 		
 		playerList = new ArrayList<ConnectedPlayer>();
 		
 		serverConnection = new IPConnection(null, -1, null);
-		
-		tcpSockets = new ArrayList<TCPReceiver>();
-		// try
-		// {
-		// socket = new DatagramSocket();
-		// }
-		// catch (SocketException e)
-		// {
-		// game.logger().log(ALogType.CRITICAL, "", e);
-		// }
-		//
-		// rSocket = new NetworkReceiver(this);
-		// sSocket = new NetworkSender(this);
+				
+		try
+		{
+			selector = Selector.open();
+		}
+		catch (IOException ioe)
+		{
+			game.logger().log(ALogType.CRITICAL, "Instance cannot open selector!", ioe);
+		}
 	}
 	
 	/**
@@ -124,7 +138,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				sender().sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
+				sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
 				Socket clientTCP = welcomeSocket().accept();
 				TCPSocket tcp = new TCPSocket(clientTCP, isServerSide());
 				newConnection.getConnection().setTCPSocket(tcp);
@@ -147,6 +161,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		}
 	}
 	
+	private void sendPacket(BytePacket BytePacket)
+	{
+		// copy what PacketSender does here
+	}
+
 	public List<ConnectedPlayer> getConnectedPlayers()
 	{
 		return playerList;
@@ -220,7 +239,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	
 	public boolean hasActiveServerConnection()
 	{
-		return sSocket != null;
+		return getServerConnection() != null;
 	}
 	
 	public void initServerTCPConnection()
@@ -229,6 +248,10 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			try
 			{
+				SocketChannel client = SocketChannel.open(getServerConnection().getAsInet());
+				getServerConnection().setSocket(client);
+				
+				/*
 				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
 				TCPSocket sock = new TCPSocket(clientSocket, isServerSide());
 				getServerConnection().setTCPSocket(sock);
@@ -239,6 +262,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 					tcpSockets.add(thread);
 				}
 				thread.startThis();
+				*/
 			}
 			catch (UnknownHostException e)
 			{
@@ -260,22 +284,11 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		return isStopping;
 	}
 	
-	@Override
-	public void pauseThis()
-	{
-		rSocket.pauseThis();
-		sSocket.pauseThis();
-	}
-	
-	public PacketReceiver receiver()
-	{
-		return rSocket;
-	}
-	
 	public void removeConnection(IPConnectedPlayer connection)
 	{
 		if (isServerSide())
 		{
+			/*
 			TCPSocket tcpSock = connection.getConnection().getTCPSocket();
 			synchronized (tcpSockets)
 			{
@@ -299,6 +312,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			}
 			
 			tcpSock.stopThis();
+			*/
 			
 			playerList.remove(connection);
 			
@@ -312,7 +326,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 					
 					cPlayer.setID((short) ConnectedPlayer.getIDCounter().getNext());
 					
-					sender().sendPacket(new PacketAssignClientID(cPlayer.getID(), cPlayer.getConnection()));
+					sendPacket(new PacketAssignClientID(cPlayer.getID(), cPlayer.getConnection()));
 				}
 				else
 				{
@@ -326,11 +340,6 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		{
 			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use removeConnection() method in SocketManager");
 		}
-	}
-	
-	public PacketSender sender()
-	{
-		return sSocket;
 	}
 	
 	public boolean setServerConnection(String serverIpAddress, int port)
@@ -371,22 +380,25 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				welcomeSocket = new ServerSocket(serverConnection.getPort());
-				welcomeSocket.setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				server = ServerSocketChannel.open();
+				// server.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				server.configureBlocking(false);
+				server.bind(new InetSocketAddress(serverConnection.getIPAddress(), serverConnection.getPort()));
+				server.register(selector, SelectionKey.OP_ACCEPT);
 			}
 			catch (IOException e)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create server ServerSocket", e);
+				logger().log(ALogType.CRITICAL, "Failed to create server ServerSocket", e);
 			}
 			
 			try
 			{
-				socket = new DatagramSocket(serverConnection.getPort());
+				datagram = DatagramChannel.open();
+				datagram.socket().bind(serverConnection.getAsInet());
 			}
-			catch (SocketException e)
+			catch (IOException ioe)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", e);
-				
+				logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", ioe);
 				return false;
 			}
 		}
@@ -396,35 +408,22 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 			
 			try
 			{
-				socket = new DatagramSocket();
-				socket.connect(serverConnection.getIPAddress(), serverConnection.getPort());
+				datagram = DatagramChannel.open();
+				datagram.connect(serverConnection.getAsInet());
 			}
-			catch (SocketException e)
+			catch (IOException ioe)
 			{
-				game.logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", e);
+				logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", ioe);
 				return false;
 			}
 		}
 		
-		rSocket = new PacketReceiver(isServerSide(), this);
-		sSocket = new PacketSender(isServerSide(), this);
-		
-		rSocket.startThis();
-		sSocket.startThis();
-		
 		return true;
 	}
 	
-	public DatagramSocket socket()
+	public DatagramChannel socket()
 	{
-		return socket;
-	}
-	
-	@Override
-	public void startThis()
-	{
-		rSocket.startThis();
-		sSocket.startThis();
+		return datagram;
 	}
 	
 	@Override
@@ -434,28 +433,18 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		
 		try
 		{
-			if (welcomeSocket != null) welcomeSocket.close();
+			if (server != null) server.close();
+			
+			if (datagram != null) datagram.close();
+			
+			if (serverConnection != null && serverConnection.getSocket() != null) serverConnection.getSocket().close();
 		}
-		catch (IOException e)
+		catch (IOException ioe)
 		{
-			e.printStackTrace();
+			logger().log(ALogType.CRITICAL, "Cannot stop SocketManager", ioe);
 		}
 		
-		synchronized (tcpSockets)
-		{
-			for (TCPReceiver tcp : tcpSockets)
-			{
-				tcp.stopThis();
-			}
-			tcpSockets.clear();
-		}
-		
-		if (serverConnection != null && serverConnection.getTCPSocket() != null) serverConnection.getTCPSocket().stopThis();
-		
-		socket.close();
 		playerList.clear();
-		rSocket.stopThis();
-		sSocket.stopThis();
 	}
 	
 	public ThreadGroup threadGroupInstance()
@@ -476,7 +465,7 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 	{
 		if (isServerSide())
 		{
-			sender().sendPacketToAllClients(new PacketUpdatePlayerList(playerList));
+			sendPacketToAllClients(new PacketUpdatePlayerList(playerList));
 		}
 		else
 		{
@@ -502,8 +491,291 @@ public class SocketManager extends ServerClientObject implements IDynamicRunning
 		}
 	}
 	
-	public ServerSocket welcomeSocket()
+	public ServerSocketChannel server()
 	{
-		return welcomeSocket;
+		return server;
+	}
+
+	@Override
+	public void onRun()
+	{
+		keyCheck();
+	}
+
+	private void keyCheck()
+	{
+		selector.select();
+		
+		Set<SelectionKey> selectedKeys = selector.selectedKeys();
+		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+
+		while (keyIterator.hasNext()) {
+			SelectionKey key = keyIterator.next();
+
+			if (key.isAcceptable()) {
+				//accept(key);
+			} else if (key.isConnectable()) {
+				//establish(key);
+			} else if (key.isWritable()) {
+				write(key);
+			} else if (key.isReadable()) {
+				read(key);
+			}
+			keyIterator.remove();
+		}
+	}
+	
+	/**
+	 * Sends a byte array of data to the server.
+	 */
+	private void sendData(byte[] data, InetAddress address, int port)
+	{
+		if (address != null)
+		{
+			DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
+			
+			try {
+				datagram.register(selector, SelectionKey.OP_WRITE, packet);
+			} 
+			catch (ClosedChannelException cce)
+			{
+				logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
+			}
+		}
+	}
+	
+	public void sendPacket(BytePacket packet, IPConnection... exceptedConnections)
+	{
+		if (!isServerSide()) // Pend the server connection
+		{
+			packet.setConnections(ClientGame.instance().sockets().getServerConnection());
+		}
+		
+		if (packet.mustSend()) // Use TCP
+		{
+			for (IPConnection con : packet.getConnections())
+			{
+				if (con != null && con.getSocket() != null)
+				{
+					try
+					{
+						con.getSocket().register(selector, SelectionKey.OP_WRITE, packet.getData());
+					}
+					catch (ClosedChannelException cce)
+					{
+						logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
+					}
+				}
+			}
+		}
+		else // Use UDP
+		{
+			for (IPConnection con : packet.getConnections())
+			{
+				if (con != null && con.getIPAddress() != null)
+				{
+					sendData(packet.getData(), con.getIPAddress(), con.getPort());
+					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+				}
+			}
+		}
+	}
+	
+	public void sendPacketToAllClients(BytePacket packet, IPConnection... exceptedConnections)
+	{
+		if (isServerSide()) // Pend all connected players
+		{
+			// ArrayList<IPConnection> cons = new ArrayList<IPConnection>();
+			
+			List<ConnectedPlayer> players = getConnectedPlayers();
+			
+			IPConnection[] cons = new IPConnection[players.size()];
+			
+			for (int i = 0; i < cons.length; i++)
+			{
+				// just assume that they're all connected players to speed up process
+				IPConnection con = ((IPConnectedPlayer) players.get(i)).getConnection();
+				
+				boolean isAllowed = true;
+				for (IPConnection exc : exceptedConnections)
+				{
+					if (exc == con)
+					{
+						isAllowed = false;
+						break;
+					}
+				}
+				
+				if (isAllowed) cons[i] = con;
+			}
+			
+			packet.setConnections(cons);
+		}
+		else
+		{
+			logger().log(ALogType.DEBUG, "Server is using the method sendPacketToAllClients() in PacketSender. The client should be using sendPacket(). There isn't a problem at the moment, but it is bad practice and could cause future problems.");
+		}
+		
+		sendPacket(packet);
+	}
+	
+	private void write(SelectionKey key)
+	{
+		try
+		{
+			SelectableChannel abstractClient = key.channel();
+			
+			if (abstractClient instanceof SocketChannel)
+			{
+				SocketChannel client = (SocketChannel) abstractClient;
+				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+				buffer.clear();
+				buffer.put((byte[]) key.attachment());
+				buffer.flip();
+				
+				while (buffer.hasRemaining())
+				{
+					client.write(buffer);
+				}
+				
+				client.register(selector, SelectionKey.OP_READ, null);
+			}
+			else if (abstractClient instanceof DatagramChannel)
+			{
+				DatagramChannel client = (DatagramChannel) abstractClient;
+				client.socket().send((DatagramPacket) key.attachment());
+				
+				/*
+				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+				DatagramPacket packet = (DatagramPacket) key.attachment();
+				buffer.clear();
+				buffer.put(packet.getData());
+				buffer.flip();
+				
+				while (buffer.hasRemaining())
+				{
+					client.write(buffer);
+				}
+				*/
+								
+				client.register(selector, SelectionKey.OP_READ, null);
+			}
+		}
+		catch (IOException e)
+		{
+			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while sending", e);
+			
+			if (!isStopping()) e.printStackTrace();
+		}
+	}
+	
+	private void read(SelectionKey key)
+	{
+		try
+		{
+			SelectableChannel abstractClient =  key.channel();
+			
+			if (abstractClient instanceof SocketChannel) // TODO: find similarities between reads and simplify code
+			{
+				SocketChannel client = (SocketChannel) abstractClient;
+				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+				int bytesRead = client.read(buffer);
+				
+				while (bytesRead > 0) {
+					bytesRead = client.read(buffer);
+				}
+				
+				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
+				if (bytesRead == -1) {
+					getGame().logger().log(ALogType.WARNING, "Connection closed by: " + IPUtil.asReadable(remoteAddress));
+					client.close();
+				}
+				
+				BytePacket packet = new BytePacket(buffer.array());
+				InetAddress address = remoteAddress.getAddress();
+				int port = remoteAddress.getPort();
+				
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
+				
+				getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
+			}
+			else if (abstractClient instanceof DatagramChannel)
+			{
+				DatagramChannel client = (DatagramChannel) abstractClient;
+				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+				int bytesRead = client.read(buffer);
+				
+				while (bytesRead > 0) {
+					bytesRead = client.read(buffer);
+				}
+				
+				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
+				if (bytesRead == -1) {
+					game.logger().log(ALogType.WARNING, "Connection closed by: " + IPUtil.asReadable(remoteAddress));
+					client.close();
+				}
+				
+				BytePacket packet = new BytePacket(buffer.array());
+				InetAddress address = remoteAddress.getAddress();
+				int port = remoteAddress.getPort();
+				
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
+				
+				// Faster ping times because it doesn't have to go through the client's tick system
+				if (packet.getType() == PacketType.TEST_PING)
+				{
+					if (isServerSide())
+					{
+						IPConnectedPlayer sender = getPlayerConnection(address, port);
+						
+						if (sender != null)
+						{
+							if (sender.isPendingPingUpdate())
+							{
+								sender.updatePing(System.currentTimeMillis());
+							}
+							else
+							{
+								logger().log(ALogType.WARNING, "Received ping response from a client that isn't pending a ping update: " + sender.getConnection().asReadable());
+							}
+						}
+						else
+						{
+							logger().log(ALogType.WARNING, "Received ping response from a client isn't connected [" + IPUtil.asReadable(address, port) + "]");
+						}
+					}
+					else
+					{
+						sendPacket(new PacketPingClientServer());
+						getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
+					}
+				}
+				else
+				{
+					getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
+				}
+			}
+			
+		}
+		catch (PortUnreachableException e)
+		{
+			logger().log(ALogType.CRITICAL, "Port is unreachable: " + socket().socket().getPort(), e);
+			if (!isServerSide())
+			{
+				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), -1, "PORT", "UNREACHABLE");
+			}
+		}
+		catch (SocketException e)
+		{
+			// TODO this is invisible
+			if (!isStopping()) e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while receiving", e);
+			
+			if (!isStopping()) e.printStackTrace();
+		}
 	}
 }

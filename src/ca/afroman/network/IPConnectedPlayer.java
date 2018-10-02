@@ -1,6 +1,7 @@
 package ca.afroman.network;
 
 import java.net.InetAddress;
+import java.nio.channels.SocketChannel;
 
 import ca.afroman.game.Role;
 
@@ -16,9 +17,9 @@ public class IPConnectedPlayer extends ConnectedPlayer
 	 * @param role the role of the player
 	 * @param username the username of the player
 	 */
-	public IPConnectedPlayer(InetAddress address, int port, TCPSocket tcpSocket, short id, Role role, String username)
+	public IPConnectedPlayer(InetAddress address, int port, SocketChannel socket, short id, Role role, String username)
 	{
-		this(new IPConnection(address, port, tcpSocket), id, role, username);
+		this(new IPConnection(address, port, socket), id, role, username);
 	}
 	
 	/**

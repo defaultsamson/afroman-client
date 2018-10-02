@@ -1,6 +1,8 @@
 package ca.afroman.util;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import ca.afroman.network.IPConnection;
 
@@ -9,6 +11,11 @@ public class IPUtil
 	public static String asReadable(InetAddress address, int port)
 	{
 		return (address != null ? address.getHostAddress() : "null") + ":" + port;
+	}
+	
+	public static String asReadable(InetSocketAddress address)
+	{
+		return (address != null ? address.getAddress() + ":" + address.getPort() : "null");
 	}
 	
 	public static boolean equals(InetAddress address, int port, InetAddress address2, int port2)
@@ -49,4 +56,5 @@ public class IPUtil
 		}
 		return false;
 	}
+
 }

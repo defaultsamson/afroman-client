@@ -1,12 +1,14 @@
 package ca.afroman.network;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 
 import ca.afroman.util.IPUtil;
 
 public class IPConnection
 {
-	private TCPSocket tcpSocket;
+	private SocketChannel socket;
 	private InetAddress address;
 	private int port;
 	
@@ -16,9 +18,9 @@ public class IPConnection
 	 * @param address the IP
 	 * @param port the port
 	 */
-	public IPConnection(InetAddress address, int port, TCPSocket tcpSocket)
+	public IPConnection(InetAddress address, int port, SocketChannel socket)
 	{
-		this.tcpSocket = tcpSocket;
+		this.socket = socket;
 		this.address = address;
 		this.port = port;
 	}
@@ -46,9 +48,14 @@ public class IPConnection
 		return port;
 	}
 	
-	public TCPSocket getTCPSocket()
+	public SocketChannel getSocket()
 	{
-		return tcpSocket;
+		return socket;
+	}
+	
+	public InetSocketAddress getAsInet()
+	{
+		return new InetSocketAddress(address, port);
 	}
 	
 	public void setIPAddress(InetAddress address)
@@ -61,8 +68,8 @@ public class IPConnection
 		this.port = newPort;
 	}
 	
-	public void setTCPSocket(TCPSocket socket)
+	public void setSocket(SocketChannel socket)
 	{
-		tcpSocket = socket;
+		this.socket = socket;
 	}
 }
