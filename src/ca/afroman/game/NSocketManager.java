@@ -1,8 +1,13 @@
 package ca.afroman.game;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -11,18 +16,69 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
+import ca.afroman.client.ClientGame;
+import ca.afroman.gui.GuiClickNotification;
+import ca.afroman.gui.GuiJoinServer;
+import ca.afroman.gui.GuiMainMenu;
+import ca.afroman.log.ALogType;
+import ca.afroman.network.ConnectedPlayer;
+import ca.afroman.network.IPConnectedPlayer;
+import ca.afroman.network.IPConnection;
+import ca.afroman.network.TCPSocket;
+import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
+import ca.afroman.packet.technical.PacketServerClientStartTCP;
+import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 
 public class NSocketManager extends DynamicThread
 {
 	protected static final int BUFFER_SIZE = 48;
+	protected static final int traffOps = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+	protected static final int hostOps = SelectionKey.OP_ACCEPT;
+	protected static final int connectOps = SelectionKey.OP_CONNECT;
+	
+	/**
+	 * Returns a usable port. If the provided one is eligible then it will return it, otherwise it will return the default port.
+	 * 
+	 * @param port
+	 * @return
+	 */
+	public static int validatedPort(int port)
+	{
+		return (!(port < 0 || port > 0xFFFF)) ? port : Game.DEFAULT_PORT;
+	}
+	
+	/**
+	 * Returns a usable port. If the provided one is eligible then it will return it, otherwise it will return the default port.
+	 * 
+	 * @param port
+	 * @return
+	 */
+	public static int validatedPort(String port)
+	{
+		if (port.length() > 0)
+		{
+			try
+			{
+				return validatedPort(Integer.parseInt(port));
+			}
+			catch (NumberFormatException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		return Game.DEFAULT_PORT;
+	}
 	
 	private ThreadGroup group;
 	private Game game;
 	
 	private ServerSocketChannel server;
 	private Selector selector;
+	private DatagramSocket datagram;
+	private IPConnection serverConnection;
 	
 	private boolean isStopping;
 	
@@ -72,25 +128,131 @@ public class NSocketManager extends DynamicThread
 		}
 	}
 	
-	public void host(InetSocketAddress address) throws IOException {
-		server = ServerSocketChannel.open();
-		server.configureBlocking(false);
-		server.bind(address);
+	public boolean setServerConnection(String address, int port)
+	{
+		port = validatedPort(port);
 		
-		String threadName = Thread.currentThread().getName();
-		System.out.println(threadName + " hosting on: " + address);
-		server.register(selector, SelectionKey.OP_ACCEPT);
+		serverConnection.setPort(port);
+		
+		if (address == null)
+		{
+			serverConnection.setIPAddress(null);
+			return false;
+		}
+		
+		InetAddress ip = null;
+		
+		try
+		{
+			ip = InetAddress.getByName(address);
+		}
+		catch (UnknownHostException e)
+		{
+			game.logger().log(ALogType.CRITICAL, "Couldn't resolve hostname", e);
+			
+			if (!isServerSide())
+			{
+				ClientGame.instance().setCurrentScreen(new GuiJoinServer(new GuiMainMenu()));
+				new GuiClickNotification(ClientGame.instance().getCurrentScreen(), -1, "UNKNOWN", "HOST");
+			}
+			return false;
+		}
+		
+		serverConnection.setIPAddress(ip);
+		
+		if (isServerSide()) {
+			Options.instance().serverPort = "" + port;
+			
+			try
+			{
+				server = ServerSocketChannel.open();
+				server.configureBlocking(false);
+				server.bind(new InetSocketAddress(ip, port));
+				
+				server.register(selector, hostOps);
+			}
+			catch (IOException e)
+			{
+				game.logger().log(ALogType.CRITICAL, "Failed to create server ServerSocket", e);
+			}
+			
+			try
+			{
+				datagram = new DatagramSocket(serverConnection.getPort());
+			}
+			catch (SocketException e)
+			{
+				game.logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", e);
+				
+				return false;
+			}
+		}
+		else
+		{
+			Options.instance().clientPort = "" + port;
+			
+			try
+			{
+				datagram = new DatagramSocket();
+				datagram.connect(serverConnection.getIPAddress(), serverConnection.getPort());
+			}
+			catch (SocketException e)
+			{
+				game.logger().log(ALogType.CRITICAL, "Failed to create client DatagramSocket", e);
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
-	protected void accept(SelectionKey key) throws IOException {
+	protected void accept(SelectionKey key) throws IOException
+	{
 		ServerSocketChannel server = (ServerSocketChannel) key.channel();
+		
 		SocketChannel client = server.accept();
 		
-		if (client != null) {
+		if (client != null)
+		{
 			client.configureBlocking(false);
-			SocketAddress remoteAddress = client.getRemoteAddress();
-			System.out.println("Accepted connection from: " + remoteAddress);
 			client.register(selector, SelectionKey.OP_READ, null);
+		}
+	}
+	
+	public void addConnection(IPConnection connection, String username)
+	{
+		if (isServerSide())
+		{
+			// Gives player a default role based on what critical roles are still required
+			Role role = (getPlayerConnection(Role.PLAYER1) == null ? Role.PLAYER1 : (getPlayerConnection(Role.PLAYER2) == null ? Role.PLAYER2 : Role.SPECTATOR));
+			
+			short id = (short) ConnectedPlayer.getIDCounter().getNext();
+			
+			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, id, role, username);
+			playerList.add(newConnection);
+			
+			try
+			{
+				sender().sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
+				Socket clientTCP = welcomeSocket().accept();
+				TCPSocket tcp = new TCPSocket(clientTCP, isServerSide());
+				newConnection.getConnection().setTCPSocket(tcp);
+				
+				synchronized (tcpSockets)
+				{
+					TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
+					tcpSockets.add(rec);
+					rec.startThis();
+				}
+			}
+			catch (IOException e)
+			{
+				ServerGame.instance().logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
+			}
+		}
+		else
+		{
+			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use addConnection() method in SocketManager");
 		}
 	}
 	
@@ -118,8 +280,14 @@ public class NSocketManager extends DynamicThread
 		}
 	}
 	
-	public void sendPacket(BytePacket packet) {
+	public void sendPacket(BytePacket packet, IPConnection... exceptedConnections) {
+		if (!isServerSide()) {
+			packet.setConnections(ClientGame.instance().sockets().getServerConnection());
+		}
 		
+		if (packet.mustSend()) {
+			
+		}
 	}
 	
 	protected void write(SelectionKey key) throws IOException {
