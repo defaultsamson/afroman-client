@@ -91,7 +91,7 @@ public class BattleCrabEntity extends BattleEntityAutomated
 	{
 		System.out.println("Attacking player " + player);
 		int damage = -3 - new Random().nextInt(5);
-		ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), player.ordinal(), damage));
+		ServerGame.instance().sockets().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), player.ordinal(), damage));
 		executeBattle(player.ordinal(), damage);
 	}
 	

@@ -633,11 +633,11 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 					// Update the position
 					if (this instanceof PlayerEntity)
 					{
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(((PlayerEntity) this).getRole(), getPosition(), !hasDeltaMovement()));
+						ServerGame.instance().sockets().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(((PlayerEntity) this).getRole(), getPosition(), !hasDeltaMovement()));
 					}
 					else
 					{
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetEntityLocation(level.getLevelType(), getID(), getPosition(), !hasDeltaMovement()));
+						ServerGame.instance().sockets().sendPacketToAllClients(new PacketSetEntityLocation(level.getLevelType(), getID(), getPosition(), !hasDeltaMovement()));
 					}
 					
 					hasMovedSince = false;
@@ -648,7 +648,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 			{
 				if (hasDeltaDeltaMovement() && deltaMoveCounter.isAtInterval())
 				{
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketEntityMove(level.getLevelType(), getID(), deltaXaMoved, deltaYaMoved));
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketEntityMove(level.getLevelType(), getID(), deltaXaMoved, deltaYaMoved));
 					
 					deltaXaMoved = 0;
 					deltaYaMoved = 0;
@@ -697,7 +697,7 @@ public abstract class Entity extends PositionLevelObject implements ITickable
 				// If has moved, and it's been a given amount of ticks, tell the server the position of this
 				if (hasDeltaMovement() && deltaMoveCounter.isAtInterval())
 				{
-					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
+					ClientGame.instance().sockets().sendPacket(new PacketPlayerMoveClientServer(deltaXa, deltaYa));
 					
 					deltaXa = 0;
 					deltaYa = 0;

@@ -66,12 +66,12 @@ public class GuiSendingLevels extends GuiScreen
 		switch (buttonID)
 		{
 			case 2000: // TODO Resend Levels
-				ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(true));
+				ClientGame.instance().sockets().sendPacket(new PacketStartServer(true));
 				break;
 			case 2001: // Stop Server
-				ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(false));
+				ClientGame.instance().sockets().sendPacket(new PacketStartServer(false));
 			case 2002: // Leave server
-				ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerDisconnect());
+				ClientGame.instance().sockets().sendPacket(new PacketPlayerDisconnect());
 				ClientGame.instance().exitFromGame(ExitGameReason.DISCONNECT);
 		}
 	}

@@ -197,7 +197,7 @@ public class CommandUtil
 							// If the client has a conenction to a server
 							if (ClientGame.instance().sockets().hasActiveServerConnection())
 							{
-								ClientGame.instance().sockets().sender().sendPacket(new PacketCommand(command, params));
+								ClientGame.instance().sockets().sendPacket(new PacketCommand(command, params));
 							}
 						}
 						else

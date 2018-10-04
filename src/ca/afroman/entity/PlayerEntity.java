@@ -112,7 +112,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 		
 		if (isServerSide())
 		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level));
+			ServerGame.instance().sockets().sendPacketToAllClients(new PacketSetPlayerLevel(this.getRole(), level));
 		}
 		// }
 		// else if (isServerSide())
@@ -166,7 +166,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 		
 		if (isServerSide() && sendPositionpackets)
 		{
-			ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(getRole(), getPosition(), true));
+			ServerGame.instance().sockets().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(getRole(), getPosition(), true));
 		}
 	}
 	
@@ -213,7 +213,7 @@ public class PlayerEntity extends DrawableEntityDirectional
 					
 					if (ClientGame.instance().input().interact.isPressedFiltered())
 					{
-						ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract(getPosition()));
+						ClientGame.instance().sockets().sendPacket(new PacketPlayerInteract(getPosition()));
 					}
 					if (ClientGame.instance().input().prevItem.isPressedTyping() || ClientGame.instance().input().mouseWheelDown.isPressedFiltered())
 					{

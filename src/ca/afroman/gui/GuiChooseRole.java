@@ -85,12 +85,12 @@ public class GuiChooseRole extends GuiScreen
 				break;
 			case 201:
 				PacketSetRole packet1 = new PacketSetRole(playerID, Role.PLAYER1);
-				ClientGame.instance().sockets().sender().sendPacket(packet1);
+				ClientGame.instance().sockets().sendPacket(packet1);
 				goToParentScreen();
 				break;
 			case 202:
 				PacketSetRole packet2 = new PacketSetRole(playerID, Role.PLAYER2);
-				ClientGame.instance().sockets().sender().sendPacket(packet2);
+				ClientGame.instance().sockets().sendPacket(packet2);
 				goToParentScreen();
 				break;
 		}

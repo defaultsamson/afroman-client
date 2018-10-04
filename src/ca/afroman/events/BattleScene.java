@@ -462,7 +462,7 @@ public class BattleScene extends Entity
 			return;
 		}
 		
-		if (isServerSide()) ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateTurn(getID(), fighterOrd));
+		if (isServerSide()) ServerGame.instance().sockets().sendPacketToAllClients(new PacketUpdateTurn(getID(), fighterOrd));
 		
 		for (int i = 0; i < fighters.length; i++)
 			if (fighters[i] != null) fighters[i].setIsTurn(i == fighterOrd);
@@ -470,7 +470,7 @@ public class BattleScene extends Entity
 	
 	public void setTurn(Role role)
 	{
-		if (isServerSide()) ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketUpdateTurn(getID(), role));
+		if (isServerSide()) ServerGame.instance().sockets().sendPacketToAllClients(new PacketUpdateTurn(getID(), role));
 		
 		if (enemy1 != null) enemy1.setIsTurn(false);
 		if (enemy2 != null) enemy2.setIsTurn(false);
@@ -492,7 +492,7 @@ public class BattleScene extends Entity
 				if (!p.isInBattle() && p.isColliding(this) && !p.isInvincible())
 				{
 					p.setBattle(this);
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketAddPlayerToBattle(this.getID(), p.getRole()));
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketAddPlayerToBattle(this.getID(), p.getRole()));
 				}
 			}
 		}

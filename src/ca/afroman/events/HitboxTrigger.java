@@ -59,7 +59,7 @@ public class HitboxTrigger extends Event
 				if (playerCollide && input.isPressedFiltered())
 				{
 					trigger(player);
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), player.getRole()));
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), player.getRole()));
 				}
 				
 				if (playerUncollide && input.isReleasedFiltered())
@@ -67,7 +67,7 @@ public class HitboxTrigger extends Event
 					if (lastHit != null)
 					{
 						trigger(lastHit);
-						ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), ((PlayerEntity) lastHit).getRole()));
+						ServerGame.instance().sockets().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), ((PlayerEntity) lastHit).getRole()));
 					}
 					else
 					{
@@ -90,7 +90,7 @@ public class HitboxTrigger extends Event
 				if (triggerer.isColliding(getHitbox()))
 				{
 					trigger(triggerer);
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), triggerer.getRole()));
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketActivateTrigger(getID(), level.getLevelType(), triggerer.getRole()));
 				}
 			}
 		}

@@ -2,12 +2,9 @@ package ca.afroman.game;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.PortUnreachableException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -19,7 +16,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,14 +25,12 @@ import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
-import ca.afroman.interfaces.IDynamicRunning;
 import ca.afroman.log.ALogType;
 import ca.afroman.log.ALogger;
 import ca.afroman.network.ConnectedPlayer;
 import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
 import ca.afroman.network.IncomingPacketWrapper;
-import ca.afroman.network.TCPSocket;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
 import ca.afroman.packet.PacketType;
@@ -44,8 +38,6 @@ import ca.afroman.packet.technical.PacketAssignClientID;
 import ca.afroman.packet.technical.PacketPingClientServer;
 import ca.afroman.packet.technical.PacketServerClientStartTCP;
 import ca.afroman.packet.technical.PacketUpdatePlayerList;
-import ca.afroman.resource.ServerClientObject;
-import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
@@ -95,7 +87,7 @@ public class SocketManager extends DynamicThread
 	private ServerSocketChannel server;
 	private DatagramChannel datagram;
 	private Selector selector;
-		
+	
 	private boolean isStopping;
 	
 	public SocketManager(Game game)
@@ -107,14 +99,14 @@ public class SocketManager extends DynamicThread
 		playerList = new ArrayList<ConnectedPlayer>();
 		
 		serverConnection = new IPConnection(null, -1, null);
-				
+		
 		try
 		{
 			selector = Selector.open();
 		}
 		catch (IOException ioe)
 		{
-			game.logger().log(ALogType.CRITICAL, "Instance cannot open selector!", ioe);
+			logger().log(ALogType.CRITICAL, "Instance cannot open selector!", ioe);
 		}
 	}
 	
@@ -139,25 +131,19 @@ public class SocketManager extends DynamicThread
 			try
 			{
 				sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
-				Socket clientTCP = welcomeSocket().accept();
-				TCPSocket tcp = new TCPSocket(clientTCP, isServerSide());
-				newConnection.getConnection().setTCPSocket(tcp);
-				
-				synchronized (tcpSockets)
-				{
-					TCPReceiver rec = new TCPReceiver(isServerSide(), this, tcp);
-					tcpSockets.add(rec);
-					rec.startThis();
-				}
+				SocketChannel client = server.accept();
+				client.configureBlocking(false);
+				newConnection.getConnection().setSocket(client);
+				client.register(selector, SelectionKey.OP_READ, null);
 			}
 			catch (IOException e)
 			{
-				ServerGame.instance().logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
+				logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
 			}
 		}
 		else
 		{
-			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use addConnection() method in SocketManager");
+			logger().log(ALogType.WARNING, "Client is trying to use addConnection() method in SocketManager");
 		}
 	}
 	
@@ -165,7 +151,7 @@ public class SocketManager extends DynamicThread
 	{
 		// copy what PacketSender does here
 	}
-
+	
 	public List<ConnectedPlayer> getConnectedPlayers()
 	{
 		return playerList;
@@ -196,7 +182,7 @@ public class SocketManager extends DynamicThread
 		}
 		else
 		{
-			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use getPlayerConnection(InetAddress, int) method in SocketManager");
+			logger().log(ALogType.WARNING, "Client is trying to use getPlayerConnection(InetAddress, int) method in SocketManager");
 		}
 		
 		return null;
@@ -248,34 +234,44 @@ public class SocketManager extends DynamicThread
 		{
 			try
 			{
-				SocketChannel client = SocketChannel.open(getServerConnection().getAsInet());
+				SocketChannel client = SocketChannel.open();
 				getServerConnection().setSocket(client);
+				client.configureBlocking(false);
+				
+				if (client.connect(getServerConnection().getAsInet()))
+				{
+					logger().log(ALogType.DEBUG, "Locally connected to " + getServerConnection().asReadable());
+				}
+				else
+				{
+					logger().log(ALogType.DEBUG, "Connecting to " + getServerConnection().asReadable());
+					client.register(selector, SelectionKey.OP_CONNECT, null);
+				}
 				
 				/*
-				Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
-				TCPSocket sock = new TCPSocket(clientSocket, isServerSide());
-				getServerConnection().setTCPSocket(sock);
-				
-				TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
-				synchronized (tcpSockets)
-				{
-					tcpSockets.add(thread);
-				}
-				thread.startThis();
-				*/
+				 * Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
+				 * TCPSocket sock = new TCPSocket(clientSocket, isServerSide());
+				 * getServerConnection().setTCPSocket(sock);
+				 * TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
+				 * synchronized (tcpSockets)
+				 * {
+				 * tcpSockets.add(thread);
+				 * }
+				 * thread.startThis();
+				 */
 			}
 			catch (UnknownHostException e)
 			{
-				game.logger().log(ALogType.WARNING, "Unkonwn host while setting up client TCP connection", e);
+				logger().log(ALogType.WARNING, "Unkonwn host while setting up client TCP connection", e);
 			}
 			catch (IOException e)
 			{
-				game.logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
+				logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
 			}
 		}
 		else
 		{
-			ServerGame.instance().logger().log(ALogType.WARNING, "Server is trying to use initServerTCPConnection() method in SocketManager");
+			logger().log(ALogType.WARNING, "Server is trying to use initServerTCPConnection() method in SocketManager");
 		}
 	}
 	
@@ -288,31 +284,39 @@ public class SocketManager extends DynamicThread
 	{
 		if (isServerSide())
 		{
-			/*
-			TCPSocket tcpSock = connection.getConnection().getTCPSocket();
-			synchronized (tcpSockets)
-			{
-				int index = -1;
-				
-				for (int i = 0; i < tcpSockets.size(); i++)
-				{
-					TCPReceiver rec = tcpSockets.get(i);
-					if (rec.getTCPSocket() == tcpSock)
-					{
-						index = i;
-						break;
-					}
-				}
-				
-				if (index != -1)
-				{
-					TCPReceiver t = tcpSockets.remove(index);
-					t.stopThis();
-				}
-			}
 			
-			tcpSock.stopThis();
-			*/
+			/*
+			 * TCPSocket tcpSock = connection.getConnection().getTCPSocket();
+			 * synchronized (tcpSockets)
+			 * {
+			 * int index = -1;
+			 * for (int i = 0; i < tcpSockets.size(); i++)
+			 * {
+			 * TCPReceiver rec = tcpSockets.get(i);
+			 * if (rec.getTCPSocket() == tcpSock)
+			 * {
+			 * index = i;
+			 * break;
+			 * }
+			 * }
+			 * if (index != -1)
+			 * {
+			 * TCPReceiver t = tcpSockets.remove(index);
+			 * t.stopThis();
+			 * }
+			 * }
+			 * tcpSock.stopThis();
+			 */
+			
+			try
+			{
+				SocketChannel socket = connection.getConnection().getSocket();
+				socket.close();
+			}
+			catch (IOException ioe)
+			{
+				logger().log(ALogType.CRITICAL, "Failed to remove a connection!", ioe);
+			}
 			
 			playerList.remove(connection);
 			
@@ -330,7 +334,7 @@ public class SocketManager extends DynamicThread
 				}
 				else
 				{
-					ServerGame.instance().logger().log(ALogType.CRITICAL, "There shouldn't be a non-IPConnectedPlayer in the server's SocketManager");
+					logger().log(ALogType.CRITICAL, "There shouldn't be a non-IPConnectedPlayer in the server's SocketManager");
 				}
 			}
 			
@@ -338,7 +342,7 @@ public class SocketManager extends DynamicThread
 		}
 		else
 		{
-			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use removeConnection() method in SocketManager");
+			logger().log(ALogType.WARNING, "Client is trying to use removeConnection() method in SocketManager");
 		}
 	}
 	
@@ -362,7 +366,7 @@ public class SocketManager extends DynamicThread
 		}
 		catch (UnknownHostException e)
 		{
-			game.logger().log(ALogType.CRITICAL, "Couldn't resolve hostname", e);
+			logger().log(ALogType.CRITICAL, "Couldn't resolve hostname", e);
 			
 			if (!isServerSide())
 			{
@@ -469,7 +473,7 @@ public class SocketManager extends DynamicThread
 		}
 		else
 		{
-			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use updateClientsPlayerList() method in SocketManager");
+			logger().log(ALogType.WARNING, "Client is trying to use updateClientsPlayerList() method in SocketManager");
 		}
 	}
 	
@@ -487,7 +491,7 @@ public class SocketManager extends DynamicThread
 		}
 		else
 		{
-			ServerGame.instance().logger().log(ALogType.WARNING, "Server is trying to use updateConnectedPlayers() method in SocketManager");
+			logger().log(ALogType.WARNING, "Server is trying to use updateConnectedPlayers() method in SocketManager");
 		}
 	}
 	
@@ -495,34 +499,76 @@ public class SocketManager extends DynamicThread
 	{
 		return server;
 	}
-
+	
 	@Override
 	public void onRun()
 	{
-		keyCheck();
+		try
+		{
+			keyCheck();
+		}
+		catch (IOException ioe)
+		{
+			logger().log(ALogType.WARNING, "Failed to execute network operations", ioe);
+		}
 	}
-
-	private void keyCheck()
+	
+	private void keyCheck() throws IOException // TODO: look into replacing set/iterator use with for loop
 	{
 		selector.select();
 		
 		Set<SelectionKey> selectedKeys = selector.selectedKeys();
 		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-
-		while (keyIterator.hasNext()) {
+		
+		while (keyIterator.hasNext())
+		{
 			SelectionKey key = keyIterator.next();
-
-			if (key.isAcceptable()) {
-				//accept(key);
-			} else if (key.isConnectable()) {
-				//establish(key);
-			} else if (key.isWritable()) {
+			
+			if (key.isAcceptable())
+			{
+				accept(key);
+			}
+			else if (key.isConnectable())
+			{
+				establish(key);
+			}
+			else if (key.isWritable())
+			{
 				write(key);
-			} else if (key.isReadable()) {
+			}
+			else if (key.isReadable())
+			{
 				read(key);
 			}
 			keyIterator.remove();
 		}
+	}
+	
+	private void accept(SelectionKey key) throws IOException
+	{
+		ServerSocketChannel server = (ServerSocketChannel) key.channel();
+		SocketChannel client = server.accept();
+		
+		if (client != null)
+		{
+			client.configureBlocking(false);
+			SocketAddress remoteAddress = client.getRemoteAddress();
+			System.out.println("Accepted connection from: " + remoteAddress);
+			client.register(selector, SelectionKey.OP_READ, null);
+		}
+	}
+	
+	private void establish(SelectionKey key) throws IOException
+	{
+		SocketChannel channel = (SocketChannel) key.channel();
+		
+		while (!channel.finishConnect())
+		{
+			// TODO: tell the user that we're waiting to connect
+		}
+		
+		logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
+		channel.register(selector, SelectionKey.OP_READ, null);
 	}
 	
 	/**
@@ -534,9 +580,10 @@ public class SocketManager extends DynamicThread
 		{
 			DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
 			
-			try {
+			try
+			{
 				datagram.register(selector, SelectionKey.OP_WRITE, packet);
-			} 
+			}
 			catch (ClosedChannelException cce)
 			{
 				logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
@@ -646,18 +693,17 @@ public class SocketManager extends DynamicThread
 				client.socket().send((DatagramPacket) key.attachment());
 				
 				/*
-				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-				DatagramPacket packet = (DatagramPacket) key.attachment();
-				buffer.clear();
-				buffer.put(packet.getData());
-				buffer.flip();
+				 * ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+				 * DatagramPacket packet = (DatagramPacket) key.attachment();
+				 * buffer.clear();
+				 * buffer.put(packet.getData());
+				 * buffer.flip();
+				 * while (buffer.hasRemaining())
+				 * {
+				 * client.write(buffer);
+				 * }
+				 */
 				
-				while (buffer.hasRemaining())
-				{
-					client.write(buffer);
-				}
-				*/
-								
 				client.register(selector, SelectionKey.OP_READ, null);
 			}
 		}
@@ -673,7 +719,7 @@ public class SocketManager extends DynamicThread
 	{
 		try
 		{
-			SelectableChannel abstractClient =  key.channel();
+			SelectableChannel abstractClient = key.channel();
 			
 			if (abstractClient instanceof SocketChannel) // TODO: find similarities between reads and simplify code
 			{
@@ -681,12 +727,14 @@ public class SocketManager extends DynamicThread
 				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 				int bytesRead = client.read(buffer);
 				
-				while (bytesRead > 0) {
+				while (bytesRead > 0)
+				{
 					bytesRead = client.read(buffer);
 				}
 				
 				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
-				if (bytesRead == -1) {
+				if (bytesRead == -1)
+				{
 					getGame().logger().log(ALogType.WARNING, "Connection closed by: " + IPUtil.asReadable(remoteAddress));
 					client.close();
 				}
@@ -705,12 +753,14 @@ public class SocketManager extends DynamicThread
 				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 				int bytesRead = client.read(buffer);
 				
-				while (bytesRead > 0) {
+				while (bytesRead > 0)
+				{
 					bytesRead = client.read(buffer);
 				}
 				
 				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
-				if (bytesRead == -1) {
+				if (bytesRead == -1)
+				{
 					game.logger().log(ALogType.WARNING, "Connection closed by: " + IPUtil.asReadable(remoteAddress));
 					client.close();
 				}

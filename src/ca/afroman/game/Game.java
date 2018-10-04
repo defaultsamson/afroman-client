@@ -171,7 +171,7 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		
 		if (isServerSide())
 		{
-			sockets().sender().sendPacketToAllClients(new PacketStartServer(false));
+			sockets().sendPacketToAllClients(new PacketStartServer(false));
 			
 			// TODO make a more surefire way to ensure that all clients got the message
 			try

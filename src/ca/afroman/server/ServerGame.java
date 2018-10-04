@@ -221,7 +221,7 @@ public class ServerGame extends Game
 							if (!waitingForPlayersToLoad)
 							{
 								logger().log(ALogType.DEBUG, "Finished loading levels for all players");
-								sockets().sender().sendPacketToAllClients(new PacketLoadLevels(false));
+								sockets().sendPacketToAllClients(new PacketLoadLevels(false));
 							}
 						}
 					}
@@ -299,7 +299,7 @@ public class ServerGame extends Game
 								
 								player.autoMove(x, y);
 								
-								sockets().sender().sendPacketToAllClients(new PacketPlayerMoveServerClient(role, x, y), sender.getConnection());
+								sockets().sendPacketToAllClients(new PacketPlayerMoveServerClient(role, x, y), sender.getConnection());
 							}
 							else
 							{
@@ -315,7 +315,7 @@ public class ServerGame extends Game
 					case START_TCP:
 					{
 						// Tells the connection their ID
-						sockets().sender().sendPacket(new PacketAssignClientID(sender.getID(), sender.getConnection()));
+						sockets().sendPacket(new PacketAssignClientID(sender.getID(), sender.getConnection()));
 						
 						// Updates the player list for everyone
 						sockets().updateClientsPlayerList();
@@ -339,11 +339,11 @@ public class ServerGame extends Game
 								{
 									player.setPosition(pos.getX(), pos.getY(), false);
 									
-									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, pos, true), sender.getConnection());
+									sockets().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, pos, true), sender.getConnection());
 								}
 								else // Else force it back
 								{
-									sockets().sender().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, player.getPosition(), true));
+									sockets().sendPacketToAllClients(new PacketSetPlayerLocationServerClient(role, player.getPosition(), true));
 								}
 							}
 							else
@@ -558,14 +558,14 @@ public class ServerGame extends Game
 				if (version > VersionUtil.SERVER_TEST_VERSION)
 				{
 					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_SERVER, connection);
-					sockets().sender().sendPacket(passPacket);
+					sockets().sendPacket(passPacket);
 					return;
 				}
 				
 				if (version < VersionUtil.SERVER_TEST_VERSION)
 				{
 					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.OLD_CLIENT, connection);
-					sockets().sender().sendPacket(passPacket);
+					sockets().sendPacket(passPacket);
 					return;
 				}
 				
@@ -573,7 +573,7 @@ public class ServerGame extends Game
 				if (sockets().getConnectedPlayers().size() >= Game.MAX_PLAYERS)
 				{
 					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.FULL_SERVER, connection);
-					sockets().sender().sendPacket(passPacket);
+					sockets().sendPacket(passPacket);
 					return;
 				}
 				
@@ -585,7 +585,7 @@ public class ServerGame extends Game
 				if (sockets().getPlayerConnection(name) != null)
 				{
 					PacketDenyJoin passPacket = new PacketDenyJoin(DenyJoinReason.DUPLICATE_USERNAME, connection);
-					sockets().sender().sendPacket(passPacket);
+					sockets().sendPacket(passPacket);
 					return;
 				}
 				
@@ -604,7 +604,7 @@ public class ServerGame extends Game
 					// If got the wrong password, let the client know
 					else
 					{
-						sockets().sender().sendPacket(new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD, connection));
+						sockets().sendPacket(new PacketDenyJoin(DenyJoinReason.NEED_PASSWORD, connection));
 					}
 				}
 				else // Allow the player to join
@@ -640,7 +640,7 @@ public class ServerGame extends Game
 			// TODO pause game
 			isReturnedToLobby = true;
 			
-			sockets().sender().sendPacketToAllClients(new PacketReturnToLobby(reason));
+			sockets().sendPacketToAllClients(new PacketReturnToLobby(reason));
 		}
 		else if (!isInGame) // Stop game
 		{
@@ -653,7 +653,7 @@ public class ServerGame extends Game
 		}
 		else if (isInGame) // Start Game
 		{
-			sockets().sender().sendPacketToAllClients(new PacketLoadLevels(true));
+			sockets().sendPacketToAllClients(new PacketLoadLevels(true));
 			
 			loadLevels();
 			
@@ -690,13 +690,13 @@ public class ServerGame extends Game
 			if (p != pl && level == pl.getLevel() && !pl.isInBattle() && !pl.getPosition().isDistanceGreaterThan(p.getPosition(), 40D))
 			{
 				pl.setBattle(battle);
-				sockets().sender().sendPacketToAllClients(new PacketStartBattle(level.getLevelType(), e.getID(), true, true));
+				sockets().sendPacketToAllClients(new PacketStartBattle(level.getLevelType(), e.getID(), true, true));
 				battle.setTurn(p.getRole());
 				return;
 			}
 		}
 		
-		sockets().sender().sendPacketToAllClients(new PacketStartBattle(level.getLevelType(), e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
+		sockets().sendPacketToAllClients(new PacketStartBattle(level.getLevelType(), e.getID(), p.getRole() == Role.PLAYER1, p.getRole() == Role.PLAYER2));
 		battle.setTurn(p.getRole());
 	}
 	
@@ -746,7 +746,7 @@ public class ServerGame extends Game
 				p.setPingTestTime(System.currentTimeMillis());
 				
 				PacketPingServerClient pingPacket = new PacketPingServerClient(p.getPing(), p1Ping, p2Ping, ((IPConnectedPlayer) p).getConnection());
-				sockets().sender().sendPacket(pingPacket);
+				sockets().sendPacket(pingPacket);
 			}
 		}
 		

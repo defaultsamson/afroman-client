@@ -138,22 +138,22 @@ public class BattlePlayerEntity extends BattleEntity
 			{
 				if (deltaHealth != 0)
 				{
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID, deltaHealth));
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID, deltaHealth));
 				}
 				else
 				{
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID));
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID));
 				}
 			}
 			else
 			{
 				if (deltaHealth != 0)
 				{
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID, deltaHealth), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID, deltaHealth), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
 				}
 				else
 				{
-					ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
+					ServerGame.instance().sockets().sendPacketToAllClients(new PacketExecuteBattleIDServerClient(getBattle().getID(), battleID), ((IPConnectedPlayer) ServerGame.instance().sockets().getPlayerConnection(getLevelEntity().getRole())).getConnection());
 				}
 			}
 		}
@@ -258,12 +258,12 @@ public class BattlePlayerEntity extends BattleEntity
 							ClientGame.instance().input().escape.setPressed(false);
 							ClientGame.instance().input().escape.isReleasedFiltered();
 							
-							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(IS_NOT_SELECTING_ENEMY));
+							ClientGame.instance().sockets().sendPacket(new PacketExecuteBattleIDClientServer(IS_NOT_SELECTING_ENEMY));
 							getBattle().setIsSelectingAttack(false);
 						}
 						else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
 						{
-							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
+							ClientGame.instance().sockets().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
 							ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + selectedOption);
 						}
 					}
@@ -273,24 +273,24 @@ public class BattlePlayerEntity extends BattleEntity
 						if (ClientGame.instance().input().nextItem.isPressedFiltered() || ClientGame.instance().input().right.isPressedFiltered())
 						{
 							selectedOption = selectedOption.getNext();
-							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(UPDATE_OPTION_OFFSET + selectedOption.ordinal()));
+							ClientGame.instance().sockets().sendPacket(new PacketExecuteBattleIDClientServer(UPDATE_OPTION_OFFSET + selectedOption.ordinal()));
 						}
 						else if (ClientGame.instance().input().prevItem.isPressedFiltered() || ClientGame.instance().input().left.isPressedFiltered())
 						{
 							selectedOption = selectedOption.getLast();
-							ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(UPDATE_OPTION_OFFSET + selectedOption.ordinal()));
+							ClientGame.instance().sockets().sendPacket(new PacketExecuteBattleIDClientServer(UPDATE_OPTION_OFFSET + selectedOption.ordinal()));
 						}
 						else if (ClientGame.instance().input().useItem.isPressedFiltered() || ClientGame.instance().input().interact.isPressedFiltered() || ClientGame.instance().input().enter.isPressedFiltered())
 						{
 							switch (selectedOption)
 							{
 								case ATTACK:
-									ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(IS_SELECTING_ENEMY));
+									ClientGame.instance().sockets().sendPacket(new PacketExecuteBattleIDClientServer(IS_SELECTING_ENEMY));
 									getBattle().setIsSelectingAttack(true);
 									getBattle().selectEnemyInit();
 									break;
 								default:
-									ClientGame.instance().sockets().sender().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
+									ClientGame.instance().sockets().sendPacket(new PacketExecuteBattleIDClientServer(EXECUTE_OPTION_OFFSET + selectedOption.ordinal()));
 									ClientGame.instance().logger().log(ALogType.DEBUG, "Executing BattleOption: " + selectedOption);
 									isBattling = true;
 									break;

@@ -211,11 +211,11 @@ public abstract class BattleEntity extends ServerClientObject implements ITickab
 		{
 			if (isServerSide())
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketSelectEntityServerClient(getLevelEntity().getBattle().getID(), pos), sender);
+				ServerGame.instance().sockets().sendPacketToAllClients(new PacketSelectEntityServerClient(getLevelEntity().getBattle().getID(), pos), sender);
 			}
 			else if (sender == null)
 			{
-				ClientGame.instance().sockets().sender().sendPacket(new PacketSelectEntityClientServer(pos));
+				ClientGame.instance().sockets().sendPacket(new PacketSelectEntityClientServer(pos));
 			}
 		}
 	}

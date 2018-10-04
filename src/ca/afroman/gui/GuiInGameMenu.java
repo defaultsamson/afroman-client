@@ -46,7 +46,7 @@ public class GuiInGameMenu extends GuiScreen
 			case 1: // Stop Server
 				if (ClientGame.instance().isHostingServer())
 				{
-					ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(false));
+					ClientGame.instance().sockets().sendPacket(new PacketStartServer(false));
 				}
 				break;
 			case 4:// Options menu

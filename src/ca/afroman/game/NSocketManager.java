@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -21,14 +20,9 @@ import ca.afroman.gui.GuiClickNotification;
 import ca.afroman.gui.GuiJoinServer;
 import ca.afroman.gui.GuiMainMenu;
 import ca.afroman.log.ALogType;
-import ca.afroman.network.ConnectedPlayer;
-import ca.afroman.network.IPConnectedPlayer;
 import ca.afroman.network.IPConnection;
-import ca.afroman.network.TCPSocket;
 import ca.afroman.option.Options;
 import ca.afroman.packet.BytePacket;
-import ca.afroman.packet.technical.PacketServerClientStartTCP;
-import ca.afroman.server.ServerGame;
 import ca.afroman.thread.DynamicThread;
 
 public class NSocketManager extends DynamicThread
@@ -219,7 +213,7 @@ public class NSocketManager extends DynamicThread
 		}
 	}
 	
-	public void addConnection(IPConnection connection, String username)
+	/*public void addConnection(IPConnection connection, String username)
 	{
 		if (isServerSide())
 		{
@@ -254,7 +248,7 @@ public class NSocketManager extends DynamicThread
 		{
 			ClientGame.instance().logger().log(ALogType.WARNING, "Client is trying to use addConnection() method in SocketManager");
 		}
-	}
+	}*/
 	
 	protected void establish(SelectionKey key) throws IOException {
 		SocketChannel channel = (SocketChannel) key.channel();

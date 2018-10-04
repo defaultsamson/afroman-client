@@ -135,11 +135,11 @@ public class GuiLobby extends GuiScreen
 	{
 		if (buttonID == 2000) // Start Game
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(true));
+			ClientGame.instance().sockets().sendPacket(new PacketStartServer(true));
 		}
 		else if (buttonID == 2001) // Stop Server
 		{
-			ClientGame.instance().sockets().sender().sendPacket(new PacketStartServer(false));
+			ClientGame.instance().sockets().sendPacket(new PacketStartServer(false));
 		}
 		else if (buttonID == 2002) // Leave server
 		{

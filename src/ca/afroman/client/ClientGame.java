@@ -182,7 +182,7 @@ public class ClientGame extends Game
 		// TODO let the server know that the client has disconnected
 		if (sockets() != null && reason == ExitGameReason.DISCONNECT)
 		{
-			sockets().sender().sendPacket(new PacketPlayerDisconnect());
+			sockets().sendPacket(new PacketPlayerDisconnect());
 		}
 		
 		setIsInGame(false);
@@ -291,7 +291,7 @@ public class ClientGame extends Game
 		
 		if (successful)
 		{
-			sockets().sender().sendPacket(new PacketLogin(username, password));
+			sockets().sendPacket(new PacketLogin(username, password));
 		}
 	}
 	
@@ -370,11 +370,11 @@ public class ClientGame extends Game
 						}
 							break;
 						case START_TCP:
-							if (sockets().getServerConnection().getTCPSocket() == null)
+							if (sockets().getServerConnection().getSocket() == null)
 							{
 								sockets().initServerTCPConnection();
 								
-								sockets().sender().sendPacket(new PacketClientServerRequestID());
+								sockets().sendPacket(new PacketClientServerRequestID());
 							}
 							break;
 						case PLAYER_MOVE:
@@ -539,7 +539,7 @@ public class ClientGame extends Game
 									// given movement range, then tell the server to use that
 									if (role == getRole() && forcePos && !player.getPosition().isDistanceGreaterThan(pos, 10D))
 									{
-										ClientGame.instance().sockets().sender().sendPacket(new PacketSetPlayerLocationClientServer(player.getPosition()));
+										ClientGame.instance().sockets().sendPacket(new PacketSetPlayerLocationClientServer(player.getPosition()));
 									}
 									// Else, if the player is outside a given range of the server
 									// position force it into position to fix it
@@ -1312,7 +1312,7 @@ public class ClientGame extends Game
 			{
 				waitingForOthersToLoad = true;
 				
-				sockets().sender().sendPacket(new PacketLoadLevels(false));
+				sockets().sendPacket(new PacketLoadLevels(false));
 			}
 		}
 		else

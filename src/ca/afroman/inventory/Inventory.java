@@ -61,7 +61,7 @@ public class Inventory extends ServerClientObject
 		{
 			if (isServerSide())
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketItemPickup(owner.getRole(), item.getID()));
+				ServerGame.instance().sockets().sendPacketToAllClients(new PacketItemPickup(owner.getRole(), item.getID()));
 				addItem(item, list);
 			}
 			else
@@ -74,7 +74,7 @@ public class Inventory extends ServerClientObject
 				// Request the server to pick up the item
 				else
 				{
-					ClientGame.instance().sockets().sender().sendPacket(new PacketPlayerInteract(owner.getPosition()));
+					ClientGame.instance().sockets().sendPacket(new PacketPlayerInteract(owner.getPosition()));
 				}
 			}
 			
@@ -190,7 +190,7 @@ public class Inventory extends ServerClientObject
 			pos = owner.getPosition().clone().add(4, 9);
 			if (removeItem(list, pos))
 			{
-				ServerGame.instance().sockets().sender().sendPacketToAllClients(new PacketItemDropServerClient(owner.getRole(), type, pos));
+				ServerGame.instance().sockets().sendPacketToAllClients(new PacketItemDropServerClient(owner.getRole(), type, pos));
 			}
 		}
 		else
@@ -203,7 +203,7 @@ public class Inventory extends ServerClientObject
 			// Request the server to pick up the item
 			else
 			{
-				ClientGame.instance().sockets().sender().sendPacket(new PacketItemDropClientServer(type, owner.getPosition()));
+				ClientGame.instance().sockets().sendPacket(new PacketItemDropClientServer(type, owner.getPosition()));
 			}
 		}
 		
