@@ -9,7 +9,7 @@ import samson.stream.Console;
 
 public class ALogger extends Logger
 {
-	public static boolean tracePackets = false;
+	public static boolean tracePackets = true;
 	
 	/**
 	 * @return YYYY-MM-DD/HH:MM:SS

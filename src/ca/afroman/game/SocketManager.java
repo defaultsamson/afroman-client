@@ -88,11 +88,9 @@ public class SocketManager extends DynamicThread
 	private DatagramChannel datagram;
 	private Selector selector;
 	
-	private boolean isStopping;
-	
 	public SocketManager(Game game)
 	{
-		super(game.isServerSide(), game.getThread().getThreadGroup(), "SocketManager");
+		super(game.isServerSide(), game.getThread().getThreadGroup(), "Socket-Manager");
 		
 		this.game = game;
 		
@@ -145,11 +143,6 @@ public class SocketManager extends DynamicThread
 		{
 			logger().log(ALogType.WARNING, "Client is trying to use addConnection() method in SocketManager");
 		}
-	}
-	
-	private void sendPacket(BytePacket BytePacket)
-	{
-		// copy what PacketSender does here
 	}
 	
 	public List<ConnectedPlayer> getConnectedPlayers()
@@ -275,11 +268,6 @@ public class SocketManager extends DynamicThread
 		}
 	}
 	
-	public boolean isStopping()
-	{
-		return isStopping;
-	}
-	
 	public void removeConnection(IPConnectedPlayer connection)
 	{
 		if (isServerSide())
@@ -399,6 +387,7 @@ public class SocketManager extends DynamicThread
 			{
 				datagram = DatagramChannel.open();
 				datagram.socket().bind(serverConnection.getAsInet());
+				datagram.configureBlocking(false);
 			}
 			catch (IOException ioe)
 			{
@@ -414,6 +403,7 @@ public class SocketManager extends DynamicThread
 			{
 				datagram = DatagramChannel.open();
 				datagram.connect(serverConnection.getAsInet());
+				datagram.configureBlocking(false);
 			}
 			catch (IOException ioe)
 			{
@@ -431,10 +421,14 @@ public class SocketManager extends DynamicThread
 	}
 	
 	@Override
-	public void stopThis()
+	public void startThis()
 	{
-		isStopping = true;
-		
+		super.startThis();
+	}
+	
+	@Override
+	public void stopThis()
+	{		
 		try
 		{
 			if (server != null) server.close();
@@ -449,6 +443,8 @@ public class SocketManager extends DynamicThread
 		}
 		
 		playerList.clear();
+		
+		super.stopThis();
 	}
 	
 	public ThreadGroup threadGroupInstance()
@@ -506,6 +502,7 @@ public class SocketManager extends DynamicThread
 		try
 		{
 			keyCheck();
+			logger().log(ALogType.DEBUG, "Checking");
 		}
 		catch (IOException ioe)
 		{
@@ -710,8 +707,6 @@ public class SocketManager extends DynamicThread
 		catch (IOException e)
 		{
 			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while sending", e);
-			
-			if (!isStopping()) e.printStackTrace();
 		}
 	}
 	
@@ -819,13 +814,10 @@ public class SocketManager extends DynamicThread
 		catch (SocketException e)
 		{
 			// TODO this is invisible
-			if (!isStopping()) e.printStackTrace();
 		}
 		catch (IOException e)
 		{
 			if (isRunning) logger().log(ALogType.CRITICAL, "I/O error while receiving", e);
-			
-			if (!isStopping()) e.printStackTrace();
 		}
 	}
 }
