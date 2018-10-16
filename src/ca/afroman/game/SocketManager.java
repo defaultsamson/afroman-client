@@ -130,11 +130,26 @@ public class SocketManager extends DynamicThread
 			
 			try
 			{
-				sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
-				SocketChannel client = server.accept();
-				client.configureBlocking(false);
-				newConnection.getConnection().setSocket(client);
-				client.register(selector, SelectionKey.OP_READ, null);
+				if (server.keyFor(selector).isAcceptable())
+				{
+					sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
+					SocketChannel client = server.accept();
+					
+					if (client != null) {
+						newConnection.getConnection().setSocket(client);
+						
+						//logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
+						// TODO: add this is no one else does (probably no need)
+						
+						client.configureBlocking(false);
+						client.register(selector, SelectionKey.OP_READ, null);
+					}
+				}
+				else
+				{
+					// TODO: Server has no socket to accept after being told it can accept a socket
+					// maybe a disconnect before auth over UDP?
+				}
 			}
 			catch (IOException e)
 			{
@@ -235,14 +250,14 @@ public class SocketManager extends DynamicThread
 			try
 			{
 				SocketChannel client = SocketChannel.open();
-				getServerConnection().setSocket(client);
 				client.configureBlocking(false);
+				getServerConnection().setSocket(client);
 				
-				if (client.connect(getServerConnection().getAsInet()))
+				if (client.connect(getServerConnection().getAsInet())) // Instantly connected to server
 				{
 					logger().log(ALogType.DEBUG, "Locally connected to " + getServerConnection().asReadable());
 				}
-				else
+				else // Waiting to connect to server
 				{
 					logger().log(ALogType.DEBUG, "Connecting to " + getServerConnection().asReadable());
 					client.register(selector, SelectionKey.OP_CONNECT, null);
@@ -260,13 +275,9 @@ public class SocketManager extends DynamicThread
 				 * thread.startThis();
 				 */
 			}
-			catch (UnknownHostException e)
+			catch (IOException ioe)
 			{
-				logger().log(ALogType.WARNING, "Unkonwn host while setting up client TCP connection", e);
-			}
-			catch (IOException e)
-			{
-				logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", e);
+				logger().log(ALogType.WARNING, "IOException while setting up client TCP connection", ioe);
 			}
 		}
 		else
@@ -398,7 +409,9 @@ public class SocketManager extends DynamicThread
 			try
 			{
 				datagram = DatagramChannel.open();
-				datagram.socket().bind(serverConnection.getAsInet());
+				datagram.configureBlocking(false);
+				datagram.bind(serverConnection.getAsInet());
+				datagram.register(selector, SelectionKey.OP_CONNECT);
 			}
 			catch (IOException ioe)
 			{
@@ -413,6 +426,7 @@ public class SocketManager extends DynamicThread
 			try
 			{
 				datagram = DatagramChannel.open();
+				datagram.configureBlocking(false);
 				datagram.connect(serverConnection.getAsInet());
 			}
 			catch (IOException ioe)
@@ -526,11 +540,14 @@ public class SocketManager extends DynamicThread
 			
 			if (key.isAcceptable())
 			{
-				accept(key);
+				// accept(key);
+				// TODO: the server should never automatically accept, since there needs to be a UDP auth
+				// for now keep it defunct, maybe remove altogther
 			}
 			else if (key.isConnectable())
 			{
 				establish(key);
+				// Called when the game was waiting to connect and the server has accepted
 			}
 			else if (key.isWritable())
 			{
@@ -544,6 +561,8 @@ public class SocketManager extends DynamicThread
 		}
 	}
 	
+	@Deprecated
+	@SuppressWarnings("unused")
 	private void accept(SelectionKey key) throws IOException
 	{
 		ServerSocketChannel server = (ServerSocketChannel) key.channel();
@@ -553,7 +572,7 @@ public class SocketManager extends DynamicThread
 		{
 			client.configureBlocking(false);
 			SocketAddress remoteAddress = client.getRemoteAddress();
-			System.out.println("Accepted connection from: " + remoteAddress);
+			logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
 			client.register(selector, SelectionKey.OP_READ, null);
 		}
 	}
@@ -562,9 +581,10 @@ public class SocketManager extends DynamicThread
 	{
 		SocketChannel channel = (SocketChannel) key.channel();
 		
-		while (!channel.finishConnect())
+		while (!channel.finishConnect()) // will halt the network thread until connecting is complete
 		{
 			// TODO: tell the user that we're waiting to connect
+			logger().log(ALogType.DEBUG, "Waiting to connect...");
 		}
 		
 		logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
@@ -582,11 +602,16 @@ public class SocketManager extends DynamicThread
 			
 			try
 			{
-				datagram.register(selector, SelectionKey.OP_WRITE, packet);
+				datagram.socket().send(packet);
 			}
 			catch (ClosedChannelException cce)
 			{
 				logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}

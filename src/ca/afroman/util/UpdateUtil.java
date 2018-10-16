@@ -68,15 +68,15 @@ public class UpdateUtil
 			}
 			else
 			{
-				System.exit(1);
+				System.exit(1); // TODO: remove this
 			}
 			
-			System.exit(0);
+			System.exit(0); // TODO: remove this
 		}
 		catch (Exception e)
 		{
 			System.out.println("Failed to update");
-			System.exit(2);
+			System.exit(2); // TODO: remove this
 		}
 	}
 	
