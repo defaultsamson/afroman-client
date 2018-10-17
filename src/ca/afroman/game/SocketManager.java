@@ -133,10 +133,11 @@ public class SocketManager extends DynamicThread
 					sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
 					SocketChannel client = server.accept();
 					
-					if (client != null) {
+					if (client != null)
+					{
 						newConnection.getConnection().setSocket(client);
 						
-						//logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
+						// logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
 						// TODO: add this is no one else does (probably no need)
 						
 						client.configureBlocking(false);
@@ -310,6 +311,7 @@ public class SocketManager extends DynamicThread
 			try
 			{
 				SocketChannel socket = connection.getConnection().getSocket();
+				socket.keyFor(selector).cancel();
 				socket.close();
 			}
 			catch (IOException ioe)
@@ -386,7 +388,7 @@ public class SocketManager extends DynamicThread
 				server = ServerSocketChannel.open();
 				// server.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 				server.configureBlocking(false);
-				server.bind(new InetSocketAddress(serverConnection.getIPAddress(), serverConnection.getPort()));
+				server.bind(serverConnection.getAsInet());
 				server.register(selector, SelectionKey.OP_ACCEPT);
 			}
 			catch (IOException e)
@@ -399,6 +401,7 @@ public class SocketManager extends DynamicThread
 				datagram = DatagramChannel.open();
 				datagram.bind(serverConnection.getAsInet());
 				datagram.configureBlocking(false);
+				datagram.register(selector, SelectionKey.OP_READ);
 			}
 			catch (IOException ioe)
 			{
@@ -415,6 +418,7 @@ public class SocketManager extends DynamicThread
 				datagram = DatagramChannel.open();
 				datagram.configureBlocking(false);
 				datagram.connect(serverConnection.getAsInet());
+				datagram.register(selector, SelectionKey.OP_READ);
 			}
 			catch (IOException ioe)
 			{
@@ -433,7 +437,7 @@ public class SocketManager extends DynamicThread
 	
 	@Override
 	public void stopThis()
-	{		
+	{
 		try
 		{
 			if (server != null) server.close();
@@ -507,7 +511,6 @@ public class SocketManager extends DynamicThread
 		try
 		{
 			keyCheck();
-			logger().log(ALogType.DEBUG, "Checking");
 		}
 		catch (IOException ioe)
 		{
@@ -517,7 +520,7 @@ public class SocketManager extends DynamicThread
 	
 	private void keyCheck() throws IOException // TODO: look into replacing set/iterator use with for loop
 	{
-		selector.select();
+		selector.select(2);
 		
 		Set<SelectionKey> selectedKeys = selector.selectedKeys();
 		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
@@ -590,16 +593,11 @@ public class SocketManager extends DynamicThread
 			
 			try
 			{
-				datagram.socket().send(packet);
+				datagram.register(selector, SelectionKey.OP_WRITE, packet);
 			}
 			catch (ClosedChannelException cce)
 			{
 				logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 	}
@@ -688,9 +686,11 @@ public class SocketManager extends DynamicThread
 			if (abstractClient instanceof SocketChannel)
 			{
 				SocketChannel client = (SocketChannel) abstractClient;
+				byte[] data = (byte[]) key.attachment();
+				
 				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 				buffer.clear();
-				buffer.put((byte[]) key.attachment());
+				buffer.put(data);
 				buffer.flip();
 				
 				while (buffer.hasRemaining())
@@ -703,19 +703,19 @@ public class SocketManager extends DynamicThread
 			else if (abstractClient instanceof DatagramChannel)
 			{
 				DatagramChannel client = (DatagramChannel) abstractClient;
-				client.socket().send((DatagramPacket) key.attachment());
+				DatagramPacket packet = (DatagramPacket) key.attachment();
 				
-				/*
-				 * ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-				 * DatagramPacket packet = (DatagramPacket) key.attachment();
-				 * buffer.clear();
-				 * buffer.put(packet.getData());
-				 * buffer.flip();
-				 * while (buffer.hasRemaining())
-				 * {
-				 * client.write(buffer);
-				 * }
-				 */
+				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+				buffer.clear();
+				buffer.put(packet.getData());
+				buffer.flip();
+				
+				int bytesSent = client.send(buffer, packet.getSocketAddress());
+				
+				if (bytesSent == 0)
+				{
+					client.register(selector, SelectionKey.OP_WRITE, packet);
+				}
 				
 				client.register(selector, SelectionKey.OP_READ, null);
 			}
@@ -761,19 +761,16 @@ public class SocketManager extends DynamicThread
 			else if (abstractClient instanceof DatagramChannel)
 			{
 				DatagramChannel client = (DatagramChannel) abstractClient;
+				
 				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-				int bytesRead = client.read(buffer);
+				buffer.clear();
 				
-				while (bytesRead > 0)
-				{
-					bytesRead = client.read(buffer);
-				}
+				InetSocketAddress remoteAddress = (InetSocketAddress) client.receive(buffer);
 				
-				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
-				if (bytesRead == -1)
+				if (remoteAddress == null)
 				{
-					game.logger().log(ALogType.WARNING, "Connection closed by: " + IPUtil.asReadable(remoteAddress));
-					client.close();
+					// exit this somehow
+					logger().log(ALogType.WARNING, "No data to be read, but read flag was high!");
 				}
 				
 				BytePacket packet = new BytePacket(buffer.array());
