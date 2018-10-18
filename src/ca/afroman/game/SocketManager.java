@@ -77,7 +77,7 @@ public class SocketManager extends DynamicThread
 		return Game.DEFAULT_PORT;
 	}
 	
-	private ThreadGroup threadGroup = null;
+	private ThreadGroup threadGroup;
 	
 	private Game game;
 	
@@ -92,6 +92,8 @@ public class SocketManager extends DynamicThread
 	{
 		super(game.isServerSide(), game.getThread().getThreadGroup(), "Socket-Manager");
 		
+		this.threadGroup = game.getThread().getThreadGroup();
+		
 		this.game = game;
 		
 		playerList = new ArrayList<ConnectedPlayer>();
@@ -100,11 +102,13 @@ public class SocketManager extends DynamicThread
 		
 		try
 		{
+			server = ServerSocketChannel.open();
+			datagram = DatagramChannel.open();
 			selector = Selector.open();
 		}
 		catch (IOException ioe)
 		{
-			logger().log(ALogType.CRITICAL, "Instance cannot open selector!", ioe);
+			logger().log(ALogType.CRITICAL, "Failed to create networking objects!", ioe);
 		}
 	}
 	
@@ -124,35 +128,31 @@ public class SocketManager extends DynamicThread
 			short id = (short) ConnectedPlayer.getIDCounter().getNext();
 			
 			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, id, role, username);
-			playerList.add(newConnection);
 			
 			try
 			{
-				if (server.keyFor(selector).isAcceptable())
-				{
-					sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
-					SocketChannel client = server.accept();
+				SocketChannel client = server.accept();
+				newConnection.getConnection().setSocket(client);
+				
+				if (client != null)
+				{	
+					// logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
+					// TODO: add this if no one else does (probably no need)
 					
-					if (client != null)
-					{
-						newConnection.getConnection().setSocket(client);
-						
-						// logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
-						// TODO: add this is no one else does (probably no need)
-						
-						client.configureBlocking(false);
-						client.register(selector, SelectionKey.OP_READ, null);
-					}
+					client.configureBlocking(false);
+					client.register(selector, SelectionKey.OP_READ, null);
+					
+					sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
+					playerList.add(newConnection);
 				}
 				else
 				{
-					// TODO: Server has no socket to accept after being told it can accept a socket
-					// maybe a disconnect before auth over UDP?
+					logger().log(ALogType.WARNING, "Failed to accept client, no connection waiting for acceptance.");
 				}
 			}
 			catch (IOException e)
 			{
-				logger().log(ALogType.WARNING, "Failed to accept connection from the welcome socket", e);
+				logger().log(ALogType.WARNING, "Failed to accept connection.", e);
 			}
 		}
 		else
