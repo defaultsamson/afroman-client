@@ -135,7 +135,7 @@ public class SocketManager extends DynamicThread
 				newConnection.getConnection().setSocket(client);
 				
 				if (client != null)
-				{	
+				{
 					// logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
 					// TODO: add this if no one else does (probably no need)
 					
@@ -572,7 +572,7 @@ public class SocketManager extends DynamicThread
 		while (!channel.finishConnect()) // will halt the network thread until connecting is complete
 		{
 			// TODO: tell the user that we're waiting to connect
-			//logger().log(ALogType.DEBUG, "Waiting to connect...");
+			// logger().log(ALogType.DEBUG, "Waiting to connect...");
 		}
 		
 		logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
@@ -615,7 +615,7 @@ public class SocketManager extends DynamicThread
 					try
 					{
 						con.getSocket().register(selector, SelectionKey.OP_WRITE, packet.getData());
-						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " TCP OUT");
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
 						// TODO: might need to add a register queue if packets are sent before the connection is complete
 					}
 					catch (ClosedChannelException cce)
@@ -632,7 +632,7 @@ public class SocketManager extends DynamicThread
 				if (con != null && con.getIPAddress() != null)
 				{
 					sendData(packet.getData(), con.getIPAddress(), con.getPort());
-					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " UDP OUT");
+					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
 				}
 			}
 		}
@@ -730,11 +730,13 @@ public class SocketManager extends DynamicThread
 		try
 		{
 			SelectableChannel abstractClient = key.channel();
+			ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+			InetAddress address;
+			int port;
 			
 			if (abstractClient instanceof SocketChannel) // TODO: find similarities between reads and simplify code
 			{
 				SocketChannel client = (SocketChannel) abstractClient;
-				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 				int bytesRead = client.read(buffer);
 				
 				while (bytesRead > 0)
@@ -749,19 +751,12 @@ public class SocketManager extends DynamicThread
 					client.close();
 				}
 				
-				BytePacket packet = new BytePacket(buffer.array());
-				InetAddress address = remoteAddress.getAddress();
-				int port = remoteAddress.getPort();
-				
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " TCP IN");
-				
-				getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
+				address = remoteAddress.getAddress();
+				port = remoteAddress.getPort();				
 			}
 			else if (abstractClient instanceof DatagramChannel)
 			{
 				DatagramChannel client = (DatagramChannel) abstractClient;
-				
-				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 				buffer.clear();
 				
 				InetSocketAddress remoteAddress = (InetSocketAddress) client.receive(buffer);
@@ -772,45 +767,52 @@ public class SocketManager extends DynamicThread
 					logger().log(ALogType.WARNING, "No data to be read, but read flag was high!");
 				}
 				
-				BytePacket packet = new BytePacket(buffer.array());
-				InetAddress address = remoteAddress.getAddress();
-				int port = remoteAddress.getPort();
 				
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " UDP IN");
-				
-				// Faster ping times because it doesn't have to go through the client's tick system
-				if (packet.getType() == PacketType.TEST_PING)
+				address = remoteAddress.getAddress();
+				port = remoteAddress.getPort();
+			}
+			else
+			{
+				address = null;
+				port = -1;
+			}
+			
+			BytePacket packet = new BytePacket(buffer.array());
+			
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
+			
+			// Faster ping times because it doesn't have to go through the client's tick system
+			if (packet.getType() == PacketType.TEST_PING)
+			{
+				if (isServerSide())
 				{
-					if (isServerSide())
+					IPConnectedPlayer sender = getPlayerConnection(address, port);
+					
+					if (sender != null)
 					{
-						IPConnectedPlayer sender = getPlayerConnection(address, port);
-						
-						if (sender != null)
+						if (sender.isPendingPingUpdate())
 						{
-							if (sender.isPendingPingUpdate())
-							{
-								sender.updatePing(System.currentTimeMillis());
-							}
-							else
-							{
-								logger().log(ALogType.WARNING, "Received ping response from a client that isn't pending a ping update: " + sender.getConnection().asReadable());
-							}
+							sender.updatePing(System.currentTimeMillis());
 						}
 						else
 						{
-							logger().log(ALogType.WARNING, "Received ping response from a client isn't connected [" + IPUtil.asReadable(address, port) + "]");
+							logger().log(ALogType.WARNING, "Received ping response from a client that isn't pending a ping update: " + sender.getConnection().asReadable());
 						}
 					}
 					else
 					{
-						sendPacket(new PacketPingClientServer());
-						getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
+						logger().log(ALogType.WARNING, "Received ping response from a client isn't connected [" + IPUtil.asReadable(address, port) + "]");
 					}
 				}
 				else
 				{
+					sendPacket(new PacketPingClientServer());
 					getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
 				}
+			}
+			else
+			{
+				getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
 			}
 			
 		}
