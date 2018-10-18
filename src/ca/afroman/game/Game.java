@@ -151,12 +151,9 @@ public abstract class Game extends DynamicTickRenderThread implements IPacketPar
 		stopSocket();
 		
 		socketManager = new SocketManager(this);
-		boolean successful = socketManager.setServerConnection(serverIpAddress, SocketManager.validatedPort(port));
+		socketManager.startThis();
 		
-		if (successful)
-		{
-			socketManager.startThis();
-		}
+		boolean successful = socketManager.setServerConnection(serverIpAddress, SocketManager.validatedPort(port));
 		
 		if (!successful) socketManager = null;
 		

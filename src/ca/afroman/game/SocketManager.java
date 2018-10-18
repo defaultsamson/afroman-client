@@ -253,7 +253,7 @@ public class SocketManager extends DynamicThread
 				}
 				else // Waiting to connect to server
 				{
-					logger().log(ALogType.DEBUG, "Connecting to " + getServerConnection().asReadable());
+					logger().log(ALogType.DEBUG, "Connecting to " + getServerConnection().asReadable() + "...");
 					client.register(selector, SelectionKey.OP_CONNECT, null);
 				}
 				
@@ -385,7 +385,6 @@ public class SocketManager extends DynamicThread
 			
 			try
 			{
-				server = ServerSocketChannel.open();
 				// server.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 				server.configureBlocking(false);
 				server.bind(serverConnection.getAsInet());
@@ -393,19 +392,18 @@ public class SocketManager extends DynamicThread
 			}
 			catch (IOException e)
 			{
-				logger().log(ALogType.CRITICAL, "Failed to create server ServerSocket", e);
+				logger().log(ALogType.CRITICAL, "Failed to start server socket", e);
 			}
 			
 			try
 			{
-				datagram = DatagramChannel.open();
-				datagram.bind(serverConnection.getAsInet());
 				datagram.configureBlocking(false);
+				datagram.bind(serverConnection.getAsInet());
 				datagram.register(selector, SelectionKey.OP_READ);
 			}
 			catch (IOException ioe)
 			{
-				logger().log(ALogType.CRITICAL, "Failed to create server DatagramSocket", ioe);
+				logger().log(ALogType.CRITICAL, "Failed to start datagram handler", ioe);
 				return false;
 			}
 		}
@@ -415,7 +413,6 @@ public class SocketManager extends DynamicThread
 			
 			try
 			{
-				datagram = DatagramChannel.open();
 				datagram.configureBlocking(false);
 				datagram.connect(serverConnection.getAsInet());
 				datagram.register(selector, SelectionKey.OP_READ);
@@ -575,7 +572,7 @@ public class SocketManager extends DynamicThread
 		while (!channel.finishConnect()) // will halt the network thread until connecting is complete
 		{
 			// TODO: tell the user that we're waiting to connect
-			logger().log(ALogType.DEBUG, "Waiting to connect...");
+			//logger().log(ALogType.DEBUG, "Waiting to connect...");
 		}
 		
 		logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
@@ -618,6 +615,8 @@ public class SocketManager extends DynamicThread
 					try
 					{
 						con.getSocket().register(selector, SelectionKey.OP_WRITE, packet.getData());
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " TCP OUT");
+						// TODO: might need to add a register queue if packets are sent before the connection is complete
 					}
 					catch (ClosedChannelException cce)
 					{
@@ -633,7 +632,7 @@ public class SocketManager extends DynamicThread
 				if (con != null && con.getIPAddress() != null)
 				{
 					sendData(packet.getData(), con.getIPAddress(), con.getPort());
-					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " UDP OUT");
 				}
 			}
 		}
@@ -754,7 +753,7 @@ public class SocketManager extends DynamicThread
 				InetAddress address = remoteAddress.getAddress();
 				int port = remoteAddress.getPort();
 				
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " TCP IN");
 				
 				getGame().addPacketToParse(new IncomingPacketWrapper(packet, address, port));
 			}
@@ -777,7 +776,7 @@ public class SocketManager extends DynamicThread
 				InetAddress address = remoteAddress.getAddress();
 				int port = remoteAddress.getPort();
 				
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " UDP IN");
 				
 				// Faster ping times because it doesn't have to go through the client's tick system
 				if (packet.getType() == PacketType.TEST_PING)
