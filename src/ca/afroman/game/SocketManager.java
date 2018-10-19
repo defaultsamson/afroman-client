@@ -596,7 +596,7 @@ public class SocketManager extends DynamicThread
 							write(con.getSocket().register(selector, SelectionKey.OP_WRITE, packet));
 						}
 						
-						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " TCP OUT");
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
 						// TODO: might need to add a register queue if packets are sent before the connection is complete
 					}
 					catch (ClosedChannelException cce)
@@ -623,7 +623,7 @@ public class SocketManager extends DynamicThread
 							write(datagram.register(selector, SelectionKey.OP_WRITE, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet())));
 						}
 						
-						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " UDP OUT");
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
 					}
 					catch (ClosedChannelException cce)
 					{
@@ -682,14 +682,14 @@ public class SocketManager extends DynamicThread
 		try
 		{
 			SelectableChannel abstractClient = key.channel();
+			ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+			buffer.clear();
 			
 			if (abstractClient instanceof SocketChannel)
 			{
 				SocketChannel client = (SocketChannel) abstractClient;
 				BytePacket packet = (BytePacket) key.attachment();
 				
-				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-				buffer.clear();
 				buffer.put(packet.getData());
 				buffer.flip();
 				
@@ -705,8 +705,6 @@ public class SocketManager extends DynamicThread
 				DatagramChannel client = (DatagramChannel) abstractClient;
 				DatagramPacket packet = (DatagramPacket) key.attachment();
 				
-				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
-				buffer.clear();
 				buffer.put(packet.getData());
 				buffer.flip();
 				
@@ -715,6 +713,7 @@ public class SocketManager extends DynamicThread
 				if (bytesSent == 0)
 				{
 					client.register(selector, SelectionKey.OP_WRITE, key.attachment());
+					return;
 				}
 				
 				client.register(selector, SelectionKey.OP_READ, null);
@@ -732,6 +731,9 @@ public class SocketManager extends DynamicThread
 		{
 			SelectableChannel abstractClient = key.channel();
 			ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+			
+			InetSocketAddress remoteAddress;
+			
 			BytePacket packet;
 			InetAddress address;
 			int port;
@@ -746,7 +748,7 @@ public class SocketManager extends DynamicThread
 					bytesRead = client.read(buffer);
 				}
 				
-				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
+				remoteAddress = (InetSocketAddress) client.getRemoteAddress();
 				if (bytesRead == -1)
 				{
 					getGame().logger().log(ALogType.WARNING, "Connection closed mid-read by: " + IPUtil.asReadable(remoteAddress));
@@ -754,37 +756,30 @@ public class SocketManager extends DynamicThread
 					// TODO: remove the connection altogether
 				}
 				
-				packet = new BytePacket(buffer.array());
-				address = remoteAddress.getAddress();
-				port = remoteAddress.getPort();
-				
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " IN");
 			}
 			else if (abstractClient instanceof DatagramChannel)
 			{
 				DatagramChannel client = (DatagramChannel) abstractClient;
 				buffer.clear();
 				
-				InetSocketAddress remoteAddress = (InetSocketAddress) client.receive(buffer);
-				
+				remoteAddress = (InetSocketAddress) client.receive(buffer);
 				if (remoteAddress == null)
 				{
-					// exit this somehow
+					// TODO: exit this somehow
 					logger().log(ALogType.WARNING, "No data to be read, but read flag was high!");
 				}
 				
-				packet = new BytePacket(buffer.array());
-				address = remoteAddress.getAddress();
-				port = remoteAddress.getPort();
-				
-				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " IN");
 			}
 			else
 			{
-				packet = null;
-				address = null;
-				port = -1;
+				remoteAddress = null;
 			}
+			
+			packet = new BytePacket(buffer.array());
+			address = remoteAddress.getAddress();
+			port = remoteAddress.getPort();
+			
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
 			
 			// Faster ping times because it doesn't have to go through the client's tick system
 			if (packet.getType() == PacketType.TEST_PING)
