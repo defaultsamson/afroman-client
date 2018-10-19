@@ -2,6 +2,8 @@ package ca.afroman.util;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+
 import ca.afroman.network.IPConnection;
 
 public class IPUtil
@@ -15,6 +17,18 @@ public class IPUtil
 	{
 		return (address != null ? address.getAddress() + ":" + address.getPort() : "null");
 	}
+	
+	/**
+	 * Casts a SocketAddress into a InetSocketAddress.
+	 * Since this project is pure java, InetSocketAddress is the only class that extends SocketAddress, and so the cast should never fail while using java NIO
+	 * @param remoteAddress
+	 * @return
+	 */
+	public static String asReadable(SocketAddress remoteAddress)
+	{
+		return asReadable((InetSocketAddress) remoteAddress);
+	}
+
 	
 	public static boolean equals(InetAddress address, int port, InetAddress address2, int port2)
 	{
@@ -54,5 +68,4 @@ public class IPUtil
 		}
 		return false;
 	}
-
 }

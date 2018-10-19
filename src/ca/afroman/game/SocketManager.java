@@ -129,30 +129,17 @@ public class SocketManager extends DynamicThread
 			
 			IPConnectedPlayer newConnection = new IPConnectedPlayer(connection, id, role, username);
 			
+			sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
+			
+			playerList.add(newConnection);
+			
 			try
 			{
-				SocketChannel client = server.accept();
-				newConnection.getConnection().setSocket(client);
-				
-				if (client != null)
-				{
-					// logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
-					// TODO: add this if no one else does (probably no need)
-					
-					client.configureBlocking(false);
-					client.register(selector, SelectionKey.OP_READ, null);
-					
-					sendPacket(new PacketServerClientStartTCP(newConnection.getConnection()));
-					playerList.add(newConnection);
-				}
-				else
-				{
-					logger().log(ALogType.WARNING, "Failed to accept client, no connection waiting for acceptance.");
-				}
+				server.register(selector, SelectionKey.OP_ACCEPT, newConnection); // this may be superfluous
 			}
-			catch (IOException e)
+			catch (ClosedChannelException cce)
 			{
-				logger().log(ALogType.WARNING, "Failed to accept connection.", e);
+				logger().log(ALogType.CRITICAL, "Cannot register to accept new connections!", cce);
 			}
 		}
 		else
@@ -250,24 +237,23 @@ public class SocketManager extends DynamicThread
 				if (client.connect(getServerConnection().getAsInet())) // Instantly connected to server
 				{
 					logger().log(ALogType.DEBUG, "Locally connected to " + getServerConnection().asReadable());
+					client.register(selector, SelectionKey.OP_READ, null);
+					return;
 				}
 				else // Waiting to connect to server
 				{
 					logger().log(ALogType.DEBUG, "Connecting to " + getServerConnection().asReadable() + "...");
-					client.register(selector, SelectionKey.OP_CONNECT, null);
+					// client.register(selector, SelectionKey.OP_CONNECT, null);
 				}
 				
-				/*
-				 * Socket clientSocket = new Socket(getServerConnection().getIPAddress(), getServerConnection().getPort());
-				 * TCPSocket sock = new TCPSocket(clientSocket, isServerSide());
-				 * getServerConnection().setTCPSocket(sock);
-				 * TCPReceiver thread = new TCPReceiver(isServerSide(), this, sock);
-				 * synchronized (tcpSockets)
-				 * {
-				 * tcpSockets.add(thread);
-				 * }
-				 * thread.startThis();
-				 */
+				while (!client.finishConnect()) // will halt the network thread until connecting is complete
+				{
+					// TODO: tell the user that we're waiting to connect
+					logger().log(ALogType.DEBUG, "Waiting to connect...");
+				}
+				
+				logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
+				client.register(selector, SelectionKey.OP_READ, null);
 			}
 			catch (IOException ioe)
 			{
@@ -385,10 +371,10 @@ public class SocketManager extends DynamicThread
 			
 			try
 			{
-				// server.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
+				server.socket().setSoTimeout(15000);// TODO make gui to display that it's waiting?
 				server.configureBlocking(false);
 				server.bind(serverConnection.getAsInet());
-				server.register(selector, SelectionKey.OP_ACCEPT);
+				// server.register(selector, SelectionKey.OP_ACCEPT);
 			}
 			catch (IOException e)
 			{
@@ -517,7 +503,7 @@ public class SocketManager extends DynamicThread
 	
 	private void keyCheck() throws IOException // TODO: look into replacing set/iterator use with for loop
 	{
-		selector.select(2);
+		selector.selectNow();
 		
 		Set<SelectionKey> selectedKeys = selector.selectedKeys();
 		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
@@ -528,7 +514,7 @@ public class SocketManager extends DynamicThread
 			
 			if (key.isAcceptable())
 			{
-				// accept(key);
+				accept(key);
 				// TODO: the server should never automatically accept, since there needs to be a UDP auth
 				// for now keep it defunct, maybe remove altogther
 			}
@@ -549,19 +535,26 @@ public class SocketManager extends DynamicThread
 		}
 	}
 	
-	@Deprecated
-	@SuppressWarnings("unused")
 	private void accept(SelectionKey key) throws IOException
 	{
 		ServerSocketChannel server = (ServerSocketChannel) key.channel();
+		IPConnectedPlayer newConnection = (IPConnectedPlayer) playerList.get(playerList.size() - 1);
+		
 		SocketChannel client = server.accept();
 		
 		if (client != null)
 		{
+			newConnection.getConnection().setSocket(client);
+			
 			client.configureBlocking(false);
-			SocketAddress remoteAddress = client.getRemoteAddress();
-			logger().log(ALogType.DEBUG, "Accepted connection from: " + remoteAddress);
 			client.register(selector, SelectionKey.OP_READ, null);
+			
+			SocketAddress remoteAddress = client.getRemoteAddress();
+			logger().log(ALogType.DEBUG, "Accepted connection from: " + IPUtil.asReadable(remoteAddress));
+		}
+		else
+		{
+			logger().log(ALogType.WARNING, "Failed to accept client, no connection waiting for acceptance.");
 		}
 	}
 	
@@ -572,31 +565,11 @@ public class SocketManager extends DynamicThread
 		while (!channel.finishConnect()) // will halt the network thread until connecting is complete
 		{
 			// TODO: tell the user that we're waiting to connect
-			// logger().log(ALogType.DEBUG, "Waiting to connect...");
+			logger().log(ALogType.DEBUG, "Waiting to connect...");
 		}
 		
 		logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
 		channel.register(selector, SelectionKey.OP_READ, null);
-	}
-	
-	/**
-	 * Sends a byte array of data to the server.
-	 */
-	private void sendData(byte[] data, InetAddress address, int port)
-	{
-		if (address != null)
-		{
-			DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
-			
-			try
-			{
-				datagram.register(selector, SelectionKey.OP_WRITE, packet);
-			}
-			catch (ClosedChannelException cce)
-			{
-				logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
-			}
-		}
 	}
 	
 	public void sendPacket(BytePacket packet, IPConnection... exceptedConnections)
@@ -614,8 +587,16 @@ public class SocketManager extends DynamicThread
 				{
 					try
 					{
-						con.getSocket().register(selector, SelectionKey.OP_WRITE, packet.getData());
-						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+						if (false) // cannot send packet immediately
+						{
+							con.getSocket().register(selector, SelectionKey.OP_WRITE, packet);
+						}
+						else
+						{
+							write(con.getSocket().register(selector, SelectionKey.OP_WRITE, packet));
+						}
+						
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " TCP OUT");
 						// TODO: might need to add a register queue if packets are sent before the connection is complete
 					}
 					catch (ClosedChannelException cce)
@@ -631,8 +612,28 @@ public class SocketManager extends DynamicThread
 			{
 				if (con != null && con.getIPAddress() != null)
 				{
-					sendData(packet.getData(), con.getIPAddress(), con.getPort());
-					if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+					try
+					{
+						if (false) // cannot send packet immediately
+						{
+							datagram.register(selector, SelectionKey.OP_WRITE, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet()));
+						}
+						else
+						{
+							write(datagram.register(selector, SelectionKey.OP_WRITE, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet())));
+						}
+						
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " UDP OUT");
+					}
+					catch (ClosedChannelException cce)
+					{
+						logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
+					}
+					catch (IOException ioe)
+					{
+						logger().log(ALogType.WARNING, "IOException while sending data!, ioe");
+					}
+					
 				}
 			}
 		}
@@ -685,11 +686,11 @@ public class SocketManager extends DynamicThread
 			if (abstractClient instanceof SocketChannel)
 			{
 				SocketChannel client = (SocketChannel) abstractClient;
-				byte[] data = (byte[]) key.attachment();
+				BytePacket packet = (BytePacket) key.attachment();
 				
 				ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
 				buffer.clear();
-				buffer.put(data);
+				buffer.put(packet.getData());
 				buffer.flip();
 				
 				while (buffer.hasRemaining())
@@ -713,7 +714,7 @@ public class SocketManager extends DynamicThread
 				
 				if (bytesSent == 0)
 				{
-					client.register(selector, SelectionKey.OP_WRITE, packet);
+					client.register(selector, SelectionKey.OP_WRITE, key.attachment());
 				}
 				
 				client.register(selector, SelectionKey.OP_READ, null);
@@ -731,6 +732,7 @@ public class SocketManager extends DynamicThread
 		{
 			SelectableChannel abstractClient = key.channel();
 			ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+			BytePacket packet;
 			InetAddress address;
 			int port;
 			
@@ -747,12 +749,16 @@ public class SocketManager extends DynamicThread
 				InetSocketAddress remoteAddress = (InetSocketAddress) client.getRemoteAddress();
 				if (bytesRead == -1)
 				{
-					getGame().logger().log(ALogType.WARNING, "Connection closed by: " + IPUtil.asReadable(remoteAddress));
+					getGame().logger().log(ALogType.WARNING, "Connection closed mid-read by: " + IPUtil.asReadable(remoteAddress));
 					client.close();
+					// TODO: remove the connection altogether
 				}
 				
+				packet = new BytePacket(buffer.array());
 				address = remoteAddress.getAddress();
-				port = remoteAddress.getPort();				
+				port = remoteAddress.getPort();
+				
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " IN");
 			}
 			else if (abstractClient instanceof DatagramChannel)
 			{
@@ -767,19 +773,18 @@ public class SocketManager extends DynamicThread
 					logger().log(ALogType.WARNING, "No data to be read, but read flag was high!");
 				}
 				
-				
+				packet = new BytePacket(buffer.array());
 				address = remoteAddress.getAddress();
 				port = remoteAddress.getPort();
+				
+				if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " IN");
 			}
 			else
 			{
+				packet = null;
 				address = null;
 				port = -1;
 			}
-			
-			BytePacket packet = new BytePacket(buffer.array());
-			
-			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
 			
 			// Faster ping times because it doesn't have to go through the client's tick system
 			if (packet.getType() == PacketType.TEST_PING)
