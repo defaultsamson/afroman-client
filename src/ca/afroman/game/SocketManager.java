@@ -19,7 +19,9 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.gui.GuiClickNotification;
@@ -38,6 +40,7 @@ import ca.afroman.packet.technical.PacketAssignClientID;
 import ca.afroman.packet.technical.PacketPingClientServer;
 import ca.afroman.packet.technical.PacketServerClientStartTCP;
 import ca.afroman.packet.technical.PacketUpdatePlayerList;
+import ca.afroman.resource.LockFile;
 import ca.afroman.thread.DynamicThread;
 import ca.afroman.util.IPUtil;
 
@@ -88,6 +91,11 @@ public class SocketManager extends DynamicThread
 	private DatagramChannel datagram;
 	private Selector selector;
 	
+	private LockFile writeLock;
+	private LockFile readLock;
+	
+	private Queue<BytePacket> writeQueue;
+	
 	public SocketManager(Game game)
 	{
 		super(game.isServerSide(), game.getThread().getThreadGroup(), "Socket-Manager");
@@ -99,6 +107,11 @@ public class SocketManager extends DynamicThread
 		playerList = new ArrayList<ConnectedPlayer>();
 		
 		serverConnection = new IPConnection(null, -1, null);
+		
+		writeLock = new LockFile();
+		readLock = new LockFile();
+		
+		writeQueue = new ConcurrentLinkedQueue<BytePacket>();
 		
 		try
 		{
@@ -494,6 +507,10 @@ public class SocketManager extends DynamicThread
 		try
 		{
 			keyCheck();
+			if (!writeQueue.isEmpty())
+			{
+				sendPacket(writeQueue.poll());
+			}
 		}
 		catch (IOException ioe)
 		{
@@ -525,11 +542,15 @@ public class SocketManager extends DynamicThread
 			}
 			else if (key.isWritable())
 			{
+				writeLock.lock();
 				write(key);
+				writeLock.unlock();
 			}
 			else if (key.isReadable())
 			{
+				readLock.lock();
 				read(key);
+				readLock.unlock();
 			}
 			keyIterator.remove();
 		}
@@ -568,7 +589,7 @@ public class SocketManager extends DynamicThread
 			logger().log(ALogType.DEBUG, "Waiting to connect...");
 		}
 		
-		logger().log(ALogType.DEBUG, "Connected to" + getServerConnection().asReadable());
+		logger().log(ALogType.DEBUG, "Connected to " + getServerConnection().asReadable());
 		channel.register(selector, SelectionKey.OP_READ, null);
 	}
 	
@@ -587,16 +608,23 @@ public class SocketManager extends DynamicThread
 				{
 					try
 					{
-						if (false) // cannot send packet immediately
+						if (writeLock.checkLock()) // cannot send packet immediately
 						{
-							con.getSocket().register(selector, SelectionKey.OP_WRITE, packet);
+							if (con.getSocket().keyFor(selector).isWritable())
+							{
+								writeQueue.offer(packet);
+							}
+							else
+							{
+								con.getSocket().register(selector, SelectionKey.OP_WRITE, packet);
+							}
 						}
 						else
 						{
-							write(con.getSocket().register(selector, SelectionKey.OP_WRITE, packet));
+							write(con.getSocket(), packet);
 						}
 						
-						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " OUT");
 						// TODO: might need to add a register queue if packets are sent before the connection is complete
 					}
 					catch (ClosedChannelException cce)
@@ -614,26 +642,28 @@ public class SocketManager extends DynamicThread
 				{
 					try
 					{
-						if (false) // cannot send packet immediately
+						if (writeLock.checkLock()) // cannot send packet immediately
 						{
-							datagram.register(selector, SelectionKey.OP_WRITE, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet()));
+							if (datagram.keyFor(selector).isWritable())
+							{
+								writeQueue.offer(packet);
+							}
+							else
+							{
+								datagram.register(selector, SelectionKey.OP_WRITE, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet()));
+							}
 						}
 						else
 						{
-							write(datagram.register(selector, SelectionKey.OP_WRITE, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet())));
+							write(datagram, new DatagramPacket(packet.getData(), packet.getData().length, con.getAsInet()));
 						}
 						
-						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType());
+						if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + con.asReadable() + "] " + packet.getType() + " OUT");
 					}
 					catch (ClosedChannelException cce)
 					{
 						logger().log(ALogType.WARNING, "Data cannot be sent along closed channel!", cce);
 					}
-					catch (IOException ioe)
-					{
-						logger().log(ALogType.WARNING, "IOException while sending data!, ioe");
-					}
-					
 				}
 			}
 		}
@@ -675,6 +705,50 @@ public class SocketManager extends DynamicThread
 		}
 		
 		sendPacket(packet);
+	}
+	
+	private void write(SocketChannel channel, BytePacket packet)
+	{
+		try
+		{
+			ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+			buffer.clear();
+			buffer.put(packet.getData());
+			buffer.flip();
+			
+			while (buffer.hasRemaining())
+			{
+				channel.write(buffer);
+			}
+		}
+		catch (IOException ioe)
+		{
+			logger().log(ALogType.CRITICAL, "I/O error while sending", ioe);
+		}
+	}
+	
+	private void write(DatagramChannel channel, DatagramPacket packet)
+	{
+		try
+		{
+			ByteBuffer buffer = ByteBuffer.allocate(ClientGame.RECEIVE_PACKET_BUFFER_LIMIT);
+			buffer.clear();
+			buffer.put(packet.getData());
+			buffer.flip();
+			
+			int bytesSent = channel.send(buffer, packet.getSocketAddress());
+			
+			if (bytesSent == 0)
+			{
+				// if can register, do that, else put packet in queue
+				channel.register(selector, SelectionKey.OP_WRITE, packet);
+				return;
+			}
+		}
+		catch (IOException ioe)
+		{
+			logger().log(ALogType.CRITICAL, "I/O error while sending", ioe);
+		}
 	}
 	
 	private void write(SelectionKey key)
@@ -779,7 +853,7 @@ public class SocketManager extends DynamicThread
 			address = remoteAddress.getAddress();
 			port = remoteAddress.getPort();
 			
-			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType());
+			if (ALogger.tracePackets) logger().log(ALogType.DEBUG, "[" + IPUtil.asReadable(address, port) + "] " + packet.getType() + " IN");
 			
 			// Faster ping times because it doesn't have to go through the client's tick system
 			if (packet.getType() == PacketType.TEST_PING)
