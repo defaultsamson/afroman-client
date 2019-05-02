@@ -13,7 +13,7 @@ This setup assumes that you know how to add **JAR libraries** to a project throu
 3. Clone this repository `git clone https://github.com/qwertysam/afroman-client.git`
 4. **Lib:** Get `Console.jar` from [here](https://github.com/qwertysam/Console/releases)
 
-To support mp3 files...
+To support mp3 files (completely optional)...
 
 5. **Lib:** Get the 1.4 compatible `tritonus_share.jar` from [here](http://www.tritonus.org/plugins.html)
 6. **Lib:** Get the JLayer 1.0.1 zip (or tar.gz) from [here](http://www.javazoom.net/javalayer/sources.html) and extract `jl1.0.1.jar`
