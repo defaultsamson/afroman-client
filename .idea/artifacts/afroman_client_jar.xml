@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="afroman-client:jar">
+    <output-path>$PROJECT_DIR$/classes/artifacts/afroman_client_jar</output-path>
+    <root id="archive" name="afroman-client.jar">
+      <element id="module-output" name="afroman-client" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jl1.0.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/tritonus_share.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/mp3spi1.9.5.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Console.jar" path-in-jar="/" />
+      <element id="library" level="module" name="assets" module-name="afroman-client" />
+    </root>
+  </artifact>
+</component>

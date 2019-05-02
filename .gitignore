@@ -2,6 +2,8 @@
 log.txt
 options.txt
 /bin/
+/libs/
+/classes/
 
 server.txt
 *.db

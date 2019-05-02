@@ -1613,9 +1613,12 @@ public class ClientGame extends Game
 			{
 				setCurrentScreen(new GuiCommand(getCurrentScreen()));
 			}
-			if ((!Console.instance().getJFrame().isVisible() && input.nine.isReleasedFiltered()) || (Console.instance().getJFrame().isVisible() && input.nine.isPressedFiltered()))
+
+			boolean consoleVisible = Console.instance().getJFrame().isVisible();
+
+			if ((!consoleVisible && input.nine.isReleasedFiltered()) || (consoleVisible && input.nine.isPressedFiltered()))
 			{
-				consoleDebug = !Console.isVisible();
+				consoleDebug = !consoleVisible;
 				
 				// Prevents keys from getting stuck
 				input.control.setPressed(false);

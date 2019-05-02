@@ -1,17 +1,11 @@
 package ca.afroman.assets;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Control;
-import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.*;
 import javax.sound.sampled.FloatControl.Type;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 import ca.afroman.client.ClientGame;
 import ca.afroman.log.ALogType;
@@ -55,7 +49,7 @@ public class AudioClip extends Asset
 			
 			ALogger.logA(ALogType.DEBUG, "Disribution uses " + FILE_TYPE + " audio files");
 		}
-		
+
 		return FILE_TYPE;
 	}
 	
@@ -104,71 +98,49 @@ public class AudioClip extends Asset
 		}
 		
 		Clip clip = null;
-		
-		switch (fileType())
+
+		// Sets up the MP3 audio decoder
+		if (fileType() == AudioFileType.MP3)
 		{
-			default:
-				break;
-			case MP3:
-				if (audioIn != null)
-				{
-					AudioFormat baseFormat = audioIn.getFormat();
-					AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
-					
-					AudioInputStream decodedAudioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
-					
-					try
-					{
-						clip = AudioSystem.getClip();
-					}
-					catch (LineUnavailableException e)
-					{
-						ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
-					}
-					
-					if (clip != null)
-					{
-						try
-						{
-							clip.open(decodedAudioIn);
-						}
-						catch (LineUnavailableException e)
-						{
-							ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
-						}
-						catch (IOException e)
-						{
-							ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
-						}
-					}
+			if (audioIn != null)
+			{
+				AudioFormat baseFormat = audioIn.getFormat();
+				AudioFormat decodeFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+
+				audioIn = AudioSystem.getAudioInputStream(decodeFormat, audioIn);
 				}
-				break;
-			case WAV:
-				try
-				{
-					clip = AudioSystem.getClip();
-				}
-				catch (LineUnavailableException e)
-				{
-					ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
-				}
-				
-				if (clip != null)
-				{
-					try
-					{
-						clip.open(audioIn);
-					}
-					catch (LineUnavailableException e)
-					{
-						ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
-					}
-					catch (IOException e)
-					{
-						ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
-					}
-				}
-				break;
+		}
+
+		try
+		{
+			// Previous way of doing it (worked with Java 6 SE)
+			// clip = AudioSystem.getClip();
+
+			// This way doesn't crash with OpenJDK 8, but produces no sound, but
+			// for some reason only works after it's been compiled into a jar??
+			// This way works in OpenJDK 11.
+			DataLine.Info info = new DataLine.Info(Clip.class, audioIn.getFormat());
+			clip = (Clip) AudioSystem.getLine(info);
+		}
+		catch (LineUnavailableException e)
+		{
+			ClientGame.instance().logger().log(ALogType.CRITICAL, "Unable to append audio clip", e);
+		}
+
+		if (clip != null)
+		{
+			try
+			{
+				clip.open(audioIn);
+			}
+			catch (LineUnavailableException e)
+			{
+				ClientGame.instance().logger().log(ALogType.CRITICAL, "Audio line unavailable", e);
+			}
+			catch (IOException e)
+			{
+				ClientGame.instance().logger().log(ALogType.CRITICAL, "", e);
+			}
 		}
 		
 		return new AudioClip(type, audioType, clip);
@@ -189,7 +161,7 @@ public class AudioClip extends Asset
 				// Sets the volume for this based on whether it is defined as music or a sound effect
 				int volume = (audio.getAudioType() == AudioType.MUSIC ? Options.instance().musicVolume : (audio.getAudioType() == AudioType.SFX ? Options.instance().sfxVolume : 0));
 				
-				audio.setVolume(volume / 100D);
+				audio.setVolume(volume / 100F);
 			}
 		}
 	}
@@ -392,7 +364,7 @@ public class AudioClip extends Asset
 	/**
 	 * Fades out the audio over a period of time.
 	 * 
-	 * @param duration the time in milliseconds that the operation should take
+	 * @param percentage fade to this colume
 	 */
 	public void fadeToVolume(final double percentage)
 	{
@@ -555,9 +527,9 @@ public class AudioClip extends Asset
 	/**
 	 * Sets the volume of this immediately.
 	 * 
-	 * @param dB the new volume of this in decibels
+	 * @param percentage the new volume of this in a percentage
 	 */
-	public void setVolume(double percentage)
+	public void setVolume(float percentage)
 	{
 		if (clip != null)
 		{
@@ -565,7 +537,6 @@ public class AudioClip extends Asset
 			if (con instanceof FloatControl)
 			{
 				final FloatControl gain = (FloatControl) con;
-				
 				gain.setValue(percentageAsDB(percentage));
 			}
 		}
