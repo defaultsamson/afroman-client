@@ -8,7 +8,6 @@ Please visit [the Wiki](https://github.com/qwertysam/afroman-client/wiki) for mo
 ## Contributing
 This setup assumes that you know how to add **JAR libraries** to a project through your IDE, and will skimp those instructions. They are tagged with **Lib**, and it is recommended to place the JARs in `./afroman-client/libs` in order to remain organized and avoid pushing to the repository with your libraries.
 
-### Setup
 1. Install the Java JDK 8 (or higher)
 2. Install IntelliJ IDEA (or another IDE such as Eclipse)
 3. Clone this repository `git clone https://github.com/qwertysam/afroman-client.git`
